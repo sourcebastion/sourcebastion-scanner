@@ -37,13 +37,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       # -----------------------------------------------------------------------
       # Install ez-appsec from source
       # -----------------------------------------------------------------------
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.11'
           cache: pip
@@ -159,14 +159,14 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Upload SARIF to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
           sarif_file: ${{ env.SARIF_FILE }}
         continue-on-error: true
 
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ez-appsec-self-scan-${{ github.sha }}
           path: ${{ env.OUTPUT_DIR }}/
@@ -193,7 +193,7 @@ jobs:
       - name: Mint App token for dashboard push
         id: dash-token
         if: steps.dashboard-creds.outputs.enabled == 'true'
-        uses: actions/create-github-app-token@v3
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           app-id: ${{ secrets.EZ_APPSEC_APP_ID }}
           private-key: ${{ secrets.EZ_APPSEC_PRIVATE_KEY }}
@@ -243,7 +243,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Comment on PR
         if: github.event_name == 'pull_request' && steps.scan.outcome == 'success'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';

@@ -52,3 +52,21 @@ def test_remote_actions_are_pinned_and_consistent():
 
     assert observed, "no remote GitHub Actions were audited"
     assert not failures, "\n" + "\n".join(failures)
+
+
+def test_release_paths_have_two_codeowners():
+    entries = {}
+    for line in (ROOT / ".github" / "CODEOWNERS").read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        path, *owners = line.split()
+        entries[path] = owners
+
+    for path in (
+        "/.github/workflows/",
+        "/.releaserc.json",
+        "/package-lock.json",
+        "/images/",
+    ):
+        assert entries[path] == ["@jfelten", "@jenfelten"]

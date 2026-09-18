@@ -11,10 +11,6 @@ on:
       - 'v*'
   pull_request:
     branches: [main]
-    paths:
-      - 'api/**'
-      - 'Dockerfile.api'
-      - '.github/workflows/api.yml'
   workflow_dispatch:
 
 env:

@@ -1,6 +1,8 @@
 from pathlib import Path
 import re
 
+import yaml
+
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = (ROOT / ".github" / "workflows" / "security.yml").read_text(
@@ -32,3 +34,13 @@ def test_codeql_scans_first_party_languages_with_minimal_permissions():
             WORKFLOW,
         )
     ) == 2
+
+
+def test_every_pull_request_can_satisfy_the_required_api_check():
+    api_workflow = yaml.load(
+        (ROOT / ".github" / "workflows" / "api.yml").read_text(encoding="utf-8"),
+        Loader=yaml.BaseLoader,
+    )
+    pull_request = api_workflow["on"]["pull_request"]
+    assert pull_request["branches"] == ["main"]
+    assert "paths" not in pull_request

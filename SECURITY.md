@@ -5,20 +5,24 @@
 | Version | Supported |
 |---------|-----------|
 | 1.7.x   | Yes       |
-| 0.1.x   | Yes       |
+| < 1.7   | No        |
 
 ## Reporting a Vulnerability
 
 **Do not report security vulnerabilities via public GitHub issues.**
 
-Please email **security@ez-appsec.ai** with:
+Use [GitHub private vulnerability reporting](https://github.com/sourcebastion/sourcebastion-scanner/security/advisories/new).
+It is enabled for this repository and keeps the report private by default.
+Include:
 
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
 - Suggested fix (optional)
 
-We will acknowledge your report within 48 hours and aim to release a fix within 30 days for critical issues.
+Reports are read and triaged on a best-effort basis. No acknowledgement or fix
+window is promised: an unowned deadline would be misleading. Status updates
+and disclosure timing are coordinated in the private advisory.
 
 ## Responsible Disclosure
 

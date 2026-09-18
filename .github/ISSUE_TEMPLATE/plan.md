@@ -60,4 +60,4 @@ None.
 
 ---
 
-**Before opening a PR:** Verify no other open plan covers the same scope. Check the [roadmap](https://github.com/ez-appsec/ez-appsec/blob/main/ROADMAP.md) and [open plan issues](https://github.com/ez-appsec/ez-appsec/labels/plan).
+**Before opening a PR:** Verify no other open plan covers the same scope. Check the [roadmap](https://github.com/sourcebastion/sourcebastion-scanner/blob/main/ROADMAP.md) and [open plan issues](https://github.com/sourcebastion/sourcebastion-scanner/labels/plan).

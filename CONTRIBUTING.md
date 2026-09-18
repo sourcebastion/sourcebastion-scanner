@@ -6,13 +6,16 @@ Thank you for contributing to ez-appsec! This document provides guidelines for c
 
 You don't need to write code to contribute — proposing a well-scoped problem is equally valuable.
 
-### Rough idea → use Discussions
+### Rough idea → open a feature request
 
-If you have a rough idea, a complaint, or a "wouldn't it be nice if..." — open a discussion in the [Ideas category](https://github.com/ez-appsec/ez-appsec/discussions/categories/ideas). No structure required. Upvotes help maintainers prioritize.
+If you have a rough idea, a complaint, or a "wouldn't it be nice if..." — open
+a [feature request](https://github.com/sourcebastion/sourcebastion-scanner/issues/new?template=feature_request.md).
+No detailed plan is required at this stage; reactions and comments help
+maintainers prioritize.
 
 ### Concrete proposal → open a Plan Proposal issue
 
-When your idea is specific enough to describe a problem and a rough solution, open a [Plan Proposal issue](https://github.com/ez-appsec/ez-appsec/issues/new?template=plan-proposal.md). A maintainer will review it and, if accepted, spec it into a full PLAN issue with all the implementation detail needed to implement it.
+When your idea is specific enough to describe a problem and a rough solution, open a [Plan Proposal issue](https://github.com/sourcebastion/sourcebastion-scanner/issues/new?template=plan-proposal.md). A maintainer will review it and, if accepted, spec it into a full PLAN issue with all the implementation detail needed to implement it.
 
 ### What makes a good plan
 
@@ -37,7 +40,7 @@ If you spot a gap in an existing plan issue (missing edge case, incorrect file n
 
 ## Claiming a Plan (human or AI-assisted)
 
-Each roadmap item in the [GitHub Project](https://github.com/orgs/ez-appsec/projects/2) is a self-contained, atomic plan with exact file ownership, conflict guards, and done criteria. The issue body is the complete specification — you can implement it manually or hand it directly to any AI coding assistant.
+Each roadmap item in [ROADMAP.md](ROADMAP.md) is a self-contained, atomic plan with exact file ownership, conflict guards, and done criteria. The issue body is the complete specification — you can implement it manually or hand it directly to any AI coding assistant.
 
 ### Prerequisites
 
@@ -56,12 +59,12 @@ Each roadmap item in the [GitHub Project](https://github.com/orgs/ez-appsec/proj
 
 ```bash
 # External contributor:
-gh repo fork ez-appsec/ez-appsec --clone --remote
-cd ez-appsec
+gh repo fork sourcebastion/sourcebastion-scanner --clone --remote
+cd sourcebastion-scanner
 
 # Org member:
-git clone https://github.com/ez-appsec/ez-appsec
-cd ez-appsec
+git clone https://github.com/sourcebastion/sourcebastion-scanner
+cd sourcebastion-scanner
 ```
 
 **Step 2 — Install the package in development mode**
@@ -132,7 +135,7 @@ Implement it exactly as specified:
     git add -p   # stage only your changes, file by file
     git commit -m "feat: [PLAN TITLE]"
     git push origin [BRANCH NAME]
-    gh pr create --draft --title "[PLAN TITLE]" --body "Closes #[N]" --repo ez-appsec/ez-appsec
+    gh pr create --draft --title "[PLAN TITLE]" --body "Closes #[N]" --repo sourcebastion/sourcebastion-scanner
 
 Do not ask for confirmation at any step. If pytest fails 3 times on the
 same file, stop and report exactly which assertion is failing and why.

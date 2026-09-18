@@ -64,9 +64,13 @@ def test_release_paths_have_two_codeowners():
         entries[path] = owners
 
     for path in (
+        "/.github/CODEOWNERS",
         "/.github/workflows/",
+        "/.github/dependabot.yml",
         "/.releaserc.json",
+        "/package.json",
         "/package-lock.json",
+        "/Dockerfile.api",
         "/images/",
     ):
         assert entries[path] == ["@jfelten", "@jenfelten"]

@@ -1,0 +1,22 @@
+name: Action pin audit
+
+on:
+  schedule:
+    - cron: "17 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit shipped Action pins
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Compare every pin with its upstream version tag
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/check_action_pins.py

@@ -1,4 +1,5 @@
 # Build and publication changes require review from a repository administrator.
+/.github/CODEOWNERS @jfelten @jenfelten
 /.github/workflows/ @jfelten @jenfelten
 /.github/dependabot.yml @jfelten @jenfelten
 /.releaserc.json @jfelten @jenfelten

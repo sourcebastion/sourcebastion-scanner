@@ -81,7 +81,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Use checked-out scanner when dogfooding
         if: github.repository == 'ez-appsec/ez-appsec'
@@ -178,14 +178,14 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
           sarif_file: ${{ env.EZ_APPSEC_SARIF }}
         continue-on-error: true
 
       - name: Upload scan results as artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ez-appsec-scan-${{ github.sha }}
           path: ${{ env.EZ_APPSEC_SARIF }}
@@ -200,7 +200,7 @@ jobs:
 
       - name: Upload vulnerabilities.json as artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ez-appsec-vulns-${{ github.sha }}
           path: ${{ env.EZ_APPSEC_OUTPUT_DIR }}/vulnerabilities.json
@@ -419,7 +419,7 @@ jobs:
 
       - name: Comment on PR with findings
         if: github.event_name == 'pull_request' && steps.scan.outcome == 'success'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const fs = require('fs');

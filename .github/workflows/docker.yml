@@ -75,15 +75,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Run hadolint
+      - name: Run hadolint (standard)
         uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
         with:
-          dockerfiles: |
-            images/Dockerfile
-            images/Dockerfile.slim
-            images/Dockerfile.micro
-            images/Dockerfile.semgrep
-        continue-on-error: true
+          dockerfile: images/Dockerfile
+          failure-threshold: error
+
+      - name: Run hadolint (slim)
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          dockerfile: images/Dockerfile.slim
+          failure-threshold: error
+
+      - name: Run hadolint (micro)
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          dockerfile: images/Dockerfile.micro
+          failure-threshold: error
+
+      - name: Run hadolint (semgrep)
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          dockerfile: images/Dockerfile.semgrep
+          failure-threshold: error
 
   lint-rule-fixtures:
     name: Lint Rule Fixtures
@@ -180,7 +194,7 @@ jobs:
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
         if: always()
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
 

@@ -3,6 +3,8 @@
 from pathlib import Path
 import re
 
+import yaml
+
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_ROOTS = (
@@ -74,3 +76,38 @@ def test_release_paths_have_two_codeowners():
         "/images/",
     ):
         assert entries[path] == ["@jfelten", "@jenfelten"]
+
+
+def test_docker_quality_actions_receive_supported_inputs():
+    workflow = yaml.load(
+        (ROOT / ".github" / "workflows" / "docker.yml").read_text(
+            encoding="utf-8"
+        ),
+        Loader=yaml.BaseLoader,
+    )
+
+    lint_steps = workflow["jobs"]["lint-docker"]["steps"]
+    hadolint_steps = [
+        step
+        for step in lint_steps
+        if step.get("uses", "").startswith("hadolint/hadolint-action@")
+    ]
+    assert [step["with"]["dockerfile"] for step in hadolint_steps] == [
+        "images/Dockerfile",
+        "images/Dockerfile.slim",
+        "images/Dockerfile.micro",
+        "images/Dockerfile.semgrep",
+    ]
+    assert all(
+        step["with"]["failure-threshold"] == "error" for step in hadolint_steps
+    )
+    assert all("continue-on-error" not in step for step in hadolint_steps)
+
+    unit_steps = workflow["jobs"]["test-unit"]["steps"]
+    codecov_step = next(
+        step
+        for step in unit_steps
+        if step.get("uses", "").startswith("codecov/codecov-action@")
+    )
+    assert codecov_step["with"]["files"] == "./coverage.xml"
+    assert "file" not in codecov_step["with"]

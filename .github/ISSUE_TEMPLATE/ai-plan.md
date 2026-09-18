@@ -19,7 +19,7 @@ assignees: ''
 
 ```bash
 # 1. Fork (external) or clone (org member), install, verify baseline
-gh repo fork ez-appsec/ez-appsec --clone --remote && cd ez-appsec
+gh repo fork sourcebastion/sourcebastion-scanner --clone --remote && cd sourcebastion-scanner
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 pytest tests/ -x -q          # must be green before you start

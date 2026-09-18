@@ -1,8 +1,10 @@
- # Deprecated - project migrated to sourcebsastion/source bastion project
-
-# ez-appsec
+# SourceBastion Scanner
 
 **AI-powered application security scanning** — free, open-source, works with GitHub and GitLab.
+
+The CLI, Python package, and existing container images retain the `ez-appsec`
+name for compatibility. This repository is their maintained upstream home;
+it is not deprecated.
 
 ez-appsec orchestrates four best-in-class scanners (gitleaks, semgrep, kics, grype), normalises their output into a unified schema, and pushes results to a hosted security dashboard. No cloud account or API key required.
 
@@ -31,7 +33,7 @@ The fastest way to add ez-appsec to any repository is through the Claude Code sk
 **Step 1 — Install the skill** (one-time, works in every project):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/skills/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sourcebastion/sourcebastion-scanner/main/skills/install.sh | bash
 ```
 
 **Step 2 — Add ez-appsec to a repository:**
@@ -188,7 +190,7 @@ There are two contribution paths depending on the size of the change.
 
 Bug fixes, documentation corrections, minor refactors, and small tweaks can go straight to a PR.
 
-Open a **[Small Change issue](https://github.com/ez-appsec/ez-appsec/issues/new?template=small-change.md)** to track the work, then submit a PR that references it. The bar is: `pytest tests/` passes, no scope creep.
+Open a **[Small Change issue](https://github.com/sourcebastion/sourcebastion-scanner/issues/new?template=small-change.md)** to track the work, then submit a PR that references it. The bar is: `pytest tests/` passes, no scope creep.
 
 ### Significant work — plan first
 
@@ -196,11 +198,13 @@ New features, integrations, and anything that touches multiple modules require a
 
 **Option A — Claim an existing roadmap item**
 
-Browse the [ez-appsec Roadmap project](https://github.com/orgs/ez-appsec/projects/2) and pick an unassigned plan. Leave a comment on the issue saying you are claiming it, then self-assign and move it to *In Progress*. The issue already contains scope, technical approach, and done criteria.
+Browse the [repository roadmap](ROADMAP.md) and pick an unassigned plan. Leave
+a comment on its issue before starting work. The issue contains scope,
+technical approach, and done criteria.
 
 **Option B — Propose a new plan**
 
-If your idea is not on the roadmap, open a **[Plan issue](https://github.com/ez-appsec/ez-appsec/issues/new?template=plan.md)** first. Describe what you are building, the scope, technical approach, and test strategy. Wait for a maintainer to acknowledge before opening a draft PR. This avoids duplicate work and surfaces conflicts early.
+If your idea is not on the roadmap, open a **[Plan issue](https://github.com/sourcebastion/sourcebastion-scanner/issues/new?template=plan.md)** first. Describe what you are building, the scope, technical approach, and test strategy. Wait for a maintainer to acknowledge before opening a draft PR. This avoids duplicate work and surfaces conflicts early.
 
 ### Human + AI workflows
 
@@ -226,12 +230,23 @@ See [ROADMAP.md](ROADMAP.md) for the path to feature parity with commercial AppS
 
 | | |
 |---|---|
-| GitHub Project | [ez-appsec Roadmap](https://github.com/orgs/ez-appsec/projects/2) |
+| GitHub Issues | [SourceBastion Scanner issues](https://github.com/sourcebastion/sourcebastion-scanner/issues) |
 | GitLab Tracking | [jfelten.work-group/ez_appsec/ez-appsec-roadmap](https://gitlab.com/jfelten.work-group/ez_appsec/ez-appsec-roadmap) |
 
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Support
+
+SourceBastion Scanner is maintained on a best-effort basis. Issues and pull
+requests are welcome and read, but there is no response-time commitment and
+issues may be closed unanswered. Security reports use the private route in
+[SECURITY.md](SECURITY.md). Paying customers should use their commercial
+support channel rather than the public tracker.
+
+If maintenance stops, the repository will be archived with a prominent notice
+rather than left appearing actively supported.
 
 ## Author
 

@@ -61,7 +61,7 @@ export class Scanner {
       ];
 
       await new Promise<void>((resolve, reject) => {
-        const child = require("child_process").execFile(
+        const child = execFile(
           "docker",
           dockerArgs,
           (err: Error | null) => {

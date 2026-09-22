@@ -1,7 +1,7 @@
-# Docker Build and Publish Workflow
-# Builds and publishes Docker images to GitHub Container Registry.
+# Docker validation workflow.
+# Builds every image variant without publishing; release.yml is the sole publisher.
 
-name: Docker Build and Publish
+name: Docker Validation
 
 on:
   pull_request:

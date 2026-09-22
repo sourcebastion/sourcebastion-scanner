@@ -183,24 +183,20 @@ This lets multiple contributors (human or AI-assisted) work on different plans s
 
 ---
 
-## Version Management with Semantic Release
+## Version Management
 
-ez-appsec uses **semantic-release** for automated versioning and release management. This means version numbers are automatically determined based on your commit messages using [Conventional Commits](https://www.conventionalcommits.org/).
+SourceBastion uses reviewed release pull requests and the protected `Release`
+workflow. Commit messages still follow [Conventional Commits](https://www.conventionalcommits.org/),
+but they do not publish or increment a release automatically.
 
 ### How It Works
 
-1. **Automated Version Bumping**: Based on your commit types, semantic-release automatically increments:
-   - `MAJOR` (x.0.0) for breaking changes
-   - `MINOR` (0.x.0) for new features
-   - `PATCH` (0.0.x) for bug fixes
-
-2. **Automatic Releases**: When commits are pushed to `main`, semantic-release:
-   - Analyzes commits since the last release
-   - Determines the next version number
-   - Creates a git tag (e.g., v0.1.19)
-   - Generates a changelog
-   - Creates a GitHub release
-   - Triggers Docker image builds
+1. A release pull request updates `VERSION` and `CHANGELOG.md` together.
+2. The normal CI and independent review must pass before merge.
+3. A maintainer dispatches `Release` from `main` with the exact `vMAJOR.MINOR.PATCH` value.
+4. A second release authority approves the protected `release` environment.
+5. The workflow builds and scans every image by digest, promotes public tags only
+   after every gate passes, then publishes the draft GitHub release.
 
 ### Commit Message Format
 
@@ -232,10 +228,10 @@ Use the Conventional Commits format:
 #### Examples
 
 ```bash
-# Feature - triggers MINOR version bump (0.1.18 → 0.1.19)
+# Feature
 git commit -m "feat: add support for custom security scanners"
 
-# Bug fix - triggers PATCH version bump (0.1.18 → 0.1.19)
+# Bug fix
 git commit -m "fix: resolve memory leak in scanner initialization"
 
 # Breaking change - triggers MAJOR version bump (0.1.18 → 1.0.0)
@@ -293,68 +289,40 @@ git push origin fix/scanner-crash
 
 ### Release Process
 
-1. **Push to main**: When you merge a PR to `main`:
-   - Semantic-release analyzes commits
-   - Creates a new version tag if needed
-   - Generates changelog
-   - Creates GitHub release
-   - Triggers Docker image builds
-
-2. **No manual versioning**: Never manually edit the `VERSION` file or create tags manually
-
-3. **Preview next version**: To see what version will be released:
-   ```bash
-   npx semantic-release --dry-run
-   ```
+Maintainers follow [VERSIONING.md](VERSIONING.md). Contributors must not edit
+`VERSION`, create tags, or dispatch the workflow outside an approved release
+pull request.
 
 ### Testing Releases
 
-For testing the release process without affecting the main branch:
-
-```bash
-# Create a test branch
-git checkout -b test/release
-
-# Make some commits with semantic messages
-git commit -m "feat: test feature for release"
-
-# Run semantic-release in dry-run mode
-npx semantic-release --dry-run --branches test
-```
+Pull requests exercise every Dockerfile without publishing images. The release
+workflow contract is covered by `tests/test_release_workflow.py`; do not create
+test tags or test releases in the production repository.
 
 ### Troubleshooting
 
 #### Release Not Creating
 
 Check:
-1. Commit messages follow Conventional Commits format
-2. Commits have proper types (`feat`, `fix`, etc.)
-3. Not a documentation-only commit (`docs`, `chore`, etc.)
-4. Branch is `main` (not a feature branch)
+1. The workflow was dispatched from `main`.
+2. The requested version exactly matches `VERSION` with a leading `v`.
+3. The protected environment received an independent approval.
+4. The version is not already published or associated with another commit.
 
 #### Wrong Version
 
-Semantic-release analyzes all commits since the last tag. Check:
-1. Commit history for unexpected commit types
-2. Previous tags exist: `git tag -l`
-3. Run dry-run to see what version will be created: `npx semantic-release --dry-run`
+Close the release pull request and correct `VERSION` plus `CHANGELOG.md` there.
+Never move an existing release tag.
 
 #### Rollback a Release
 
-If a bad release was created:
-
-```bash
-# Delete the tag (requires force push)
-git push origin :refs/tags/v0.1.19 --force
-
-# Delete the GitHub release (manually via GitHub UI or gh CLI)
-gh release delete v0.1.19 --yes
-```
+Published tags are immutable. If a release is bad, document the incident,
+publish a corrected patch release, and follow the rollback guidance in
+[VERSIONING.md](VERSIONING.md).
 
 ### Additional Resources
 
 - [Conventional Commits Specification](https://www.conventionalcommits.org/)
-- [Semantic Release Documentation](https://semantic-release.gitbook.io/semantic-release/)
 - [Commitlint](https://commitlint.js.org/) - Lint commit messages (optional but recommended)
 
 ### Recommended Tools

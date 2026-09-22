@@ -14,19 +14,20 @@ reviewed source change and a second-person approval.
 4. A different named reviewer approves the protected `release` environment.
 
 The workflow rejects a version that does not match `VERSION`, a non-semantic
-version, a dispatch outside `main`, or an existing tag. It creates a draft
-release and immutable tag, builds all five variants from that tag in one
-workflow, publishes full-version and full-commit tags, attaches SBOM and
-provenance records, scans the release image, and publishes the release only
-after every required job succeeds.
+version, a dispatch outside `main`, or a published tag. It creates a draft
+release, builds all five variants under run-scoped staging tags, attaches SBOM
+and provenance records, and scans the standard image by digest. Only after
+every build and scan succeeds does it promote the full-version, full-commit,
+and compatibility tags and publish the GitHub release.
 
 ## Tag policy
 
 - Full semantic tags such as `v1.7.31` and full commit-SHA tags are immutable.
 - `latest`, `slim`, `micro`, `thin`, and `semgrep` are compatibility pointers
   that move only when a reviewed release succeeds.
-- A failed workflow may leave a draft release. Resolve or delete that draft
-  before retrying; never move or reuse a published full-version tag.
+- A failed workflow may leave a draft release and run-scoped staging images.
+  Re-run the failed workflow from the same `main` commit: the workflow resumes
+  only a matching draft and never moves or reuses a published full-version tag.
 
 Verify a released image with:
 

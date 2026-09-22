@@ -16,7 +16,7 @@ permissions:
   security-events: write  # Required for SARIF upload to Security tab
   actions: read
   pull-requests: write   # Required for PR comments
-  packages: read         # Required to pull ghcr.io/ez-appsec/ez-appsec image
+  packages: read         # Required to pull the SourceBastion scanner image
 
 env:
   EZ_APPSEC_OUTPUT_DIR: "scan-results"
@@ -42,7 +42,7 @@ jobs:
 
           current = os.environ.get("CURRENT_VERSION", "latest")
           req = urllib.request.Request(
-              "https://api.github.com/repos/ez-appsec/ez-appsec/releases/latest",
+              "https://api.github.com/repos/sourcebastion/sourcebastion-scanner/releases/latest",
               headers={
                   "Accept": "application/vnd.github+json",
                   "User-Agent": "ez-appsec-version-check/1.0",
@@ -76,7 +76,7 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/ez-appsec/ez-appsec:latest
+      image: ghcr.io/sourcebastion/sourcebastion-scanner:latest
       options: --user root --entrypoint ""
 
     steps:
@@ -84,7 +84,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Use checked-out scanner when dogfooding
-        if: github.repository == 'ez-appsec/ez-appsec'
+        if: github.repository == 'sourcebastion/sourcebastion-scanner'
         run: pip install --no-deps -e .
 
       - name: Run ez-appsec scan
@@ -178,7 +178,7 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
           sarif_file: ${{ env.EZ_APPSEC_SARIF }}
         continue-on-error: true

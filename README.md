@@ -157,17 +157,31 @@ Linear scaling validated. CI/CD compatible: GitHub Actions (2-core, 7GB), GitLab
 
 ```bash
 # Standard (all scanners)
-docker pull ghcr.io/ez-appsec/ez-appsec:latest
+docker pull ghcr.io/sourcebastion/sourcebastion-scanner:latest
 
 # Slim (~300 MB, no semgrep)
-docker pull ghcr.io/ez-appsec/ez-appsec:slim
+docker pull ghcr.io/sourcebastion/sourcebastion-scanner:slim
 
 # Micro (secrets + CVEs only)
-docker pull ghcr.io/ez-appsec/ez-appsec:micro
+docker pull ghcr.io/sourcebastion/sourcebastion-scanner:micro
 
 # Run a scan
-docker run --rm -v $(pwd):/scan ghcr.io/ez-appsec/ez-appsec:latest scan /scan
+docker run --rm -v "$(pwd):/scan" \
+  ghcr.io/sourcebastion/sourcebastion-scanner:latest scan /scan
 ```
+
+Full-version and full-commit tags are immutable. Every release image includes
+an SBOM and signed GitHub build provenance. Verify a pinned image with:
+
+```bash
+gh attestation verify \
+  oci://ghcr.io/sourcebastion/sourcebastion-scanner@sha256:<digest> \
+  --repo sourcebastion/sourcebastion-scanner
+```
+
+The legacy `ghcr.io/ez-appsec/ez-appsec` images remain available for existing
+immutable pins while consumers migrate; new integrations should use the
+SourceBastion namespace.
 
 ---
 

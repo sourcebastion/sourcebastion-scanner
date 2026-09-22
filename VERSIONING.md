@@ -1,86 +1,37 @@
-# Version Management
+# Version and release management
 
-ez-appsec uses **semantic-release** for automated version management.
+SourceBastion Scanner uses semantic versions, but releases are deliberately
+manual. A release changes public container tags and therefore requires both a
+reviewed source change and a second-person approval.
 
-## Quick Start
+## Prepare a release
 
-To trigger a new release, simply push commits with conventional commit messages to the `main` branch:
+1. Open a pull request that updates `VERSION` to the next `MAJOR.MINOR.PATCH`
+   value and adds a useful entry to `CHANGELOG.md`.
+2. Merge only after all required checks and the independent review pass.
+3. From `main`, dispatch the `Release` workflow with the exact version prefixed
+   by `v` (for example `v1.7.31`).
+4. A different named reviewer approves the protected `release` environment.
 
-```bash
-# Feature release (minor version bump)
-git commit -m "feat: add new scanner support"
-git push origin main
+The workflow rejects a version that does not match `VERSION`, a non-semantic
+version, a dispatch outside `main`, or an existing tag. It creates a draft
+release and immutable tag, builds all five variants from that tag in one
+workflow, publishes full-version and full-commit tags, attaches SBOM and
+provenance records, scans the release image, and publishes the release only
+after every required job succeeds.
 
-# Bug fix release (patch version bump)
-git commit -m "fix: resolve memory leak in scanner"
-git push origin main
-```
+## Tag policy
 
-## Version Bump Rules
+- Full semantic tags such as `v1.7.31` and full commit-SHA tags are immutable.
+- `latest`, `slim`, `micro`, `thin`, and `semgrep` are compatibility pointers
+  that move only when a reviewed release succeeds.
+- A failed workflow may leave a draft release. Resolve or delete that draft
+  before retrying; never move or reuse a published full-version tag.
 
-| Commit Type | Version Bump | Example |
-|-------------|--------------|---------|
-| `feat` | MINOR (0.x.0) | `feat: add custom scanner support` |
-| `fix` | PATCH (0.0.x) | `fix: resolve scanner timeout issue` |
-| `BREAKING CHANGE` | MAJOR (x.0.0) | `feat!: change scanner API` |
-| `docs`, `chore`, `style`, `refactor`, `test`, `ci`, `build` | No bump | `docs: update installation guide` |
-
-## Automatic Release Process
-
-When you push to `main`:
-
-1. ✅ Semantic-release analyzes your commits
-2. ✅ Determines the next version number
-3. ✅ Creates a git tag (e.g., `v0.1.19`)
-4. ✅ Updates `CHANGELOG.md` automatically
-5. ✅ Creates a GitHub release with notes
-6. ✅ Triggers Docker image builds for all variants
-
-## Examples
+Verify a released image with:
 
 ```bash
-# New feature → 0.1.18 → 0.1.19
-git commit -m "feat: add support for Python 3.12"
-git push origin main
-
-# Bug fix → 0.1.18 → 0.1.19
-git commit -m "fix: handle empty scan results gracefully"
-git push origin main
-
-# Breaking change → 0.1.18 → 1.0.0
-git commit -m "feat!: remove deprecated scanner API"
-git push origin main
-
-# Documentation (no version bump)
-git commit -m "docs: update API documentation"
-git push origin main
+gh attestation verify \
+  oci://ghcr.io/sourcebastion/sourcebastion-scanner@sha256:<digest> \
+  --repo sourcebastion/sourcebastion-scanner
 ```
-
-## Preview Next Version
-
-To see what version would be created without actually releasing:
-
-```bash
-npx semantic-release --dry-run
-```
-
-## Current Version
-
-Check the latest version:
-
-```bash
-# From git tags
-git describe --tags --abbrev=0
-
-# From VERSION file
-cat VERSION
-
-# From npm package
-npm version
-```
-
-## See Also
-
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Full contributing guide
-- [CHANGELOG.md](CHANGELOG.md) - Complete changelog
-- [Semantic Release Documentation](https://semantic-release.gitbook.io/semantic-release/)

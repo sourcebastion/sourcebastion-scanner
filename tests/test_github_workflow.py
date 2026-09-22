@@ -50,6 +50,13 @@ def test_pull_request_build_never_publishes_images():
     assert "docker/login-action" not in workflow
 
 
+def test_dependabot_runs_targeted_checks_instead_of_full_docker_regression():
+    """The weekly integration PR, not each source PR, owns the full matrix."""
+    workflow = DOCKER_WORKFLOW.read_text()
+
+    assert workflow.count("if: github.actor != 'dependabot[bot]'") == 5
+
+
 def test_sarif_format_validation():
     """Test SARIF format meets specification"""
     report = GitHubSarifFormat.create_report([

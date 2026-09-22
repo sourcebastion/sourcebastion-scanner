@@ -24,6 +24,9 @@ jobs:
 
   lint-python:
     name: Lint Python Code
+    # Dependabot branches get ecosystem-targeted checks. The weekly integration
+    # PR runs this full workflow once after their lockfiles are consolidated.
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -64,6 +67,7 @@ jobs:
 
   lint-docker:
     name: Lint Dockerfiles
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -95,6 +99,7 @@ jobs:
 
   lint-rule-fixtures:
     name: Lint Rule Fixtures
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -153,6 +158,7 @@ jobs:
 
   test-unit:
     name: Unit Tests
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -194,6 +200,7 @@ jobs:
 
   test-security:
     name: Security Tests
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

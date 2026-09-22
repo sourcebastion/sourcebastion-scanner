@@ -37,3 +37,23 @@ def test_to_sarif_coerces_artifact_uri_to_string(file_value, expected_uri):
     uri = report["runs"][0]["results"][0]["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
     assert uri == expected_uri
     assert isinstance(uri, str)
+
+
+@pytest.mark.parametrize("virtual_location", ["dependency: requests", "image: demo:latest"])
+def test_to_sarif_keeps_virtual_locations_out_of_artifact_uris(virtual_location):
+    report = Reporter.to_sarif(
+        {
+            "issues": [
+                {
+                    "type": "DEPENDENCY",
+                    "title": "Vulnerable package",
+                    "file": virtual_location,
+                    "severity": "high",
+                }
+            ]
+        }
+    )
+
+    result = report["runs"][0]["results"][0]
+    assert "locations" not in result
+    assert result["properties"]["virtualLocation"] == virtual_location

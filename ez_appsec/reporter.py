@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 
+VIRTUAL_LOCATION_PREFIXES = ("dependency:", "image:")
+
+
 def _coerce_sarif_uri(value: Any) -> str:
     """Coerce scanner file/location values into a SARIF artifact URI string."""
     if isinstance(value, Path):
@@ -26,6 +29,14 @@ def _coerce_sarif_uri(value: Any) -> str:
     return text.replace("\\", "/") if text else "unknown"
 
 
+def _is_virtual_location(value: Any) -> bool:
+    """Return true for scanner labels that are not repository file URIs."""
+    if not isinstance(value, str):
+        return False
+    normalized = value.strip().lower()
+    return normalized.startswith(VIRTUAL_LOCATION_PREFIXES)
+
+
 class Reporter:
     """Generate reports in various formats"""
     
@@ -41,25 +52,33 @@ class Reporter:
         runs = []
         
         for issue in results.get("issues", []):
-            runs.append({
+            result = {
                 "ruleId": issue.get("type", "UNKNOWN"),
                 "message": {
                     "text": issue.get("title", "")
                 },
-                "locations": [
+                "level": issue.get("severity", "note").lower()
+            }
+            location = issue.get("file")
+            if _is_virtual_location(location):
+                # Values such as "dependency: requests" are labels, not URIs.
+                # Emitting them as artifactLocation.uri makes GitHub reject the
+                # entire upload because their URI scheme differs from checkout.
+                result["properties"] = {"virtualLocation": str(location)}
+            else:
+                result["locations"] = [
                     {
                         "physicalLocation": {
                             "artifactLocation": {
-                                "uri": _coerce_sarif_uri(issue.get("file"))
+                                "uri": _coerce_sarif_uri(location)
                             },
                             "region": {
                                 "startLine": issue.get("line", 1)
                             }
                         }
                     }
-                ],
-                "level": issue.get("severity", "note").lower()
-            })
+                ]
+            runs.append(result)
         
         return {
             "version": "2.1.0",

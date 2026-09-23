@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import ez_appsec.scanner as scanner_module
 from ez_appsec.scanner import SecurityScanner
 from ez_appsec.config import Config, IgnoreRule
 
@@ -71,6 +72,7 @@ def test_scanner_distribution_has_no_openai_runtime_dependency():
     scan_runtime_files = [
         root / "ez_appsec" / "scanner.py",
         root / "ez_appsec" / "ai_analyzer.py",
+        root / "ez_appsec" / "agent.py",
     ]
     for runtime_file in scan_runtime_files:
         source = runtime_file.read_text(encoding="utf-8").lower()
@@ -174,6 +176,129 @@ class _FakeExternalScanner:
 
     def scan_all(self, path):
         return [dict(issue) for issue in self.issues]
+
+
+class _FakeRawExternalScanner:
+    def __init__(self, raw_path):
+        self.raw_path = raw_path
+
+    def scan_all_with_raw_outputs(self, path):
+        return [], {"test": str(self.raw_path)}
+
+
+def test_gitlab_output_removes_ignored_findings(tmp_path):
+    raw_path = tmp_path / "scanner.json"
+    raw_path.write_text("{}", encoding="utf-8")
+    scanner = SecurityScanner(
+        Config(
+            severity="all",
+            ignore_rules=[
+                IgnoreRule(
+                    file_path="tests/fixtures/scanners/**",
+                    permanent=True,
+                    reason="intentional fixture",
+                )
+            ],
+        )
+    )
+    scanner.external = _FakeRawExternalScanner(raw_path)
+    report = {
+        "version": "15.0.0",
+        "vulnerabilities": [
+            {
+                "id": "fixture",
+                "name": "Fixture CVE",
+                "message": "intentional",
+                "description": "intentional",
+                "severity": "high",
+                "location": {
+                    "file": "tests/fixtures/scanners/deps/package-lock.json",
+                    "start_line": 1,
+                },
+                "identifiers": [{"type": "cve", "value": "CVE-TEST"}],
+            },
+            {
+                "id": "real",
+                "name": "Real finding",
+                "message": "review",
+                "description": "review",
+                "severity": "high",
+                "location": {"file": "src/app.py", "start_line": 2},
+                "identifiers": [{"type": "rule", "value": "real-rule"}],
+            },
+        ],
+        "remediations": [],
+    }
+
+    with patch.object(
+        scanner_module.VulnerabilityConverters,
+        "convert_scanner_output",
+        return_value=report,
+    ):
+        result = scanner.scan_to_gitlab_format(str(tmp_path))
+
+    assert [finding["id"] for finding in result["vulnerabilities"]] == ["real"]
+    assert result["suppressed_count"] == 1
+
+
+def test_github_output_removes_ignored_findings(tmp_path):
+    raw_path = tmp_path / "scanner.json"
+    raw_path.write_text("{}", encoding="utf-8")
+    scanner = SecurityScanner(
+        Config(
+            severity="all",
+            ignore_rules=[
+                IgnoreRule(
+                    file_path="tests/fixtures/scanners/**",
+                    permanent=True,
+                    reason="intentional fixture",
+                )
+            ],
+        )
+    )
+    scanner.external = _FakeRawExternalScanner(raw_path)
+
+    def sarif_result(rule_id, file_path):
+        return {
+            "ruleId": rule_id,
+            "level": "error",
+            "message": {"text": rule_id},
+            "locations": [
+                {
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": file_path},
+                        "region": {"startLine": 1},
+                    }
+                }
+            ],
+        }
+
+    report = {
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {"driver": {"name": "test", "rules": []}},
+                "results": [
+                    sarif_result(
+                        "fixture-rule",
+                        "tests/fixtures/scanners/deps/package-lock.json",
+                    ),
+                    sarif_result("real-rule", "src/app.py"),
+                ],
+            }
+        ],
+    }
+
+    with patch.object(
+        scanner_module.VulnerabilityConverters,
+        "convert_to_github_format",
+        return_value=report,
+    ):
+        result = scanner.scan_to_github_format(str(tmp_path))
+
+    run = result["runs"][0]
+    assert [finding["ruleId"] for finding in run["results"]] == ["real-rule"]
+    assert run["properties"]["sourcebastionSuppressedCount"] == 1
 
 
 class TestScanTracking:

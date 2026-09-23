@@ -253,6 +253,28 @@ class TestGithubScanCommand:
         assert result.exit_code == 0
         assert 'GitHub SARIF scan completed' in result.output
 
+    def test_github_scan_reports_suppressed_count(self, sample_file):
+        report = {
+            "version": "2.1.0",
+            "runs": [
+                {
+                    "tool": {"driver": {"name": "test", "rules": []}},
+                    "results": [],
+                    "properties": {"sourcebastionSuppressedCount": 3},
+                }
+            ],
+        }
+        runner = CliRunner()
+
+        with patch(
+            "ez_appsec.scanner.SecurityScanner.scan_to_github_format",
+            return_value=report,
+        ):
+            result = runner.invoke(main, ['github-scan', sample_file])
+
+        assert result.exit_code == 0
+        assert '[suppressed] 3 finding(s)' in result.output
+
     def test_github_scan_with_output(self, sample_file, temp_output_file):
         """Test github-scan with output file"""
         runner = CliRunner()

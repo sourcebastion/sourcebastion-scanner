@@ -278,7 +278,8 @@ class TestGitHubGrypeConverter:
             "matches": [{
                 "artifact": {
                     "name": "requests",
-                    "version": "2.20.0"
+                    "version": "2.20.0",
+                    "locations": [{"path": "/requirements.txt"}],
                 },
                 "vulnerability": {
                     "id": "CVE-2023-12345",
@@ -301,7 +302,10 @@ class TestGitHubGrypeConverter:
         assert result["ruleId"] == "CVE-2023-12345"
         assert result["level"] == "error"
         assert "requests" in result["message"]["text"]
-        assert "locations" not in result
+        assert (
+            result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+            == "requirements.txt"
+        )
 
 
 class TestVulnerabilityConverters:
@@ -436,7 +440,11 @@ class TestSarifV2Fields:
     def test_grype_to_sarif_includes_v2_fields(self):
         grype_data = {
             "matches": [{
-                "artifact": {"name": "requests", "version": "2.20.0"},
+                "artifact": {
+                    "name": "requests",
+                    "version": "2.20.0",
+                    "locations": [{"path": "/requirements.txt"}],
+                },
                 "vulnerability": {
                     "id": "CVE-2023-12345",
                     "severity": "High",
@@ -533,7 +541,11 @@ class TestGitLabV2Fields:
     def test_grype_to_gitlab_includes_v2_fields(self):
         grype_data = {
             "matches": [{
-                "artifact": {"name": "requests", "version": "2.20.0"},
+                "artifact": {
+                    "name": "requests",
+                    "version": "2.20.0",
+                    "locations": [{"path": "/requirements.txt"}],
+                },
                 "vulnerability": {"id": "CVE-2023-12345", "severity": "High",
                                   "description": "x", "dataSource": ""},
             }]
@@ -545,6 +557,7 @@ class TestGitLabV2Fields:
         vuln = report["vulnerabilities"][0]
         assert vuln["id"] == compute_finding_id("CVE-2023-12345", "dependency:requests", 0)
         assert vuln["category_v2"] == "dependency"
+        assert vuln["location"]["file"] == "requirements.txt"
 
     def test_finding_id_is_stable_across_runs(self):
         """Same input → same finding_id across both SARIF and GitLab converters."""

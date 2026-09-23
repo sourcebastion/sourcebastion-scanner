@@ -754,6 +754,15 @@ def github_scan(path, ai_prompt, languages, severity, output, config_file):
 
         click.echo(f"\n✓ GitHub SARIF scan completed")
         click.echo(f"  Total findings: {len(results['runs'][0]['results'])}")
+        suppressed_count = (
+            results["runs"][0]
+            .get("properties", {})
+            .get("sourcebastionSuppressedCount", 0)
+        )
+        if suppressed_count:
+            click.echo(
+                f"  [suppressed] {suppressed_count} finding(s) matched ignore rules"
+            )
 
         if results['runs'][0]['results']:
             click.echo("\nTop Findings:")
@@ -1023,35 +1032,14 @@ def report(framework, findings, output):
 
 @main.command("agent")
 @click.argument("task")
-@click.option("--model", default="claude-sonnet-4-20250514", help="Anthropic model to use")
+@click.option("--model", default=None, hidden=True)
 @click.option("--path", "root_path", type=click.Path(exists=True), default=".", help="Project root for path validation")
 def agent_cmd(task, model, root_path):
-    """Run the AI security agent with a natural language task
+    """Deprecated: LLM-assisted maintenance moved to SourceBastion Ops."""
+    from ez_appsec.agent import LLM_AGENT_REMOVED_MESSAGE
 
-    TASK: What the agent should do, e.g. "scan /path and summarize critical findings"
-
-    Requires ANTHROPIC_API_KEY environment variable.
-    """
-    from ez_appsec.agent import SecurityAgent
-
-    try:
-        agent = SecurityAgent(model=model, allowed_root=root_path)
-        result = agent.run(task)
-
-        if result.actions_taken:
-            click.echo(f"\nActions taken:")
-            for action in result.actions_taken:
-                click.echo(f"  - {action}")
-
-        if result.findings:
-            click.echo(f"\nFindings: {len(result.findings)}")
-
-        if result.summary:
-            click.echo(f"\n{result.summary}")
-
-    except Exception as e:
-        click.echo(f"✗ Error: {str(e)}", err=True)
-        sys.exit(1)
+    del task, model, root_path
+    raise click.ClickException(LLM_AGENT_REMOVED_MESSAGE)
 
 
 @main.command("rotate-secrets")

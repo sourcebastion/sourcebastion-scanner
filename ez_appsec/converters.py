@@ -61,6 +61,21 @@ def _coerce_sarif_uri(value: Any) -> str:
     return text.replace("\\", "/") if text else "unknown"
 
 
+def _grype_artifact_path(artifact: Dict[str, Any]) -> str:
+    """Return a repository-relative manifest path from a Grype artifact."""
+    for location in artifact.get("locations") or []:
+        if not isinstance(location, dict):
+            continue
+        path = location.get("path") or location.get("accessPath")
+        if not path:
+            continue
+        normalized = str(path).replace("\\", "/")
+        while normalized.startswith("./"):
+            normalized = normalized[2:]
+        return normalized.lstrip("/")
+    return ""
+
+
 class GitHubSarifFormat:
     """GitHub SARIF format converter for GitHub Advanced Security integration"""
 
@@ -509,6 +524,7 @@ class GrypeConverter:
 
             vuln_rule_id = vulnerability.get("id") or artifact.get("name") or "unknown"
             artifact_name = artifact.get("name", "unknown")
+            artifact_path = _grype_artifact_path(artifact)
             finding_id = compute_finding_id(str(vuln_rule_id), f"dependency:{artifact_name}", 0)
 
             vulnerability_entry = GitLabVulnerabilityFormat.create_vulnerability(
@@ -519,7 +535,7 @@ class GrypeConverter:
                 confidence="high",
                 solution=f"Update {artifact.get('name', 'package')} to a version that fixes {vulnerability.get('id', 'this vulnerability')}.",
                 location={
-                    "file": "dependency",
+                    "file": artifact_path or "dependency",
                     "dependency": {
                         "package": {
                             "name": artifact_name
@@ -855,12 +871,18 @@ class GitHubGrypeConverter:
 
             # Create result - dependency vulnerabilities don't have line numbers
             artifact_name = artifact.get("name", "unknown")
+            artifact_path = _grype_artifact_path(artifact)
             finding_id = compute_finding_id(str(vuln_id), f"dependency:{artifact_name}", 0)
 
             result_entry = GitHubSarifFormat.create_result(
                 rule_id=vuln_id,
                 message=f"Vulnerable package: {artifact_name} {artifact.get('version', '')} - {vuln_id}",
                 level=level,
+                locations=(
+                    [GitHubSarifFormat.create_location(artifact_path)]
+                    if artifact_path
+                    else None
+                ),
                 finding_id=finding_id,
                 category="dependency",
             )

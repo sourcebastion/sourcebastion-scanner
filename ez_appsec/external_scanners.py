@@ -1303,6 +1303,21 @@ class GrypeScanner(ScannerWrapper):
 
     component_name = "grype"
 
+    @staticmethod
+    def _artifact_path(artifact: Dict[str, Any]) -> str:
+        """Return the repository-relative manifest path reported by Grype."""
+        for location in artifact.get("locations") or []:
+            if not isinstance(location, dict):
+                continue
+            path = location.get("path") or location.get("accessPath")
+            if not path:
+                continue
+            normalized = str(path).replace("\\", "/")
+            while normalized.startswith("./"):
+                normalized = normalized[2:]
+            return normalized.lstrip("/")
+        return ""
+
     def _add_ai_remediation_fields(
         self,
         finding: Dict[str, Any],
@@ -1456,13 +1471,15 @@ class GrypeScanner(ScannerWrapper):
             for match in data.get("matches", []):
                 vulnerability = match.get("vulnerability", {})
                 cve_id = vulnerability.get("id")
-                artifact_name = match.get("artifact", {}).get("name", "unknown")
+                artifact = match.get("artifact", {})
+                artifact_name = artifact.get("name", "unknown")
+                artifact_path = self._artifact_path(artifact)
                 finding = {
                     "type": "Dependency",
                     "rule_id": cve_id or artifact_name,
                     "title": f"{artifact_name} - {cve_id}",
                     "description": vulnerability.get("description", "Known vulnerability in dependency"),
-                    "file": "dependency: " + artifact_name,
+                    "file": artifact_path or "dependency: " + artifact_name,
                     "line": 1,
                     "severity": vulnerability.get("severity", "medium").lower(),
                     "scanner": "grype",

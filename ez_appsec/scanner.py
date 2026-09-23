@@ -359,6 +359,19 @@ class SecurityScanner:
                 active_issues.append(issue)
 
         return active_issues, suppressed_count
+
+    def _suppress_formatted_findings(
+        self, findings: List[Dict], internal_issues: List[Dict]
+    ) -> tuple[List[Dict], int]:
+        """Remove ignored findings while preserving formatted output entries."""
+        active_issues, suppressed_count = self._apply_ignore_rules(internal_issues)
+        active_issue_ids = {id(issue) for issue in active_issues}
+        active_findings = [
+            finding
+            for finding, issue in zip(findings, internal_issues)
+            if id(issue) in active_issue_ids
+        ]
+        return active_findings, suppressed_count
     
     def scan_to_gitlab_format(self, path: str, output_file: str = None, custom_prompt: str = None) -> Dict[str, Any]:
         """Execute full security scan and output in GitLab vulnerability format"""
@@ -398,31 +411,51 @@ class SecurityScanner:
             merged_report = GitLabVulnerabilityFormat.create_report([], "ez-appsec")
 
         # Convert to internal format for ignore rule processing
+        vulnerabilities = merged_report.get("vulnerabilities", [])
         internal_issues = []
-        for vuln in merged_report.get("vulnerabilities", []):
+        for vuln in vulnerabilities:
+            identifiers = vuln.get("identifiers") or []
+            rule_id = next(
+                (
+                    identifier.get("value")
+                    for identifier in identifiers
+                    if isinstance(identifier, dict) and identifier.get("value")
+                ),
+                vuln.get("location", {}).get("method") or vuln.get("id", ""),
+            )
+            cve_id = next(
+                (
+                    identifier.get("value")
+                    for identifier in identifiers
+                    if isinstance(identifier, dict)
+                    and str(identifier.get("type", "")).lower() == "cve"
+                ),
+                "",
+            )
             internal_issues.append({
-                "type": vuln.get("category", "unknown"),
+                "type": vuln.get("category_v2", vuln.get("category", "unknown")),
                 "title": vuln.get("name", ""),
                 "description": vuln.get("description", ""),
+                "message": vuln.get("message", ""),
                 "file": vuln.get("location", {}).get("file", "unknown"),
                 "line": vuln.get("location", {}).get("start_line", 1),
                 "severity": vuln.get("severity", "medium"),
                 "scanner": "gitlab-converted",
-                "rule_id": vuln.get("id", ""),
+                "rule_id": rule_id,
+                "cve_id": cve_id,
             })
 
-        # Apply ignore rules
-        _, suppressed_count = self._apply_ignore_rules(internal_issues)
+        active_vulnerabilities, suppressed_count = self._suppress_formatted_findings(
+            vulnerabilities, internal_issues
+        )
 
         # Filter by severity
         if self.config.severity != "all":
-            filtered_vulns = self._filter_gitlab_vulnerabilities(
-                [v for v in merged_report.get("vulnerabilities", []) if not v.get("suppressed_by")],
+            active_vulnerabilities = self._filter_gitlab_vulnerabilities(
+                active_vulnerabilities,
                 self.config.severity
             )
-            # Add suppressed findings at the end
-            suppressed_vulns = [v for v in merged_report.get("vulnerabilities", []) if v.get("suppressed_by")]
-            merged_report["vulnerabilities"] = filtered_vulns + suppressed_vulns
+        merged_report["vulnerabilities"] = active_vulnerabilities
 
         # Add suppressed count to report metadata
         merged_report["suppressed_count"] = suppressed_count
@@ -512,11 +545,42 @@ class SecurityScanner:
             from ez_appsec.converters import GitHubSarifFormat
             merged_report = GitHubSarifFormat.create_report([], "ez-appsec")
 
-        merged_results = merged_report.get("runs", [{}])[0].get("results", [])
+        run = merged_report.get("runs", [{}])[0]
+        merged_results = run.get("results", [])
+        internal_issues = []
+        for result in merged_results:
+            locations = result.get("locations") or []
+            physical_location = (
+                locations[0].get("physicalLocation", {}) if locations else {}
+            )
+            artifact_location = physical_location.get("artifactLocation", {})
+            region = physical_location.get("region", {})
+            level = result.get("level", "warning")
+            level_to_severity = {
+                "error": "high",
+                "warning": "medium",
+                "note": "low",
+            }
+            internal_issues.append({
+                "type": result.get("properties", {}).get("category", "unknown"),
+                "title": result.get("ruleId", ""),
+                "description": result.get("message", {}).get("text", ""),
+                "message": result.get("message", {}).get("text", ""),
+                "file": artifact_location.get("uri", "unknown"),
+                "line": region.get("startLine", 1),
+                "severity": level_to_severity.get(level, "medium"),
+                "scanner": "github-converted",
+                "rule_id": result.get("ruleId", ""),
+            })
+
+        merged_results, suppressed_count = self._suppress_formatted_findings(
+            merged_results, internal_issues
+        )
         # Filter by severity - need to filter results based on their level
         if self.config.severity != "all":
             merged_results = self._filter_sarif_results_by_severity(merged_results, self.config.severity)
-            merged_report["runs"][0]["results"] = merged_results
+        run["results"] = merged_results
+        run.setdefault("properties", {})["sourcebastionSuppressedCount"] = suppressed_count
 
         # Save to file if requested
         if output_file:

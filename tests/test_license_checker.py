@@ -482,7 +482,7 @@ license_policy:
 
 class TestLicenseInScanOutput:
     def test_license_findings_in_scan_results(self):
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import patch
         from ez_appsec.scanner import SecurityScanner
 
         config = Config(
@@ -490,40 +490,34 @@ class TestLicenseInScanOutput:
         )
         scanner = SecurityScanner(config, use_external_scanners=False, license_check=True)
 
-        syft_data = _syft_output([
-            _syft_artifact("bad-dep", "1.0.0", ["GPL-3.0"]),
-            _syft_artifact("good-dep", "2.0.0", ["MIT"]),
-        ])
-
-        with patch.object(scanner.ai, "analyze", return_value={"enhanced_issues": []}):
-            with patch("ez_appsec.scanner.check_licenses") as mock_check:
-                mock_check.return_value = {
-                    "findings": [
-                        {
-                            "type": "license_compliance",
-                            "category": "license_compliance",
-                            "title": "Denied license: GPL-3.0 in bad-dep@1.0.0",
-                            "description": "Package bad-dep@1.0.0 uses license 'GPL-3.0' which is on the denied list.",
-                            "solution": "Option 1: Replace bad-dep with a permissively-licensed alternative.",
-                            "file": "dependency: bad-dep",
-                            "line": 0,
-                            "severity": "high",
-                            "scanner": "license-checker",
-                            "rule_id": "license-denied-GPL-3.0",
-                            "license": "GPL-3.0",
-                            "all_licenses": ["GPL-3.0"],
-                            "package": "bad-dep",
-                            "package_version": "1.0.0",
-                            "package_type": "npm",
-                        }
-                    ],
-                    "packages": [
-                        {"name": "bad-dep", "version": "1.0.0", "licenses": ["GPL-3.0"], "type": "npm"},
-                        {"name": "good-dep", "version": "2.0.0", "licenses": ["MIT"], "type": "npm"},
-                    ],
-                    "summary": {"total": 2, "allowed": 1, "denied": 1, "unknown": 0},
-                }
-                results = scanner.scan(".")
+        with patch("ez_appsec.scanner.check_licenses") as mock_check:
+            mock_check.return_value = {
+                "findings": [
+                    {
+                        "type": "license_compliance",
+                        "category": "license_compliance",
+                        "title": "Denied license: GPL-3.0 in bad-dep@1.0.0",
+                        "description": "Package bad-dep@1.0.0 uses license 'GPL-3.0' which is on the denied list.",
+                        "solution": "Option 1: Replace bad-dep with a permissively-licensed alternative.",
+                        "file": "dependency: bad-dep",
+                        "line": 0,
+                        "severity": "high",
+                        "scanner": "license-checker",
+                        "rule_id": "license-denied-GPL-3.0",
+                        "license": "GPL-3.0",
+                        "all_licenses": ["GPL-3.0"],
+                        "package": "bad-dep",
+                        "package_version": "1.0.0",
+                        "package_type": "npm",
+                    }
+                ],
+                "packages": [
+                    {"name": "bad-dep", "version": "1.0.0", "licenses": ["GPL-3.0"], "type": "npm"},
+                    {"name": "good-dep", "version": "2.0.0", "licenses": ["MIT"], "type": "npm"},
+                ],
+                "summary": {"total": 2, "allowed": 1, "denied": 1, "unknown": 0},
+            }
+            results = scanner.scan(".")
 
         assert "license_summary" in results
         assert results["license_summary"]["denied"] == 1
@@ -533,19 +527,16 @@ class TestLicenseInScanOutput:
         assert license_findings[0]["solution"] != ""
 
     def test_no_license_check_no_key(self):
-        from unittest.mock import patch
         from ez_appsec.scanner import SecurityScanner
 
         config = Config()
         scanner = SecurityScanner(config, use_external_scanners=False)
 
-        with patch.object(scanner.ai, "analyze", return_value={"enhanced_issues": []}):
-            results = scanner.scan(".")
+        results = scanner.scan(".")
 
         assert "license_summary" not in results
 
     def test_license_check_disabled_no_key(self):
-        from unittest.mock import patch
         from ez_appsec.scanner import SecurityScanner
 
         config = Config(
@@ -553,8 +544,7 @@ class TestLicenseInScanOutput:
         )
         scanner = SecurityScanner(config, use_external_scanners=False, license_check=False)
 
-        with patch.object(scanner.ai, "analyze", return_value={"enhanced_issues": []}):
-            results = scanner.scan(".")
+        results = scanner.scan(".")
 
         assert "license_summary" not in results
 
@@ -576,34 +566,33 @@ class TestLicenseInScanOutput:
         )
         scanner = SecurityScanner(config, use_external_scanners=False, license_check=True)
 
-        with patch.object(scanner.ai, "analyze", return_value={"enhanced_issues": []}):
-            with patch("ez_appsec.scanner.check_licenses") as mock_check:
-                mock_check.return_value = {
-                    "findings": [
-                        {
-                            "type": "license_compliance",
-                            "category": "license_compliance",
-                            "title": "Denied license: GPL-3.0 in bad-dep@1.0.0",
-                            "description": "Package bad-dep@1.0.0 uses license 'GPL-3.0' which is on the denied list.",
-                            "solution": "Option 1: Replace bad-dep with a permissively-licensed alternative.",
-                            "file": "dependency: bad-dep",
-                            "line": 0,
-                            "severity": "high",
-                            "scanner": "license-checker",
-                            "rule_id": "license-denied-GPL-3.0",
-                            "license": "GPL-3.0",
-                            "all_licenses": ["GPL-3.0"],
-                            "package": "bad-dep",
-                            "package_version": "1.0.0",
-                            "package_type": "npm",
-                        }
-                    ],
-                    "packages": [
-                        {"name": "bad-dep", "version": "1.0.0", "licenses": ["GPL-3.0"], "type": "npm"},
-                    ],
-                    "summary": {"total": 1, "allowed": 0, "denied": 1, "unknown": 0},
-                }
-                results = scanner.scan(".")
+        with patch("ez_appsec.scanner.check_licenses") as mock_check:
+            mock_check.return_value = {
+                "findings": [
+                    {
+                        "type": "license_compliance",
+                        "category": "license_compliance",
+                        "title": "Denied license: GPL-3.0 in bad-dep@1.0.0",
+                        "description": "Package bad-dep@1.0.0 uses license 'GPL-3.0' which is on the denied list.",
+                        "solution": "Option 1: Replace bad-dep with a permissively-licensed alternative.",
+                        "file": "dependency: bad-dep",
+                        "line": 0,
+                        "severity": "high",
+                        "scanner": "license-checker",
+                        "rule_id": "license-denied-GPL-3.0",
+                        "license": "GPL-3.0",
+                        "all_licenses": ["GPL-3.0"],
+                        "package": "bad-dep",
+                        "package_version": "1.0.0",
+                        "package_type": "npm",
+                    }
+                ],
+                "packages": [
+                    {"name": "bad-dep", "version": "1.0.0", "licenses": ["GPL-3.0"], "type": "npm"},
+                ],
+                "summary": {"total": 1, "allowed": 0, "denied": 1, "unknown": 0},
+            }
+            results = scanner.scan(".")
 
         license_findings = [i for i in results["issues"] if i.get("category") == "license_compliance"]
         assert len(license_findings) == 0

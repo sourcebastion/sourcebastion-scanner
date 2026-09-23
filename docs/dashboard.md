@@ -1,6 +1,6 @@
 # Security Dashboard
 
-The ez-appsec security dashboard is a static web application hosted on GitHub Pages or GitLab Pages. It aggregates vulnerability scan results from one or more repositories into a single view with filtering, drill-down, and AI-powered remediation guidance.
+The SourceBastion security dashboard is a static web application hosted on GitHub Pages or GitLab Pages. It aggregates vulnerability scan results from one or more repositories into a single view with filtering, drill-down, and deterministic remediation guidance.
 
 - **GitHub dashboard**: `https://OWNER.github.io/ez-appsec-dashboard/`
 - **GitLab dashboard**: `https://GROUP.gitlab.io/ez-appsec-dashboard/`
@@ -86,17 +86,19 @@ Click any vulnerability card to open a detail panel with the full finding:
 
 ---
 
-## AI remediation guidance
+## Remediation guidance
 
-Each finding includes an **AI Fix** panel with:
+Findings may include a remediation panel with:
 
 - Plain-language explanation of the risk
 - Step-by-step fix instructions
 - Code example where applicable
 
-Requires `OPENAI_API_KEY` to be set in the scanning environment when the scan runs. The guidance is embedded in `vulnerabilities.json` at scan time and displayed statically — no API calls from the browser.
+Guidance comes from scanner-native metadata such as fixed package versions and
+rule-provided autofixes. Scans and the static dashboard make no LLM calls and
+require no LLM API key.
 
-![AI remediation panel with step-by-step fix instructions](screenshots/dashboard-ai-remediation.png)
+![Remediation panel with step-by-step fix instructions](screenshots/dashboard-ai-remediation.png)
 
 ---
 

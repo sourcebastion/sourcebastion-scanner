@@ -268,6 +268,18 @@ class TestSemgrepAIRemediation:
 
 
 class TestGrypeDependencyInstall:
+    def test_artifact_path_is_normalized_for_ignore_rules(self):
+        artifact = {
+            "name": "vm2",
+            "locations": [
+                {"path": "/tests/fixtures/scanners/deps/package-lock.json"}
+            ],
+        }
+
+        assert GrypeScanner._artifact_path(artifact) == (
+            "tests/fixtures/scanners/deps/package-lock.json"
+        )
+
     def test_missing_package_manager_fails_component(self, tmp_path):
         """Missing preparation tools cannot produce a complete dependency result."""
         (tmp_path / "package.json").write_text('{"name":"demo","dependencies":{"left-pad":"1.3.0"}}')

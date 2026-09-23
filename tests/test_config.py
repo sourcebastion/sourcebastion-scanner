@@ -14,8 +14,8 @@ from ez_appsec.config import Config, IgnoreRule
 def test_default_config():
     config = Config()
     assert config.severity == "all"
-    assert config.ai_model == "gpt-4"
-    assert config.ai_temperature == 0.5
+    assert not hasattr(config, "ai_model")
+    assert not hasattr(config, "ai_temperature")
 
 
 def test_config_with_languages():

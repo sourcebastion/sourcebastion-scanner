@@ -390,7 +390,7 @@ class TestPolicyInScanOutput:
     """Test that policy violations appear in scan results."""
 
     def test_policy_violations_in_results(self):
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import MagicMock
         from ez_appsec.scanner import SecurityScanner
 
         config = Config(
@@ -404,30 +404,27 @@ class TestPolicyInScanOutput:
             {"severity": "critical", "category": "sast", "title": "SQLi", "description": "test", "file": "x.py"},
         ]
 
-        with patch.object(scanner.ai, "analyze", return_value={"enhanced_issues": mock_findings}):
-            scanner.external = MagicMock()
-            scanner.external.scan_all.return_value = mock_findings
-            scanner.use_external = True
-            results = scanner.scan(".")
+        scanner.external = MagicMock()
+        scanner.external.scan_all.return_value = mock_findings
+        scanner.use_external = True
+        results = scanner.scan(".")
 
         assert "policy_violations" in results
         assert results["policy_failed"] is True
         assert len(results["policy_violations"]) == 1
 
     def test_no_policy_rules_no_key(self):
-        from unittest.mock import patch, MagicMock
         from ez_appsec.scanner import SecurityScanner
 
         config = Config()
         scanner = SecurityScanner(config, use_external_scanners=False)
 
-        with patch.object(scanner.ai, "analyze", return_value={"enhanced_issues": []}):
-            results = scanner.scan(".")
+        results = scanner.scan(".")
 
         assert "policy_violations" not in results
 
     def test_policy_pass_not_failed(self):
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import MagicMock
         from ez_appsec.scanner import SecurityScanner
 
         config = Config(
@@ -441,11 +438,10 @@ class TestPolicyInScanOutput:
             {"severity": "high", "category": "sast", "title": "XSS", "description": "test", "file": "x.py"},
         ]
 
-        with patch.object(scanner.ai, "analyze", return_value={"enhanced_issues": mock_findings}):
-            scanner.external = MagicMock()
-            scanner.external.scan_all.return_value = mock_findings
-            scanner.use_external = True
-            results = scanner.scan(".")
+        scanner.external = MagicMock()
+        scanner.external.scan_all.return_value = mock_findings
+        scanner.use_external = True
+        results = scanner.scan(".")
 
         assert results["policy_failed"] is False
         assert results["policy_violations"] == []

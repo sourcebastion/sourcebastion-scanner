@@ -20,7 +20,7 @@ This document lists all projects that have been forked/migrated from GitLab to t
 #### 2. ez-appsec-mcp
 - **Repository**: https://github.com/ez-appsec/ez-appsec-mcp
 - **Description**: Model Context Protocol (MCP) server for ez-appsec integration
-- **Purpose**: MCP server integration for AI-powered security analysis
+- **Purpose**: MCP server integration for deterministic security scan tooling
 - **Features**:
   - MCP protocol implementation
   - AI integration capabilities

@@ -16,7 +16,7 @@ from ez_appsec.jira_sync import JiraConfig, sync_findings as jira_sync_findings,
 @click.group()
 @click.version_option()
 def main():
-    """ez-appsec: AI-powered application security scanning"""
+    """SourceBastion Scan: AI-powered application security scanning."""
     pass
 
 

@@ -1,13 +1,13 @@
-# ez-appsec scanning ez-appsec — dogfooding.
+# SourceBastion Scan scanning itself — dogfooding.
 #
-# Installs ez-appsec from source (no pre-built image needed) so every
+# Installs the compatibility CLI from source (no pre-built image needed) so every
 # change to the scanner is immediately tested against the codebase itself.
 # External scanners are installed directly on the runner.
 #
 # Results are uploaded to the GitHub Security tab (SARIF) and posted as a
 # PR comment. On pushes to main, results are also pushed to the dashboard.
 
-name: ez-appsec Self-Scan
+name: SourceBastion Self-Scan
 
 on:
   push:
@@ -96,7 +96,7 @@ jobs:
       # -----------------------------------------------------------------------
       # Run scan
       # -----------------------------------------------------------------------
-      - name: Run ez-appsec scan (SARIF)
+      - name: Run SourceBastion Scan (SARIF)
         id: scan
         run: |
           mkdir -p "${OUTPUT_DIR}"
@@ -159,7 +159,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Upload SARIF to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
           sarif_file: ${{ env.SARIF_FILE }}
         continue-on-error: true
@@ -230,8 +230,8 @@ jobs:
           }
           METAEOF
           cd "${DASH_DIR}/dashboard"
-          git config user.name "ez-appsec scan"
-          git config user.email "ci@ez-appsec.ai"
+          git config user.name "SourceBastion Scan"
+          git config user.email "sourcebastionbot@users.noreply.github.com"
           git add data/projects/
           git diff --staged --quiet && echo "No changes." || \
             git commit -m "chore: update scan results for ${{ github.repository }}"
@@ -263,7 +263,7 @@ jobs:
               info:     { icon: '⚪', label: 'Info' },
             };
 
-            let body = `## 🔒 ez-appsec Self-Scan Results\n\n`;
+            let body = `## 🔒 SourceBastion Self-Scan Results\n\n`;
             body += `| Scanner | Status |\n|---------|--------|\n`;
             body += `| gitleaks | ✓ secrets detection |\n`;
             body += `| semgrep  | ✓ SAST |\n`;
@@ -305,7 +305,10 @@ jobs:
               issue_number: context.issue.number,
             });
             const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('ez-appsec Self-Scan Results')
+              c.user.type === 'Bot' && (
+                c.body.includes('SourceBastion Self-Scan Results') ||
+                c.body.includes('ez-appsec Self-Scan Results')
+              )
             );
             const payload = {
               owner: context.repo.owner,

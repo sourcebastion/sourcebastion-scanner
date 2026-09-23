@@ -96,7 +96,7 @@ This document lists all projects that have been forked/migrated from GitLab to t
 
 Each project has appropriate GitHub Actions workflows:
 
-- **ez-appsec**: Docker builds, semantic release, security scanning
+- **SourceBastion Scanner**: pull-request Docker validation, reviewed releases, security scanning
 - **ez-appsec-mcp**: MCP server CI/CD
 - **ez-appsec-website**: Website deployment
 - **ez-appsec-infra**: Documentation updates
@@ -105,18 +105,16 @@ Each project has appropriate GitHub Actions workflows:
 
 All Docker images are published to GitHub Container Registry (GHCR):
 
-- `ghcr.io/ez-appsec/ez-appsec`
-- `ghcr.io/ez-appsec/ez-appsec:slim`
-- `ghcr.io/ez-appsec/ez-appsec:micro`
-- `ghcr.io/ez-appsec/ez-appsec:semgrep`
+- `ghcr.io/sourcebastion/sourcebastion-scanner`
+- `ghcr.io/sourcebastion/sourcebastion-scanner:slim`
+- `ghcr.io/sourcebastion/sourcebastion-scanner:micro`
+- `ghcr.io/sourcebastion/sourcebastion-scanner:thin`
+- `ghcr.io/sourcebastion/sourcebastion-scanner:semgrep`
 
 ## Version Management
 
-All projects use **semantic-release** for automated versioning based on Conventional Commits:
-
-- `feat:` → minor version bump
-- `fix:` → patch version bump
-- `BREAKING CHANGE:` → major version bump
+Scanner releases use an explicit version pull request and a manually dispatched,
+independently approved workflow. See [VERSIONING.md](VERSIONING.md).
 
 ## Next Steps
 
@@ -143,7 +141,7 @@ gh api repos/ez-appsec/{repo-name}/collaborators/{username} --method PUT -f perm
 
 ## Related Documentation
 
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines with semantic-release
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution and reviewed-release guidelines
 - [VERSIONING.md](VERSIONING.md) - Version management guide
 - [scan.yml](scan.yml) - Default scan template
 - [CI_CD.md](CI_CD.md) - CI/CD documentation

@@ -129,7 +129,7 @@ describe("Extension activation", () => {
     await mockCommands["ez-appsec.scanWorkspace"]();
 
     expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
-      "ez-appsec: No workspace folder open."
+      "SourceBastion Scan: No workspace folder open."
     );
 
     // Restore

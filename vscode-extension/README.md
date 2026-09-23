@@ -1,10 +1,10 @@
-# ez-appsec VS Code Extension
+# SourceBastion Scan VS Code Extension
 
-Inline security vulnerability diagnostics for VS Code, powered by ez-appsec.
+Inline security vulnerability diagnostics for VS Code, powered by SourceBastion Scan.
 
 ## Requirements
 
-- **Docker** must be installed and running. The extension uses the ez-appsec Docker image to scan your workspace.
+- **Docker** must be installed and running. The extension uses the SourceBastion Scan Docker image to scan your workspace.
 - VS Code 1.85.0 or later.
 
 ## Installation
@@ -25,8 +25,8 @@ Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 
 | Command | Description |
 |---------|-------------|
-| `ez-appsec: Scan Workspace` | Run a full security scan of the current workspace |
-| `ez-appsec: Clear Findings` | Remove all diagnostic squiggles |
+| `SourceBastion Scan: Scan Workspace` | Run a full security scan of the current workspace |
+| `SourceBastion Scan: Clear Findings` | Remove all diagnostic squiggles |
 
 ## Settings
 
@@ -34,11 +34,11 @@ Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
 |---------|------|---------|-------------|
 | `ez-appsec.scanOnSave` | boolean | `false` | Automatically scan the saved file when a file is saved |
 | `ez-appsec.scanOnSaveDelay` | number | `2000` | Debounce delay (ms) before triggering scan after save — prevents rapid repeated scans |
-| `ez-appsec.dockerImage` | string | `ghcr.io/ez-appsec/ez-appsec:latest` | Docker image to use for scanning |
+| `ez-appsec.dockerImage` | string | `ghcr.io/sourcebastion/sourcebastion-scanner:latest` | Docker image to use for scanning |
 
 ## How It Works
 
-1. The extension runs `docker run ... ez-appsec scan` against your workspace (mounted read-only).
+1. The extension runs the compatibility command `docker run ... ez-appsec scan` against your workspace (mounted read-only).
 2. Scan results are parsed from the standard `vulnerabilities.json` output format.
 3. Findings are displayed as inline diagnostics:
    - **Critical/High** → Red squiggles (Error)

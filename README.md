@@ -1,4 +1,4 @@
-# SourceBastion Scanner
+# SourceBastion Scan
 
 **AI-powered application security scanning** — free, open-source, works with GitHub and GitLab.
 
@@ -6,12 +6,12 @@ The CLI, Python package, and existing container images retain the `ez-appsec`
 name for compatibility. This repository is their maintained upstream home;
 it is not deprecated.
 
-ez-appsec orchestrates four best-in-class scanners (gitleaks, semgrep, kics, grype), normalises their output into a unified schema, and pushes results to a hosted security dashboard. No cloud account or API key required.
+SourceBastion Scan orchestrates four best-in-class scanners (gitleaks, semgrep, kics, grype), normalises their output into a unified schema, and pushes results to a hosted security dashboard. No cloud account or API key required.
 
 ```
 Your codebase
      │
-     ▼  ez-appsec scan
+     ▼  SourceBastion Scan (`ez-appsec scan`)
 ┌────────────────────────────────────────────┐
 │  gitleaks · semgrep · kics · grype         │
 │  secrets    SAST      IaC    dependencies  │
@@ -28,7 +28,7 @@ Your codebase
 
 ## Quickstart with Claude Code
 
-The fastest way to add ez-appsec to any repository is through the Claude Code skill.
+The fastest way to add SourceBastion Scan to any repository is through the Claude Code skill.
 
 **Step 1 — Install the skill** (one-time, works in every project):
 
@@ -36,7 +36,7 @@ The fastest way to add ez-appsec to any repository is through the Claude Code sk
 curl -fsSL https://raw.githubusercontent.com/sourcebastion/sourcebastion-scanner/main/skills/install.sh | bash
 ```
 
-**Step 2 — Add ez-appsec to a repository:**
+**Step 2 — Add SourceBastion Scan to a repository:**
 
 ```
 # GitHub
@@ -61,7 +61,7 @@ That's it. The skill provisions the workflow, sets secrets, and triggers the fir
 
 ---
 
-## ez-appsec Skills Reference
+## SourceBastion Scan Skills Reference
 
 The `/ez-appsec` Claude Code skill is a dispatcher — the first word routes to the right subcommand.
 
@@ -112,7 +112,7 @@ All findings are normalised into a unified schema with consistent severity level
 
 ## Known Limitations
 
-ez-appsec is in active development. Current coverage and accuracy reflect testing against OWASP Juice Shop, DVWA, and production codebases. See [TEST_RESULTS.md](TEST_RESULTS.md) for full details.
+SourceBastion Scan is in active development. Current coverage and accuracy reflect testing against OWASP Juice Shop, DVWA, and production codebases. See [TEST_RESULTS.md](TEST_RESULTS.md) for full details.
 
 ### Detection Accuracy
 
@@ -157,17 +157,31 @@ Linear scaling validated. CI/CD compatible: GitHub Actions (2-core, 7GB), GitLab
 
 ```bash
 # Standard (all scanners)
-docker pull ghcr.io/ez-appsec/ez-appsec:latest
+docker pull ghcr.io/sourcebastion/sourcebastion-scanner:latest
 
 # Slim (~300 MB, no semgrep)
-docker pull ghcr.io/ez-appsec/ez-appsec:slim
+docker pull ghcr.io/sourcebastion/sourcebastion-scanner:slim
 
 # Micro (secrets + CVEs only)
-docker pull ghcr.io/ez-appsec/ez-appsec:micro
+docker pull ghcr.io/sourcebastion/sourcebastion-scanner:micro
 
 # Run a scan
-docker run --rm -v $(pwd):/scan ghcr.io/ez-appsec/ez-appsec:latest scan /scan
+docker run --rm -v "$(pwd):/scan" \
+  ghcr.io/sourcebastion/sourcebastion-scanner:latest scan /scan
 ```
+
+Full-version and full-commit tags are immutable. Every release image includes
+an SBOM and signed GitHub build provenance. Verify a pinned image with:
+
+```bash
+gh attestation verify \
+  oci://ghcr.io/sourcebastion/sourcebastion-scanner@sha256:<digest> \
+  --repo sourcebastion/sourcebastion-scanner
+```
+
+The legacy `ghcr.io/ez-appsec/ez-appsec` images remain available for existing
+immutable pins while consumers migrate; new integrations should use the
+SourceBastion namespace.
 
 ---
 

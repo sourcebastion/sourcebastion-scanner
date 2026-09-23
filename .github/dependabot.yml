@@ -1,5 +1,15 @@
 version: 2
 updates:
+  - package-ecosystem: npm
+    directory: "/vscode-extension"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      vscode-extension:
+        patterns:
+          - "*"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
@@ -8,4 +18,3 @@ updates:
       github-actions:
         patterns:
           - "*"
-

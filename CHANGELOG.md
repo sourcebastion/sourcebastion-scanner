@@ -1,3 +1,15 @@
+## [1.7.31](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.30...v1.7.31) (2026-09-22)
+
+
+### Security and release engineering
+
+* publish all five scanner variants from one reviewed workflow
+* attach SBOM and build-provenance records to each multi-platform image
+* require a protected, two-person release approval before creating an immutable release tag
+* promote public tags only after every variant build and release scan succeeds
+* make failed draft releases safely resumable without moving a published tag
+* remove the unused semantic-release dependency tree and its vulnerable transitive packages
+
 ## [1.7.30](https://github.com/ez-appsec/ez-appsec/compare/v1.7.29...v1.7.30) (2026-09-13)
 
 

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 
@@ -8,7 +9,7 @@ def test_readme_identifies_the_maintained_upstream_and_support_boundary():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     prose = " ".join(readme.split())
 
-    assert readme.startswith("# SourceBastion Scanner\n")
+    assert readme.startswith("# SourceBastion Scan\n")
     assert "it is not deprecated" in prose
     assert "maintained on a best-effort basis" in prose
     assert "commercial support channel" in prose
@@ -40,3 +41,18 @@ def test_security_policy_uses_the_enabled_private_reporting_route():
     assert "within 48 hours" not in policy
     assert "within 30 days" not in policy
     assert "best-effort basis" in policy
+
+
+def test_vscode_extension_uses_public_brand_and_maintained_image():
+    manifest = json.loads(
+        (ROOT / "vscode-extension" / "package.json").read_text(encoding="utf-8")
+    )
+
+    assert manifest["name"] == "ez-appsec"  # Stable extension identifier.
+    assert manifest["displayName"] == "SourceBastion Scan"
+    assert manifest["contributes"]["configuration"]["title"] == "SourceBastion Scan"
+    assert (
+        manifest["contributes"]["configuration"]["properties"]
+        ["ez-appsec.dockerImage"]["default"]
+        == "ghcr.io/sourcebastion/sourcebastion-scanner:latest"
+    )

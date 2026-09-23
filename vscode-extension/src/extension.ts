@@ -29,7 +29,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
       if (!workspaceFolder) {
         vscode.window.showErrorMessage(
-          "ez-appsec: No workspace folder open."
+          "SourceBastion Scan: No workspace folder open."
         );
         return;
       }
@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext): void {
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: "ez-appsec: Scanning workspace...",
+          title: "SourceBastion Scan: Scanning workspace...",
           cancellable: true,
         },
         async (_progress, token) => {
@@ -50,17 +50,17 @@ export function activate(context: vscode.ExtensionContext): void {
             diagnosticsManager.setFindings(findings, workspaceFolder.uri.fsPath);
             updateStatusBar(findings.length, false);
             vscode.window.showInformationMessage(
-              `ez-appsec: Scan complete — ${findings.length} finding(s).`
+              `SourceBastion Scan: Scan complete — ${findings.length} finding(s).`
             );
           } catch (err) {
             updateStatusBar(0, false);
             if (err instanceof Error) {
               if (err.message === "Scan cancelled") {
                 vscode.window.showInformationMessage(
-                  "ez-appsec: Scan cancelled."
+                  "SourceBastion Scan: Scan cancelled."
                 );
               } else {
-                vscode.window.showErrorMessage(`ez-appsec: ${err.message}`);
+                vscode.window.showErrorMessage(`SourceBastion Scan: ${err.message}`);
               }
             }
           }
@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext): void {
     () => {
       diagnosticsManager.clear();
       updateStatusBar(0, false);
-      vscode.window.showInformationMessage("ez-appsec: Findings cleared.");
+      vscode.window.showInformationMessage("SourceBastion Scan: Findings cleared.");
     }
   );
 
@@ -96,13 +96,13 @@ export function activate(context: vscode.ExtensionContext): void {
 
 function updateStatusBar(findingCount: number, scanning: boolean): void {
   if (scanning) {
-    statusBarItem.text = "$(sync~spin) ez-appsec: scanning…";
+    statusBarItem.text = "$(sync~spin) SourceBastion Scan: scanning…";
     statusBarItem.tooltip = "Security scan in progress";
   } else if (findingCount > 0) {
-    statusBarItem.text = `$(shield) ez-appsec: ${findingCount} finding(s)`;
+    statusBarItem.text = `$(shield) SourceBastion Scan: ${findingCount} finding(s)`;
     statusBarItem.tooltip = "Click to re-scan workspace";
   } else {
-    statusBarItem.text = "$(shield) ez-appsec";
+    statusBarItem.text = "$(shield) SourceBastion Scan";
     statusBarItem.tooltip = "Click to scan workspace";
   }
 }
@@ -149,7 +149,7 @@ function setupScanOnSave(context: vscode.ExtensionContext): void {
             const now = Date.now();
             if (now - lastErrorTime >= ERROR_THROTTLE_MS) {
               lastErrorTime = now;
-              vscode.window.showErrorMessage(`ez-appsec: ${err.message}`);
+              vscode.window.showErrorMessage(`SourceBastion Scan: ${err.message}`);
             }
           }
         }

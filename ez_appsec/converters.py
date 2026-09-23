@@ -861,7 +861,6 @@ class GitHubGrypeConverter:
                 rule_id=vuln_id,
                 message=f"Vulnerable package: {artifact_name} {artifact.get('version', '')} - {vuln_id}",
                 level=level,
-                locations=[GitHubSarifFormat.create_location(file_path=f"dependency: {artifact_name}")],
                 finding_id=finding_id,
                 category="dependency",
             )

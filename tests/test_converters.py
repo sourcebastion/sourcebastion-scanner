@@ -301,6 +301,7 @@ class TestGitHubGrypeConverter:
         assert result["ruleId"] == "CVE-2023-12345"
         assert result["level"] == "error"
         assert "requests" in result["message"]["text"]
+        assert "locations" not in result
 
 
 class TestVulnerabilityConverters:

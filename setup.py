@@ -8,10 +8,10 @@ setup(
     version="0.1.0",
     author="John Felten",
     author_email="jfelten.work@gmail.com",
-    description="AI-powered application security scanning - free replacement for GitLab and GitHub security scanning",
+    description="SourceBastion Scan - open-source application security scanning for GitHub and GitLab",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ez-appsec/ez-appsec",
+    url="https://github.com/sourcebastion/sourcebastion-scanner",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

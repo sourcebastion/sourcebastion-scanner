@@ -1,7 +1,7 @@
-# ez-appsec Security Scan — customer workflow template
-# Provisioned automatically when you install the ez-appsec GitHub App.
+# SourceBastion Scan — customer workflow template
+# Provisioned automatically when you install the SourceBastion GitHub App.
 
-name: ez-appsec Security Scan
+name: SourceBastion Scan
 
 on:
   pull_request:
@@ -16,19 +16,19 @@ permissions:
   security-events: write  # Required for SARIF upload to Security tab
   actions: read
   pull-requests: write   # Required for PR comments
-  packages: read         # Required to pull ghcr.io/ez-appsec/ez-appsec image
+  packages: read         # Required to pull the SourceBastion scanner image
 
 env:
   EZ_APPSEC_OUTPUT_DIR: "scan-results"
   EZ_APPSEC_SARIF: "scan-results/ez-appsec.sarif"
 
 jobs:
-  # Advisory: check if a newer ez-appsec version is available. Never blocks the scan.
+  # Advisory: check if a newer SourceBastion Scan version is available. Never blocks the scan.
   version-check:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: Check for newer ez-appsec release
+      - name: Check for newer SourceBastion Scan release
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CURRENT_VERSION: ${{ vars.EZ_APPSEC_VERSION || 'latest' }}
@@ -42,10 +42,10 @@ jobs:
 
           current = os.environ.get("CURRENT_VERSION", "latest")
           req = urllib.request.Request(
-              "https://api.github.com/repos/ez-appsec/ez-appsec/releases/latest",
+              "https://api.github.com/repos/sourcebastion/sourcebastion-scanner/releases/latest",
               headers={
                   "Accept": "application/vnd.github+json",
-                  "User-Agent": "ez-appsec-version-check/1.0",
+                  "User-Agent": "sourcebastion-scan-version-check/1.0",
                   "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
                   "X-GitHub-Api-Version": "2022-11-28",
               },
@@ -54,29 +54,29 @@ jobs:
               with urllib.request.urlopen(req, timeout=15) as response:
                   latest = json.load(response)["tag_name"].lstrip("v")
           except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, KeyError, json.JSONDecodeError) as exc:
-              print(f"::notice::ez-appsec version check skipped: could not fetch latest release ({exc})")
+              print(f"::notice::SourceBastion Scan version check skipped: could not fetch latest release ({exc})")
               sys.exit(0)
 
           if current == "latest":
               print(
-                  "::warning::ez-appsec: using 'latest' image tag. "
+                  "::warning::SourceBastion Scan: using 'latest' image tag. "
                   "Pin EZ_APPSEC_VERSION to a specific version for reproducible scans. "
                   f"Current release: {latest}"
               )
           elif current != latest:
               print(
-                  f"::warning::ez-appsec {current} is outdated. Latest release: {latest}. "
+                  f"::warning::SourceBastion Scan {current} is outdated. Latest release: {latest}. "
                   "Update the EZ_APPSEC_VERSION variable."
               )
           else:
-              print(f"ez-appsec {current} is up to date.")
+              print(f"SourceBastion Scan {current} is up to date.")
           PY
 
   scan:
     name: Security Scan
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/ez-appsec/ez-appsec:latest
+      image: ghcr.io/sourcebastion/sourcebastion-scanner:latest
       options: --user root --entrypoint ""
 
     steps:
@@ -84,16 +84,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Use checked-out scanner when dogfooding
-        if: github.repository == 'ez-appsec/ez-appsec'
+        if: github.repository == 'sourcebastion/sourcebastion-scanner'
         run: pip install --no-deps -e .
 
-      - name: Run ez-appsec scan
+      - name: Run SourceBastion Scan
         id: scan
         run: |
-          echo "Running ez-appsec scan..."
+          echo "Running SourceBastion Scan..."
           mkdir -p "${EZ_APPSEC_OUTPUT_DIR}"
 
-          echo "Checking ez-appsec status..."
+          echo "Checking SourceBastion Scan status..."
           ez-appsec status || true
 
           echo "Starting GitHub SARIF scan..."
@@ -178,7 +178,7 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
           sarif_file: ${{ env.EZ_APPSEC_SARIF }}
         continue-on-error: true
@@ -333,7 +333,7 @@ jobs:
                   headers={
                       'Authorization': f'Bearer {jwt_token}',
                       'Accept': 'application/vnd.github+json',
-                      'User-Agent': 'ez-appsec/1.0',
+                      'User-Agent': 'sourcebastion-scan/1.0',
                   }
               )
               try:
@@ -403,13 +403,13 @@ jobs:
           cp /tmp/vulns-with-meta.json "${DASH_DIR}/dashboard/data/${VULN_REL}"
 
           # Regenerate index.json by fetching and running the aggregation script
-          curl -sSfL "https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/github/dashboard/aggregate-index.py" \
+          curl -sSfL "https://raw.githubusercontent.com/sourcebastion/sourcebastion-scanner/main/github/dashboard/aggregate-index.py" \
             -o /tmp/aggregate-index.py
           python3 /tmp/aggregate-index.py "${DASH_DIR}/dashboard/data"
 
           cd "${DASH_DIR}/dashboard"
-          git config user.name "ez-appsec scan"
-          git config user.email "ci@ez-appsec.ai"
+          git config user.name "SourceBastion Scan"
+          git config user.email "sourcebastionbot@users.noreply.github.com"
           git add data/
           git diff --staged --quiet && echo "No changes." || \
             git commit -m "chore: update scan results for ${{ github.repository }}"
@@ -427,7 +427,7 @@ jobs:
             const summaryPath = '/tmp/scan-summary.md';
             const summaryMd = fs.existsSync(summaryPath) ? fs.readFileSync(summaryPath, 'utf8') : '';
 
-            let body = `## 🔒 ez-appsec Security Scan\n\n`;
+            let body = `## 🔒 SourceBastion Scan\n\n`;
             body += summaryMd ? summaryMd + '\n' : '';
             body += `📊 [View full scan run](${artifactUrl})\n`;
 
@@ -438,8 +438,10 @@ jobs:
             });
 
             const botComment = comments.find(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('🔒 ez-appsec Security Scan')
+              comment.user.type === 'Bot' && (
+                comment.body.includes('🔒 SourceBastion Scan') ||
+                comment.body.includes('🔒 ez-appsec Security Scan')
+              )
             );
 
             if (botComment) {

@@ -87,7 +87,13 @@ def test_pull_request_workflows_use_read_only_tokens_and_safe_checkouts():
             job_permissions = job.get("permissions", {})
             if "write" in _permission_values(job_permissions):
                 condition = str(job.get("if", ""))
-                assert "github.event_name != 'pull_request'" in condition, (
+                assert (
+                    "github.event_name != 'pull_request'" in condition
+                    or (
+                        "github.event_name == 'push'" in condition
+                        and "github.event.repository.default_branch" in condition
+                    )
+                ), (
                     path,
                     job_name,
                 )
@@ -104,16 +110,36 @@ def test_pull_request_jobs_do_not_receive_repository_secrets():
     for path, workflow in _pull_request_workflows():
         for job_name, job in workflow.get("jobs", {}).items():
             job_condition = str(job.get("if", ""))
-            job_excludes_pr = "github.event_name != 'pull_request'" in job_condition
+            job_excludes_pr = (
+                "github.event_name != 'pull_request'" in job_condition
+                or (
+                    "github.event_name == 'push'" in job_condition
+                    and "github.event.repository.default_branch" in job_condition
+                )
+            )
             for step in job.get("steps", []):
                 if "secrets." not in json.dumps(step):
                     continue
                 step_condition = str(step.get("if", ""))
-                assert job_excludes_pr or "github.event_name != 'pull_request'" in step_condition, (
+                step_excludes_pr = (
+                    "github.event_name != 'pull_request'" in step_condition
+                    or (
+                        "github.event_name == 'push'" in step_condition
+                        and "github.event.repository.default_branch" in step_condition
+                    )
+                )
+                assert job_excludes_pr or step_excludes_pr, (
                     path,
                     job_name,
                     step.get("name"),
                 )
+
+
+def test_self_scan_trusted_paths_only_run_from_main():
+    path = ROOT / ".github" / "workflows" / "self-scan.yml"
+    workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+
+    assert _workflow_trigger(workflow)["push"]["branches"] == ["main"]
 
 
 def test_pr_writeback_never_checks_out_or_executes_pull_request_source():

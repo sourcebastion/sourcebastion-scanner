@@ -13,7 +13,6 @@ on:
   push:
     branches:
       - main
-      - '**'   # remove after merging to main; kept so CI runs during the PR phase
   pull_request:
   workflow_dispatch:
 
@@ -180,7 +179,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Check dashboard app credentials
         id: dashboard-creds
-        if: steps.web-report.outcome == 'success' && github.event_name != 'pull_request' && vars.EZ_APPSEC_DASHBOARD_REPO != ''
+        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && vars.EZ_APPSEC_DASHBOARD_REPO != ''
         env:
           EZ_APPSEC_APP_ID: ${{ secrets.EZ_APPSEC_APP_ID }}
           EZ_APPSEC_PRIVATE_KEY: ${{ secrets.EZ_APPSEC_PRIVATE_KEY }}
@@ -194,7 +193,7 @@ jobs:
 
       - name: Mint App token for dashboard push
         id: dash-token
-        if: github.event_name != 'pull_request' && steps.dashboard-creds.outputs.enabled == 'true'
+        if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.dashboard-creds.outputs.enabled == 'true'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           app-id: ${{ secrets.EZ_APPSEC_APP_ID }}
@@ -203,7 +202,7 @@ jobs:
           repositories: ez-appsec-dashboard
 
       - name: Push to dashboard
-        if: steps.web-report.outcome == 'success' && github.event_name != 'pull_request'
+        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         env:
           _PUSH_TOKEN: ${{ steps.dash-token.outputs.token }}
           EZ_APPSEC_DASHBOARD_REPO: ${{ vars.EZ_APPSEC_DASHBOARD_REPO || 'ez-appsec/ez-appsec-dashboard' }}
@@ -327,7 +326,7 @@ jobs:
 
   publish-sarif:
     name: Publish Self-Scan SARIF
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     needs: [scan]
     runs-on: ubuntu-latest
     permissions:

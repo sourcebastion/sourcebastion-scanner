@@ -14,6 +14,7 @@ from ez_appsec.converters import (
 
 
 SELF_SCAN_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "self-scan.yml"
+SCANNER_VERSIONS = Path(__file__).parents[1] / ".github" / "scanner-versions.json"
 CUSTOMER_SCAN_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "github-scan.yml"
 CUSTOMER_SCAN_TEMPLATE = Path(__file__).parents[1] / "github" / "templates" / "scan.yml"
 DOCKER_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "docker.yml"
@@ -23,17 +24,18 @@ RELEASE_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "releas
 def test_self_scan_installs_pinned_external_toolchain():
     """The fail-closed self-scan must install every enabled external scanner."""
     workflow = SELF_SCAN_WORKFLOW.read_text()
+    pins = json.loads(SCANNER_VERSIONS.read_text())
 
-    assert 'VERSION="v8.30.1"' in workflow
-    assert 'pip install "semgrep==1.176.1"' in workflow
-    assert (
-        'KICS_IMAGE: "checkmarx/kics@sha256:'
-        '3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602"'
-        in workflow
-    )
+    assert pins["gitleaks"]["version"] == "8.30.1"
+    assert pins["grype"]["version"] == "0.119.0"
+    assert pins["semgrep"]["version"] == "1.176.1"
+    assert pins["kics"]["image"].startswith("checkmarx/kics@sha256:")
+    assert "Load validated scanner versions" in workflow
+    assert 'echo "${SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -' in workflow
+    assert 'echo "${SHA256}  /tmp/grype.tar.gz" | sha256sum -c -' in workflow
     assert 'docker cp "${KICS_CONTAINER}:/app/bin/kics"' in workflow
     assert 'docker cp "${KICS_CONTAINER}:/app/bin/assets/."' in workflow
-    assert "v0.110.0" in workflow
+    assert "raw.githubusercontent.com/anchore/grype/main/install.sh" not in workflow
 
 
 def test_customer_workflow_dogfoods_checked_out_scanner_only_in_this_repository():

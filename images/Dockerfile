@@ -48,18 +48,30 @@ RUN apk add --no-cache \
 # Install scanners with explicit versions or static binaries
 RUN ARCH=$(uname -m) && \
     case "$ARCH" in \
-      aarch64) GL_ARCH="arm64" ;; \
-      x86_64)  GL_ARCH="x64" ;; \
+      aarch64) GL_ARCH="arm64"; GL_SHA256="e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080" ;; \
+      x86_64)  GL_ARCH="x64";  GL_SHA256="551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb" ;; \
       *) echo "Unsupported arch: $ARCH" && exit 1 ;; \
     esac && \
-    curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_${GL_ARCH}.tar.gz" \
+    curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_${GL_ARCH}.tar.gz" \
       -o /tmp/gitleaks.tar.gz && \
+    echo "${GL_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c - && \
     tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks && \
     rm /tmp/gitleaks.tar.gz && \
     chmod +x /usr/local/bin/gitleaks && \
     gitleaks version
 
-RUN curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin && \
+RUN ARCH=$(uname -m) && \
+    case "$ARCH" in \
+      aarch64) GRYPE_ARCH="arm64"; GRYPE_SHA256="29f0ec7c549ddb0e2b6a0ca714851f7399438afc399b80c12808e065edc9a8f8" ;; \
+      x86_64)  GRYPE_ARCH="amd64"; GRYPE_SHA256="3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b" ;; \
+      *) echo "Unsupported arch: $ARCH" && exit 1 ;; \
+    esac && \
+    curl -sSfL "https://github.com/anchore/grype/releases/download/v0.119.0/grype_0.119.0_linux_${GRYPE_ARCH}.tar.gz" \
+      -o /tmp/grype.tar.gz && \
+    echo "${GRYPE_SHA256}  /tmp/grype.tar.gz" | sha256sum -c - && \
+    tar -xzf /tmp/grype.tar.gz -C /usr/local/bin grype && \
+    rm /tmp/grype.tar.gz && \
+    chmod +x /usr/local/bin/grype && \
     grype version
 
 # semgrep via pip (pinned)

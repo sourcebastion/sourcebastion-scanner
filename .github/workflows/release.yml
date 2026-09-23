@@ -5,10 +5,16 @@
 name: Release
 
 on:
+  repository_dispatch:
+    types: [scanner-release]
   workflow_dispatch:
     inputs:
       version:
         description: Existing VERSION value, prefixed with v (for example v1.7.31)
+        required: true
+        type: string
+      break_glass_reason:
+        description: Why the owner is bypassing bot initiation
         required: true
         type: string
 
@@ -45,9 +51,33 @@ jobs:
         id: release_metadata
         env:
           GH_TOKEN: ${{ github.token }}
-          REQUESTED_VERSION: ${{ inputs.version }}
+          REQUESTED_VERSION: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.version || inputs.version }}
+          BREAK_GLASS_REASON: ${{ inputs.break_glass_reason }}
         run: |
           set -euo pipefail
+          case "$GITHUB_EVENT_NAME" in
+            repository_dispatch)
+              if [ "$GITHUB_ACTOR" != "sourcebastion-bot[bot]" ]; then
+                echo "automated releases must be initiated by sourcebastion-bot[bot]" >&2
+                exit 1
+              fi
+              ;;
+            workflow_dispatch)
+              if [ "$GITHUB_ACTOR" != "jfelten" ]; then
+                echo "break-glass releases are restricted to owner jfelten" >&2
+                exit 1
+              fi
+              if [ "${#BREAK_GLASS_REASON}" -lt 12 ]; then
+                echo "break-glass releases require a meaningful audit reason" >&2
+                exit 1
+              fi
+              echo "::warning::owner break-glass release path selected"
+              ;;
+            *)
+              echo "unsupported release event $GITHUB_EVENT_NAME" >&2
+              exit 1
+              ;;
+          esac
           if [ "$GITHUB_REF" != "refs/heads/main" ]; then
             echo "releases must be dispatched from main" >&2
             exit 1
@@ -92,9 +122,10 @@ jobs:
         if: steps.release_metadata.outputs.release_exists != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ steps.release_metadata.outputs.release_version }}
         run: |
           set -euo pipefail
+          VERSION="v${VERSION}"
           gh release create "$VERSION" \
             --target "$GITHUB_SHA" \
             --title "$VERSION" \

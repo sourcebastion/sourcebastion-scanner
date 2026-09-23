@@ -13,14 +13,11 @@ on:
   push:
     branches:
       - main
-      - '**'   # remove after merging to main; kept so CI runs during the PR phase
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  security-events: write   # SARIF upload to Security tab
-  pull-requests: write     # PR comments
   actions: read
 
 env:
@@ -38,6 +35,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       # -----------------------------------------------------------------------
       # Install ez-appsec from source
@@ -158,7 +157,9 @@ jobs:
       # Upload results
       # -----------------------------------------------------------------------
       - name: Upload SARIF to GitHub Security tab
-        if: always()
+        # A trusted post-scan job performs the upload. The scan job stays
+        # read-only when it executes pull-request source.
+        if: ${{ false }}
         uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
           sarif_file: ${{ env.SARIF_FILE }}
@@ -178,7 +179,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Check dashboard app credentials
         id: dashboard-creds
-        if: steps.web-report.outcome == 'success' && github.event_name != 'pull_request' && vars.EZ_APPSEC_DASHBOARD_REPO != ''
+        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && vars.EZ_APPSEC_DASHBOARD_REPO != ''
         env:
           EZ_APPSEC_APP_ID: ${{ secrets.EZ_APPSEC_APP_ID }}
           EZ_APPSEC_PRIVATE_KEY: ${{ secrets.EZ_APPSEC_PRIVATE_KEY }}
@@ -192,7 +193,7 @@ jobs:
 
       - name: Mint App token for dashboard push
         id: dash-token
-        if: steps.dashboard-creds.outputs.enabled == 'true'
+        if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.dashboard-creds.outputs.enabled == 'true'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           app-id: ${{ secrets.EZ_APPSEC_APP_ID }}
@@ -201,7 +202,7 @@ jobs:
           repositories: ez-appsec-dashboard
 
       - name: Push to dashboard
-        if: steps.web-report.outcome == 'success' && github.event_name != 'pull_request'
+        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         env:
           _PUSH_TOKEN: ${{ steps.dash-token.outputs.token }}
           EZ_APPSEC_DASHBOARD_REPO: ${{ vars.EZ_APPSEC_DASHBOARD_REPO || 'ez-appsec/ez-appsec-dashboard' }}
@@ -242,7 +243,9 @@ jobs:
       # PR comment
       # -----------------------------------------------------------------------
       - name: Comment on PR
-        if: github.event_name == 'pull_request' && steps.scan.outcome == 'success'
+        # PR write-back is handled by pr-scan-writeback.yml, which never
+        # checks out or executes pull-request source.
+        if: ${{ false }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
@@ -320,3 +323,24 @@ jobs:
             } else {
               await github.rest.issues.createComment({ ...payload, issue_number: context.issue.number });
             }
+
+  publish-sarif:
+    name: Publish Self-Scan SARIF
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    needs: [scan]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Download scan result
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ez-appsec-self-scan-${{ github.sha }}
+          path: scan-results
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
+        with:
+          sarif_file: scan-results/ez-appsec.sarif

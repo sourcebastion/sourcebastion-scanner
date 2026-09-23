@@ -28,12 +28,14 @@ def test_codeql_scans_first_party_languages_with_minimal_permissions():
     assert "security-events: write" in WORKFLOW
     assert "language: [python, javascript-typescript]" in WORKFLOW
     assert "build-mode: none" in WORKFLOW
+    assert "upload: never" in WORKFLOW
+    assert "if: github.event_name != 'pull_request'" in WORKFLOW
     assert len(
         re.findall(
             r"uses: github/codeql-action/(?:init|analyze)@[0-9a-f]{40} # v4",
             WORKFLOW,
         )
-    ) == 2
+    ) == 4
 
 
 def test_every_pull_request_can_satisfy_the_required_api_check():

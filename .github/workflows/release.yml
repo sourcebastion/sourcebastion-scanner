@@ -440,24 +440,14 @@ jobs:
           RELEASE_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker-standard.outputs.image_digest }}
         run: |
           mkdir -p scan-results
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -e HOME=/tmp \
-            -v "$(pwd):/scan" \
-            -w /scan \
-            "$RELEASE_IMAGE" \
+          scripts/run-scanner-container.sh "$RELEASE_IMAGE" \
             github-scan . --output scan-results/ez-appsec.sarif --severity medium
 
       - name: Generate vulnerabilities.json
         env:
           RELEASE_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker-standard.outputs.image_digest }}
         run: |
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -e HOME=/tmp \
-            -v "$(pwd):/scan" \
-            -w /scan \
-            "$RELEASE_IMAGE" \
+          scripts/run-scanner-container.sh "$RELEASE_IMAGE" \
             web-report . --output scan-results
 
       - name: Count findings

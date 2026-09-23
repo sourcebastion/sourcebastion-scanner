@@ -307,6 +307,18 @@ jobs:
             -v "$PWD:/workspace:ro" -w /workspace \
             ez-appsec:standard-rule-test scripts/verify-scanner-integration.py
 
+      - name: Exercise release scanner runtime
+        run: |
+          smoke_dir="$RUNNER_TEMP/release-scanner-runtime"
+          mkdir -p "$smoke_dir/scan-results"
+          printf 'six==1.17.0\n' > "$smoke_dir/requirements.txt"
+          cd "$smoke_dir"
+          "$GITHUB_WORKSPACE/scripts/run-scanner-container.sh" \
+            ez-appsec:standard-rule-test \
+            github-scan . --output scan-results/ez-appsec.sarif --severity medium
+          test -d .grype-deps
+          test -s scan-results/ez-appsec.sarif
+
   build-docker-slim:
     name: Build Slim Docker Image
     runs-on: ubuntu-latest

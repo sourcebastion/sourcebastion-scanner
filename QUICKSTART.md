@@ -357,16 +357,8 @@ Never commit:
 - Private SSH keys
 - Database connection strings
 
-Use environment variables or `.env` files (in `.gitignore`):
-
-```bash
-# Create .env (NOT committed)
-echo "OPENAI_API_KEY=sk-..." > .env
-
-# Load in code
-import os
-api_key = os.getenv("OPENAI_API_KEY")
-```
+SourceBastion scans never require or consume an LLM API key. Keep credentials
+for unrelated tools outside the scanned repository and out of committed files.
 
 ## Help & Support
 

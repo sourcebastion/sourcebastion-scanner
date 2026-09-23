@@ -44,7 +44,7 @@ Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for:
    - **Critical/High** → Red squiggles (Error)
    - **Medium** → Yellow squiggles (Warning)
    - **Low/Info** → Blue squiggles (Information)
-4. Hover over a squiggle to see severity, rule name, fix suggestion, and AI remediation hint (when available).
+4. Hover over a squiggle to see severity, rule name, and scanner-provided remediation hint (when available).
 
 ### Scan on Save
 

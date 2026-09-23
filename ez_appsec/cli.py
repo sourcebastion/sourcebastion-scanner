@@ -16,13 +16,13 @@ from ez_appsec.jira_sync import JiraConfig, sync_findings as jira_sync_findings,
 @click.group()
 @click.version_option()
 def main():
-    """SourceBastion Scan: AI-powered application security scanning."""
+    """SourceBastion Scan: deterministic application security scanning."""
     pass
 
 
 @main.command()
 @click.argument("path", type=click.Path(exists=True), default=".")
-@click.option("--ai-prompt", help="Custom AI prompt for security analysis")
+@click.option("--ai-prompt", help="Deprecated compatibility option; ignored")
 @click.option("--languages", multiple=True, help="Programming languages to scan")
 @click.option("--severity", default=None, help="Minimum severity level to report")
 @click.option("--output", type=click.Path(), help="Output file for results (JSON)")
@@ -44,7 +44,7 @@ def main():
 @click.option("--registry-auth", default=None, help="Private registry credentials in user:token format")
 @click.option("--rules", multiple=True, help="Custom rule packs to enable (python, ruby, java, javascript, php, or 'all')")
 def scan(path, ai_prompt, languages, severity, output, config_file, baseline_path, baseline_threshold, slack_webhook, teams_webhook, project_name, dashboard_url, jira_url, jira_email, jira_token, jira_project, sbom, sbom_output, license_check, image, registry_auth, rules):
-    """Scan a codebase for security vulnerabilities using AI analysis
+    """Scan a codebase for security vulnerabilities without external AI calls.
 
     PATH: Directory or file to scan (default: current directory)
     """
@@ -65,7 +65,9 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
             if extra_dirs and "semgrep" in scanner.external.scanners:
                 scanner.external.scanners["semgrep"].extra_rules_dirs = extra_dirs
                 click.echo(f"  Custom rules: {', '.join(rules)} ({len(extra_dirs)} pack(s))")
-        results = scanner.scan(path, ai_prompt)
+        if ai_prompt:
+            click.echo("Warning: --ai-prompt is ignored; scans never call LLM providers.", err=True)
+        results = scanner.scan(path)
 
         if image:
             from ez_appsec.external_scanners import GrypeImageScanner
@@ -270,7 +272,7 @@ def contract_scan(path, plan_path, result_envelope, scanner_image):
 
 @main.command()
 @click.argument("path", type=click.Path(exists=True), default=".")
-@click.option("--ai-prompt", help="Custom AI prompt for security analysis")
+@click.option("--ai-prompt", help="Deprecated compatibility option; ignored")
 @click.option("--severity", default=None, help="Minimum severity level to report")
 @click.option("--output", type=click.Path(), help="Output file for GitLab vulnerability report (JSON)")
 @click.option("--config", "config_file", type=click.Path(), default=".ez-appsec.yaml", help="Path to config file")
@@ -285,7 +287,9 @@ def gitlab_scan(path, ai_prompt, severity, output, config_file):
             config.severity = severity
 
         scanner = SecurityScanner(config)
-        results = scanner.scan_to_gitlab_format(path, output, ai_prompt)
+        if ai_prompt:
+            click.echo("Warning: --ai-prompt is ignored; scans never call LLM providers.", err=True)
+        results = scanner.scan_to_gitlab_format(path, output)
 
         click.echo(f"\n✓ GitLab vulnerability scan completed")
         click.echo(f"  Total vulnerabilities found: {len(results['vulnerabilities'])}")
@@ -325,11 +329,6 @@ languages:
   - java
 
 severity: medium
-
-# AI model configuration
-ai:
-  model: gpt-4
-  temperature: 0.5
 
 # Ignore rules - suppress known false positives
 # ignore:
@@ -616,7 +615,8 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
 @main.command()
 @click.argument("path", type=click.Path(exists=True), default=".")
 @click.option("--output", type=click.Path(), help="Output directory for web dashboard", default="./web/data")
-def web_report(path, output):
+@click.option("--config", "config_file", type=click.Path(), default=".ez-appsec.yaml", help="Path to config file")
+def web_report(path, output, config_file):
     """Generate web dashboard for vulnerability reporting
 
     Generates a JSON report compatible with the web vulnerability dashboard
@@ -628,7 +628,7 @@ def web_report(path, output):
         import json
         from pathlib import Path as PathlibPath
 
-        config = Config()
+        config = Config.from_file(config_file)
         scanner = SecurityScanner(config)
 
         # Generate GitLab format report
@@ -726,7 +726,7 @@ def update_web(vulns_file, web_dir, serve, port):
 
 @main.command("github-scan")
 @click.argument("path", type=click.Path(exists=True), default=".")
-@click.option("--ai-prompt", help="Custom AI prompt for security analysis")
+@click.option("--ai-prompt", help="Deprecated compatibility option; ignored")
 @click.option("--languages", multiple=True, help="Programming languages to scan")
 @click.option("--severity", default=None, help="Minimum severity level to report")
 @click.option("--output", type=click.Path(), help="Output file for SARIF report")
@@ -749,10 +749,21 @@ def github_scan(path, ai_prompt, languages, severity, output, config_file):
             config.output_file = output
 
         scanner = SecurityScanner(config)
-        results = scanner.scan_to_github_format(path, output, ai_prompt)
+        if ai_prompt:
+            click.echo("Warning: --ai-prompt is ignored; scans never call LLM providers.", err=True)
+        results = scanner.scan_to_github_format(path, output)
 
         click.echo(f"\n✓ GitHub SARIF scan completed")
         click.echo(f"  Total findings: {len(results['runs'][0]['results'])}")
+        suppressed_count = (
+            results["runs"][0]
+            .get("properties", {})
+            .get("sourcebastionSuppressedCount", 0)
+        )
+        if suppressed_count:
+            click.echo(
+                f"  [suppressed] {suppressed_count} finding(s) matched ignore rules"
+            )
 
         if results['runs'][0]['results']:
             click.echo("\nTop Findings:")
@@ -1022,35 +1033,14 @@ def report(framework, findings, output):
 
 @main.command("agent")
 @click.argument("task")
-@click.option("--model", default="claude-sonnet-4-20250514", help="Anthropic model to use")
+@click.option("--model", default=None, hidden=True)
 @click.option("--path", "root_path", type=click.Path(exists=True), default=".", help="Project root for path validation")
 def agent_cmd(task, model, root_path):
-    """Run the AI security agent with a natural language task
+    """Deprecated: LLM-assisted maintenance moved to SourceBastion Ops."""
+    from ez_appsec.agent import LLM_AGENT_REMOVED_MESSAGE
 
-    TASK: What the agent should do, e.g. "scan /path and summarize critical findings"
-
-    Requires ANTHROPIC_API_KEY environment variable.
-    """
-    from ez_appsec.agent import SecurityAgent
-
-    try:
-        agent = SecurityAgent(model=model, allowed_root=root_path)
-        result = agent.run(task)
-
-        if result.actions_taken:
-            click.echo(f"\nActions taken:")
-            for action in result.actions_taken:
-                click.echo(f"  - {action}")
-
-        if result.findings:
-            click.echo(f"\nFindings: {len(result.findings)}")
-
-        if result.summary:
-            click.echo(f"\n{result.summary}")
-
-    except Exception as e:
-        click.echo(f"✗ Error: {str(e)}", err=True)
-        sys.exit(1)
+    del task, model, root_path
+    raise click.ClickException(LLM_AGENT_REMOVED_MESSAGE)
 
 
 @main.command("rotate-secrets")

@@ -1,6 +1,6 @@
 # SourceBastion Scan
 
-**AI-powered application security scanning** — free, open-source, works with GitHub and GitLab.
+**Deterministic application security scanning** — free, open-source, works with GitHub and GitLab.
 
 The CLI, Python package, and existing container images retain the `ez-appsec`
 name for compatibility. This repository is their maintained upstream home;
@@ -185,12 +185,12 @@ SourceBastion namespace.
 
 ---
 
-## AI Remediation
+## No-LLM scan boundary
 
-When `OPENAI_API_KEY` is set in the scanning environment, each finding is enriched with:
-- Plain-language risk explanation
-- Step-by-step fix instructions
-- Code example where applicable
+SourceBastion Scan never sends source code or findings to an LLM provider and
+does not require an LLM API key. Remediation fields come only from deterministic
+scanner output, such as fixed package versions and Semgrep autofix metadata.
+LLM-assisted maintenance is isolated to the separately operated ops agent.
 
 ---
 

@@ -102,7 +102,7 @@ Checking prerequisites...
 OK:    All prerequisites satisfied (Python 3.11, gh authenticated)
 
 Fetching issue #21...
-OK:    Issue: [PLAN-21] Reusable Security Agent with MCP & Multi-Transport
+OK:    Issue: [PLAN-20] Project audit log and dashboard
 OK:    Branch: feat/plan-21-reusable-security-agent-with-mcp-multi-transport
 OK:    Saved plan to .plan-context.md
 OK:    Moved issue to 'In Progress' on the project board

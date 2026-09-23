@@ -155,11 +155,6 @@ languages:
 # Minimum severity to report: all | critical | high | medium | low
 severity: medium
 
-# AI analysis model
-ai:
-  model: gpt-4
-  temperature: 0.5
-
 # Ignore rules — suppress known false positives
 ignore:
   # Suppress by scanner rule ID

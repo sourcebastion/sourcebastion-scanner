@@ -33,7 +33,7 @@ class TestCLIBasic:
         runner = CliRunner()
         result = runner.invoke(main, ['--help'])
         assert result.exit_code == 0
-        assert 'SourceBastion Scan: AI-powered application security scanning.' in result.output
+        assert 'SourceBastion Scan: deterministic application security scanning.' in result.output
 
     def test_version_option(self):
         """Test that version option works"""
@@ -113,8 +113,8 @@ def example():
         assert result.exit_code == 0
         assert 'Security scan completed' in result.output
 
-    def test_scan_with_ai_prompt(self, sample_file):
-        """Test scan with custom AI prompt"""
+    def test_legacy_ai_prompt_is_ignored(self, sample_file):
+        """The legacy option must never enable LLM-backed scanning."""
         runner = CliRunner()
         result = runner.invoke(main, [
             'scan',
@@ -122,6 +122,7 @@ def example():
             '--ai-prompt', 'Focus on SQL injection'
         ])
         assert result.exit_code == 0
+        assert 'scans never call LLM providers' in result.output
 
     def test_scan_with_languages(self, sample_file):
         """Test scan with language filter"""
@@ -252,6 +253,28 @@ class TestGithubScanCommand:
         assert result.exit_code == 0
         assert 'GitHub SARIF scan completed' in result.output
 
+    def test_github_scan_reports_suppressed_count(self, sample_file):
+        report = {
+            "version": "2.1.0",
+            "runs": [
+                {
+                    "tool": {"driver": {"name": "test", "rules": []}},
+                    "results": [],
+                    "properties": {"sourcebastionSuppressedCount": 3},
+                }
+            ],
+        }
+        runner = CliRunner()
+
+        with patch(
+            "ez_appsec.scanner.SecurityScanner.scan_to_github_format",
+            return_value=report,
+        ):
+            result = runner.invoke(main, ['github-scan', sample_file])
+
+        assert result.exit_code == 0
+        assert '[suppressed] 3 finding(s)' in result.output
+
     def test_github_scan_with_output(self, sample_file, temp_output_file):
         """Test github-scan with output file"""
         runner = CliRunner()
@@ -314,6 +337,9 @@ class TestInitCommand:
         result = runner.invoke(main, ['init'])
         assert result.exit_code == 0
         assert os.path.exists('.ez-appsec.yaml')
+        config_text = Path('.ez-appsec.yaml').read_text(encoding='utf-8')
+        assert 'ai:' not in config_text
+        assert 'gpt-' not in config_text
 
     def test_init_with_existing_config(self, temp_dir, monkeypatch):
         """Test init with existing configuration file"""
@@ -326,6 +352,45 @@ class TestInitCommand:
         result = runner.invoke(main, ['init'])
         assert result.exit_code == 0
         assert 'already exists' in result.output
+
+
+class TestWebReportCommand:
+    def test_web_report_loads_project_config(self, tmp_path):
+        config_path = tmp_path / ".ez-appsec.yaml"
+        config_path.write_text(
+            """ignore:
+  - file_path: tests/fixtures/**
+    permanent: true
+    reason: intentional fixture
+""",
+            encoding="utf-8",
+        )
+        output_dir = tmp_path / "report"
+        observed = {}
+
+        def fake_gitlab_scan(scanner, path, output_file=None, custom_prompt=None):
+            observed["ignore_rules"] = scanner.config.ignore_rules
+            return {"version": "15.0.0", "vulnerabilities": [], "remediations": []}
+
+        with patch(
+            "ez_appsec.scanner.SecurityScanner.scan_to_gitlab_format",
+            new=fake_gitlab_scan,
+        ):
+            result = CliRunner().invoke(
+                main,
+                [
+                    "web-report",
+                    str(tmp_path),
+                    "--output",
+                    str(output_dir),
+                    "--config",
+                    str(config_path),
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert len(observed["ignore_rules"]) == 1
+        assert observed["ignore_rules"][0].file_path == "tests/fixtures/**"
 
 
 class TestErrorHandling:

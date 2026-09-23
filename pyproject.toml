@@ -26,7 +26,7 @@ use_parentheses = true
 ensure_newline_before_comments = true
 skip_gitignore = true
 known_first_party = ["ez_appsec"]
-known_third_party = ["click", "openai", "pydantic", "pyyaml", "requests"]
+known_third_party = ["click", "pydantic", "pyyaml", "requests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

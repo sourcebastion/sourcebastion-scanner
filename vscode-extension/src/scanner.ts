@@ -39,7 +39,7 @@ export class Scanner {
     const config = vscode.workspace.getConfiguration("ez-appsec");
     const image = config.get<string>(
       "dockerImage",
-      "ghcr.io/ez-appsec/ez-appsec:latest"
+      "ghcr.io/sourcebastion/sourcebastion-scanner:latest"
     );
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ez-appsec-"));
@@ -89,7 +89,7 @@ export class Scanner {
     const config = vscode.workspace.getConfiguration("ez-appsec");
     const image = config.get<string>(
       "dockerImage",
-      "ghcr.io/ez-appsec/ez-appsec:latest"
+      "ghcr.io/sourcebastion/sourcebastion-scanner:latest"
     );
 
     const relativePath = path.relative(workspacePath, filePath);

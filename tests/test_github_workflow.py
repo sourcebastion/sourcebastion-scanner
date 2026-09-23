@@ -15,7 +15,9 @@ from ez_appsec.converters import (
 
 SELF_SCAN_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "self-scan.yml"
 CUSTOMER_SCAN_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "github-scan.yml"
+CUSTOMER_SCAN_TEMPLATE = Path(__file__).parents[1] / "github" / "templates" / "scan.yml"
 DOCKER_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "docker.yml"
+RELEASE_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "release.yml"
 
 
 def test_self_scan_installs_pinned_external_toolchain():
@@ -39,6 +41,25 @@ def test_customer_workflow_dogfoods_checked_out_scanner_only_in_this_repository(
 
     assert "if: github.repository == 'sourcebastion/sourcebastion-scanner'" in workflow
     assert "run: pip install --no-deps -e ." in workflow
+
+
+def test_public_workflows_use_sourcebastion_scan_branding():
+    customer_workflow = CUSTOMER_SCAN_WORKFLOW.read_text()
+    customer_template = CUSTOMER_SCAN_TEMPLATE.read_text()
+    self_scan_workflow = SELF_SCAN_WORKFLOW.read_text()
+    release_workflow = RELEASE_WORKFLOW.read_text()
+
+    assert "name: SourceBastion Scan" in customer_workflow
+    assert "## 🔒 SourceBastion Scan" in customer_workflow
+    assert "name: SourceBastion Scan" in customer_template
+    assert "ghcr.io/sourcebastion/sourcebastion-scanner:latest" in customer_template
+    assert "name: SourceBastion Self-Scan" in self_scan_workflow
+    assert "## 🔒 SourceBastion Self-Scan Results" in self_scan_workflow
+    assert "scanned with SourceBastion Scan" in release_workflow
+
+    # Retain the old heading only as a migration matcher for existing comments.
+    assert customer_workflow.count("ez-appsec Security Scan") == 1
+    assert self_scan_workflow.count("ez-appsec Self-Scan Results") == 1
 
 
 def test_pull_request_build_never_publishes_images():

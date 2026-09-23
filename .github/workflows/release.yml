@@ -398,7 +398,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run ez-appsec scan via release image
+      - name: Run SourceBastion Scan via release image
         # Scan the exact staged digest before any public release tag moves.
         env:
           RELEASE_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker-standard.outputs.image_digest }}
@@ -567,7 +567,7 @@ jobs:
           {
             echo "## Security Scan"
             echo ""
-            echo "This release was scanned with ez-appsec v${VERSION}."
+            echo "This release was scanned with SourceBastion Scan v${VERSION}."
             echo ""
             echo "| Severity | Count |"
             echo "|----------|-------|"

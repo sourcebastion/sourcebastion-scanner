@@ -1,7 +1,7 @@
-# ez-appsec Security Scan — customer workflow template
-# Provisioned automatically when you install the ez-appsec GitHub App.
+# SourceBastion Scan — customer workflow template
+# Provisioned automatically when you install the SourceBastion GitHub App.
 
-name: ez-appsec Security Scan
+name: SourceBastion Scan
 
 on:
   pull_request:
@@ -16,52 +16,52 @@ permissions:
   security-events: write  # Required for SARIF upload to Security tab
   actions: read
   pull-requests: write   # Required for PR comments
-  packages: read         # Required to pull ghcr.io/ez-appsec/ez-appsec image
+  packages: read         # Required to pull the SourceBastion Scan image
 
 env:
   EZ_APPSEC_OUTPUT_DIR: "scan-results"
   EZ_APPSEC_SARIF: "scan-results/ez-appsec.sarif"
 
 jobs:
-  # Advisory: check if a newer ez-appsec version is available. Never blocks the scan.
+  # Advisory: check if a newer SourceBastion Scan version is available. Never blocks the scan.
   version-check:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: Check for newer ez-appsec release
+      - name: Check for newer SourceBastion Scan release
         run: |
           LATEST=$(curl -sSf \
             -H "Accept: application/vnd.github+json" \
-            -H "User-Agent: ez-appsec-version-check/1.0" \
-            https://api.github.com/repos/ez-appsec/ez-appsec/releases/latest \
+            -H "User-Agent: sourcebastion-scan-version-check/1.0" \
+            https://api.github.com/repos/sourcebastion/sourcebastion-scanner/releases/latest \
             | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'].lstrip('v'))")
           CURRENT="${{ vars.EZ_APPSEC_VERSION || 'latest' }}"
           if [ "$CURRENT" = "latest" ]; then
-            echo "::warning::ez-appsec: using 'latest' image tag. Pin EZ_APPSEC_VERSION to a specific version for reproducible scans. Current release: ${LATEST}"
+            echo "::warning::SourceBastion Scan: using 'latest' image tag. Pin EZ_APPSEC_VERSION to a specific version for reproducible scans. Current release: ${LATEST}"
           elif [ "$CURRENT" != "$LATEST" ]; then
-            echo "::warning::ez-appsec ${CURRENT} is outdated. Latest release: ${LATEST}. Update the EZ_APPSEC_VERSION variable."
+            echo "::warning::SourceBastion Scan ${CURRENT} is outdated. Latest release: ${LATEST}. Update the EZ_APPSEC_VERSION variable."
           else
-            echo "ez-appsec ${CURRENT} is up to date."
+            echo "SourceBastion Scan ${CURRENT} is up to date."
           fi
 
   scan:
     name: Security Scan
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/ez-appsec/ez-appsec:latest
+      image: ghcr.io/sourcebastion/sourcebastion-scanner:latest
       options: --user root --entrypoint ""
 
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Run ez-appsec scan
+      - name: Run SourceBastion Scan
         id: scan
         run: |
-          echo "Running ez-appsec scan..."
+          echo "Running SourceBastion Scan..."
           mkdir -p "${EZ_APPSEC_OUTPUT_DIR}"
 
-          echo "Checking ez-appsec status..."
+          echo "Checking SourceBastion Scan status..."
           ez-appsec status || true
 
           echo "Starting GitHub SARIF scan..."
@@ -234,7 +234,7 @@ jobs:
                   headers={
                       'Authorization': f'Bearer {jwt_token}',
                       'Accept': 'application/vnd.github+json',
-                      'User-Agent': 'ez-appsec/1.0',
+                      'User-Agent': 'sourcebastion-scan/1.0',
                   }
               )
               try:
@@ -304,13 +304,13 @@ jobs:
           cp /tmp/vulns-with-meta.json "${DASH_DIR}/dashboard/data/${VULN_REL}"
 
           # Regenerate index.json by fetching and running the aggregation script
-          curl -sSfL "https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/github/dashboard/aggregate-index.py" \
+          curl -sSfL "https://raw.githubusercontent.com/sourcebastion/sourcebastion-scanner/main/github/dashboard/aggregate-index.py" \
             -o /tmp/aggregate-index.py
           python3 /tmp/aggregate-index.py "${DASH_DIR}/dashboard/data"
 
           cd "${DASH_DIR}/dashboard"
-          git config user.name "ez-appsec scan"
-          git config user.email "ci@ez-appsec.ai"
+          git config user.name "SourceBastion Scan"
+          git config user.email "sourcebastionbot@users.noreply.github.com"
           git add data/
           git diff --staged --quiet && echo "No changes." || \
             git commit -m "chore: update scan results for ${{ github.repository }}"
@@ -328,7 +328,7 @@ jobs:
             const summaryPath = '/tmp/scan-summary.md';
             const summaryMd = fs.existsSync(summaryPath) ? fs.readFileSync(summaryPath, 'utf8') : '';
 
-            let body = `## 🔒 ez-appsec Security Scan\n\n`;
+            let body = `## 🔒 SourceBastion Scan\n\n`;
             body += summaryMd ? summaryMd + '\n' : '';
             body += `📊 [View full scan run](${artifactUrl})\n`;
 
@@ -340,7 +340,8 @@ jobs:
 
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('🔒 ez-appsec Security Scan')
+              (comment.body.includes('🔒 SourceBastion Scan') ||
+               comment.body.includes('🔒 ez-appsec Security Scan'))
             );
 
             if (botComment) {

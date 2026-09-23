@@ -236,9 +236,9 @@ class OrgManager:
 
 
 def _build_scan_workflow(config: Dict[str, Any]) -> str:
-    """Generate a GitHub Actions workflow YAML for ez-appsec scanning."""
+    """Generate a GitHub Actions workflow for SourceBastion Scan."""
     severity = config.get("severity", "medium")
-    return f"""name: ez-appsec Security Scan
+    return f"""name: SourceBastion Scan
 
 on:
   push:
@@ -257,8 +257,8 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Run ez-appsec scan
-        uses: docker://ghcr.io/ez-appsec/ez-appsec:latest
+      - name: Run SourceBastion Scan
+        uses: docker://ghcr.io/sourcebastion/sourcebastion-scanner:latest
         with:
           args: github-scan . --output results.sarif --severity {severity}
 

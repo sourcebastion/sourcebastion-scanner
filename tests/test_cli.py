@@ -33,7 +33,7 @@ class TestCLIBasic:
         runner = CliRunner()
         result = runner.invoke(main, ['--help'])
         assert result.exit_code == 0
-        assert 'ez-appsec: AI-powered application security scanning' in result.output
+        assert 'SourceBastion Scan: AI-powered application security scanning.' in result.output
 
     def test_version_option(self):
         """Test that version option works"""

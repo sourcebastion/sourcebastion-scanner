@@ -26,7 +26,7 @@ MAX_TASK_LENGTH = 4096
 MAX_TOOL_ITERATIONS = 25
 
 SYSTEM_PROMPT = """\
-You are a security expert agent powered by ez-appsec. Your job is to help \
+You are a security expert agent powered by SourceBastion Scan. Your job is to help \
 users understand and remediate security vulnerabilities in their codebases.
 
 You have access to tools for scanning directories, reading findings, \

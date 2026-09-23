@@ -1,7 +1,7 @@
 {
   "name": "ez-appsec",
-  "displayName": "ez-appsec",
-  "description": "Inline security vulnerability diagnostics powered by ez-appsec",
+  "displayName": "SourceBastion Scan",
+  "description": "Inline security vulnerability diagnostics powered by SourceBastion Scan",
   "version": "0.1.0",
   "publisher": "ez-appsec",
   "license": "MIT",
@@ -20,20 +20,20 @@
     "commands": [
       {
         "command": "ez-appsec.scanWorkspace",
-        "title": "ez-appsec: Scan Workspace"
+        "title": "SourceBastion Scan: Scan Workspace"
       },
       {
         "command": "ez-appsec.clearFindings",
-        "title": "ez-appsec: Clear Findings"
+        "title": "SourceBastion Scan: Clear Findings"
       }
     ],
     "configuration": {
-      "title": "ez-appsec",
+      "title": "SourceBastion Scan",
       "properties": {
         "ez-appsec.scanOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Run ez-appsec scan automatically when a file is saved"
+          "description": "Run SourceBastion Scan automatically when a file is saved"
         },
         "ez-appsec.scanOnSaveDelay": {
           "type": "number",
@@ -43,7 +43,7 @@
         },
         "ez-appsec.dockerImage": {
           "type": "string",
-          "default": "ghcr.io/ez-appsec/ez-appsec:latest",
+          "default": "ghcr.io/sourcebastion/sourcebastion-scanner:latest",
           "description": "Docker image to use for scanning"
         }
       }

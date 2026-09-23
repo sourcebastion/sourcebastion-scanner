@@ -290,7 +290,7 @@ class GitHubPRCommenter:
                 lines.append("")
 
         lines.append("---")
-        lines.append("*Posted by ez-appsec*")
+        lines.append("*Posted by SourceBastion Scan*")
 
         return "\n".join(lines)
 
@@ -489,7 +489,7 @@ class GitLabMRCommenter:
                 lines.append("")
 
         lines.append("---")
-        lines.append("*Posted by ez-appsec*")
+        lines.append("*Posted by SourceBastion Scan*")
 
         return "\n".join(lines)
 

@@ -196,7 +196,8 @@ class TestBuildScanWorkflow:
 
     def test_workflow_structure(self):
         wf = _build_scan_workflow({"severity": "critical"})
-        assert "name: ez-appsec Security Scan" in wf
+        assert "name: SourceBastion Scan" in wf
+        assert "docker://ghcr.io/sourcebastion/sourcebastion-scanner:latest" in wf
         assert "actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4" in wf
         assert "upload-sarif" in wf
         assert "cron:" in wf

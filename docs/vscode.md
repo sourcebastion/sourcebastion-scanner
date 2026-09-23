@@ -1,12 +1,12 @@
 # VS Code Extension
 
-Inline security vulnerability diagnostics for VS Code, powered by ez-appsec. Findings appear as editor squiggles on the exact lines where issues were detected — no context-switching to a terminal or browser.
+Inline security vulnerability diagnostics for VS Code, powered by SourceBastion Scan. Findings appear as editor squiggles on the exact lines where issues were detected — no context-switching to a terminal or browser.
 
 ---
 
 ## Prerequisites
 
-- **Docker** installed and running (the extension runs scans inside the ez-appsec Docker image)
+- **Docker** installed and running (the extension runs scans inside the SourceBastion Scan Docker image)
 - **VS Code** 1.85.0 or later
 
 ---
@@ -31,9 +31,9 @@ The extension adds a status bar item in the bottom-left corner:
 
 | State | Display | Behavior |
 |-------|---------|----------|
-| Idle (no findings) | `$(shield) ez-appsec` | Click to run a workspace scan |
-| Idle (with findings) | `$(shield) ez-appsec: 5 findings` | Shows total findings across all files |
-| Scanning | `$(sync~spin) ez-appsec: scanning…` | Animated spinner during scan |
+| Idle (no findings) | `$(shield) SourceBastion Scan` | Click to run a workspace scan |
+| Idle (with findings) | `$(shield) SourceBastion Scan: 5 findings` | Shows total findings across all files |
+| Scanning | `$(sync~spin) SourceBastion Scan: scanning…` | Animated spinner during scan |
 
 The status bar updates after both full workspace scans and single-file scan-on-save.
 
@@ -45,8 +45,8 @@ Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 
 | Command | Description |
 |---------|-------------|
-| `ez-appsec: Scan Workspace` | Run a full security scan of the entire workspace (cancellable via the progress notification) |
-| `ez-appsec: Clear Findings` | Remove all diagnostic squiggles |
+| `SourceBastion Scan: Scan Workspace` | Run a full security scan of the entire workspace (cancellable via the progress notification) |
+| `SourceBastion Scan: Clear Findings` | Remove all diagnostic squiggles |
 
 ---
 
@@ -58,7 +58,7 @@ Configure in **Settings** (`Ctrl+,` / `Cmd+,`) or `.vscode/settings.json`:
 |---------|------|---------|-------------|
 | `ez-appsec.scanOnSave` | boolean | `false` | Automatically scan the saved file when any file is saved |
 | `ez-appsec.scanOnSaveDelay` | number | `2000` | Debounce delay (ms) before triggering scan-on-save — prevents rapid repeated scans during burst saves |
-| `ez-appsec.dockerImage` | string | `ghcr.io/ez-appsec/ez-appsec:latest` | Docker image to use for scanning |
+| `ez-appsec.dockerImage` | string | `ghcr.io/sourcebastion/sourcebastion-scanner:latest` | Docker image to use for scanning |
 
 ### Example `.vscode/settings.json`
 
@@ -66,7 +66,7 @@ Configure in **Settings** (`Ctrl+,` / `Cmd+,`) or `.vscode/settings.json`:
 {
   "ez-appsec.scanOnSave": true,
   "ez-appsec.scanOnSaveDelay": 3000,
-  "ez-appsec.dockerImage": "ghcr.io/ez-appsec/ez-appsec:v1.2.0"
+  "ez-appsec.dockerImage": "ghcr.io/sourcebastion/sourcebastion-scanner:v1.7.31"
 }
 ```
 
@@ -76,7 +76,7 @@ Configure in **Settings** (`Ctrl+,` / `Cmd+,`) or `.vscode/settings.json`:
 
 ### Full workspace scan
 
-1. Run **ez-appsec: Scan Workspace** from the Command Palette (or click the status bar item).
+1. Run **SourceBastion Scan: Scan Workspace** from the Command Palette (or click the status bar item).
 2. A progress notification appears with a **Cancel** button — cancelling kills the Docker process immediately.
 3. The extension mounts your workspace read-only into the Docker container and runs `ez-appsec scan /src`.
 4. Results are written to a temporary `vulnerabilities.json`, parsed, and displayed as inline diagnostics across all files.

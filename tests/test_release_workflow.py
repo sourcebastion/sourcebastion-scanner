@@ -13,6 +13,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "release.yml"
+DOCKER_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "docker.yml"
+CONTAINER_RUNNER_PATH = ROOT / "scripts" / "run-scanner-container.sh"
 BUILD_JOBS = (
     "build-docker-standard",
     "build-docker-slim",
@@ -244,8 +246,12 @@ def test_digest_scan_and_all_variants_gate_public_tag_promotion():
     )
     assert "needs.build-docker-standard.outputs.image_digest" in scan_environment
     assert ":v${VERSION}" not in scan_commands
-    assert scan_commands.count('--user "$(id -u):$(id -g)"') == 2
-    assert scan_commands.count("-e HOME=/tmp") == 2
+    assert scan_commands.count('scripts/run-scanner-container.sh "$RELEASE_IMAGE"') == 3
+
+    container_runner = CONTAINER_RUNNER_PATH.read_text(encoding="utf-8")
+    assert '--user "$(id -u):$(id -g)"' in container_runner
+    assert "-e HOME=/tmp" in container_runner
+    assert '-v "$PWD:/scan"' in container_runner
 
     promotion = jobs["promote-images"]
     assert set(promotion["needs"]) == {
@@ -260,6 +266,75 @@ def test_digest_scan_and_all_variants_gate_public_tag_promotion():
         assert tag in promote_script
     assert "^sha256:[0-9a-f]{64}$" in promote_script
     assert "promote-images" in jobs["update-github-release"]["needs"]
+
+
+def test_pr_ci_exercises_the_release_scanner_runtime():
+    workflow = yaml.load(
+        DOCKER_WORKFLOW_PATH.read_text(encoding="utf-8"), Loader=yaml.BaseLoader
+    )
+    steps = workflow["jobs"]["build-docker-standard"]["steps"]
+    smoke = next(step for step in steps if step["name"] == "Exercise release scanner runtime")
+    command = smoke["run"]
+
+    assert 'printf \'six==1.17.0\\n\'' in command
+    assert '"$GITHUB_WORKSPACE/scripts/run-scanner-container.sh"' in command
+    assert "scan . --sbom --sbom-output scan-results/sbom.cdx.json" in command
+    assert "test -d .grype-deps" in command
+    assert "test -s scan-results/scan.json" in command
+    assert "test -s scan-results/sbom.cdx.json" in command
+
+
+def test_release_sbom_is_required_and_written_to_real_files():
+    workflow = load_workflow()
+    steps = workflow["jobs"]["release-scan"]["steps"]
+    sbom = next(step for step in steps if step["name"] == "Generate SBOM")
+
+    assert sbom.get("continue-on-error") is None
+    assert "--output scan-results/sbom-scan.json" in sbom["run"]
+    assert "--output /dev/null" not in sbom["run"]
+    assert "test -s scan-results/sbom.cdx.json" in sbom["run"]
+
+
+def test_container_runner_maps_host_identity_and_checkout(tmp_path: Path):
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    captured = tmp_path / "docker-args"
+    fake_docker = fake_bin / "docker"
+    fake_docker.write_text(
+        "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$CAPTURED_ARGS\"\n",
+        encoding="utf-8",
+    )
+    fake_docker.chmod(0o755)
+    env = os.environ.copy()
+    env.update(
+        {
+            "CAPTURED_ARGS": str(captured),
+            "PATH": f"{fake_bin}:{env['PATH']}",
+        }
+    )
+
+    subprocess.run(
+        [str(CONTAINER_RUNNER_PATH), "scanner@sha256:test", "github-scan", "."],
+        cwd=tmp_path,
+        env=env,
+        check=True,
+    )
+
+    assert captured.read_text(encoding="utf-8").splitlines() == [
+        "run",
+        "--rm",
+        "--user",
+        f"{os.getuid()}:{os.getgid()}",
+        "-e",
+        "HOME=/tmp",
+        "-v",
+        f"{tmp_path}:/scan",
+        "-w",
+        "/scan",
+        "scanner@sha256:test",
+        "github-scan",
+        ".",
+    ]
 
 
 def test_retired_semantic_release_runtime_is_absent():

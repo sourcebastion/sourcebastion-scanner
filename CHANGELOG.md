@@ -9,6 +9,7 @@
 * promote public tags only after every variant build and release scan succeeds
 * make failed draft releases safely resumable without moving a published tag
 * remove the unused semantic-release dependency tree and its vulnerable transitive packages
+* remove LLM provider calls and API-key dependencies from every scan path
 
 ## [1.7.30](https://github.com/ez-appsec/ez-appsec/compare/v1.7.29...v1.7.30) (2026-09-13)
 

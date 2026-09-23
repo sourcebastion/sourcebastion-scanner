@@ -327,7 +327,7 @@ class ScannerWrapper(ABC):
         source: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Default AI remediation enrichment: no-op. Scanners override this when
+        Default remediation enrichment: no-op. Scanners override this when
         their raw output exposes fix/remediation signal (e.g. grype fix versions,
         semgrep autofix, kics remediation).
         """

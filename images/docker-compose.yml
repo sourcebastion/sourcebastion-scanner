@@ -9,8 +9,6 @@ services:
     volumes:
       - .:/scan
       - results:/results
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - semgrep-scanner
     command: scan /scan --output /results/report.json

@@ -33,7 +33,7 @@ class TestCLIBasic:
         runner = CliRunner()
         result = runner.invoke(main, ['--help'])
         assert result.exit_code == 0
-        assert 'SourceBastion Scan: AI-powered application security scanning.' in result.output
+        assert 'SourceBastion Scan: deterministic application security scanning.' in result.output
 
     def test_version_option(self):
         """Test that version option works"""
@@ -113,8 +113,8 @@ def example():
         assert result.exit_code == 0
         assert 'Security scan completed' in result.output
 
-    def test_scan_with_ai_prompt(self, sample_file):
-        """Test scan with custom AI prompt"""
+    def test_legacy_ai_prompt_is_ignored(self, sample_file):
+        """The legacy option must never enable LLM-backed scanning."""
         runner = CliRunner()
         result = runner.invoke(main, [
             'scan',
@@ -122,6 +122,7 @@ def example():
             '--ai-prompt', 'Focus on SQL injection'
         ])
         assert result.exit_code == 0
+        assert 'scans never call LLM providers' in result.output
 
     def test_scan_with_languages(self, sample_file):
         """Test scan with language filter"""
@@ -314,6 +315,9 @@ class TestInitCommand:
         result = runner.invoke(main, ['init'])
         assert result.exit_code == 0
         assert os.path.exists('.ez-appsec.yaml')
+        config_text = Path('.ez-appsec.yaml').read_text(encoding='utf-8')
+        assert 'ai:' not in config_text
+        assert 'gpt-' not in config_text
 
     def test_init_with_existing_config(self, temp_dir, monkeypatch):
         """Test init with existing configuration file"""

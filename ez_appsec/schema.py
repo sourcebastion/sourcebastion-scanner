@@ -151,7 +151,7 @@ class FindingV2(BaseModel):
     # OpenTelemetry attributes: optional, populated when opentelemetry-sdk is installed.
     otel_attributes: Optional[Dict[str, Any]] = None
 
-    # AI remediation attributes: optional, populated where scanner has signal.
+    # Remediation attributes: optional, populated where scanners have signal.
     fix_type: Optional[str] = None
     fix_complexity: Optional[str] = None
     effort_mins: Optional[int] = None
@@ -204,7 +204,7 @@ def finding_from_issue(issue: Dict[str, Any]) -> FindingV2:
 
     Unlike finding_from_dict (which copies only the five v1 fields), this preserves
     every field the scanner and scan-tracking populated — first_seen, trend, scan_id,
-    age_days, otel_attributes, AI remediation, etc. — and tolerates extras via the
+    age_days, otel_attributes, remediation metadata, etc. — and tolerates extras via the
     model's extra="allow" config. The category is normalized onto the Category enum
     first, since scanners emit off-enum strings like "hardcoded-secret".
     """

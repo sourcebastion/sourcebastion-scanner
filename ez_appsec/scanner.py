@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from ez_appsec.config import Config
-from ez_appsec.ai_analyzer import AIAnalyzer
 from ez_appsec.external_scanners import ExternalScannerManager, ScannerExecutionError
 from ez_appsec.converters import VulnerabilityConverters, GitLabVulnerabilityFormat
 from ez_appsec.policy import PolicyEngine
@@ -119,9 +118,6 @@ class SecurityScanner:
         # External scanners only - custom detectors removed
         self.external = ExternalScannerManager() if use_external_scanners else None
 
-        # AI analyzer
-        self.ai = AIAnalyzer(config)
-
         # Track suppressed findings for reporting
         self.suppressed_count = 0
 
@@ -229,7 +225,11 @@ class SecurityScanner:
         return {"new_count": new_count, "resolved_count": resolved_count}
 
     def scan(self, path: str, custom_prompt: str = None) -> Dict[str, Any]:
-        """Execute full security scan using external scanners only"""
+        """Execute a deterministic security scan without LLM enrichment.
+
+        ``custom_prompt`` remains accepted for compatibility but is ignored.
+        Scanner findings and source code are never sent to an LLM provider.
+        """
 
         started_at = time.monotonic()
         scan_id = generate_scan_id()
@@ -246,11 +246,6 @@ class SecurityScanner:
             external_issues = self.external.scan_all(path)
             issues.extend(external_issues)
             scanner_results["external"] = len(external_issues)
-
-        # AI-powered analysis and remediation
-        if issues:
-            ai_results = self.ai.analyze(issues, base_path, custom_prompt)
-            issues = ai_results.get("enhanced_issues", issues)
 
         # License compliance check (before ignore rules so license findings can be suppressed)
         license_result = None
@@ -368,7 +363,6 @@ class SecurityScanner:
     def scan_to_gitlab_format(self, path: str, output_file: str = None, custom_prompt: str = None) -> Dict[str, Any]:
         """Execute full security scan and output in GitLab vulnerability format"""
 
-        base_path = Path(path)
         scanner_results = {}
         raw_outputs = {}
 
@@ -418,18 +412,7 @@ class SecurityScanner:
             })
 
         # Apply ignore rules
-        active_issues, suppressed_count = self._apply_ignore_rules(internal_issues)
-
-        # AI-powered analysis and remediation (optional for GitLab format)
-        if active_issues and self.ai:
-            ai_results = self.ai.analyze(active_issues, base_path, custom_prompt)
-
-            # Update GitLab report with AI-enhanced descriptions
-            for i, vuln in enumerate(merged_report["vulnerabilities"]):
-                if i < len(ai_results.get("enhanced_issues", [])):
-                    enhanced = ai_results["enhanced_issues"][i]
-                    vuln["description"] = enhanced.get("description", vuln["description"])
-                    vuln["solution"] = enhanced.get("solution", vuln.get("solution", ""))
+        _, suppressed_count = self._apply_ignore_rules(internal_issues)
 
         # Filter by severity
         if self.config.severity != "all":
@@ -494,7 +477,6 @@ class SecurityScanner:
     def scan_to_github_format(self, path: str, output_file: str = None, custom_prompt: str = None) -> Dict[str, Any]:
         """Execute full security scan and output in GitHub SARIF format"""
 
-        base_path = Path(path)
         scanner_results = {}
         raw_outputs = {}
 
@@ -530,48 +512,7 @@ class SecurityScanner:
             from ez_appsec.converters import GitHubSarifFormat
             merged_report = GitHubSarifFormat.create_report([], "ez-appsec")
 
-        # AI-powered analysis and remediation (optional for GitHub format)
         merged_results = merged_report.get("runs", [{}])[0].get("results", [])
-        if merged_results and self.ai:
-            # Convert SARIF format back to internal format for AI analysis
-            internal_issues = []
-            for result in merged_results:
-                # Extract location info
-                locations = result.get("locations", [])
-                if locations:
-                    physical_loc = locations[0].get("physicalLocation", {})
-                    file_path = physical_loc.get("artifactLocation", {}).get("uri", "unknown")
-                    region = physical_loc.get("region", {})
-                    line = region.get("startLine", 1)
-                else:
-                    file_path = "unknown"
-                    line = 1
-
-                # Map SARIF level back to severity
-                level = result.get("level", "warning")
-                level_to_severity = {"error": "high", "warning": "medium", "note": "low"}
-                severity = level_to_severity.get(level, "medium")
-
-                internal_issues.append({
-                    "type": result.get("ruleId", "unknown"),
-                    "title": result.get("ruleId", ""),
-                    "description": result.get("message", {}).get("text", ""),
-                    "file": file_path,
-                    "line": line,
-                    "severity": severity,
-                    "scanner": "github-converted"
-                })
-
-            ai_results = self.ai.analyze(internal_issues, base_path, custom_prompt)
-
-            # Update SARIF report with AI-enhanced descriptions
-            for i, result in enumerate(merged_results):
-                if i < len(ai_results.get("enhanced_issues", [])):
-                    enhanced = ai_results["enhanced_issues"][i]
-                    # Update message with AI-enhanced description
-                    result["message"]["text"] = enhanced.get("description", result["message"]["text"])
-                    # Note: SARIF doesn't have a simple "solution" field, but we could add fixes
-
         # Filter by severity - need to filter results based on their level
         if self.config.severity != "all":
             merged_results = self._filter_sarif_results_by_severity(merged_results, self.config.severity)
@@ -587,8 +528,6 @@ class SecurityScanner:
 
     def _filter_sarif_results_by_severity(self, results: List[Dict], min_severity: str) -> List[Dict]:
         """Filter SARIF results by minimum severity level"""
-        from ez_appsec.converters import GitHubSarifFormat
-
         # Map severity levels to numeric values
         severity_levels = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
         min_level = severity_levels.get(min_severity, 0)

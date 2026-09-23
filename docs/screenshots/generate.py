@@ -178,7 +178,7 @@ def take_screenshots(vulns_json: bytes, index_json: bytes):
             page.wait_for_timeout(300)
 
             # ------------------------------------------------------------------
-            # 6. AI remediation modal
+            # 6. Remediation modal (legacy screenshot filename)
             # ------------------------------------------------------------------
             print("  [6/8] dashboard-ai-remediation.png")
             # Hover over first row to make remediate button appear

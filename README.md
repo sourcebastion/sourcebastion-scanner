@@ -8,6 +8,23 @@ it is not deprecated.
 
 SourceBastion Scan orchestrates four best-in-class scanners (gitleaks, semgrep, kics, grype), normalises their output into a unified schema, and pushes results to a hosted security dashboard. No cloud account or API key required.
 
+> [!NOTE]
+> **Autonomously maintained, human-governed.** `sourcebastion-bot` checks this
+> project daily for mature upstream scanner releases and new issues, and batches
+> dependency updates weekly. Dependabot PRs must remain open for at least two
+> full days before integration; a human-applied `security/zero-day` label may
+> waive only that age gate for a confirmed emergency. Every change still passes
+> the hosted CI and security suite. Issue-derived changes and releases require
+> human review or approval. Found a problem or have an idea? Please open a
+> [bug report](https://github.com/sourcebastion/sourcebastion-scanner/issues/new?template=bug_report.md)
+> or [feature request](https://github.com/sourcebastion/sourcebastion-scanner/issues/new?template=feature_request.md).
+> Report vulnerabilities privately through the
+> [Security tab](https://github.com/sourcebastion/sourcebastion-scanner/security/advisories/new),
+> not as public issues. The scanner itself makes no LLM calls and needs no LLM
+> credential.
+
+![SourceBastion autonomous open-source maintenance architecture](docs/assets/autonomous-maintenance.svg)
+
 ```
 Your codebase
      │

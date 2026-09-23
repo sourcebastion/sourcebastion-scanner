@@ -231,6 +231,7 @@ def test_builds_publish_only_run_scoped_staging_tags():
         assert ":${{ needs.prepare-release.outputs.release_sha }}" not in tags
         assert build["with"]["provenance"] == "mode=max"
         assert build["with"]["sbom"] == "true"
+        assert job["permissions"]["artifact-metadata"] == "write"
         assert any(step.get("uses", "").startswith("actions/attest@") for step in job["steps"])
 
 
@@ -243,6 +244,8 @@ def test_digest_scan_and_all_variants_gate_public_tag_promotion():
     )
     assert "needs.build-docker-standard.outputs.image_digest" in scan_environment
     assert ":v${VERSION}" not in scan_commands
+    assert scan_commands.count('--user "$(id -u):$(id -g)"') == 2
+    assert scan_commands.count("-e HOME=/tmp") == 2
 
     promotion = jobs["promote-images"]
     assert set(promotion["needs"]) == {

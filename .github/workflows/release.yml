@@ -138,6 +138,7 @@ jobs:
     needs: prepare-release
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
+      artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
@@ -192,6 +193,7 @@ jobs:
     needs: prepare-release
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
+      artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
@@ -246,6 +248,7 @@ jobs:
     needs: prepare-release
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
+      artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
@@ -300,6 +303,7 @@ jobs:
     needs: prepare-release
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
+      artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
@@ -354,6 +358,7 @@ jobs:
     needs: prepare-release
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
+      artifact-metadata: write
       attestations: write
       contents: read
       id-token: write
@@ -436,6 +441,8 @@ jobs:
         run: |
           mkdir -p scan-results
           docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
             -v "$(pwd):/scan" \
             -w /scan \
             "$RELEASE_IMAGE" \
@@ -446,6 +453,8 @@ jobs:
           RELEASE_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker-standard.outputs.image_digest }}
         run: |
           docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
             -v "$(pwd):/scan" \
             -w /scan \
             "$RELEASE_IMAGE" \

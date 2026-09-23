@@ -1,3 +1,11 @@
+## [1.7.32](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.31...v1.7.32) (2026-09-23)
+
+
+### Bug Fixes
+
+* run release-image scans as the checkout owner so dependency manifests and reports can be generated
+* grant the build jobs permission to persist GitHub artifact metadata for provenance records
+
 ## [1.7.31](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.30...v1.7.31) (2026-09-22)
 
 

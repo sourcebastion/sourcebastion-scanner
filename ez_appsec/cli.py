@@ -615,7 +615,8 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
 @main.command()
 @click.argument("path", type=click.Path(exists=True), default=".")
 @click.option("--output", type=click.Path(), help="Output directory for web dashboard", default="./web/data")
-def web_report(path, output):
+@click.option("--config", "config_file", type=click.Path(), default=".ez-appsec.yaml", help="Path to config file")
+def web_report(path, output, config_file):
     """Generate web dashboard for vulnerability reporting
 
     Generates a JSON report compatible with the web vulnerability dashboard
@@ -627,7 +628,7 @@ def web_report(path, output):
         import json
         from pathlib import Path as PathlibPath
 
-        config = Config()
+        config = Config.from_file(config_file)
         scanner = SecurityScanner(config)
 
         # Generate GitLab format report

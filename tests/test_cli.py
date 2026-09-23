@@ -354,6 +354,45 @@ class TestInitCommand:
         assert 'already exists' in result.output
 
 
+class TestWebReportCommand:
+    def test_web_report_loads_project_config(self, tmp_path):
+        config_path = tmp_path / ".ez-appsec.yaml"
+        config_path.write_text(
+            """ignore:
+  - file_path: tests/fixtures/**
+    permanent: true
+    reason: intentional fixture
+""",
+            encoding="utf-8",
+        )
+        output_dir = tmp_path / "report"
+        observed = {}
+
+        def fake_gitlab_scan(scanner, path, output_file=None, custom_prompt=None):
+            observed["ignore_rules"] = scanner.config.ignore_rules
+            return {"version": "15.0.0", "vulnerabilities": [], "remediations": []}
+
+        with patch(
+            "ez_appsec.scanner.SecurityScanner.scan_to_gitlab_format",
+            new=fake_gitlab_scan,
+        ):
+            result = CliRunner().invoke(
+                main,
+                [
+                    "web-report",
+                    str(tmp_path),
+                    "--output",
+                    str(output_dir),
+                    "--config",
+                    str(config_path),
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert len(observed["ignore_rules"]) == 1
+        assert observed["ignore_rules"][0].file_path == "tests/fixtures/**"
+
+
 class TestErrorHandling:
     """Test error handling and edge cases"""
 

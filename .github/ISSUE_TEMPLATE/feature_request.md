@@ -5,6 +5,11 @@ labels: enhancement
 assignees: ''
 ---
 
+<!--
+sourcebastion-bot may acknowledge and assess this issue. Any proposed change
+stays open for human review. Do not include secrets or vulnerability details.
+-->
+
 ## Problem
 <!-- What problem does this feature solve? What is the current limitation? -->
 

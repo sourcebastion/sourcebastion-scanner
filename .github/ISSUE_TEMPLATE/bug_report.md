@@ -5,6 +5,12 @@ labels: bug
 assignees: ''
 ---
 
+<!--
+sourcebastion-bot may acknowledge and assess this issue. Any proposed fix stays
+open for human review. Do not include secrets or vulnerability details here;
+use the repository's private vulnerability reporting channel instead.
+-->
+
 ## Description
 <!-- A clear description of the bug -->
 

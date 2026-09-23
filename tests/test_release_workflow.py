@@ -40,14 +40,24 @@ def validation_script() -> str:
     return next(step["run"] for step in steps if step.get("id") == "release_metadata")
 
 
-def test_release_requires_manual_dispatch_and_protected_environment():
+def test_release_requires_bot_dispatch_and_protected_environment():
     workflow = load_workflow()
-    assert set(workflow["on"]) == {"workflow_dispatch"}
+    assert set(workflow["on"]) == {"repository_dispatch"}
+    assert workflow["on"]["repository_dispatch"]["types"] == ["scanner-release"]
     assert workflow["jobs"]["prepare-release"]["environment"] == "release"
 
     steps = workflow["jobs"]["prepare-release"]["steps"]
+    validate = next(step for step in steps if step.get("id") == "release_metadata")
+    assert validate["env"]["REQUESTED_VERSION"] == (
+        "${{ github.event.client_payload.version }}"
+    )
+    assert (
+        'if [ "$GITHUB_ACTOR" != "sourcebastion-bot[bot]" ]; then'
+        in validate["run"]
+    )
     create = next(step for step in steps if step["name"].startswith("Create the draft"))
     assert create["if"] == "steps.release_metadata.outputs.release_exists != 'true'"
+    assert create["env"]["VERSION"] == "${{ github.event.client_payload.version }}"
 
 
 def run_validation(
@@ -56,6 +66,8 @@ def run_validation(
     release_state: str = "",
     gh_exit: int = 1,
     create_tag: bool = False,
+    event_name: str = "repository_dispatch",
+    actor: str = "sourcebastion-bot[bot]",
 ) -> ValidationResult:
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     subprocess.run(["git", "config", "user.name", "Release Test"], cwd=tmp_path, check=True)
@@ -92,6 +104,8 @@ def run_validation(
             "FAKE_GH_EXIT": str(gh_exit),
             "FAKE_RELEASE_STATE": release_state.replace("{sha}", release_sha),
             "GITHUB_OUTPUT": str(output),
+            "GITHUB_ACTOR": actor,
+            "GITHUB_EVENT_NAME": event_name,
             "GITHUB_REF": "refs/heads/main",
             "GITHUB_SHA": release_sha,
             "PATH": f"{fake_bin}:{env['PATH']}",
@@ -114,6 +128,22 @@ def run_validation(
         release_sha=release_sha,
         github_output=output.read_text() if output.exists() else "",
     )
+
+
+@pytest.mark.parametrize(
+    ("event_name", "actor", "error"),
+    (
+        ("workflow_dispatch", "sourcebastion-bot[bot]", "reviewed bot event"),
+        ("repository_dispatch", "jfelten", "sourcebastion-bot[bot]"),
+    ),
+)
+def test_release_validation_rejects_untrusted_dispatchers(
+    tmp_path: Path, event_name: str, actor: str, error: str
+):
+    result = run_validation(tmp_path, event_name=event_name, actor=actor)
+
+    assert result.returncode != 0
+    assert error in result.stderr
 
 
 def test_new_release_validation_records_a_new_draft(tmp_path: Path):

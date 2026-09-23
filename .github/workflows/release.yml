@@ -5,12 +5,8 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Existing VERSION value, prefixed with v (for example v1.7.31)
-        required: true
-        type: string
+  repository_dispatch:
+    types: [scanner-release]
 
 env:
   REGISTRY: ghcr.io
@@ -45,9 +41,17 @@ jobs:
         id: release_metadata
         env:
           GH_TOKEN: ${{ github.token }}
-          REQUESTED_VERSION: ${{ inputs.version }}
+          REQUESTED_VERSION: ${{ github.event.client_payload.version }}
         run: |
           set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" != "repository_dispatch" ]; then
+            echo "releases must be dispatched through the reviewed bot event" >&2
+            exit 1
+          fi
+          if [ "$GITHUB_ACTOR" != "sourcebastion-bot[bot]" ]; then
+            echo "releases must be initiated by sourcebastion-bot[bot]" >&2
+            exit 1
+          fi
           if [ "$GITHUB_REF" != "refs/heads/main" ]; then
             echo "releases must be dispatched from main" >&2
             exit 1
@@ -92,7 +96,7 @@ jobs:
         if: steps.release_metadata.outputs.release_exists != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ github.event.client_payload.version }}
         run: |
           set -euo pipefail
           gh release create "$VERSION" \

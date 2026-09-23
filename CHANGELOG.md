@@ -1,3 +1,12 @@
+## [1.7.33](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.32...v1.7.33) (2026-09-23)
+
+
+### Release engineering
+
+* exercise the packaged scanner and SBOM generator against a writable bind mount in pull-request CI
+* share the tested host-identity container launcher with the release workflow
+* require successful SBOM generation before publishing a release
+
 ## [1.7.32](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.31...v1.7.32) (2026-09-23)
 
 

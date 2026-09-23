@@ -196,7 +196,7 @@ class TestGitHubPRCommenter:
         assert 'line 10' in body
         assert 'test' in body
         assert 'Fix it' in body
-        assert 'ez-appsec' in body
+        assert 'SourceBastion Scan' in body
 
     @patch('ez_appsec.pr_commenter.subprocess.run')
     @patch('ez_appsec.pr_commenter.urllib.request.urlopen')

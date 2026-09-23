@@ -1,0 +1,18 @@
+{
+  "gitleaks": {
+    "version": "8.30.1",
+    "linux_x64_sha256": "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb",
+    "linux_arm64_sha256": "e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080"
+  },
+  "grype": {
+    "version": "0.119.0",
+    "linux_amd64_sha256": "3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b",
+    "linux_arm64_sha256": "29f0ec7c549ddb0e2b6a0ca714851f7399438afc399b80c12808e065edc9a8f8"
+  },
+  "semgrep": {
+    "version": "1.176.1"
+  },
+  "kics": {
+    "image": "checkmarx/kics@sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602"
+  }
+}

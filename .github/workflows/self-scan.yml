@@ -47,6 +47,38 @@ jobs:
           python-version: '3.11'
           cache: pip
 
+      - name: Load validated scanner versions
+        id: scanner-versions
+        shell: python
+        run: |
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          pins = json.loads(Path(".github/scanner-versions.json").read_text())
+          values = {
+              "gitleaks_version": pins["gitleaks"]["version"],
+              "gitleaks_x64_sha256": pins["gitleaks"]["linux_x64_sha256"],
+              "grype_version": pins["grype"]["version"],
+              "grype_amd64_sha256": pins["grype"]["linux_amd64_sha256"],
+              "semgrep_version": pins["semgrep"]["version"],
+              "kics_image": pins["kics"]["image"],
+          }
+          patterns = {
+              "gitleaks_version": r"[0-9]+\.[0-9]+\.[0-9]+",
+              "gitleaks_x64_sha256": r"[0-9a-f]{64}",
+              "grype_version": r"[0-9]+\.[0-9]+\.[0-9]+",
+              "grype_amd64_sha256": r"[0-9a-f]{64}",
+              "semgrep_version": r"[0-9]+\.[0-9]+\.[0-9]+",
+              "kics_image": r"checkmarx/kics@sha256:[0-9a-f]{64}",
+          }
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              for name, value in values.items():
+                  if not re.fullmatch(patterns[name], value):
+                      raise SystemExit(f"invalid scanner pin: {name}")
+                  print(f"{name}={value}", file=output)
+
       - name: Install ez-appsec
         run: pip install -e .
 
@@ -54,21 +86,28 @@ jobs:
       # Install external scanners
       # -----------------------------------------------------------------------
       - name: Install gitleaks
+        env:
+          VERSION: v${{ steps.scanner-versions.outputs.gitleaks_version }}
+          SHA256: ${{ steps.scanner-versions.outputs.gitleaks_x64_sha256 }}
         run: |
-          VERSION="v8.30.1"
           curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/${VERSION}/gitleaks_${VERSION#v}_linux_x64.tar.gz" \
-            | tar -xz gitleaks
-          sudo mv gitleaks /usr/local/bin/gitleaks
+            -o /tmp/gitleaks.tar.gz
+          echo "${SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+          rm /tmp/gitleaks.tar.gz /tmp/gitleaks
           gitleaks version
 
       - name: Install semgrep
+        env:
+          VERSION: ${{ steps.scanner-versions.outputs.semgrep_version }}
         run: |
-          pip install "semgrep==1.176.1"
+          pip install "semgrep==${VERSION}"
           semgrep --version
 
       - name: Install KICS
         env:
-          KICS_IMAGE: "checkmarx/kics@sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602"
+          KICS_IMAGE: ${{ steps.scanner-versions.outputs.kics_image }}
         run: |
           docker pull "${KICS_IMAGE}"
           KICS_CONTAINER="$(docker create "${KICS_IMAGE}")"
@@ -84,9 +123,16 @@ jobs:
           kics version
 
       - name: Install grype
+        env:
+          VERSION: ${{ steps.scanner-versions.outputs.grype_version }}
+          SHA256: ${{ steps.scanner-versions.outputs.grype_amd64_sha256 }}
         run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh \
-            | sh -s -- -b /usr/local/bin v0.110.0
+          curl -sSfL "https://github.com/anchore/grype/releases/download/v${VERSION}/grype_${VERSION}_linux_amd64.tar.gz" \
+            -o /tmp/grype.tar.gz
+          echo "${SHA256}  /tmp/grype.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/grype.tar.gz -C /tmp grype
+          sudo install -m 0755 /tmp/grype /usr/local/bin/grype
+          rm /tmp/grype.tar.gz /tmp/grype
           grype version
 
       - name: Scanner status

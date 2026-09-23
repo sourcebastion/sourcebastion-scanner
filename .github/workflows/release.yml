@@ -488,12 +488,10 @@ jobs:
         env:
           RELEASE_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker-standard.outputs.image_digest }}
         run: |
-          docker run --rm \
-            -v "$(pwd):/scan" \
-            -w /scan \
-            "$RELEASE_IMAGE" \
-            scan . --sbom --sbom-output scan-results/sbom.cdx.json --severity medium --output /dev/null
-        continue-on-error: true
+          scripts/run-scanner-container.sh "$RELEASE_IMAGE" \
+            scan . --sbom --sbom-output scan-results/sbom.cdx.json \
+              --severity medium --output scan-results/sbom-scan.json
+          test -s scan-results/sbom.cdx.json
 
       - name: Upload scan artifacts to GitHub Release
         run: |

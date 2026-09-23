@@ -315,9 +315,11 @@ jobs:
           cd "$smoke_dir"
           "$GITHUB_WORKSPACE/scripts/run-scanner-container.sh" \
             ez-appsec:standard-rule-test \
-            github-scan . --output scan-results/ez-appsec.sarif --severity medium
+            scan . --sbom --sbom-output scan-results/sbom.cdx.json \
+              --severity medium --output scan-results/scan.json
           test -d .grype-deps
-          test -s scan-results/ez-appsec.sarif
+          test -s scan-results/scan.json
+          test -s scan-results/sbom.cdx.json
 
   build-docker-slim:
     name: Build Slim Docker Image

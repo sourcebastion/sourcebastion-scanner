@@ -246,7 +246,7 @@ def test_digest_scan_and_all_variants_gate_public_tag_promotion():
     )
     assert "needs.build-docker-standard.outputs.image_digest" in scan_environment
     assert ":v${VERSION}" not in scan_commands
-    assert scan_commands.count('scripts/run-scanner-container.sh "$RELEASE_IMAGE"') == 2
+    assert scan_commands.count('scripts/run-scanner-container.sh "$RELEASE_IMAGE"') == 3
 
     container_runner = CONTAINER_RUNNER_PATH.read_text(encoding="utf-8")
     assert '--user "$(id -u):$(id -g)"' in container_runner
@@ -278,9 +278,21 @@ def test_pr_ci_exercises_the_release_scanner_runtime():
 
     assert 'printf \'six==1.17.0\\n\'' in command
     assert '"$GITHUB_WORKSPACE/scripts/run-scanner-container.sh"' in command
-    assert "github-scan . --output scan-results/ez-appsec.sarif" in command
+    assert "scan . --sbom --sbom-output scan-results/sbom.cdx.json" in command
     assert "test -d .grype-deps" in command
-    assert "test -s scan-results/ez-appsec.sarif" in command
+    assert "test -s scan-results/scan.json" in command
+    assert "test -s scan-results/sbom.cdx.json" in command
+
+
+def test_release_sbom_is_required_and_written_to_real_files():
+    workflow = load_workflow()
+    steps = workflow["jobs"]["release-scan"]["steps"]
+    sbom = next(step for step in steps if step["name"] == "Generate SBOM")
+
+    assert sbom.get("continue-on-error") is None
+    assert "--output scan-results/sbom-scan.json" in sbom["run"]
+    assert "--output /dev/null" not in sbom["run"]
+    assert "test -s scan-results/sbom.cdx.json" in sbom["run"]
 
 
 def test_container_runner_maps_host_identity_and_checkout(tmp_path: Path):

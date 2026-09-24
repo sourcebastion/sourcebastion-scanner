@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: sourcebastion/sourcebastion-policy-engine
-          ref: 4724712faa56220c833efd146e9d2c0e062df1df # v0.1.0-rc5
+          ref: 864aaf597b1027a6be82aa374ad98fbdbc1ac992 # v0.1.0-rc6
           path: engine
           persist-credentials: false
       - name: Build pinned standalone engine

@@ -2,7 +2,10 @@
 
 import hashlib
 import json
+import os
+from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 from ez_appsec.cli import main
 from ez_appsec.cedar_adapter import evaluate_cedar, parity_result, snapshot_from_findings
@@ -125,3 +128,40 @@ def test_cli_cedar_error_exits_two_but_shadow_error_keeps_legacy_exit(monkeypatc
     shadow = runner.invoke(main, ["scan", str(tmp_path), "--config", str(config_path)])
     assert shadow.exit_code == 0
     assert "parity mismatch or evaluation error" in shadow.output
+
+
+@pytest.mark.integration
+def test_live_engine_over_real_scanner_artifacts(tmp_path):
+    """Run with the standalone release binary and example bundle when available."""
+    binary = os.getenv("SOURCEBASTION_POLICY_ENGINE_BINARY")
+    bundle = os.getenv("SOURCEBASTION_POLICY_ENGINE_BUNDLE")
+    if not binary or not bundle:
+        pytest.skip("set SOURCEBASTION_POLICY_ENGINE_BINARY and _BUNDLE for live proof")
+    binary_path = Path(binary)
+    pin = hashlib.sha256(binary_path.read_bytes()).hexdigest()
+    cases = [
+        ("clean", [], "passed", []),
+        ("blocked", [{"severity": "critical", "category": "secrets"}], "failed", []),
+        ("warning", [{"severity": "high", "category": "sast"}], "passed", ["repository/warn_high_sast"]),
+    ]
+    for name, findings, expected_status, expected_warnings in cases:
+        output_path = tmp_path / name / "vulnerabilities.json"
+        output_path.parent.mkdir(parents=True)
+        config = Config(policy_mode="cedar", cedar_policy_bundle=bundle,
+                        cedar_policy_binary=binary, cedar_binary_sha256=pin,
+                        output_file=str(output_path))
+        scanner = SecurityScanner(config, use_external_scanners=False)
+
+        class FakeExternal:
+            def scan_all(self, _path):
+                return [dict(finding, rule_id="fixture", title="fixture", description="fixture")
+                        for finding in findings]
+
+        scanner.use_external = True
+        scanner.external = FakeExternal()
+        result = scanner.scan(str(output_path.parent))
+        assert result["policy_cedar"]["status"] == expected_status
+        assert result["policy_cedar"]["warning_policy_ids"] == expected_warnings
+        artifact = json.loads(output_path.with_name(output_path.name + ".policy-result.json").read_text())
+        assert artifact["result"]["status"] == expected_status
+        assert artifact["schema_version"] == 1

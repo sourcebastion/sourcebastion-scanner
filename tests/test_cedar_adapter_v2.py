@@ -62,6 +62,51 @@ def test_first_scan_counts_everything_new_and_invalid_baseline_fails_closed():
         )
 
 
+@pytest.mark.parametrize(
+    "category,expected",
+    [
+        ("hardcoded_secret", "secrets"),
+        ("secret_detection", "secrets"),
+        ("secret-scanning", "secrets"),
+        ("static-analysis", "sast"),
+        ("infrastructure-as-code", "iac"),
+        ("dependency-scanning", "dependency_scanning"),
+        ("container-scanning", "container_images"),
+        ("container_images", "container_images"),
+    ],
+)
+def test_v2_explicit_category_aliases_match_hosted_persistence(category, expected):
+    snapshot = snapshot_v2_from_findings(
+        [{"finding_id": "one", "category": category, "severity": " HIGH "}],
+        baseline=TrustedBaseline("none", None, frozenset()),
+    )
+    assert snapshot["by_category"][expected]["new"]["high"] == 1
+
+
+def test_v2_unknown_scanner_label_cannot_assert_a_gate_category():
+    snapshot = snapshot_v2_from_findings(
+        [{"finding_id": "one", "category": "unmapped-tool", "scanner": "gitleaks",
+          "severity": "low"}],
+        baseline=TrustedBaseline("none", None, frozenset()),
+    )
+    assert snapshot["by_category"]["other"]["new"]["low"] == 1
+    assert snapshot["by_category"]["secrets"]["new"]["low"] == 0
+
+
+def test_v2_cve_metadata_promotes_only_unknown_category():
+    findings = [
+        {"finding_id": "one", "category": "vulnerability", "cve": "CVE-2026-1234"},
+        {"finding_id": "two", "category": "sast", "cve": "CVE-2026-5678"},
+        {"finding_id": "three", "category": "cve"},
+    ]
+    snapshot = snapshot_v2_from_findings(
+        findings, baseline=TrustedBaseline("none", None, frozenset()),
+    )
+    assert snapshot["by_category"]["cve"]["new"]["unknown"] == 1
+    assert snapshot["by_category"]["sast"]["new"]["unknown"] == 1
+    assert snapshot["by_category"]["other"]["new"]["unknown"] == 1
+
+
 def test_missing_v2_binary_is_non_green():
     result = evaluate_cedar_v2(
         [], baseline=_baseline(), bundle_path=None, binary_path=None, binary_sha256=None

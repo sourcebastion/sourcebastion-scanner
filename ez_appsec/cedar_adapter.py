@@ -42,25 +42,28 @@ class TrustedBaseline:
 
 
 def _v2_category(finding: Mapping[str, Any]) -> str:
-    """Map known scanner output categories; image origin takes precedence."""
-    value = str(finding.get("category") or finding.get("type") or "").strip().lower()
-    if value in {"container_scanning", "container", "container_images", "image"}:
+    """Match the hosted persisted-category vocabulary before Cedar evaluation."""
+    value = str(
+        finding.get("category") or finding.get("type") or finding.get("scan_type") or ""
+    ).strip().lower()
+    if value in {"container_scanning", "container-scanning", "container", "container_images", "image"}:
         return "container_images"
-    if value in {"hardcoded-secret", "secret", "secrets"}:
+    if value in {"hardcoded-secret", "hardcoded_secret", "secret", "secrets",
+                 "secret-detection", "secret_detection", "secretdetection",
+                 "secret-scanning", "secret_scanning"}:
         return "secrets"
-    if value in {"dependency", "dependencies", "dependency_scanning"}:
-        return "dependency_scanning"
-    if value in {"vulnerability", "vulnerabilities", "cve"}:
-        return "cve"
-    if value in V2_CATEGORIES:
-        return value
-    scanner = str(finding.get("scanner") or "").strip().lower()
-    if scanner == "gitleaks":
-        return "secrets"
-    if scanner in {"semgrep", "php-vuln-scanner"}:
+    if value in {"static-analysis", "static_analysis", "code", "sast"}:
         return "sast"
-    if scanner == "kics":
+    if value in {"infrastructure-as-code", "infrastructure_as_code", "iac"}:
         return "iac"
+    if value in {"dependency", "dependencies", "dependency-scanning",
+                 "dependency_scanning", "sca"}:
+        return "dependency_scanning"
+    # Hosted persistence keeps unrecognised categories as unknown. A CVE ID
+    # promotes only that unknown bucket to the CVE gate row; the scanner name
+    # alone must not silently assign a trusted category.
+    if finding.get("cve"):
+        return "cve"
     return "other"
 
 
@@ -118,7 +121,7 @@ def _error(code: str) -> dict[str, Any]:
 
 
 def _severity(finding: Mapping[str, Any]) -> str:
-    value = str(finding.get("severity") or "").lower()
+    value = str(finding.get("severity") or "").strip().lower()
     return value if value in SEVERITIES else "unknown"
 
 

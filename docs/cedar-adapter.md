@@ -1,6 +1,6 @@
 # Optional standalone Cedar adapter (M042)
 
-The scanner's PLAN-09 policy remains the default. The Cedar engine is developed and released by [`sourcebastion-policy-engine`](https://github.com/sourcebastion/sourcebastion-policy-engine), not imported into `ez_appsec.policy`.
+The scanner's PLAN-09 policy remains the default. The Cedar engine is developed and released by [`sourcebastion-policy-engine`](https://github.com/sourcebastion/sourcebastion-policy-engine), not imported into the scanner's legacy policy module.
 
 Set `policy_mode: shadow` to compare decisions without changing the PLAN-09 exit code, or `policy_mode: cedar` to enforce the standalone engine's 0/1/2 pass/fail/error mapping. Both modes require `cedar_policy_bundle`, `cedar_policy_binary` and `cedar_binary_sha256` in the scanner config. The last field is the SHA-256 of the exact local binary. The adapter also requires engine version `0.1.0`; use the signed release/checksum provenance appropriate for your environment. The SHA-256 check identifies bytes but cannot authenticate who supplied a guardrail bundle.
 
@@ -13,3 +13,14 @@ Rollback is `policy_mode: legacy` (or omit `policy_mode`). This does not change 
 For an integration proof with a locally built or downloaded standalone engine, set `SOURCEBASTION_POLICY_ENGINE_BINARY` to the exact binary path and `SOURCEBASTION_POLICY_ENGINE_BUNDLE` to the local bundle file, then run `python3 -m pytest -q tests/test_cedar_adapter.py tests/test_cedar_plan09_parity_live.py`. The live tests scan clean, blocked and warning fixtures through `SecurityScanner`, read the sibling policy artifact, and compare 14 supported PLAN-09 rule cases with exact Cedar IDs. Without those environment variables they are skipped; normal unit tests remain independent of the engine repository.
 
 The `cedar-packaged-adapter` workflow additionally builds this scanner as a wheel, installs it outside the source tree, and runs clean/blocked/warning, malformed-policy, shadow-mismatch, and legacy-rollback artifact proof against a commit-pinned standalone engine on native Linux amd64 and arm64. It also runs the 14-case PLAN-09 parity corpus from the installed wheel. It does not bundle Cedar into the scanner package or change its default mode.
+
+## M043 v2 snapshot adapter
+
+The optional v2 adapter counts complete post-ignore findings by category,
+severity, and new/existing cohort. It normalizes explicit scanner categories to
+the same gate rows as hosted persistence, including secret-detection, static
+analysis, dependency scanning, and container-image aliases. Unknown categories
+remain Other unless explicit CVE metadata identifies the finding; a scanner
+name alone does not grant a category. This prevents a local gate from silently
+using a different row than the hosted gate for the same finding. The platform's
+commit-pinned cross-consumer CI compares their full snapshot digests.

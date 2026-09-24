@@ -58,3 +58,10 @@ jobs:
             --engine "${GITHUB_WORKSPACE}/engine/target/release/sourcebastion-policy" \
             --bundle "${GITHUB_WORKSPACE}/engine/examples/bundle.json" \
             --artifacts "${RUNNER_TEMP}/m042-${{ matrix.architecture }}"
+      - name: Verify PLAN-09 parity against installed wheel
+        run: |
+          wheel-env/bin/python -m pip install 'pytest>=7,<9'
+          cd "${RUNNER_TEMP}"
+          SOURCEBASTION_POLICY_ENGINE_BINARY="${GITHUB_WORKSPACE}/engine/target/release/sourcebastion-policy" \
+            "${GITHUB_WORKSPACE}/wheel-env/bin/python" -m pytest --import-mode=importlib -q \
+            "${GITHUB_WORKSPACE}/scanner/tests/test_cedar_plan09_parity_live.py"

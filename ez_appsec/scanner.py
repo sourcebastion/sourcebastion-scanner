@@ -225,7 +225,10 @@ class SecurityScanner:
         resolved_count = len(set(previous_by_id) - current_ids)
         return {"new_count": new_count, "resolved_count": resolved_count}
 
-    def scan(self, path: str, custom_prompt: str = None) -> Dict[str, Any]:
+    def scan(
+        self, path: str, custom_prompt: str = None, *,
+        image: str | None = None, registry_auth: str | None = None,
+    ) -> Dict[str, Any]:
         """Execute a deterministic security scan without LLM enrichment.
 
         ``custom_prompt`` remains accepted for compatibility but is ignored.
@@ -254,6 +257,15 @@ class SecurityScanner:
             policy = self.config.license_policy.to_policy()
             license_result = check_licenses(str(base_path), policy)
             issues.extend(license_result["findings"])
+
+        # Include container findings in the same complete snapshot used by
+        # suppression, policy evaluation, tracking, and stored artifacts.
+        if image:
+            from .external_scanners import GrypeImageScanner
+
+            image_findings = GrypeImageScanner().scan(image, registry_auth=registry_auth)
+            issues.extend(image_findings)
+            scanner_results["image"] = len(image_findings)
 
         # Apply ignore rules (suppression)
         issues, self.suppressed_count = self._apply_ignore_rules(issues)

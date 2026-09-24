@@ -52,4 +52,4 @@ RUN curl -sSfL "https://github.com/anchore/grype/releases/download/v0.119.0/gryp
     chmod +x /usr/local/bin/grype
 
 WORKDIR /scan
-ENTRYPOINT ["ez-appsec"]
+ENTRYPOINT ["sourcebastion"]

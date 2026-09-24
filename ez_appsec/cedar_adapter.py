@@ -101,7 +101,7 @@ def evaluate_cedar(
         bundle_data = json.loads(bundle_bytes)
         if not isinstance(bundle_data, dict) or set(bundle_data) != {"bundles"}:
             return _error("INVALID_BUNDLE_FILE")
-        request = {"protocol_version": 1, "profile": "scan-gate.v1",
+        request = {"protocol_version": 1, "schema_version": 1, "profile": "scan-gate.v1",
                    "snapshot": snapshot, "bundles": bundle_data["bundles"]}
         input_bytes = json.dumps(request, sort_keys=True, separators=(",", ":")).encode("utf-8")
         if len(input_bytes) > MAX_REQUEST_BYTES:

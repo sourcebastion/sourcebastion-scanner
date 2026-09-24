@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from fnmatch import fnmatch
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 from pathlib import Path
 from pydantic import BaseModel, Field, field_validator
 
@@ -102,6 +102,10 @@ class Config(BaseModel):
     max_findings: int = 500
     ignore_rules: List[IgnoreRule] = Field(default_factory=list)
     policy_rules: List[PolicyRule] = Field(default_factory=list)
+    policy_mode: Literal["legacy", "shadow", "cedar"] = "legacy"
+    cedar_policy_bundle: Optional[str] = None
+    cedar_policy_binary: Optional[str] = None
+    cedar_binary_sha256: Optional[str] = None
     license_policy: Optional[LicensePolicyConfig] = None
 
     class Config:

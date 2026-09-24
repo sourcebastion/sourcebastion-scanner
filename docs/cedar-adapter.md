@@ -1,0 +1,11 @@
+# Optional standalone Cedar adapter (M042)
+
+The scanner's PLAN-09 policy remains the default. The Cedar engine is developed and released by [`sourcebastion-policy-engine`](https://github.com/sourcebastion/sourcebastion-policy-engine), not imported into `ez_appsec.policy`.
+
+Set `policy_mode: shadow` to compare decisions without changing the PLAN-09 exit code, or `policy_mode: cedar` to enforce the standalone engine's 0/1/2 pass/fail/error mapping. Both modes require `cedar_policy_bundle`, `cedar_policy_binary` and `cedar_binary_sha256` in the scanner config. The last field is the SHA-256 of the exact local binary. The adapter also requires engine version `0.1.0`; use the signed release/checksum provenance appropriate for your environment. The SHA-256 check identifies bytes but cannot authenticate who supplied a guardrail bundle.
+
+The bundle file is local JSON containing exactly `{"bundles": [{"id": "...", "policies": [{"id": "...", "source": "..."}]}]}`. A caller that needs an organization guardrail must assemble and protect the complete bundle file. A repository-controlled workflow can omit an organization policy; this adapter cannot detect that without an authenticated external binding.
+
+The adapter summarizes all post-ignore-suppression findings before the display severity filter. It sends counts only—no raw finding, source text, secret match, path, or credential. It refuses missing or mismatched binaries, malformed bundles, engine timeout, malformed result, and result/exit disagreement. In Cedar mode these are exit 2 and cannot produce a green gate. In shadow mode they are recorded as parity mismatches, but the legacy exit remains authoritative. The scanner writes a versioned sibling artifact named `<output filename>.policy-result.json` when an output path exists; it does not change the existing findings artifact shape.
+
+Rollback is `policy_mode: legacy` (or omit `policy_mode`). This does not change the Action or hosted platform policy. The hosted platform must reconstruct its own trusted full snapshot, choose branch/dismissed/resolved/suppressed semantics, and own its verdict.

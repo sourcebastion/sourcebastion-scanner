@@ -1,0 +1,60 @@
+name: cedar-packaged-adapter
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/cedar-adapter.yml'
+      - 'ez_appsec/cedar_adapter.py'
+      - 'ez_appsec/cli.py'
+      - 'ez_appsec/config.py'
+      - 'ez_appsec/scanner.py'
+      - 'scripts/verify_cedar_packaged.py'
+      - 'tests/test_cedar_adapter.py'
+      - 'tests/test_cedar_plan09_parity_live.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installed-wheel:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            architecture: amd64
+          - runner: ubuntu-24.04-arm
+            architecture: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: scanner
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: sourcebastion/sourcebastion-policy-engine
+          ref: bcf4db1f89f90c306966c5e3bcd801d30794c1b0 # v0.1.0-rc2
+          path: engine
+          persist-credentials: false
+      - name: Build pinned standalone engine
+        run: |
+          rustup toolchain install 1.98.1 --profile minimal
+          cd engine
+          cargo build --release --locked
+          target/release/sourcebastion-policy evaluate < examples/clean.json > result.json
+          cmp examples/clean.expected.json result.json
+      - name: Build and install scanner wheel
+        run: |
+          python3 -m venv wheel-env
+          wheel-env/bin/python -m pip install --upgrade pip wheel
+          wheel-env/bin/python -m pip wheel --no-deps ./scanner --wheel-dir wheelhouse
+          wheel-env/bin/python -m pip install wheelhouse/*.whl
+      - name: Verify installed wheel and real Cedar artifacts
+        run: |
+          cd "${RUNNER_TEMP}"
+          "${GITHUB_WORKSPACE}/wheel-env/bin/python" "${GITHUB_WORKSPACE}/scanner/scripts/verify_cedar_packaged.py" \
+            --engine "${GITHUB_WORKSPACE}/engine/target/release/sourcebastion-policy" \
+            --bundle "${GITHUB_WORKSPACE}/engine/examples/bundle.json" \
+            --artifacts "${RUNNER_TEMP}/m042-${{ matrix.architecture }}"

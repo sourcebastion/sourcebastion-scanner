@@ -12,6 +12,7 @@ from ez_appsec.config import Config
 from ez_appsec.external_scanners import ExternalScannerManager, ScannerExecutionError
 from ez_appsec.converters import VulnerabilityConverters, GitLabVulnerabilityFormat
 from ez_appsec.policy import PolicyEngine
+from ez_appsec.cedar_adapter import evaluate_cedar, parity_result
 from ez_appsec.license_checker import check_licenses
 from ez_appsec.schema import ScanRecord, compute_finding_id, finding_from_issue, generate_scan_id
 from ez_appsec.storage import get_storage_backend
@@ -263,6 +264,17 @@ class SecurityScanner:
             engine = PolicyEngine(self.config.policy_rules)
             policy_result = engine.evaluate(issues)
 
+        cedar_result = None
+        cedar_parity = None
+        if self.config.policy_mode != "legacy":
+            cedar_result = evaluate_cedar(
+                issues,
+                bundle_path=self.config.cedar_policy_bundle,
+                binary_path=self.config.cedar_policy_binary,
+                binary_sha256=self.config.cedar_binary_sha256,
+            )
+            cedar_parity = parity_result(issues, self.config.policy_rules, cedar_result)
+
         # Filter by severity
         if self.config.severity != "all":
             issues = self._filter_by_severity(issues, self.config.severity)
@@ -309,6 +321,28 @@ class SecurityScanner:
             result["policy_violations"] = policy_result["violations"]
             result["policy_failed"] = policy_result["failed"]
             result["policy_summary"] = policy_result["summary"]
+
+        if cedar_result is not None:
+            result["policy_mode"] = self.config.policy_mode
+            result["policy_cedar"] = cedar_result
+            result["policy_parity"] = cedar_parity
+            if output_path is not None:
+                policy_path = output_path.with_name(output_path.name + ".policy-result.json")
+                policy_artifact = {
+                    "schema_version": 1,
+                    "mode": self.config.policy_mode,
+                    "result": cedar_result,
+                    "parity": cedar_parity,
+                }
+                try:
+                    policy_path.write_text(json.dumps(policy_artifact, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+                    result["policy_result_path"] = str(policy_path)
+                except OSError:
+                    cedar_result["status"] = "error"
+                    cedar_result["diagnostic_codes"] = ["POLICY_ARTIFACT_WRITE_ERROR"]
+                    cedar_result["determining_policy_ids"] = []
+                    cedar_result["warning_policy_ids"] = []
+                    cedar_parity["mismatch"] = True
 
         if license_result is not None:
             result["license_summary"] = license_result["summary"]

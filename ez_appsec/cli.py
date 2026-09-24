@@ -221,12 +221,26 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
                         click.echo(f"    - {f['package']}@{f['package_version']}: {f['license']}")
 
         # Policy evaluation results
-        if results.get("policy_violations"):
+        if results.get("policy_violations") and results.get("policy_mode", "legacy") != "cedar":
             for v in results["policy_violations"]:
                 prefix = "✗ FAIL" if v["action"] == "fail" else "⚠ WARN"
                 click.echo(f"\n  {prefix}: {v['description']}", err=(v["action"] == "fail"))
 
-        if results.get("policy_failed"):
+        if results.get("policy_mode") in ("shadow", "cedar"):
+            cedar = results["policy_cedar"]
+            parity = results["policy_parity"]
+            click.echo(f"  Cedar policy ({results['policy_mode']}): {cedar['status']}")
+            if parity["mismatch"]:
+                click.echo("  ⚠ Cedar/PLAN-09 parity mismatch or evaluation error", err=True)
+            if results["policy_mode"] == "cedar":
+                if cedar["status"] == "error":
+                    click.echo("\n✗ Cedar policy could not be evaluated", err=True)
+                    sys.exit(2)
+                if cedar["status"] == "failed":
+                    click.echo("\n✗ Cedar policy check failed", err=True)
+                    sys.exit(1)
+
+        if results.get("policy_failed") and results.get("policy_mode", "legacy") != "cedar":
             click.echo(f"\n✗ Policy check failed", err=True)
             sys.exit(1)
 

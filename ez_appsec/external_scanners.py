@@ -1588,8 +1588,7 @@ class GrypeImageScanner:
 
     def scan(self, image: str, registry_auth: str = None) -> List[Dict[str, Any]]:
         if not self.is_installed():
-            logger.warning("grype not installed")
-            return []
+            raise ScannerExecutionError("grype-image", "not_installed")
 
         if not image:
             raise ValueError("Image reference is required (e.g. 'nginx:latest')")
@@ -1628,42 +1627,49 @@ class GrypeImageScanner:
                 with open(raw_output_path) as f:
                     data = json.load(f)
             except FileNotFoundError:
-                logger.error(
-                    "grype did not produce output (exit %s): %s",
-                    proc.returncode,
-                    (proc.stderr or "").strip()[:500],
-                )
-                return []
+                raise ScannerExecutionError("grype-image", "output_missing") from None
+
+            if not isinstance(data, dict) or not isinstance(data.get("matches"), list):
+                raise ScannerExecutionError("grype-image", "invalid_output")
 
             issues = []
             for match in data.get("matches", []):
                 vulnerability = match.get("vulnerability", {})
                 artifact = match.get("artifact", {})
+                artifact_name = artifact.get("name", "unknown")
+                artifact_version = artifact.get("version", "")
+                cve_id = vulnerability.get("id") or artifact_name
+                rule_id = f"{cve_id}:{artifact_name}@{artifact_version}"
                 severity_raw = (vulnerability.get("severity") or "medium").lower()
                 if severity_raw not in ("low", "medium", "high", "critical"):
                     severity_raw = "medium"
 
-                issues.append({
+                finding = {
                     "type": "Dependency",
                     "category": "container_scanning",
-                    "title": f"{artifact.get('name', 'unknown')} - {vulnerability.get('id', 'unknown')}",
+                    "rule_id": rule_id,
+                    "title": f"{artifact_name} - {vulnerability.get('id', 'unknown')}",
                     "description": vulnerability.get("description", "Known vulnerability in container image package"),
                     "file": f"image: {image}",
+                    "line": 1,
                     "severity": severity_raw,
                     "scanner": "grype",
+                    "cve_id": cve_id,
                     "cve": vulnerability.get("id"),
-                })
+                }
+                finding["finding_id"] = compute_finding_id(rule_id, finding["file"], finding["line"])
+                finding["schema_version"] = "2"
+                issues.append(finding)
 
             return issues
         except subprocess.TimeoutExpired:
-            logger.error("grype image scan timed out")
-            return []
+            raise ScannerExecutionError("grype-image", "timeout") from None
         except json.JSONDecodeError:
-            logger.error("grype image scan output is not valid JSON")
-            return []
-        except Exception as e:
-            logger.error(f"grype image scan failed: {e}")
-            return []
+            raise ScannerExecutionError("grype-image", "invalid_output") from None
+        except ScannerExecutionError:
+            raise
+        except Exception:
+            raise ScannerExecutionError("grype-image", "execution_failed") from None
         finally:
             try:
                 os.unlink(raw_output_path)

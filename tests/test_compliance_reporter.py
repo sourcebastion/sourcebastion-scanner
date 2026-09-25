@@ -268,6 +268,7 @@ class TestNormalizeCategory:
 
     def test_container_scanning_alias(self):
         assert normalize_category({"category": "container_scanning"}) == "dependency_scanning"
+        assert normalize_category({"category": "container"}) == "dependency_scanning"
 
     def test_unknown_category_lowercased(self):
         assert normalize_category({"category": "custom_scanner"}) == "custom_scanner"

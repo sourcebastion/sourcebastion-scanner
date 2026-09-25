@@ -11,16 +11,107 @@ import hashlib
 import json
 import re
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 
 ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION_V2 = "0.2.0"
 SEVERITIES = ("critical", "high", "medium", "low", "info", "unknown")
 CATEGORIES = ("secrets", "sast", "iac", "cve", "dependency_scanning", "other")
+V2_CATEGORIES = ("secrets", "sast", "iac", "cve", "dependency_scanning", "container_images", "other")
 MAX_REQUEST_BYTES = 1024 * 1024
 MAX_BINARY_BYTES = 128 * 1024 * 1024
 PIN_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
+@dataclass(frozen=True)
+class TrustedBaseline:
+    """Caller-verified baseline identity and current finding IDs.
+
+    This type is an explicit trust boundary, not proof of verification. CI or
+    the hosted consumer must authenticate the protected ref or prior complete
+    scan before constructing it. A fetch error must never become kind=none.
+    """
+
+    kind: str
+    digest: str | None
+    finding_ids: frozenset[str]
+
+
+def _v2_category(finding: Mapping[str, Any]) -> str:
+    """Match the hosted persisted-category vocabulary before Cedar evaluation."""
+    value = str(
+        finding.get("category") or finding.get("type") or finding.get("scan_type") or ""
+    ).strip().lower()
+    if value in {"container_scanning", "container-scanning", "container", "container_images", "image"}:
+        return "container_images"
+    if value in {"hardcoded-secret", "hardcoded_secret", "secret", "secrets",
+                 "secret-detection", "secret_detection", "secretdetection",
+                 "secret-scanning", "secret_scanning"}:
+        return "secrets"
+    if value in {"static-analysis", "static_analysis", "code", "sast"}:
+        return "sast"
+    if value in {"infrastructure-as-code", "infrastructure_as_code", "iac"}:
+        return "iac"
+    if value in {"dependency", "dependencies", "dependency-scanning",
+                 "dependency_scanning", "sca"}:
+        return "dependency_scanning"
+    # Hosted persistence keeps unrecognised categories as unknown. A CVE ID
+    # promotes only that unknown bucket to the CVE gate row; the scanner name
+    # alone must not silently assign a trusted category.
+    if finding.get("cve"):
+        return "cve"
+    return "other"
+
+
+def snapshot_v2_from_findings(
+    findings: Iterable[Mapping[str, Any]], *, baseline: TrustedBaseline
+) -> dict[str, Any]:
+    """Build the complete post-ignore category/cohort snapshot for v2.
+
+    No display severity filter belongs here. Raw findings stay on the consumer
+    side; only counts and the authenticated baseline identity cross to Cedar.
+    """
+    if not isinstance(baseline, TrustedBaseline):
+        raise ValueError("verified baseline is required")
+    if not isinstance(baseline.finding_ids, frozenset) or any(
+        not isinstance(value, str) or not value for value in baseline.finding_ids
+    ):
+        raise ValueError("baseline finding IDs must be non-empty strings")
+    if baseline.kind == "none":
+        if baseline.digest is not None or baseline.finding_ids:
+            raise ValueError("first baseline cannot have prior findings")
+    elif baseline.kind in {"target_ref", "prior_ref"}:
+        if not isinstance(baseline.digest, str) or not DIGEST_PATTERN.fullmatch(baseline.digest):
+            raise ValueError("baseline digest is required")
+    else:
+        raise ValueError("unknown baseline kind")
+    counts = {
+        category: {cohort: {level: 0 for level in SEVERITIES} for cohort in ("new", "existing")}
+        for category in V2_CATEGORIES
+    }
+    seen: set[str] = set()
+    for finding in findings:
+        if not isinstance(finding, Mapping):
+            raise ValueError("finding is not a mapping")
+        finding_id = finding.get("finding_id")
+        if not isinstance(finding_id, str) or not finding_id or finding_id in seen:
+            raise ValueError("finding IDs must be unique non-empty strings")
+        seen.add(finding_id)
+        category = _v2_category(finding)
+        cohort = "existing" if finding_id in baseline.finding_ids else "new"
+        counts[category][cohort][_severity(finding)] += 1
+    snapshot = {
+        "kind": "full", "complete": True, "suppression_basis": "post-ignore",
+        "baseline": {"kind": baseline.kind, "digest": baseline.digest},
+        "finding_count": len(seen), "by_category": counts,
+    }
+    canonical = json.dumps(snapshot, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    snapshot["digest"] = "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return snapshot
 
 
 def _error(code: str) -> dict[str, Any]:
@@ -30,7 +121,7 @@ def _error(code: str) -> dict[str, Any]:
 
 
 def _severity(finding: Mapping[str, Any]) -> str:
-    value = str(finding.get("severity") or "").lower()
+    value = str(finding.get("severity") or "").strip().lower()
     return value if value in SEVERITIES else "unknown"
 
 
@@ -124,6 +215,56 @@ def evaluate_cedar(
             or result.get("profile") != "scan-gate.v1"
             or result.get("schema_version") != 1
             or result.get("engine_version") != ENGINE_VERSION
+            or result.get("snapshot_digest") != snapshot["digest"]):
+        return _error("INVALID_ENGINE_RESULT")
+    return result
+
+
+def evaluate_cedar_v2(
+    findings: Iterable[Mapping[str, Any]], *, baseline: TrustedBaseline,
+    bundle_path: str | None, binary_path: str | None, binary_sha256: str | None,
+) -> dict[str, Any]:
+    """Invoke the pinned v2 engine over a caller-verified complete snapshot."""
+    try:
+        snapshot = snapshot_v2_from_findings(findings, baseline=baseline)
+    except (ValueError, TypeError, OverflowError):
+        return _error("INVALID_SNAPSHOT")
+    if not bundle_path or not binary_path or not binary_sha256:
+        return _error("MISSING_CEDAR_CONFIGURATION")
+    if not _binary_matches_pin(Path(binary_path), binary_sha256):
+        return _error("BINARY_PIN_MISMATCH")
+    try:
+        with Path(bundle_path).open("rb") as handle:
+            bundle_bytes = handle.read(MAX_REQUEST_BYTES + 1)
+        if len(bundle_bytes) > MAX_REQUEST_BYTES:
+            return _error("RESOURCE_LIMIT")
+        bundle_data = json.loads(bundle_bytes)
+        if not isinstance(bundle_data, dict) or set(bundle_data) != {"bundles"}:
+            return _error("INVALID_BUNDLE_FILE")
+        request = {
+            "protocol_version": 1, "schema_version": 2, "profile": "scan-gate.v2",
+            "snapshot": snapshot, "bundles": bundle_data["bundles"],
+        }
+        input_bytes = json.dumps(request, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        if len(input_bytes) > MAX_REQUEST_BYTES:
+            return _error("RESOURCE_LIMIT")
+        completed = subprocess.run(
+            [binary_path, "evaluate"], input=input_bytes, capture_output=True,
+            timeout=8, check=False,
+        )
+        if len(completed.stdout) > 64 * 1024:
+            return _error("INVALID_ENGINE_RESULT")
+        result = json.loads(completed.stdout)
+    except (OSError, ValueError, TypeError, subprocess.TimeoutExpired):
+        return _error("ENGINE_UNAVAILABLE")
+    if not isinstance(result, dict):
+        return _error("INVALID_ENGINE_RESULT")
+    expected_code = {"passed": 0, "failed": 1, "error": 2}.get(result.get("status"))
+    if (expected_code is None or completed.returncode != expected_code
+            or result.get("protocol_version") != 1
+            or result.get("profile") != "scan-gate.v2"
+            or result.get("schema_version") != 2
+            or result.get("engine_version") != ENGINE_VERSION_V2
             or result.get("snapshot_digest") != snapshot["digest"]):
         return _error("INVALID_ENGINE_RESULT")
     return result

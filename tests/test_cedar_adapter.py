@@ -154,7 +154,10 @@ def test_policy_and_artifact_include_image_findings(monkeypatch, tmp_path):
     assert result["scanner_results"]["image"] == 1
     assert result["scan_record"]["finding_count"] == 2
     assert result["total"] == 2
-    assert "image" in (tmp_path / "vulnerabilities.json").read_text(encoding="utf-8")
+    artifact = json.loads((tmp_path / "vulnerabilities.json").read_text(encoding="utf-8"))
+    assert {finding["category"] for finding in artifact["vulnerabilities"]} == {
+        "sast", "container",
+    }
 
 
 def test_cli_cedar_error_exits_two_but_shadow_error_keeps_legacy_exit(monkeypatch, tmp_path):

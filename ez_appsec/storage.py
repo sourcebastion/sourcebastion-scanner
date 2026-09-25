@@ -195,6 +195,10 @@ def _load_sqlalchemy_models() -> Tuple[Any, Type[Any], Type[Any]]:
             "Install ez-appsec with the 'sql' extra."
         ) from exc
 
+    # Deferred annotations are resolved against this module, not the local
+    # function scope where the optional ORM dependency was imported.
+    globals()["Mapped"] = Mapped
+
     class Base(DeclarativeBase):
         pass
 

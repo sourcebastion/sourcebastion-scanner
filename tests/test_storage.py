@@ -114,6 +114,15 @@ class TestJsonFileBackend:
         assert findings[0].category is Category.sast
         assert findings[0].ai_context == {"safe_api": "bcrypt"}
 
+    def test_image_category_round_trips_json(self, tmp_path):
+        backend = JsonFileBackend()
+        image = make_finding(category=Category.container)
+        output_path = backend.write_findings([image], make_scan_record(), tmp_path)
+
+        assert backend.read_findings(output_path)[0].category is Category.container
+        payload = json.loads(output_path.read_text())
+        assert payload["vulnerabilities"][0]["category"] == "container"
+
     def test_read_scan_records_round_trips_embedded_scan_record(self, tmp_path):
         backend = JsonFileBackend()
         scan_record = make_scan_record()
@@ -221,6 +230,12 @@ class TestSqlBackend:
         assert backend.read_findings(tmp_path) == [finding]
         assert backend.list_findings(scan_id="scan-1") == [finding]
         assert backend.list_findings(scan_id="missing") == []
+
+    def test_image_category_round_trips_sql(self, backend, tmp_path):
+        image = make_finding(category=Category.container)
+        backend.write_findings([image], make_scan_record(), tmp_path)
+
+        assert backend.read_findings(tmp_path)[0].category is Category.container
 
     def test_write_and_read_scan_records_round_trips_models(self, backend, tmp_path):
         scan_record = make_scan_record()

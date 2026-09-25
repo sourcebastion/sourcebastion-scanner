@@ -23,4 +23,7 @@ analysis, dependency scanning, and container-image aliases. Unknown categories
 remain Other unless explicit CVE metadata identifies the finding; a scanner
 name alone does not grant a category. This prevents a local gate from silently
 using a different row than the hosted gate for the same finding. The platform's
-commit-pinned cross-consumer CI compares their full snapshot digests.
+commit-pinned cross-consumer CI compares their full snapshot digests. Container
+image findings also retain a distinct `container` category in the serialized
+scan artifact; they are not rewritten as dependency findings before hosted
+ingestion.

@@ -435,3 +435,35 @@ class TestScanTracking:
         assert finding["trend"] == "unchanged"
         assert second_result["scan_record"]["new_count"] == 0
         assert second_result["scan_record"]["resolved_count"] == 0
+
+    def test_display_filter_cannot_change_tracking_or_authoritative_artifact(self, tmp_path):
+        findings = [
+            {
+                "rule_id": "low.rule", "title": "Low", "description": "Low",
+                "file": "low.py", "line": 1, "severity": "low",
+                "category": "sast",
+            },
+            {
+                "rule_id": "high.rule", "title": "High", "description": "High",
+                "file": "high.py", "line": 1, "severity": "high",
+                "category": "sast",
+            },
+        ]
+        config = Config(severity="high", output_file=str(tmp_path / "vulnerabilities.json"))
+        scanner = SecurityScanner(config)
+        scanner.external = _FakeExternalScanner(findings)
+
+        result = scanner.scan(str(tmp_path))
+        persisted = json.loads(Path(config.output_file).read_text())
+
+        assert [finding["rule_id"] for finding in result["issues"]] == ["high.rule"]
+        assert {finding["rule_id"] for finding in result["complete_issues"]} == {
+            "low.rule", "high.rule"
+        }
+        assert result["total"] == 1
+        assert result["complete_total"] == 2
+        assert result["scan_record"]["finding_count"] == 2
+        assert result["scan_record"]["new_count"] == 2
+        assert {finding["rule_id"] for finding in persisted["vulnerabilities"]} == {
+            "low.rule", "high.rule"
+        }

@@ -19,6 +19,7 @@ _CATEGORY_ALIASES: Dict[str, str] = {
     "dast": "dast",
     "dependency_scanning": "dependency_scanning",
     "container_scanning": "dependency_scanning",
+    "container": "dependency_scanning",
     "cve": "cve",
     "iac": "iac",
     "infrastructure as code": "iac",

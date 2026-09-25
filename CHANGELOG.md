@@ -1,3 +1,11 @@
+## Unreleased
+
+### Compatibility notes
+
+* persist container findings with the distinct `container` category instead of rewriting them as dependency findings
+* report `scan_record.finding_count` from the complete post-suppression snapshot; reports still honor the configured severity filter through `result.issues`
+* raise when Grype or license component execution fails rather than treating the failed component as an empty result
+
 ## [1.7.33](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.32...v1.7.33) (2026-09-23)
 
 

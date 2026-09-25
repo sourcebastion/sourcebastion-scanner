@@ -225,7 +225,10 @@ class SecurityScanner:
         resolved_count = len(set(previous_by_id) - current_ids)
         return {"new_count": new_count, "resolved_count": resolved_count}
 
-    def scan(self, path: str, custom_prompt: str = None) -> Dict[str, Any]:
+    def scan(
+        self, path: str, custom_prompt: str = None, *,
+        image: Optional[str] = None, registry_auth: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Execute a deterministic security scan without LLM enrichment.
 
         ``custom_prompt`` remains accepted for compatibility but is ignored.
@@ -255,8 +258,25 @@ class SecurityScanner:
             license_result = check_licenses(str(base_path), policy)
             issues.extend(license_result["findings"])
 
+        # Include container findings in the same complete snapshot used by
+        # suppression, policy evaluation, tracking, and stored artifacts.
+        if image:
+            from .external_scanners import GrypeImageScanner
+
+            image_findings = GrypeImageScanner().scan(image, registry_auth=registry_auth)
+            issues.extend(image_findings)
+            scanner_results["image"] = len(image_findings)
+
         # Apply ignore rules (suppression)
         issues, self.suppressed_count = self._apply_ignore_rules(issues)
+
+        # Track the complete post-suppression snapshot before any display-only
+        # severity filtering. Finding IDs must be assigned consistently whether
+        # a caller asked for a filtered report or the authoritative artifact.
+        tracking_counts = self._apply_scan_tracking(
+            issues, previous_findings, scan_id, scan_timestamp
+        )
+        complete_issues = issues
 
         # Evaluate policy rules (before severity filter so all findings are considered)
         policy_result = None
@@ -276,16 +296,16 @@ class SecurityScanner:
             cedar_parity = parity_result(issues, self.config.policy_rules, cedar_result)
 
         # Filter by severity
+        reported_issues = complete_issues
         if self.config.severity != "all":
-            issues = self._filter_by_severity(issues, self.config.severity)
-
-        tracking_counts = self._apply_scan_tracking(
-            issues, previous_findings, scan_id, scan_timestamp
-        )
+            reported_issues = self._filter_by_severity(complete_issues, self.config.severity)
 
         # Sort by severity
         severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-        issues.sort(
+        complete_issues.sort(
+            key=lambda x: severity_order.get(x.get("severity", "low"), 4)
+        )
+        reported_issues.sort(
             key=lambda x: severity_order.get(x.get("severity", "low"), 4)
         )
 
@@ -294,7 +314,7 @@ class SecurityScanner:
             scan_timestamp=scan_timestamp,
             project=str(base_path),
             scanner_versions={},
-            finding_count=len(issues),
+            finding_count=len(complete_issues),
             new_count=tracking_counts["new_count"],
             resolved_count=tracking_counts["resolved_count"],
             duration_seconds=time.monotonic() - started_at,
@@ -302,12 +322,14 @@ class SecurityScanner:
         configured_output = getattr(self.config, "output_file", None)
         output_path = None
         if configured_output:
-            stored_findings = [finding_from_issue(issue) for issue in issues]
+            stored_findings = [finding_from_issue(issue) for issue in complete_issues]
             output_path = self.storage_backend.write_findings(stored_findings, scan_record, results_path)
 
         result = {
-            "issues": issues,
-            "total": len(issues),
+            "issues": reported_issues,
+            "complete_issues": complete_issues,
+            "total": len(reported_issues),
+            "complete_total": len(complete_issues),
             "suppressed": self.suppressed_count,
             "path": str(base_path),
             "scanner_results": scanner_results,

@@ -194,6 +194,10 @@ class TestNormalizeCategory:
     def test_dependency_scanning_alias(self):
         assert normalize_category("dependency_scanning") is Category.dependency
 
+    def test_container_scanning_alias_preserves_image_origin(self):
+        assert normalize_category("container_scanning") is Category.container
+        assert normalize_category("container_images") is Category.container
+
     def test_case_insensitive(self):
         assert normalize_category("SAST") is Category.sast
         assert normalize_category("Hardcoded-Secret") is Category.secrets
@@ -243,6 +247,20 @@ class TestFindingFromIssue:
         }
         f = finding_from_issue(issue)
         assert f.category is Category.secrets
+
+    def test_image_finding_survives_output_as_container(self):
+        issue = {
+            "rule_id": "CVE-2026-1111",
+            "file": "image:app",
+            "line": 0,
+            "severity": "high",
+            "category": "container_scanning",
+            "scanner": "grype",
+            "cve": "CVE-2026-1111",
+        }
+        finding = finding_from_issue(issue)
+        assert finding.category is Category.container
+        assert finding.model_dump(mode="json")["category"] == "container"
 
     def test_extra_scanner_fields_retained(self):
         issue = {

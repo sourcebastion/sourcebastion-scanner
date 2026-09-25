@@ -1,4 +1,4 @@
-# Thin ez-appsec image: standard scanners, no runtime package managers.
+# Thin SourceBastion image: standard scanners, no runtime package managers.
 #
 # Tradeoff: grype dependency discovery will not auto-run npm/pip for projects
 # that only have package.json or requirements.txt. Commit lockfiles/SBOMs, or
@@ -120,6 +120,6 @@ USER ezappsec
 WORKDIR /scan
 ENV HOME=/home/ezappsec
 
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD ez-appsec --version || exit 1
-ENTRYPOINT ["ez-appsec"]
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD sourcebastion --version || exit 1
+ENTRYPOINT ["sourcebastion"]
 CMD ["--help"]

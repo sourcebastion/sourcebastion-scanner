@@ -201,29 +201,18 @@ class TestContainerScanCLI:
             mock_scanner_instance.scan.return_value = {
                 "issues": [],
                 "total": 0,
+                "scanner_results": {"image": 1},
             }
             MockScanner.return_value = mock_scanner_instance
-
-            mock_image_instance = MagicMock()
-            mock_image_instance.scan.return_value = [
-                {
-                    "type": "Dependency",
-                    "category": "container_scanning",
-                    "title": "libfoo - CVE-2024-9999",
-                    "description": "Test vuln",
-                    "file": "image: nginx:1.25",
-                    "severity": "high",
-                    "scanner": "grype",
-                    "cve": "CVE-2024-9999",
-                },
-            ]
-            MockImageScanner.return_value = mock_image_instance
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 result = runner.invoke(main, ["scan", tmpdir, "--image", "nginx:1.25"])
 
             assert result.exit_code == 0
-            mock_image_instance.scan.assert_called_once_with("nginx:1.25", registry_auth=None)
+            mock_scanner_instance.scan.assert_called_once_with(
+                tmpdir, image="nginx:1.25", registry_auth=None
+            )
+            MockImageScanner.assert_not_called()
             assert "Container image scan" in result.output
 
     def test_registry_auth_flag_forwarded(self):
@@ -234,12 +223,8 @@ class TestContainerScanCLI:
         with patch("ez_appsec.cli.SecurityScanner") as MockScanner, \
              patch("ez_appsec.external_scanners.GrypeImageScanner") as MockImageScanner:
             mock_scanner_instance = MagicMock()
-            mock_scanner_instance.scan.return_value = {"issues": [], "total": 0}
+            mock_scanner_instance.scan.return_value = {"issues": [], "total": 0, "scanner_results": {"image": 0}}
             MockScanner.return_value = mock_scanner_instance
-
-            mock_image_instance = MagicMock()
-            mock_image_instance.scan.return_value = []
-            MockImageScanner.return_value = mock_image_instance
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 result = runner.invoke(main, [
@@ -249,6 +234,7 @@ class TestContainerScanCLI:
                 ])
 
             assert result.exit_code == 0
-            mock_image_instance.scan.assert_called_once_with(
-                "reg.example.com/app:v2", registry_auth="user:secret"
+            mock_scanner_instance.scan.assert_called_once_with(
+                tmpdir, image="reg.example.com/app:v2", registry_auth="user:secret"
             )
+            MockImageScanner.assert_not_called()

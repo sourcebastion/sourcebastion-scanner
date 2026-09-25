@@ -20,6 +20,7 @@ class Category(str, Enum):
     sast = "sast"
     iac = "iac"
     dependency = "dependency"
+    container = "container"
     license = "license"
     unknown = "unknown"
 
@@ -33,7 +34,10 @@ _CATEGORY_ALIASES = {
     "secret_detection": Category.secrets,
     "secret-detection": Category.secrets,
     "dependency_scanning": Category.dependency,
-    "container_scanning": Category.dependency,
+    "container_scanning": Category.container,
+    "container-scanning": Category.container,
+    "container_images": Category.container,
+    "image": Category.container,
 }
 
 

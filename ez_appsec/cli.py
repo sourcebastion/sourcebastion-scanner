@@ -67,20 +67,19 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
                 click.echo(f"  Custom rules: {', '.join(rules)} ({len(extra_dirs)} pack(s))")
         if ai_prompt:
             click.echo("Warning: --ai-prompt is ignored; scans never call LLM providers.", err=True)
-        results = scanner.scan(path)
+        results = (
+            scanner.scan(path, image=image, registry_auth=registry_auth)
+            if image else scanner.scan(path)
+        )
 
-        if image:
-            from ez_appsec.external_scanners import GrypeImageScanner
-            image_scanner = GrypeImageScanner()
-            image_findings = image_scanner.scan(image, registry_auth=registry_auth)
-            results["issues"].extend(image_findings)
-            results["total"] = len(results["issues"])
-            if image_findings:
-                click.echo(f"\n✓ Container image scan: {len(image_findings)} finding(s) from {image}")
+        if image and results["scanner_results"].get("image", 0):
+            image_count = results["scanner_results"]["image"]
+            click.echo(f"\n✓ Container image scan: {image_count} finding(s) from {image}")
 
         if baseline_path:
             baseline = load_baseline(baseline_path)
-            new_findings, existing_findings = diff_findings(results["issues"], baseline)
+            complete_findings = results.get("complete_issues", results["issues"])
+            new_findings, existing_findings = diff_findings(complete_findings, baseline)
             results["issues"] = new_findings
             results["total"] = len(new_findings)
             results["baseline_existing"] = len(existing_findings)

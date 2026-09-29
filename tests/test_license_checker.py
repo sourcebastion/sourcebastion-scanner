@@ -16,6 +16,7 @@ from ez_appsec.license_checker import (
     _normalize_license,
 )
 from ez_appsec.config import Config, LicensePolicyConfig
+from ez_appsec.external_scanners import ScannerExecutionError
 
 
 # --- Helpers ---
@@ -295,12 +296,24 @@ class TestCheckLicenses:
         assert result["summary"]["unknown"] == 1
         assert len(result["findings"]) == 2
 
-    def test_no_syft_data_returns_empty(self):
+    def test_no_syft_data_is_not_a_passing_empty_scan(self, monkeypatch):
         policy = LicensePolicy(denied_licenses=["GPL*"])
-        result = check_licenses(".", policy, syft_json=None)
-        assert result["findings"] == []
-        assert result["packages"] == []
-        assert result["summary"]["total"] == 0
+        monkeypatch.setattr(
+            "ez_appsec.license_checker.run_syft",
+            lambda _path: (None, ""),
+        )
+        with pytest.raises(ScannerExecutionError, match="not_installed"):
+            check_licenses(".", policy, syft_json=None)
+
+    def test_syft_execution_failure_is_not_a_passing_empty_scan(self, monkeypatch):
+        policy = LicensePolicy(denied_licenses=["GPL*"])
+        monkeypatch.setattr(
+            "ez_appsec.license_checker.run_syft",
+            lambda _path: (None, "/tmp/syft-incomplete.json"),
+        )
+
+        with pytest.raises(ScannerExecutionError, match="execution_failed"):
+            check_licenses(".", policy, syft_json=None)
 
     def test_empty_packages(self):
         policy = LicensePolicy(denied_licenses=["GPL*"])

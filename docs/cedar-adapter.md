@@ -26,4 +26,29 @@ using a different row than the hosted gate for the same finding. The platform's
 commit-pinned cross-consumer CI compares their full snapshot digests. Container
 image findings also retain a distinct `container` category in the serialized
 scan artifact; they are not rewritten as dependency findings before hosted
-ingestion.
+ingestion. The adapter is opt-in for callers that supply a trusted baseline;
+legacy and Cedar v1 rollback remain available until a separate CI cutover.
+It is intentionally a standalone integration surface and is not yet reachable
+through `SecurityScanner` or the CLI. The non-live v2 conformance tests enforce
+snapshot validity and the negative protocol cases; live execution remains opt-in.
+
+Do not connect the v2 adapter to `SecurityScanner` or the CLI until both of the
+following are defined and reviewed:
+
+1. an authenticated baseline-construction path that obtains the protected ref or
+   prior complete scan from a trusted hosted source, rejects fetch/verification
+   failures, and validates the baseline digest without treating that digest as
+   proof of origin; and
+2. an explicit consumer trust boundary that defines who may supply the v2
+   binary and bundle, how their provenance is authenticated, and which CI or
+   hosted consumer may enforce the result.
+
+Before that enforcement cutover, operators must record and verify trusted
+provenance for the exact v2 binary and bundle bytes: build or download them only
+from the protected engine release flow, verify the release signature and
+checksum against the pinned source commit and published digest, retain the
+release approval/attestation with the scan configuration, and regenerate the
+bundle from that reviewed source when it changes. A locally built binary is
+acceptable only for shadow/integration testing, never enforcement. SHA-256
+pinning confirms only that the bytes are unchanged; it does not establish who
+built them, from which source, or with whose approval.

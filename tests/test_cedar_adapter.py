@@ -10,6 +10,7 @@ from click.testing import CliRunner
 from ez_appsec.cli import main
 from ez_appsec.cedar_adapter import evaluate_cedar, parity_result, snapshot_from_findings
 from ez_appsec.config import Config, IgnoreRule
+from ez_appsec.external_scanners import ScannerExecutionError
 from ez_appsec.policy import PolicyRule
 from ez_appsec.scanner import SecurityScanner
 
@@ -204,6 +205,22 @@ def test_cli_cedar_gate_can_fail_on_image_finding(monkeypatch, tmp_path):
     assert {finding["rule_id"] for finding in observed} == {"image"}
     assert "Container image scan: 1 finding" in result.output
     assert "Cedar policy check failed" in result.output
+
+
+def test_image_component_failure_never_writes_an_authoritative_pass(tmp_path, monkeypatch):
+    config = Config(output_file=str(tmp_path / "vulnerabilities.json"))
+    scanner = SecurityScanner(config, use_external_scanners=False)
+    monkeypatch.setattr(
+        "ez_appsec.external_scanners.GrypeImageScanner.scan",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ScannerExecutionError("grype-image", "output_missing")
+        ),
+    )
+
+    with pytest.raises(ScannerExecutionError):
+        scanner.scan(str(tmp_path), image="app:1")
+
+    assert not (tmp_path / "vulnerabilities.json").exists()
 
 
 @pytest.mark.integration

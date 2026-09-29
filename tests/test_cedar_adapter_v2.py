@@ -9,6 +9,8 @@ from pathlib import Path
 import pytest
 
 from ez_appsec.cedar_adapter import (
+    ENGINE_VERSION_V2,
+    MAX_REQUEST_BYTES,
     TrustedBaseline,
     V2_CATEGORIES,
     evaluate_cedar_v2,
@@ -113,6 +115,211 @@ def test_missing_v2_binary_is_non_green():
     )
     assert result["status"] == "error"
     assert result["diagnostic_codes"] == ["MISSING_CEDAR_CONFIGURATION"]
+
+
+def _pinned_engine(tmp_path):
+    binary = tmp_path / "engine"
+    binary.write_bytes(b"fake-engine-bytes")
+    pin = hashlib.sha256(binary.read_bytes()).hexdigest()
+    return binary, pin
+
+
+def _bundle(tmp_path, value='{"bundles":[]}'):
+    bundle = tmp_path / "bundle.json"
+    bundle.write_text(value, encoding="utf-8")
+    return bundle
+
+
+def test_v2_rejects_a_binary_that_does_not_match_its_pin(tmp_path):
+    binary, _ = _pinned_engine(tmp_path)
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path)),
+        binary_path=str(binary), binary_sha256="0" * 64,
+    )
+
+    assert result["status"] == "error"
+    assert result["diagnostic_codes"] == ["BINARY_PIN_MISMATCH"]
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        b"not-json", b"\xff", b"[]", b"{}",
+        json.dumps({"status": "unexpected"}).encode("ascii"),
+        b'{"status":[]}', b'{"status":{}}',
+    ],
+    ids=[
+        "not-json", "invalid-encoding", "not-object", "empty-object",
+        "unknown-status", "list-status", "object-status",
+    ],
+)
+def test_v2_rejects_malformed_engine_output(tmp_path, monkeypatch, payload):
+    binary, pin = _pinned_engine(tmp_path)
+    monkeypatch.setattr(
+        "ez_appsec.cedar_adapter.subprocess.run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            [str(binary), "evaluate"], 0, stdout=payload, stderr=b""
+        ),
+    )
+
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+
+    assert result["status"] == "error"
+    assert result["diagnostic_codes"] == ["INVALID_ENGINE_RESULT"]
+
+
+def test_v2_accepts_a_fully_valid_engine_response(tmp_path, monkeypatch):
+    binary, pin = _pinned_engine(tmp_path)
+    snapshot = snapshot_v2_from_findings([], baseline=_baseline())
+    engine_result = {
+        "status": "passed",
+        "protocol_version": 1,
+        "profile": "scan-gate.v2",
+        "schema_version": 2,
+        "engine_version": ENGINE_VERSION_V2,
+        "snapshot_digest": snapshot["digest"],
+        "determining_policy_ids": [],
+        "warning_policy_ids": [],
+    }
+    monkeypatch.setattr(
+        "ez_appsec.cedar_adapter.subprocess.run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            [str(binary), "evaluate"], 0,
+            stdout=json.dumps(engine_result).encode("utf-8"), stderr=b"",
+        ),
+    )
+
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+
+    assert result == engine_result
+
+
+@pytest.mark.parametrize(
+    ("return_code", "overrides"),
+    [
+        (1, {"status": "passed"}),
+        (0, {"status": "failed"}),
+        (0, {"protocol_version": 2}),
+        (0, {"profile": "scan-gate.v1"}),
+        (0, {"schema_version": 1}),
+        (0, {"engine_version": "0.1.0"}),
+        (0, {"snapshot_digest": "sha256:" + "b" * 64}),
+    ],
+    ids=[
+        "failed-exit-code", "passed-exit-code", "protocol", "profile", "schema",
+        "engine-version", "snapshot-digest",
+    ],
+)
+def test_v2_rejects_protocol_and_exit_code_mismatches(
+    tmp_path, monkeypatch, return_code, overrides
+):
+    binary, pin = _pinned_engine(tmp_path)
+    snapshot = snapshot_v2_from_findings([], baseline=_baseline())
+    engine_result = {
+        "status": "passed", "protocol_version": 1, "profile": "scan-gate.v2",
+        "schema_version": 2, "engine_version": ENGINE_VERSION_V2,
+        "snapshot_digest": snapshot["digest"], "determining_policy_ids": [],
+        "warning_policy_ids": [],
+    }
+    engine_result.update(overrides)
+    monkeypatch.setattr(
+        "ez_appsec.cedar_adapter.subprocess.run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            [str(binary), "evaluate"], return_code,
+            stdout=json.dumps(engine_result).encode("utf-8"), stderr=b"",
+        ),
+    )
+
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+
+    assert result["status"] == "error"
+    assert result["diagnostic_codes"] == ["INVALID_ENGINE_RESULT"]
+
+
+@pytest.mark.parametrize(
+    ("bundle_value", "expected_code"),
+    [
+        ("not-json", "ENGINE_UNAVAILABLE"),
+        ('{"other":[]}', "INVALID_BUNDLE_FILE"),
+        ('{"bundles":[],"extra":false}', "INVALID_BUNDLE_FILE"),
+    ],
+    ids=["invalid-json", "missing-bundles", "extra-key"],
+)
+def test_v2_rejects_malformed_bundles(tmp_path, monkeypatch, bundle_value, expected_code):
+    binary, pin = _pinned_engine(tmp_path)
+    executed = False
+
+    def fail_if_run(*_args, **_kwargs):
+        nonlocal executed
+        executed = True
+        raise AssertionError("engine must not run for a malformed bundle")
+
+    monkeypatch.setattr("ez_appsec.cedar_adapter.subprocess.run", fail_if_run)
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path, bundle_value)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+
+    assert executed is False
+    assert result["status"] == "error"
+    assert result["diagnostic_codes"] == [expected_code]
+
+
+def test_v2_enforces_bundle_request_and_output_limits(tmp_path, monkeypatch):
+    binary, pin = _pinned_engine(tmp_path)
+    oversized_bundle = '{"bundles":"' + "x" * (MAX_REQUEST_BYTES + 1) + '"}'
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path, oversized_bundle)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+    assert result["diagnostic_codes"] == ["RESOURCE_LIMIT"]
+
+    # This bundle fits, while adding the complete fixed-vocabulary snapshot
+    # exceeds the request limit.
+    large_bundle = '{"bundles":"' + "x" * (MAX_REQUEST_BYTES - 100) + '"}'
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path, large_bundle)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+    assert result["diagnostic_codes"] == ["RESOURCE_LIMIT"]
+
+    monkeypatch.setattr(
+        "ez_appsec.cedar_adapter.subprocess.run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            [str(binary), "evaluate"], 0, stdout=b"x" * (64 * 1024 + 1), stderr=b""
+        ),
+    )
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+    assert result["status"] == "error"
+    assert result["diagnostic_codes"] == ["INVALID_ENGINE_RESULT"]
+
+
+def test_v2_enforces_the_execution_timeout(tmp_path, monkeypatch):
+    binary, pin = _pinned_engine(tmp_path)
+
+    def timeout(*_args, **_kwargs):
+        raise subprocess.TimeoutExpired([str(binary), "evaluate"], timeout=8)
+
+    monkeypatch.setattr("ez_appsec.cedar_adapter.subprocess.run", timeout)
+    result = evaluate_cedar_v2(
+        [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path)),
+        binary_path=str(binary), binary_sha256=pin,
+    )
+
+    assert result["status"] == "error"
+    assert result["diagnostic_codes"] == ["ENGINE_UNAVAILABLE"]
 
 
 @pytest.mark.integration

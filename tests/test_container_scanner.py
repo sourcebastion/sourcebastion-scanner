@@ -2,11 +2,12 @@
 
 import json
 import os
+import subprocess
 import pytest
 import tempfile
 from unittest.mock import patch, MagicMock
 
-from ez_appsec.external_scanners import GrypeImageScanner
+from ez_appsec.external_scanners import GrypeImageScanner, ScannerExecutionError
 
 
 SAMPLE_GRYPE_OUTPUT = {
@@ -125,8 +126,8 @@ class TestGrypeImageScanner:
     def test_grype_not_installed(self):
         scanner = GrypeImageScanner()
         with patch.object(scanner, "is_installed", return_value=False):
-            findings = scanner.scan("nginx:latest")
-        assert findings == []
+            with pytest.raises(ScannerExecutionError, match="not_installed"):
+                scanner.scan("nginx:latest")
 
     def test_invalid_registry_auth_format(self):
         scanner = GrypeImageScanner()
@@ -148,10 +149,55 @@ class TestGrypeImageScanner:
         f = findings[0]
         assert f["type"] == "Dependency"
         assert f["category"] == "container_scanning"
+        assert f["rule_id"] == "CVE-2023-44487:libnghttp2@1.52.0-1"
+        assert f["finding_id"]
         assert f["scanner"] == "grype"
+        assert f["cve_id"] == "CVE-2023-44487"
         assert f["cve"] == "CVE-2023-44487"
         assert "libnghttp2" in f["title"]
         assert f["file"] == "image: nginx:latest"
+
+    def test_finding_ids_are_stable_and_unique_per_artifact(self):
+        scanner = GrypeImageScanner()
+        with patch("subprocess.run", return_value=MagicMock(returncode=0)), \
+             patch.object(scanner, "is_installed", return_value=True), \
+             patch("json.load", return_value=SAMPLE_GRYPE_OUTPUT), \
+             patch("builtins.open", create=True), \
+             patch("os.unlink"):
+            first = scanner.scan("nginx:latest")
+            second = scanner.scan("nginx:latest")
+
+        first_ids = {finding["finding_id"] for finding in first}
+        second_ids = {finding["finding_id"] for finding in second}
+        assert len(first_ids) == len(first) == 4
+        assert first_ids == second_ids
+
+    def test_missing_output_is_not_a_passing_empty_scan(self):
+        scanner = GrypeImageScanner()
+        with patch("subprocess.run", return_value=MagicMock(returncode=1)), \
+             patch.object(scanner, "is_installed", return_value=True), \
+             patch("builtins.open", side_effect=FileNotFoundError), \
+             patch("os.unlink"):
+            with pytest.raises(ScannerExecutionError, match="output_missing"):
+                scanner.scan("nginx:latest")
+
+    def test_timeout_is_not_a_passing_empty_scan(self):
+        scanner = GrypeImageScanner()
+        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="grype", timeout=1)), \
+             patch.object(scanner, "is_installed", return_value=True), \
+             patch("os.unlink"):
+            with pytest.raises(ScannerExecutionError, match="timeout"):
+                scanner.scan("nginx:latest")
+
+    def test_invalid_output_is_not_a_passing_empty_scan(self):
+        scanner = GrypeImageScanner()
+        with patch("subprocess.run", return_value=MagicMock(returncode=1)), \
+             patch.object(scanner, "is_installed", return_value=True), \
+             patch("json.load", side_effect=json.JSONDecodeError("invalid", "{}", 0)), \
+             patch("builtins.open", create=True), \
+             patch("os.unlink"):
+            with pytest.raises(ScannerExecutionError, match="invalid_output"):
+                scanner.scan("nginx:latest")
 
     def test_unknown_severity_defaults_to_medium(self):
         data = {

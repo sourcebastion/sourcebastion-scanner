@@ -9,6 +9,8 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from ez_appsec.external_scanners import ScannerExecutionError
+
 logger = logging.getLogger(__name__)
 
 
@@ -186,18 +188,18 @@ def check_licenses(
     differ in classification (e.g., 1 allowed, 1 denied).
     """
     if syft_json is None:
-        syft_json, raw_path = run_syft(path)
-        if raw_path:
-            try:
-                Path(raw_path).unlink()
-            except OSError:
-                pass
-        if syft_json is None:
-            return {
-                "findings": [],
-                "packages": [],
-                "summary": {"total": 0, "allowed": 0, "denied": 0, "unknown": 0},
-            }
+        raw_path = ""
+        try:
+            syft_json, raw_path = run_syft(path)
+            if syft_json is None:
+                code = "not_installed" if not raw_path else "execution_failed"
+                raise ScannerExecutionError("license-checker", code)
+        finally:
+            if raw_path:
+                try:
+                    Path(raw_path).unlink()
+                except OSError:
+                    pass
 
     packages = extract_licenses_from_syft(syft_json)
 

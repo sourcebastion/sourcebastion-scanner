@@ -78,7 +78,8 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
 
         if baseline_path:
             baseline = load_baseline(baseline_path)
-            new_findings, existing_findings = diff_findings(results["issues"], baseline)
+            complete_findings = results.get("complete_issues", results["issues"])
+            new_findings, existing_findings = diff_findings(complete_findings, baseline)
             results["issues"] = new_findings
             results["total"] = len(new_findings)
             results["baseline_existing"] = len(existing_findings)

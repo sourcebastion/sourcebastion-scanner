@@ -14,6 +14,11 @@ builds twice with 15/30-second backoff; exhausted failures remain blocking.
 The regular manual Docker Validation dispatch runs source checks only.
 The separate API image workflow is unchanged.
 
+Published scanner release notes begin with the matching version's reviewed
+`CHANGELOG.md` section, followed by GitHub's generated PR summary and the
+scan/image details. Release preparation rejects missing, empty, or duplicate
+version entries; unreleased and older entries are not included.
+
 ## Overview
 
 The `.gitlab-ci.yml` file defines a comprehensive CI/CD pipeline for ez-appsec with the following stages:

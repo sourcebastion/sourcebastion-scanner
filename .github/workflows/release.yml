@@ -118,6 +118,11 @@ jobs:
           echo "release_version=${REQUESTED_VERSION#v}" >> "$GITHUB_OUTPUT"
           echo "release_sha=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
 
+      - name: Validate versioned changelog entry
+        env:
+          VERSION: ${{ steps.release_metadata.outputs.release_version }}
+        run: python3 scripts/release-changelog.py --version "$VERSION"
+
       - name: Create the draft release and immutable tag
         if: steps.release_metadata.outputs.release_exists != 'true'
         env:
@@ -590,6 +595,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
 
       - name: Create GitHub Release with Docker Info
         run: |
@@ -638,7 +645,9 @@ jobs:
 
           # Fetch existing release notes then append
           gh release view "v${VERSION}" --json body -q .body > /tmp/existing_notes.md
-          cat /tmp/existing_notes.md /tmp/release_addendum.md > /tmp/release_notes.md
+          python3 scripts/release-changelog.py --version "$VERSION" \
+            --notes-file /tmp/existing_notes.md > /tmp/release_notes.md
+          cat /tmp/release_addendum.md >> /tmp/release_notes.md
           gh release edit "v${VERSION}" --notes-file /tmp/release_notes.md --draft=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

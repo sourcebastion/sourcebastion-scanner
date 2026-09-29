@@ -244,6 +244,7 @@ jobs:
 
   build-docker-standard:
     name: Build Standard Docker Image
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -271,13 +272,12 @@ jobs:
             type=sha,format=long,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push standard image
+      - name: Build standard image with retries
         id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        uses: ./.github/actions/build-with-retry
         with:
           context: .
           file: ./images/Dockerfile
-          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -285,11 +285,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build local standard image for rule fixture tests
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        uses: ./.github/actions/build-with-retry
         with:
           context: .
           file: ./images/Dockerfile
-          push: false
           load: true
           tags: ez-appsec:standard-rule-test
           cache-from: type=gha

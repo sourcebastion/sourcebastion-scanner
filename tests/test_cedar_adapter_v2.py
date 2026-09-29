@@ -143,8 +143,15 @@ def test_v2_rejects_a_binary_that_does_not_match_its_pin(tmp_path):
 
 @pytest.mark.parametrize(
     "payload",
-    [b"not-json", b"[]", b"{}", json.dumps({"status": "unexpected"}).encode("ascii")],
-    ids=["not-json", "not-object", "empty-object", "unknown-status"],
+    [
+        b"not-json", b"\xff", b"[]", b"{}",
+        json.dumps({"status": "unexpected"}).encode("ascii"),
+        b'{"status":[]}', b'{"status":{}}',
+    ],
+    ids=[
+        "not-json", "invalid-encoding", "not-object", "empty-object",
+        "unknown-status", "list-status", "object-status",
+    ],
 )
 def test_v2_rejects_malformed_engine_output(tmp_path, monkeypatch, payload):
     binary, pin = _pinned_engine(tmp_path)

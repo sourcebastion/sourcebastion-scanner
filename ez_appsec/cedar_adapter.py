@@ -252,14 +252,22 @@ def evaluate_cedar_v2(
             [binary_path, "evaluate"], input=input_bytes, capture_output=True,
             timeout=8, check=False,
         )
+    except (OSError, ValueError, TypeError, subprocess.TimeoutExpired):
+        return _error("ENGINE_UNAVAILABLE")
+    # A completed process with malformed output is a protocol failure, not
+    # an unavailable engine. Keep this distinct from launch/timeout errors.
+    try:
         if len(completed.stdout) > 64 * 1024:
             return _error("INVALID_ENGINE_RESULT")
         result = json.loads(completed.stdout)
-    except (OSError, ValueError, TypeError, subprocess.TimeoutExpired):
-        return _error("ENGINE_UNAVAILABLE")
+    except (ValueError, TypeError):
+        return _error("INVALID_ENGINE_RESULT")
     if not isinstance(result, dict):
         return _error("INVALID_ENGINE_RESULT")
-    expected_code = {"passed": 0, "failed": 1, "error": 2}.get(result.get("status"))
+    status = result.get("status")
+    if not isinstance(status, str):
+        return _error("INVALID_ENGINE_RESULT")
+    expected_code = {"passed": 0, "failed": 1, "error": 2}.get(status)
     if (expected_code is None or completed.returncode != expected_code
             or result.get("protocol_version") != 1
             or result.get("profile") != "scan-gate.v2"

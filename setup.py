@@ -59,6 +59,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
+            "sourcebastion=ez_appsec.cli:main",
             "ez-appsec=ez_appsec.cli:main",
         ],
     },

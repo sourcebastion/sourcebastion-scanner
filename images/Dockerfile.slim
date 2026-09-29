@@ -1,5 +1,5 @@
 # Ultra-lightweight variant using distroless base
-# Build: docker build -f Dockerfile.slim -t ez-appsec:slim .
+# Build: docker build -f images/Dockerfile.slim -t sourcebastion:slim .
 # Size target: ~250-300MB
 
 # Pull kics binary from official image
@@ -80,7 +80,7 @@ ENV PATH="/opt/venv/bin:$PATH" \
 WORKDIR /scan
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s \
-    CMD ez-appsec --version || exit 1
+    CMD sourcebastion --version || exit 1
 
-ENTRYPOINT ["ez-appsec"]
+ENTRYPOINT ["sourcebastion"]
 CMD ["--help"]

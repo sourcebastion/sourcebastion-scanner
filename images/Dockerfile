@@ -96,7 +96,7 @@ COPY --from=kics /app/bin/kics /usr/local/bin/kics
 COPY --from=kics /app/bin/assets /usr/local/bin/assets
 RUN kics version
 
-# Install ez-appsec wheel and dependencies from builder
+# Install SourceBastion scanner wheel and dependencies from builder
 COPY --from=builder /dist/*.whl /tmp/
 COPY --from=builder /app/requirements.txt /tmp/
 RUN pip install --no-cache-dir -r /tmp/requirements.txt /tmp/*.whl && \
@@ -124,8 +124,8 @@ WORKDIR /scan
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD ez-appsec --version || exit 1
+    CMD sourcebastion --version || exit 1
 
 # Default command
-ENTRYPOINT ["ez-appsec"]
+ENTRYPOINT ["sourcebastion"]
 CMD ["--help"]

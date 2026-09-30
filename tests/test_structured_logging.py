@@ -13,7 +13,7 @@ from sourcebastion.scanner import (
 
 
 def test_default_logging_configuration_unchanged(monkeypatch):
-    monkeypatch.delenv("EZ_APPSEC_LOG_FORMAT", raising=False)
+    monkeypatch.delenv("SOURCEBASTION_LOG_FORMAT", raising=False)
 
     assert configure_logging_from_env() is False
 
@@ -42,7 +42,7 @@ def test_json_log_formatter_includes_context_fields():
 
 
 def test_json_log_format_env_configures_existing_handlers(monkeypatch):
-    monkeypatch.setenv("EZ_APPSEC_LOG_FORMAT", "json")
+    monkeypatch.setenv("SOURCEBASTION_LOG_FORMAT", "json")
     root_logger = logging.getLogger()
     handler = logging.StreamHandler()
     original_handlers = root_logger.handlers[:]

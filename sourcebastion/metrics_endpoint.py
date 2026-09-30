@@ -52,7 +52,7 @@ def _resolve_project(
     if explicit_project:
         return explicit_project
 
-    env_project = os.getenv("EZ_APPSEC_PROJECT")
+    env_project = os.getenv("SOURCEBASTION_PROJECT")
     if env_project:
         return env_project
 

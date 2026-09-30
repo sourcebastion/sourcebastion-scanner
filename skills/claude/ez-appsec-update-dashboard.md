@@ -38,7 +38,7 @@ fi
 ### 2. Detect current state (silent — no output yet)
 
 ```bash
-EZ_APPSEC_REPO="ez-appsec/ez-appsec"
+SOURCEBASTION_REPO="ez-appsec/ez-appsec"
 DASHBOARD_REPO="${ARGUMENTS:-ez-appsec/ez-appsec-dashboard}"
 
 # Validate owner/repo format if provided
@@ -54,10 +54,10 @@ if ! gh repo view "$DASHBOARD_REPO" --json name 2>/dev/null | grep -q name; then
 fi
 
 # Latest ez-appsec release
-LATEST_TAG=$(gh api /repos/${EZ_APPSEC_REPO}/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
+LATEST_TAG=$(gh api /repos/${SOURCEBASTION_REPO}/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
 if [ -z "$LATEST_TAG" ]; then
   echo "Error: could not determine latest ez-appsec release."
-  echo "Check: https://github.com/${EZ_APPSEC_REPO}/releases"
+  echo "Check: https://github.com/${SOURCEBASTION_REPO}/releases"
   exit 1
 fi
 
@@ -78,17 +78,17 @@ WORKFLOW_SHA=$(gh api /repos/${DASHBOARD_REPO}/contents/.github/workflows/update
 WORKFLOW_STATUS=$( [ -n "$WORKFLOW_SHA" ] && echo "installed" || echo "not installed" )
 
 # Locate ez-appsec source for provision.py
-EZ_APPSEC_SRC=$(git -C "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" rev-parse --show-toplevel 2>/dev/null || echo ".")
+SOURCEBASTION_SRC=$(git -C "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" rev-parse --show-toplevel 2>/dev/null || echo ".")
 
 # Read App credentials for provisioning
-ENV_FILE="$(dirname "$EZ_APPSEC_SRC")/.env"
-APP_ID="${EZ_APPSEC_APP_ID:-}"
-PEM="${EZ_APPSEC_PRIVATE_KEY_PATH:-}"
+ENV_FILE="$(dirname "$SOURCEBASTION_SRC")/.env"
+APP_ID="${SOURCEBASTION_APP_ID:-}"
+PEM="${SOURCEBASTION_PRIVATE_KEY_PATH:-}"
 if [ -f "$ENV_FILE" ] && [ -z "$APP_ID" ]; then
-  APP_ID=$(grep -E '^EZ_APPSEC_APP_ID=' "$ENV_FILE" | cut -d= -f2 | tr -d '"' | xargs 2>/dev/null || echo "")
+  APP_ID=$(grep -E '^SOURCEBASTION_APP_ID=' "$ENV_FILE" | cut -d= -f2 | tr -d '"' | xargs 2>/dev/null || echo "")
 fi
 if [ -f "$ENV_FILE" ] && [ -z "$PEM" ]; then
-  PEM=$(ls "$(dirname "$EZ_APPSEC_SRC")"/*.private-key.pem 2>/dev/null | head -1 || echo "")
+  PEM=$(ls "$(dirname "$SOURCEBASTION_SRC")"/*.private-key.pem 2>/dev/null | head -1 || echo "")
 fi
 # Fall back to known App ID for ez-appsec
 [ -z "$APP_ID" ] && APP_ID="3338152"
@@ -115,7 +115,7 @@ Latest:      <LATEST_TAG>
 App secrets: <PROVISION_STATUS>
 
 This will:
-  1. Provision EZ_APPSEC_APP_ID + EZ_APPSEC_PRIVATE_KEY on <DASHBOARD_REPO>  (if PEM available)
+  1. Provision SOURCEBASTION_APP_ID + SOURCEBASTION_PRIVATE_KEY on <DASHBOARD_REPO>  (if PEM available)
   2. Install/update .github/workflows/update-assets.yml in <DASHBOARD_REPO>
   3. Trigger the workflow to pull the latest assets and commit them
 
@@ -134,29 +134,29 @@ Replace all `<...>` placeholders with actual values before running.
 
 ```bash
 set -euo pipefail
-EZ_APPSEC_REPO="ez-appsec/ez-appsec"
+SOURCEBASTION_REPO="ez-appsec/ez-appsec"
 DASHBOARD_REPO="<DASHBOARD_REPO>"
 LATEST_TAG="<LATEST_TAG>"
 WORKFLOW_SHA="<WORKFLOW_SHA>"   # empty string if not installed
-EZ_APPSEC_SRC="<EZ_APPSEC_SRC>"
+SOURCEBASTION_SRC="<SOURCEBASTION_SRC>"
 APP_ID="<APP_ID>"
 PEM="<PEM>"    # empty string if not found
-TOKEN=$(grep GITHUB_ACCESS_TOKEN "${EZ_APPSEC_SRC}/../.env" 2>/dev/null | cut -d= -f2 || gh auth token)
+TOKEN=$(grep GITHUB_ACCESS_TOKEN "${SOURCEBASTION_SRC}/../.env" 2>/dev/null | cut -d= -f2 || gh auth token)
 ERRORS=0
 
 # ── 0. Provision App secrets ──────────────────────────────────────────────────
 if [ -n "$PEM" ]; then
   echo "Provisioning App secrets on ${DASHBOARD_REPO}..."
-  (cd "$EZ_APPSEC_SRC" && python3 scripts/provision.py \
+  (cd "$SOURCEBASTION_SRC" && python3 scripts/provision.py \
     --token "$TOKEN" \
     --repos "$DASHBOARD_REPO" \
     --app-id "$APP_ID" \
     --private-key "$PEM") \
-    && echo "  ✓ EZ_APPSEC_APP_ID + EZ_APPSEC_PRIVATE_KEY provisioned" \
+    && echo "  ✓ SOURCEBASTION_APP_ID + SOURCEBASTION_PRIVATE_KEY provisioned" \
     || { echo "  ✗ Provisioning failed — workflow may not be able to mint tokens"; ERRORS=$((ERRORS+1)); }
 else
   echo "Skipping secret provisioning — no PEM key found."
-  echo "  Set EZ_APPSEC_PRIVATE_KEY_PATH to provision automatically."
+  echo "  Set SOURCEBASTION_PRIVATE_KEY_PATH to provision automatically."
 fi
 
 # ── 1. Install/update the update-assets.yml workflow ─────────────────────────
@@ -164,12 +164,12 @@ echo "Installing update-assets.yml workflow in ${DASHBOARD_REPO}..."
 
 # Fetch workflow content from ez-appsec at LATEST_TAG (base64, newlines stripped)
 # macOS base64 uses -i flag; GNU base64 accepts a positional argument
-CONTENT=$(gh api "/repos/${EZ_APPSEC_REPO}/contents/github/dashboard/update-assets.yml?ref=${LATEST_TAG}" \
+CONTENT=$(gh api "/repos/${SOURCEBASTION_REPO}/contents/github/dashboard/update-assets.yml?ref=${LATEST_TAG}" \
   2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('content',''))" \
   | tr -d '\n')
 
 if [ -z "$CONTENT" ]; then
-  echo "  ✗ Could not fetch update-assets.yml from ${EZ_APPSEC_REPO}@${LATEST_TAG}: $(cat /tmp/ez_err)"
+  echo "  ✗ Could not fetch update-assets.yml from ${SOURCEBASTION_REPO}@${LATEST_TAG}: $(cat /tmp/ez_err)"
   exit 1
 fi
 
@@ -264,6 +264,6 @@ fi
 echo ""
 echo "  Dashboard  https://ez-appsec.github.io/ez-appsec-dashboard/"
 echo "  Repo       https://github.com/${DASHBOARD_REPO}"
-echo "  Release    https://github.com/${EZ_APPSEC_REPO}/releases/tag/${LATEST_TAG}"
+echo "  Release    https://github.com/${SOURCEBASTION_REPO}/releases/tag/${LATEST_TAG}"
 echo ""
 ```

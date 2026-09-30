@@ -18,7 +18,7 @@ ARG="${ARGUMENTS:-}"
 SLUG=$(echo "$ARG" | awk -F/ '{print $NF}' | tr '[:upper:]' '[:lower:]')
 [ -z "$SLUG" ] && { echo "Usage: /ez-appsec load <project>"; exit 1; }
 
-DASHBOARD="${EZ_APPSEC_DASHBOARD_REPO:-ez-appsec/ez-appsec-dashboard}"
+DASHBOARD="${SOURCEBASTION_DASHBOARD_REPO:-ez-appsec/ez-appsec-dashboard}"
 
 # Resolve path via index.json, fall back to default path
 PATH_IN_REPO=$(gh api "repos/${DASHBOARD}/contents/data/index.json" \

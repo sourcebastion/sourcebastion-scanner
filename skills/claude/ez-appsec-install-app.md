@@ -60,7 +60,7 @@ fi
 # Note: gh secret list --org requires admin:org scope.
 # A failure here produces a warning in Step 3, not a hard stop.
 APP_CONFIGURED=0
-if gh secret list --org ez-appsec 2>/dev/null | grep -q "EZ_APPSEC_APP_ID"; then
+if gh secret list --org ez-appsec 2>/dev/null | grep -q "SOURCEBASTION_APP_ID"; then
   APP_CONFIGURED=1
 fi
 
@@ -90,7 +90,7 @@ If `gh secret list --org` returned an error (not just "not found"), add a caveat
 Note: Could not verify GitHub App configuration — your token may lack admin:org scope.
       If the App is set up, you can proceed. If not, complete setup first:
         1. Register the App:   github.com/organizations/ez-appsec/settings/apps/new
-        2. Set org secrets:    EZ_APPSEC_APP_ID, EZ_APPSEC_PRIVATE_KEY
+        2. Set org secrets:    SOURCEBASTION_APP_ID, SOURCEBASTION_PRIVATE_KEY
         3. Deploy the Worker:  github.com/ez-appsec/ez-appsec-webhook
 ```
 
@@ -138,7 +138,7 @@ Replace `<TARGET_REPO>` with the actual value before running.
 ```bash
 set -euo pipefail
 TARGET_REPO="<TARGET_REPO>"
-EZ_APPSEC_REPO="ez-appsec/ez-appsec"
+SOURCEBASTION_REPO="ez-appsec/ez-appsec"
 OWNER=$(echo "$TARGET_REPO" | cut -d/ -f1)
 REPO_NAME=$(echo "$TARGET_REPO" | cut -d/ -f2)
 
@@ -225,7 +225,7 @@ if [ -z "$PROVISIONED" ]; then
     echo "     → App settings: github.com/organizations/ez-appsec/settings/apps/ez-appsec"
     echo ""
     echo "  3. Provisioner workflow failed"
-    echo "     → Check: https://github.com/${EZ_APPSEC_REPO}/actions/workflows/app-install.yml"
+    echo "     → Check: https://github.com/${SOURCEBASTION_REPO}/actions/workflows/app-install.yml"
     echo ""
     echo "After fixing, retry: /ez-appsec install-app ${TARGET_REPO}"
     exit 1
@@ -233,7 +233,7 @@ if [ -z "$PROVISIONED" ]; then
 
   echo ""
   echo "Step 1/2 — Watching workflow setup..."
-  watch_latest_run "$EZ_APPSEC_REPO" "app-install.yml" "Workflow setup" > /dev/null
+  watch_latest_run "$SOURCEBASTION_REPO" "app-install.yml" "Workflow setup" > /dev/null
 
 else
 
@@ -255,13 +255,13 @@ else
     echo "    2. Click the ez-appsec installation"
     echo "    3. The installation ID is the last number in the browser URL"
     echo "    4. Then run:"
-    echo "       gh api repos/${EZ_APPSEC_REPO}/dispatches -X POST \\"
+    echo "       gh api repos/${SOURCEBASTION_REPO}/dispatches -X POST \\"
     echo "         -H 'Accept: application/vnd.github+json' \\"
     echo "         --input - <<<'{\"event_type\":\"app-install\",\"client_payload\":{\"installation_id\":<ID>,\"repos\":[\"${TARGET_REPO}\"]}}'"
     exit 1
   fi
 
-  if ! gh api repos/${EZ_APPSEC_REPO}/dispatches -X POST \
+  if ! gh api repos/${SOURCEBASTION_REPO}/dispatches -X POST \
     -H "Accept: application/vnd.github+json" \
     --input - <<EOF
 {
@@ -274,18 +274,18 @@ else
 EOF
   then
     echo ""
-    echo "  ✗ Could not trigger the update — your token may lack access to ${EZ_APPSEC_REPO}."
+    echo "  ✗ Could not trigger the update — your token may lack access to ${SOURCEBASTION_REPO}."
     echo ""
     echo "  Options:"
-    echo "    a) Re-authenticate with a token that has 'repo' scope on ${EZ_APPSEC_REPO}:"
+    echo "    a) Re-authenticate with a token that has 'repo' scope on ${SOURCEBASTION_REPO}:"
     echo "       gh auth login"
     echo ""
     echo "    b) Ask an ez-appsec admin to trigger the update manually at:"
-    echo "       https://github.com/${EZ_APPSEC_REPO}/actions/workflows/app-install.yml"
+    echo "       https://github.com/${SOURCEBASTION_REPO}/actions/workflows/app-install.yml"
     exit 1
   fi
 
-  watch_latest_run "$EZ_APPSEC_REPO" "app-install.yml" "Workflow setup" > /dev/null
+  watch_latest_run "$SOURCEBASTION_REPO" "app-install.yml" "Workflow setup" > /dev/null
 
 fi
 
@@ -338,6 +338,6 @@ echo ""
 echo "Scans run automatically on push and pull_request."
 echo ""
 echo "If dashboard results are missing after the scan, check that"
-echo "EZ_APPSEC_APP_ID and EZ_APPSEC_PRIVATE_KEY are set on ${TARGET_REPO}:"
+echo "SOURCEBASTION_APP_ID and SOURCEBASTION_PRIVATE_KEY are set on ${TARGET_REPO}:"
 echo "  https://github.com/${TARGET_REPO}/settings/secrets/actions"
 ```

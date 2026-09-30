@@ -69,8 +69,8 @@ class JsonLogFormatter(logging.Formatter):
 
 
 def configure_logging_from_env() -> bool:
-    """Enable structured JSON logging when EZ_APPSEC_LOG_FORMAT=json is set."""
-    if os.getenv("EZ_APPSEC_LOG_FORMAT", "").lower() != "json":
+    """Enable structured JSON logging when SOURCEBASTION_LOG_FORMAT=json is set."""
+    if os.getenv("SOURCEBASTION_LOG_FORMAT", "").lower() != "json":
         return False
 
     formatter = JsonLogFormatter()

@@ -68,10 +68,10 @@ TARGET_PROJECT_ID=$(glab api "projects/${PROJECT_ENCODED}" 2>/dev/null \
 # Is the ez-appsec include present?
 HAS_INCLUDE=$(grep -c "gitlab/scan.yml\|ez-appsec.*scan" "$TARGET/.gitlab-ci.yml" 2>/dev/null || echo 0)
 
-# Is EZ_APPSEC_VERSION set at project level?
+# Is SOURCEBASTION_VERSION set at project level?
 HAS_VERSION_VAR=0
 if [ -n "$TARGET_PROJECT_ID" ]; then
-  glab api "projects/${TARGET_PROJECT_ID}/variables/EZ_APPSEC_VERSION" 2>/dev/null | \
+  glab api "projects/${TARGET_PROJECT_ID}/variables/SOURCEBASTION_VERSION" 2>/dev/null | \
     grep -q "value" && HAS_VERSION_VAR=1 || true
 fi
 
@@ -79,9 +79,9 @@ fi
 TARGET_NAMESPACE=$(glab api "projects/${PROJECT_ENCODED}" 2>/dev/null \
   | python3 -c "import json,sys; print(json.load(sys.stdin)['namespace']['full_path'])" 2>/dev/null || echo "")
 GROUP_ENCODED=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1],safe=''))" "$TARGET_NAMESPACE" 2>/dev/null || echo "")
-DASH_PROJECT=$(glab api "groups/${GROUP_ENCODED}/variables/EZ_APPSEC_DASHBOARD_PROJECT" 2>/dev/null \
+DASH_PROJECT=$(glab api "groups/${GROUP_ENCODED}/variables/SOURCEBASTION_DASHBOARD_PROJECT" 2>/dev/null \
   | python3 -c "import json,sys; print(json.load(sys.stdin).get('value',''))" 2>/dev/null || \
-  glab api "projects/${TARGET_PROJECT_ID}/variables/EZ_APPSEC_DASHBOARD_PROJECT" 2>/dev/null \
+  glab api "projects/${TARGET_PROJECT_ID}/variables/SOURCEBASTION_DASHBOARD_PROJECT" 2>/dev/null \
   | python3 -c "import json,sys; print(json.load(sys.stdin).get('value',''))" 2>/dev/null || echo "")
 
 # Does dashboard data exist for this project?
@@ -121,10 +121,10 @@ ez-appsec is installed on <PROJECT_PATH>.
 This will:
   1. Remove the ez-appsec include from .gitlab-ci.yml     [file change → MR]
   2. Remove the ez-appsec stage from stages:              [file change → MR]
-  3. Delete CI variable: EZ_APPSEC_VERSION               [if present]
+  3. Delete CI variable: SOURCEBASTION_VERSION               [if present]
   4. Remove dashboard data: <DASH_DATA_PATH>              [if found]
 
-Note: EZ_APPSEC_DASHBOARD_PROJECT is a group-level variable shared by all projects
+Note: SOURCEBASTION_DASHBOARD_PROJECT is a group-level variable shared by all projects
       in the group — it will NOT be removed.
 
 Proceed with uninstall?
@@ -217,14 +217,14 @@ else
   echo "  ✓ Changes pushed to ${UNINSTALL_BRANCH}"
 fi
 
-# ── 4. Delete CI variable EZ_APPSEC_VERSION ──────────────────────────────────
+# ── 4. Delete CI variable SOURCEBASTION_VERSION ──────────────────────────────────
 if [ "$HAS_VERSION_VAR" -eq 1 ]; then
   echo "Removing CI variables..."
   if glab api --method DELETE \
-    "projects/${TARGET_PROJECT_ID}/variables/EZ_APPSEC_VERSION" 2>/tmp/ez_err; then
-    echo "  ✓ CI variable EZ_APPSEC_VERSION removed"
+    "projects/${TARGET_PROJECT_ID}/variables/SOURCEBASTION_VERSION" 2>/tmp/ez_err; then
+    echo "  ✓ CI variable SOURCEBASTION_VERSION removed"
   else
-    echo "  ✗ Could not remove EZ_APPSEC_VERSION: $(cat /tmp/ez_err)"
+    echo "  ✗ Could not remove SOURCEBASTION_VERSION: $(cat /tmp/ez_err)"
     echo "    Remove manually: Settings > CI/CD > Variables"
     ERRORS=$((ERRORS + 1))
   fi
@@ -325,7 +325,7 @@ echo ""
 [ -n "$MR_URL" ] && echo "  MR       ${MR_URL}"
 echo "  Project  $(git remote get-url origin | sed 's/\.git$//')"
 [ -n "$DASH_PROJECT" ] && \
-  echo "  Note     EZ_APPSEC_DASHBOARD_PROJECT is a group variable — it was left in place for other projects"
+  echo "  Note     SOURCEBASTION_DASHBOARD_PROJECT is a group variable — it was left in place for other projects"
 echo ""
 echo "Merge the MR to complete the uninstall. Scans will stop once the MR is merged."
 ```

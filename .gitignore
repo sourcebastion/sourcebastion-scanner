@@ -51,7 +51,7 @@ htmlcov/
 # Configuration
 .env
 .env.local
-.ez-appsec.yaml
+.sourcebastion.yaml
 
 # Output
 results.json

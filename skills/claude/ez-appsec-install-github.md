@@ -66,13 +66,13 @@ permissions:
   security-events: write
 
 env:
-  EZ_APPSEC_VERSION: "latest"
+  SOURCEBASTION_VERSION: "latest"
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/ez-appsec/ez-appsec:\${{ env.EZ_APPSEC_VERSION }}
+      image: ghcr.io/ez-appsec/ez-appsec:\${{ env.SOURCEBASTION_VERSION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,7 +99,7 @@ EOF
 
 **If the file exists**, check if it already includes an ez-appsec reference. If not, append the include from Step 3.
 
-### 5. Set EZ_APPSEC_VERSION repository variable
+### 5. Set SOURCEBASTION_VERSION repository variable
 
 Fetch the latest released version:
 ```bash
@@ -119,13 +119,13 @@ Set the repository variable:
 ```bash
 TARGET_REPO=$(git remote get-url origin | sed -E 's|.*/github.com[:/]/([^/]+)\.git|\1|')
 
-gh secret set EZ_APPSEC_VERSION "$LATEST_VERSION" --repo="$TARGET_REPO" 2>/dev/null || \
-gh api --method PUT "repos/$TARGET_REPO/actions/variables/EZ_APPSEC_VERSION" \
+gh secret set SOURCEBASTION_VERSION "$LATEST_VERSION" --repo="$TARGET_REPO" 2>/dev/null || \
+gh api --method PUT "repos/$TARGET_REPO/actions/variables/SOURCEBASTION_VERSION" \
   -f value="$LATEST_VERSION" \
   -f variable_type=env_var
 ```
 
-### 6. Set up GitHub Pages dashboard (EZ_APPSEC_DASHBOARD_REPO)
+### 6. Set up GitHub Pages dashboard (SOURCEBASTION_DASHBOARD_REPO)
 
 This is required for multi-project dashboard views.
 
@@ -136,16 +136,16 @@ TARGET_REPO=$(git remote get-url origin | sed -E 's|.*/github.com[:/]/([^/]+)\.g
 OWNER=$(echo "$TARGET_REPO" | cut -d'/' -f1)
 ```
 
-#### 6b. Check if EZ_APPSEC_DASHBOARD_REPO is already configured
+#### 6b. Check if SOURCEBASTION_DASHBOARD_REPO is already configured
 
 Check repository variable:
 ```bash
-gh variable list EZ_APPSEC_DASHBOARD_REPO --repo="$TARGET_REPO" 2>/dev/null | grep "^EZ_APPSEC_DASHBOARD_REPO="
+gh variable list SOURCEBASTION_DASHBOARD_REPO --repo="$TARGET_REPO" 2>/dev/null | grep "^SOURCEBASTION_DASHBOARD_REPO="
 ```
 
 #### 6c. If not configured, create or reference dashboard project
 
-If `EZ_APPSEC_DASHBOARD_REPO` is not set, ask the user:
+If `SOURCEBASTION_DASHBOARD_REPO` is not set, ask the user:
 - Do you want to create a new GitHub Pages dashboard repository?
 - Or do you have an existing dashboard repository you want to use?
 
@@ -186,7 +186,7 @@ echo "✓ Enable GitHub Pages in Settings > Pages"
 
 Set the repository variable:
 ```bash
-gh variable set EZ_APPSEC_DASHBOARD_REPO "$DASHBOARD_REPO" --repo="$TARGET_REPO" 2>/dev/null
+gh variable set SOURCEBASTION_DASHBOARD_REPO "$DASHBOARD_REPO" --repo="$TARGET_REPO" 2>/dev/null
 ```
 
 #### 6d. If using existing dashboard, set up aggregation
@@ -211,7 +211,7 @@ git add .github/workflows/github-scan.yml
 git commit -m "chore: install ez-appsec security scanning via GitHub Actions"
 
 # If dashboard was set up, also add a placeholder meta.json for future reference
-if [ -n "$EZ_APPSEC_DASHBOARD_REPO" ]; then
+if [ -n "$SOURCEBASTION_DASHBOARD_REPO" ]; then
   mkdir -p data
   echo '{
     "github_url": "https://github.com/'"$TARGET_REPO'",
@@ -254,13 +254,13 @@ Adds [ez-appsec](https://github.com/ez-appsec/ez-appsec) security scanning pipel
 - Scans run automatically on pull requests and pushes to \`main\`.
 - Results are published to GitHub Security tab (SARIF format).
 - Results are uploaded as artifacts for 7 days.
-- Dashboard updates supported (requires EZ_APPSEC_DASHBOARD_REPO variable).
+- Dashboard updates supported (requires SOURCEBASTION_DASHBOARD_REPO variable).
 
 No API key or external service required.
 
 **Configuration:**
-- \`EZ_APPSEC_VERSION\`: Set to latest release (currently: latest)
-- \`EZ_APPSEC_DASHBOARD_REPO\`: Set to your GitHub Pages dashboard repository
+- \`SOURCEBASTION_VERSION\`: Set to latest release (currently: latest)
+- \`SOURCEBASTION_DASHBOARD_REPO\`: Set to your GitHub Pages dashboard repository
 
 **Next steps:**
 1. Review the workflow file in \`.github/workflows/github-scan.yml\`
@@ -283,17 +283,17 @@ To create pull request manually, visit:
 
 Print a summary:
 - PR URL (if created)
-- \`EZ_APPSEC_VERSION\` set to: \`<version>\`
+- \`SOURCEBASTION_VERSION\` set to: \`<version>\`
 - Dashboard repository: \`<DASH_REPO>\` (if configured)
 - Pages URL: \`https://<OWNER>.github.io/ez-appsec-dashboard/\` (live after dashboard repo pipeline completes)
-- Remind the user that \`EZ_APPSEC_DASHBOARD_REPO\` and \`EZ_APPSEC_VERSION\` can be overridden in repository Settings > Secrets and variables
+- Remind the user that \`SOURCEBASTION_DASHBOARD_REPO\` and \`SOURCEBASTION_VERSION\` can be overridden in repository Settings > Secrets and variables
 
 Example output:
 ```
 ✓ ez-appsec installed successfully!
 
   PR URL: https://github.com/owner/repo/pull/1
-  EZ_APPSEC_VERSION: latest
+  SOURCEBASTION_VERSION: latest
   Dashboard repo: owner/ez-appsec-dashboard
   Pages URL: https://owner.github.io/ez-appsec-dashboard/
 
@@ -332,5 +332,5 @@ Ensure:
 #### Dashboard not showing project data
 Verify that:
 1. Projects are scanning successfully
-2. The `update-dashboard` job in `github-scan.yml` is running (requires EZ_APPSEC_DASHBOARD_REPO)
+2. The `update-dashboard` job in `github-scan.yml` is running (requires SOURCEBASTION_DASHBOARD_REPO)
 3. The dashboard aggregation script is running on schedule

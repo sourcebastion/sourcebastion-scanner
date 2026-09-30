@@ -74,12 +74,12 @@ log "Project: $PROJECT  (id=$PROJECT_ID)"
 log "Checking group CI variables..."
 NS=$(python3 -c "import sys; parts=sys.argv[1].split('/'); print('/'.join(parts[:-1]))" "$PROJECT")
 ENC_NS=$(encode_project "$NS")
-DASH_PROJECT=$(gl_api "groups/${ENC_NS}/variables/EZ_APPSEC_DASHBOARD_PROJECT" \
+DASH_PROJECT=$(gl_api "groups/${ENC_NS}/variables/SOURCEBASTION_DASHBOARD_PROJECT" \
   2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin)['value'])" 2>/dev/null || echo "")
-DEPLOY_KEY_SET=$(gl_api "groups/${ENC_NS}/variables/EZ_APPSEC_DASHBOARD_DEPLOY_KEY" \
+DEPLOY_KEY_SET=$(gl_api "groups/${ENC_NS}/variables/SOURCEBASTION_DASHBOARD_DEPLOY_KEY" \
   2>/dev/null | python3 -c "import json,sys; print('yes' if json.load(sys.stdin)['value'] else 'no')" 2>/dev/null || echo "no")
-log "  EZ_APPSEC_DASHBOARD_PROJECT=${DASH_PROJECT:-NOT SET}"
-log "  EZ_APPSEC_DASHBOARD_DEPLOY_KEY=${DEPLOY_KEY_SET}"
+log "  SOURCEBASTION_DASHBOARD_PROJECT=${DASH_PROJECT:-NOT SET}"
+log "  SOURCEBASTION_DASHBOARD_DEPLOY_KEY=${DEPLOY_KEY_SET}"
 
 # ── Step 2: trigger pipeline via API source (activates cold:scan) ─────────────
 log "Triggering pipeline on $PROJECT@$REF (source=api → cold:scan) ..."

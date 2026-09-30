@@ -163,7 +163,7 @@ def test_policy_and_artifact_include_image_findings(monkeypatch, tmp_path):
 
 def test_cli_cedar_error_exits_two_but_shadow_error_keeps_legacy_exit(monkeypatch, tmp_path):
     monkeypatch.setattr("sourcebastion.external_scanners.ExternalScannerManager.scan_all", lambda *_args: [])
-    config_path = tmp_path / ".ez-appsec.yaml"
+    config_path = tmp_path / ".sourcebastion.yaml"
     runner = CliRunner()
 
     config_path.write_text("policy_mode: cedar\n", encoding="utf-8")
@@ -194,7 +194,7 @@ def test_cli_cedar_gate_can_fail_on_image_finding(monkeypatch, tmp_path):
                 "warning_policy_ids": [], "diagnostic_codes": []}
 
     monkeypatch.setattr("sourcebastion.scanner.evaluate_cedar", fake_evaluate)
-    config_path = tmp_path / ".ez-appsec.yaml"
+    config_path = tmp_path / ".sourcebastion.yaml"
     config_path.write_text("policy_mode: cedar\n", encoding="utf-8")
 
     result = CliRunner().invoke(main, [

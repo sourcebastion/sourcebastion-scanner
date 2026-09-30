@@ -2,7 +2,7 @@
 CI helper: upsert a project entry into public/data/index.json.
 
 Reads:
-  EZ_APPSEC_REPORT        - path to the scan vulnerabilities.json artifact
+  SOURCEBASTION_REPORT        - path to the scan vulnerabilities.json artifact
   CI_PROJECT_PATH_SLUG    - gitlab project slug  (e.g. my-project)
   CI_PROJECT_NAME         - human-readable project name
   CI_PROJECT_PATH         - full project path    (e.g. group/my-project)
@@ -15,7 +15,7 @@ import json
 import os
 from datetime import datetime, timezone
 
-report_path = os.environ["EZ_APPSEC_REPORT"]
+report_path = os.environ["SOURCEBASTION_REPORT"]
 slug        = os.environ["CI_PROJECT_PATH_SLUG"]
 name        = os.environ["CI_PROJECT_NAME"]
 path        = os.environ["CI_PROJECT_PATH"]

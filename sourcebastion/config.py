@@ -112,7 +112,7 @@ class Config(BaseModel):
         arbitrary_types_allowed = True
 
     @classmethod
-    def from_file(cls, path: str = ".ez-appsec.yaml") -> "Config":
+    def from_file(cls, path: str = ".sourcebastion.yaml") -> "Config":
         """Load configuration from YAML file"""
         config_path = Path(path)
 

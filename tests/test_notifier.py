@@ -294,9 +294,9 @@ class TestNotifyOnNewFindings:
 
     @patch("sourcebastion.notifier._post_json", return_value=True)
     def test_reads_env_vars(self, mock_post, monkeypatch):
-        monkeypatch.setenv("EZ_APPSEC_SLACK_WEBHOOK", "https://hooks.slack.com/env")
-        monkeypatch.setenv("EZ_APPSEC_PROJECT_NAME", "env-proj")
-        monkeypatch.setenv("EZ_APPSEC_DASHBOARD_URL", "https://dash.env.io")
+        monkeypatch.setenv("SOURCEBASTION_SLACK_WEBHOOK", "https://hooks.slack.com/env")
+        monkeypatch.setenv("SOURCEBASTION_PROJECT_NAME", "env-proj")
+        monkeypatch.setenv("SOURCEBASTION_DASHBOARD_URL", "https://dash.env.io")
         result = notify_on_new_findings([CRITICAL_FINDING])
         assert result["notified"] is True
         url, body = mock_post.call_args[0]

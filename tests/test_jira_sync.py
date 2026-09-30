@@ -87,10 +87,10 @@ def tmp_map(tmp_path):
 class TestJiraConfig:
     def test_from_env_complete(self):
         env = {
-            "EZ_APPSEC_JIRA_URL": "https://my.atlassian.net",
-            "EZ_APPSEC_JIRA_EMAIL": "bot@test.com",
-            "EZ_APPSEC_JIRA_TOKEN": "tok-123",
-            "EZ_APPSEC_JIRA_PROJECT": "SEC",
+            "SOURCEBASTION_JIRA_URL": "https://my.atlassian.net",
+            "SOURCEBASTION_JIRA_EMAIL": "bot@test.com",
+            "SOURCEBASTION_JIRA_TOKEN": "tok-123",
+            "SOURCEBASTION_JIRA_PROJECT": "SEC",
         }
         with patch.dict(os.environ, env, clear=False):
             cfg = JiraConfig.from_env()
@@ -105,10 +105,10 @@ class TestJiraConfig:
 
     def test_from_env_strips_trailing_slash(self):
         env = {
-            "EZ_APPSEC_JIRA_URL": "https://my.atlassian.net/",
-            "EZ_APPSEC_JIRA_EMAIL": "bot@test.com",
-            "EZ_APPSEC_JIRA_TOKEN": "tok-123",
-            "EZ_APPSEC_JIRA_PROJECT": "SEC",
+            "SOURCEBASTION_JIRA_URL": "https://my.atlassian.net/",
+            "SOURCEBASTION_JIRA_EMAIL": "bot@test.com",
+            "SOURCEBASTION_JIRA_TOKEN": "tok-123",
+            "SOURCEBASTION_JIRA_PROJECT": "SEC",
         }
         with patch.dict(os.environ, env, clear=False):
             cfg = JiraConfig.from_env()
@@ -116,11 +116,11 @@ class TestJiraConfig:
 
     def test_from_env_custom_issue_type(self):
         env = {
-            "EZ_APPSEC_JIRA_URL": "https://my.atlassian.net",
-            "EZ_APPSEC_JIRA_EMAIL": "bot@test.com",
-            "EZ_APPSEC_JIRA_TOKEN": "tok-123",
-            "EZ_APPSEC_JIRA_PROJECT": "SEC",
-            "EZ_APPSEC_JIRA_ISSUE_TYPE": "Task",
+            "SOURCEBASTION_JIRA_URL": "https://my.atlassian.net",
+            "SOURCEBASTION_JIRA_EMAIL": "bot@test.com",
+            "SOURCEBASTION_JIRA_TOKEN": "tok-123",
+            "SOURCEBASTION_JIRA_PROJECT": "SEC",
+            "SOURCEBASTION_JIRA_ISSUE_TYPE": "Task",
         }
         with patch.dict(os.environ, env, clear=False):
             cfg = JiraConfig.from_env()

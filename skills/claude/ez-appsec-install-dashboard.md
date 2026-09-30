@@ -19,13 +19,13 @@ The dashboard project will be created at `GROUP_PATH/ez-appsec-dashboard`.
 
 Pull the dashboard files from the ez-appsec GitHub release:
 ```bash
-EZ_APPSEC_WEB_URL="https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/web"
+SOURCEBASTION_WEB_URL="https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/web"
 ```
 
 Alternatively, if the user is running this from inside a local ez-appsec checkout, prefer the local `web/` directory:
 ```bash
 LOCAL_WEB=$(git rev-parse --show-toplevel 2>/dev/null)/web
-[ -f "${LOCAL_WEB}/index.html" ] && WEB_SOURCE="local:${LOCAL_WEB}" || WEB_SOURCE="remote:${EZ_APPSEC_WEB_URL}"
+[ -f "${LOCAL_WEB}/index.html" ] && WEB_SOURCE="local:${LOCAL_WEB}" || WEB_SOURCE="remote:${SOURCEBASTION_WEB_URL}"
 ```
 
 ---
@@ -83,7 +83,7 @@ If `WEB_SOURCE` starts with `remote:`:
 ```bash
 mkdir -p public/data
 for FILE in index.html style.css app.js; do
-  curl -fsSL "${EZ_APPSEC_WEB_URL}/${FILE}" -o "public/${FILE}"
+  curl -fsSL "${SOURCEBASTION_WEB_URL}/${FILE}" -o "public/${FILE}"
 done
 printf '{\n  "last_updated": null,\n  "projects": []\n}\n' > public/data/index.json
 ```
@@ -134,16 +134,16 @@ git push origin main || git push --force-with-lease origin main
 So consuming projects can discover the dashboard automatically:
 ```bash
 glab api --method POST "groups/${GROUP_ID}/variables" \
-  --field key="EZ_APPSEC_DASHBOARD_PROJECT" \
+  --field key="SOURCEBASTION_DASHBOARD_PROJECT" \
   --field value="${GROUP_PATH}/ez-appsec-dashboard" \
   --field masked=false \
   --field protected=false \
   --field variable_type=env_var 2>/dev/null || \
-glab api --method PUT "groups/${GROUP_ID}/variables/EZ_APPSEC_DASHBOARD_PROJECT" \
+glab api --method PUT "groups/${GROUP_ID}/variables/SOURCEBASTION_DASHBOARD_PROJECT" \
   --field value="${GROUP_PATH}/ez-appsec-dashboard" \
   --field masked=false \
   --field protected=false 2>/dev/null || \
-echo "Could not set group variable — set EZ_APPSEC_DASHBOARD_PROJECT manually in group Settings > CI/CD > Variables."
+echo "Could not set group variable — set SOURCEBASTION_DASHBOARD_PROJECT manually in group Settings > CI/CD > Variables."
 ```
 
 ---
@@ -184,11 +184,11 @@ rm -rf "${TMPDIR}"
 ```
 ✓ Dashboard project:   <GitLab project URL>
 ✓ Pages URL:           <PAGES_URL>  (live after first pipeline completes)
-✓ Group variable:      EZ_APPSEC_DASHBOARD_PROJECT = <GROUP_PATH>/ez-appsec-dashboard
+✓ Group variable:      SOURCEBASTION_DASHBOARD_PROJECT = <GROUP_PATH>/ez-appsec-dashboard
 
 Next steps:
   1. Wait for the pipeline at <GitLab project URL>/-/pipelines, then visit <PAGES_URL>
   2. Run /ez-appsec-install in each project you want to include in the dashboard
   3. Each scan will automatically push findings to this dashboard via the
-     EZ_APPSEC_DASHBOARD_PROJECT group variable
+     SOURCEBASTION_DASHBOARD_PROJECT group variable
 ```

@@ -208,11 +208,9 @@ class VulnerabilityDashboard {
     // ── Config ─────────────────────────────────────────────────────────────
 
     dashboardVersion() {
-        // `data/config.json` is persisted in existing deployments, so accept
-        // either key: producers now write `sourcebastion_version`, while a
-        // dashboard that has not regenerated its file still has the old one.
-        // Remove the fallback once no supported deployment predates the rename.
-        return this.config?.sourcebastion_version ?? this.config?.ez_appsec_version;
+        // One key: there are no deployments predating the rename, so the
+        // compatibility fallback this briefly carried was cost without value.
+        return this.config?.sourcebastion_version;
     }
 
     async loadConfig() {
@@ -298,7 +296,7 @@ class VulnerabilityDashboard {
                 if (rescanBtn && projectUrl) {
                     const branch = meta.default_branch || '';
                     const refParam = branch ? `&ref=${encodeURIComponent(branch)}` : '';
-                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[EZ_APPSEC_COLD_SCAN]=true${refParam}`;
+                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[SOURCEBASTION_COLD_SCAN]=true${refParam}`;
                     rescanBtn.classList.add('rescan-btn--visible');
                 }
             }
@@ -391,7 +389,7 @@ class VulnerabilityDashboard {
                 if (projectUrl) {
                     const branch = (proj && proj.default_branch) ? proj.default_branch : '';
                     const refParam = branch ? `&ref=${encodeURIComponent(branch)}` : '';
-                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[EZ_APPSEC_COLD_SCAN]=true${refParam}`;
+                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[SOURCEBASTION_COLD_SCAN]=true${refParam}`;
                     rescanBtn.classList.add('rescan-btn--visible');
                 } else {
                     rescanBtn.classList.remove('rescan-btn--visible');

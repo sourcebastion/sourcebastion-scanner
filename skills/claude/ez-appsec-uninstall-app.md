@@ -56,9 +56,9 @@ WORKFLOW_SHA=$(gh api /repos/${TARGET_REPO}/contents/.github/workflows/ez-appsec
   --jq '.sha' 2>/dev/null || echo "")
 
 # Which secrets/variables are set? (check presence, not values)
-HAS_APP_ID=$(gh secret list --repo=${TARGET_REPO} 2>/dev/null | grep -c "EZ_APPSEC_APP_ID" || echo 0)
-HAS_PRIVATE_KEY=$(gh secret list --repo=${TARGET_REPO} 2>/dev/null | grep -c "EZ_APPSEC_PRIVATE_KEY" || echo 0)
-HAS_DASHBOARD_VAR=$(gh variable list --repo=${TARGET_REPO} 2>/dev/null | grep -c "EZ_APPSEC_DASHBOARD_REPO" || echo 0)
+HAS_APP_ID=$(gh secret list --repo=${TARGET_REPO} 2>/dev/null | grep -c "SOURCEBASTION_APP_ID" || echo 0)
+HAS_PRIVATE_KEY=$(gh secret list --repo=${TARGET_REPO} 2>/dev/null | grep -c "SOURCEBASTION_PRIVATE_KEY" || echo 0)
+HAS_DASHBOARD_VAR=$(gh variable list --repo=${TARGET_REPO} 2>/dev/null | grep -c "SOURCEBASTION_DASHBOARD_REPO" || echo 0)
 ```
 
 ### 3. Present plan and ask permission — ONCE
@@ -99,9 +99,9 @@ ez-appsec is installed on <TARGET_REPO>.
 
 This will remove:
   • .github/workflows/ez-appsec-scan.yml       [workflow file]
-  • Secret: EZ_APPSEC_APP_ID                   [if present]
-  • Secret: EZ_APPSEC_PRIVATE_KEY              [if present]
-  • Variable: EZ_APPSEC_DASHBOARD_REPO         [if present]
+  • Secret: SOURCEBASTION_APP_ID                   [if present]
+  • Secret: SOURCEBASTION_PRIVATE_KEY              [if present]
+  • Variable: SOURCEBASTION_DASHBOARD_REPO         [if present]
   • Dashboard data: <DASHBOARD_FILE_PATH>      [if found]
 
 After removal, you will be given a link to deselect the repo
@@ -153,8 +153,8 @@ fi
 # ── 2. Remove secrets ─────────────────────────────────────────────────────────
 echo "Removing secrets..."
 for SECRET in \
-  ${HAS_APP_ID:+EZ_APPSEC_APP_ID} \
-  ${HAS_PRIVATE_KEY:+EZ_APPSEC_PRIVATE_KEY}; do
+  ${HAS_APP_ID:+SOURCEBASTION_APP_ID} \
+  ${HAS_PRIVATE_KEY:+SOURCEBASTION_PRIVATE_KEY}; do
   [ -z "$SECRET" ] && continue
   if gh secret delete "$SECRET" --repo="$TARGET_REPO" 2>/tmp/ez_err; then
     echo "  ✓ Secret ${SECRET} removed"
@@ -168,8 +168,8 @@ done
 # ── 3. Remove variable ────────────────────────────────────────────────────────
 if [ "$HAS_DASHBOARD_VAR" -gt 0 ]; then
   echo "Removing variables..."
-  if gh variable delete EZ_APPSEC_DASHBOARD_REPO --repo="$TARGET_REPO" 2>/tmp/ez_err; then
-    echo "  ✓ Variable EZ_APPSEC_DASHBOARD_REPO removed"
+  if gh variable delete SOURCEBASTION_DASHBOARD_REPO --repo="$TARGET_REPO" 2>/tmp/ez_err; then
+    echo "  ✓ Variable SOURCEBASTION_DASHBOARD_REPO removed"
   else
     echo "  ✗ Could not remove variable: $(cat /tmp/ez_err)"
     echo "    Remove manually: https://github.com/${TARGET_REPO}/settings/variables/actions"

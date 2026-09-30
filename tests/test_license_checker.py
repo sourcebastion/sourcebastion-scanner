@@ -822,7 +822,7 @@ class TestFindingUsability:
         assert "solution" in f
         assert "allowed_licenses" in f["solution"]
         assert "denied_licenses" in f["solution"]
-        assert ".ez-appsec.yaml" in f["solution"]
+        assert ".sourcebastion.yaml" in f["solution"]
 
     def test_missing_license_gives_specific_guidance(self):
         policy = LicensePolicy(allowed_licenses=["MIT"])

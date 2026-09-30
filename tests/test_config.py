@@ -195,7 +195,7 @@ ignore:
             os.unlink(path)
 
     def test_load_nonexistent_file(self):
-        config = Config.from_file("/tmp/does-not-exist-ez-appsec.yaml")
+        config = Config.from_file("/tmp/does-not-exist-sourcebastion.yaml")
         assert config.severity == "all"
         assert config.ignore_rules == []
 

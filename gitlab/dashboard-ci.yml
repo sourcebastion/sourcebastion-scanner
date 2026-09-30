@@ -14,8 +14,8 @@ stages:
   - deploy
 
 variables:
-  EZ_APPSEC_VERSION: "latest"
-  EZ_APPSEC_IMAGE: "ghcr.io/ez-appsec/ez-appsec:$EZ_APPSEC_VERSION"
+  SOURCEBASTION_VERSION: "latest"
+  SOURCEBASTION_IMAGE: "ghcr.io/ez-appsec/ez-appsec:$SOURCEBASTION_VERSION"
 
 # ── Shared: checkout main and configure git push credentials ─────────────────
 .git-setup: &git-setup |
@@ -84,7 +84,7 @@ variables:
 rescan:project:
   stage: scan
   image:
-    name: $EZ_APPSEC_IMAGE
+    name: $SOURCEBASTION_IMAGE
     entrypoint: [""]
   variables:
     RESCAN_PROJECT_PATH: ""
@@ -131,7 +131,7 @@ rescan:project:
 rescan:all:
   stage: scan
   image:
-    name: $EZ_APPSEC_IMAGE
+    name: $SOURCEBASTION_IMAGE
     entrypoint: [""]
   script:
     - apk add --no-cache git python3 curl --quiet

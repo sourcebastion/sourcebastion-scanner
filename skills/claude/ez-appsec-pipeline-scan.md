@@ -81,7 +81,7 @@ If `scan:pipeline` failed (not findings — job error):
   ```bash
   glab ci trace scan:pipeline
   ```
-- Suggest checking that `EZ_APPSEC_IMAGE` is reachable from the runner and that the project includes `scan.yml`.
+- Suggest checking that `SOURCEBASTION_IMAGE` is reachable from the runner and that the project includes `scan.yml`.
 
 ### 8. Report outcome
 

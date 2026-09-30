@@ -26,17 +26,17 @@ def main():
 @click.option("--languages", multiple=True, help="Programming languages to scan")
 @click.option("--severity", default=None, help="Minimum severity level to report")
 @click.option("--output", type=click.Path(), help="Output file for results (JSON)")
-@click.option("--config", "config_file", type=click.Path(), default=".ez-appsec.yaml", help="Path to config file")
+@click.option("--config", "config_file", type=click.Path(), default=".sourcebastion.yaml", help="Path to config file")
 @click.option("--baseline", "baseline_path", type=str, default=None, help="Baseline file path or URL for new-findings-only mode")
 @click.option("--baseline-threshold", type=int, default=0, help="Max new findings before non-zero exit (default: 0)")
-@click.option("--slack-webhook", envvar="EZ_APPSEC_SLACK_WEBHOOK", default=None, help="Slack incoming webhook URL for notifications")
-@click.option("--teams-webhook", envvar="EZ_APPSEC_TEAMS_WEBHOOK", default=None, help="Teams incoming webhook URL for notifications")
-@click.option("--project-name", envvar="EZ_APPSEC_PROJECT_NAME", default=None, help="Project name for notifications")
-@click.option("--dashboard-url", envvar="EZ_APPSEC_DASHBOARD_URL", default=None, help="Dashboard URL included in notifications")
-@click.option("--jira-url", envvar="EZ_APPSEC_JIRA_URL", default=None, help="Jira instance URL (e.g. https://myteam.atlassian.net)")
-@click.option("--jira-email", envvar="EZ_APPSEC_JIRA_EMAIL", default=None, help="Jira user email for API auth")
-@click.option("--jira-token", envvar="EZ_APPSEC_JIRA_TOKEN", default=None, help="Jira API token")
-@click.option("--jira-project", envvar="EZ_APPSEC_JIRA_PROJECT", default=None, help="Jira project key for new issues")
+@click.option("--slack-webhook", envvar="SOURCEBASTION_SLACK_WEBHOOK", default=None, help="Slack incoming webhook URL for notifications")
+@click.option("--teams-webhook", envvar="SOURCEBASTION_TEAMS_WEBHOOK", default=None, help="Teams incoming webhook URL for notifications")
+@click.option("--project-name", envvar="SOURCEBASTION_PROJECT_NAME", default=None, help="Project name for notifications")
+@click.option("--dashboard-url", envvar="SOURCEBASTION_DASHBOARD_URL", default=None, help="Dashboard URL included in notifications")
+@click.option("--jira-url", envvar="SOURCEBASTION_JIRA_URL", default=None, help="Jira instance URL (e.g. https://myteam.atlassian.net)")
+@click.option("--jira-email", envvar="SOURCEBASTION_JIRA_EMAIL", default=None, help="Jira user email for API auth")
+@click.option("--jira-token", envvar="SOURCEBASTION_JIRA_TOKEN", default=None, help="Jira API token")
+@click.option("--jira-project", envvar="SOURCEBASTION_JIRA_PROJECT", default=None, help="Jira project key for new issues")
 @click.option("--sbom/--no-sbom", default=False, help="Generate CycloneDX SBOM alongside scan results")
 @click.option("--sbom-output", type=click.Path(), default="sbom.cdx.json", help="Output path for SBOM file (default: sbom.cdx.json)")
 @click.option("--license-check", is_flag=True, default=False, help="Run license compliance check (requires syft)")
@@ -256,7 +256,7 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
 @click.argument("path", type=click.Path(exists=True, file_okay=False))
 @click.option("--plan", "plan_path", type=click.Path(exists=True, dir_okay=False), required=True)
 @click.option("--result-envelope", type=click.Path(dir_okay=False), required=True)
-@click.option("--scanner-image", envvar="EZ_APPSEC_SCANNER_IMAGE", required=True)
+@click.option("--scanner-image", envvar="SOURCEBASTION_SCANNER_IMAGE", required=True)
 def contract_scan(path, plan_path, result_envelope, scanner_image):
     """Execute a versioned SourceBastion scan plan and emit its result envelope."""
     from sourcebastion.incremental_contract import (
@@ -288,7 +288,7 @@ def contract_scan(path, plan_path, result_envelope, scanner_image):
 @click.option("--ai-prompt", help="Deprecated compatibility option; ignored")
 @click.option("--severity", default=None, help="Minimum severity level to report")
 @click.option("--output", type=click.Path(), help="Output file for GitLab vulnerability report (JSON)")
-@click.option("--config", "config_file", type=click.Path(), default=".ez-appsec.yaml", help="Path to config file")
+@click.option("--config", "config_file", type=click.Path(), default=".sourcebastion.yaml", help="Path to config file")
 def gitlab_scan(path, ai_prompt, severity, output, config_file):
     """Scan a codebase and output results in GitLab vulnerability format
 
@@ -328,10 +328,10 @@ def gitlab_scan(path, ai_prompt, severity, output, config_file):
 @main.command()
 def init():
     """Initialize ez-appsec configuration in current directory"""
-    config_path = Path(".ez-appsec.yaml")
+    config_path = Path(".sourcebastion.yaml")
 
     if config_path.exists():
-        click.echo("✓ Configuration already exists at .ez-appsec.yaml")
+        click.echo("✓ Configuration already exists at .sourcebastion.yaml")
         return
 
     config_content = """# ez-appsec configuration
@@ -414,11 +414,11 @@ def check(path):
 
 
 @main.command("check-config")
-@click.argument("config_path", type=click.Path(), default=".ez-appsec.yaml")
+@click.argument("config_path", type=click.Path(), default=".sourcebastion.yaml")
 def check_config(config_path):
-    """Validate an .ez-appsec.yaml configuration file
+    """Validate an .sourcebastion.yaml configuration file
 
-    CONFIG_PATH: Path to config file (default: .ez-appsec.yaml)
+    CONFIG_PATH: Path to config file (default: .sourcebastion.yaml)
     """
     config_file = Path(config_path)
     if not config_file.exists():
@@ -578,14 +578,14 @@ def status():
     "--storage-backend",
     type=click.Choice(["json", "sql"]),
     default=None,
-    help="Storage backend (default: from EZ_APPSEC_STORAGE_BACKEND, else json)",
+    help="Storage backend (default: from SOURCEBASTION_STORAGE_BACKEND, else json)",
 )
 def serve_metrics(host, port, storage_path, project, storage_backend):
     """Serve Prometheus metrics for the latest scan findings
 
     Exposes GET /metrics in Prometheus text exposition format, grouped by
     severity, category, and project. Reads findings from the configured
-    storage backend (JSON file or SQL via EZ_APPSEC_STORAGE_URL).
+    storage backend (JSON file or SQL via SOURCEBASTION_STORAGE_URL).
 
     Requires the optional 'metrics' extra: pip install 'ez-appsec[metrics]'.
 
@@ -593,7 +593,7 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
     Examples:
       ez-appsec serve-metrics
       ez-appsec serve-metrics --findings /data/vulnerabilities.json --project api
-      EZ_APPSEC_STORAGE_URL=sqlite:///findings.db ez-appsec serve-metrics --storage-backend sql
+      SOURCEBASTION_STORAGE_URL=sqlite:///findings.db ez-appsec serve-metrics --storage-backend sql
 
     \b
     Note: --host 0.0.0.0 binds to all interfaces. The endpoint is
@@ -603,7 +603,7 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
     import os
 
     if storage_backend:
-        os.environ["EZ_APPSEC_STORAGE_BACKEND"] = storage_backend
+        os.environ["SOURCEBASTION_STORAGE_BACKEND"] = storage_backend
 
     from sourcebastion.metrics_endpoint import (
         MetricsDependencyError,
@@ -628,7 +628,7 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
 @main.command()
 @click.argument("path", type=click.Path(exists=True), default=".")
 @click.option("--output", type=click.Path(), help="Output directory for web dashboard", default="./web/data")
-@click.option("--config", "config_file", type=click.Path(), default=".ez-appsec.yaml", help="Path to config file")
+@click.option("--config", "config_file", type=click.Path(), default=".sourcebastion.yaml", help="Path to config file")
 def web_report(path, output, config_file):
     """Generate web dashboard for vulnerability reporting
 
@@ -743,7 +743,7 @@ def update_web(vulns_file, web_dir, serve, port):
 @click.option("--languages", multiple=True, help="Programming languages to scan")
 @click.option("--severity", default=None, help="Minimum severity level to report")
 @click.option("--output", type=click.Path(), help="Output file for SARIF report")
-@click.option("--config", "config_file", type=click.Path(), default=".ez-appsec.yaml", help="Path to config file")
+@click.option("--config", "config_file", type=click.Path(), default=".sourcebastion.yaml", help="Path to config file")
 def github_scan(path, ai_prompt, languages, severity, output, config_file):
     """Scan a codebase and output results in GitHub SARIF format
 

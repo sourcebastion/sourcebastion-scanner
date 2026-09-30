@@ -25,12 +25,12 @@ _GIT_URL_PREFIXES = ("http://", "https://", "ssh://", "git://")
 
 
 def _allowed_roots() -> list[Path]:
-    """Return configured scan roots from EZ_APPSEC_ALLOWED_ROOTS (colon-separated).
+    """Return configured scan roots from SOURCEBASTION_ALLOWED_ROOTS (colon-separated).
 
     Empty list means "no allowlist enforced". Roots are resolved to absolute
     paths so symlinks/relative entries behave predictably.
     """
-    raw = os.environ.get("EZ_APPSEC_ALLOWED_ROOTS", "").strip()
+    raw = os.environ.get("SOURCEBASTION_ALLOWED_ROOTS", "").strip()
     if not raw:
         return []
     return [Path(entry).expanduser().resolve() for entry in raw.split(":") if entry.strip()]
@@ -64,7 +64,7 @@ def _validate_scan_path(path: str) -> None:
     - Leading-dash paths are flag-injection vectors for git and ez-appsec.
     - SSH-style git URLs (git@host:repo) require key material the API process
       does not have; reject with a clear message instead of a confusing failure.
-    - When EZ_APPSEC_ALLOWED_ROOTS is set, local paths must live under a root.
+    - When SOURCEBASTION_ALLOWED_ROOTS is set, local paths must live under a root.
     """
     stripped = path.strip()
     if not stripped:
@@ -74,7 +74,7 @@ def _validate_scan_path(path: str) -> None:
     if stripped.lower().startswith("git@"):
         raise ValueError("SSH git URLs (git@host:repo) are not supported; use an https:// URL instead")
     if not _is_git_url(stripped) and not _is_within_allowed_roots(stripped):
-        raise ValueError("scan path is outside EZ_APPSEC_ALLOWED_ROOTS")
+        raise ValueError("scan path is outside SOURCEBASTION_ALLOWED_ROOTS")
 
 
 def _validate_severity(severity: str) -> str:

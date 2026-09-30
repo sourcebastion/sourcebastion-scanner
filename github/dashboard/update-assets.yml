@@ -23,8 +23,8 @@ jobs:
         id: token
         uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         with:
-          app-id: ${{ secrets.EZ_APPSEC_APP_ID }}
-          private-key: ${{ secrets.EZ_APPSEC_PRIVATE_KEY }}
+          app-id: ${{ secrets.SOURCEBASTION_APP_ID }}
+          private-key: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
           owner: ez-appsec
           repositories: ez-appsec-dashboard
 

@@ -336,15 +336,15 @@ class TestInitCommand:
         monkeypatch.chdir(temp_dir)
         result = runner.invoke(main, ['init'])
         assert result.exit_code == 0
-        assert os.path.exists('.ez-appsec.yaml')
-        config_text = Path('.ez-appsec.yaml').read_text(encoding='utf-8')
+        assert os.path.exists('.sourcebastion.yaml')
+        config_text = Path('.sourcebastion.yaml').read_text(encoding='utf-8')
         assert 'ai:' not in config_text
         assert 'gpt-' not in config_text
 
     def test_init_with_existing_config(self, temp_dir, monkeypatch):
         """Test init with existing configuration file"""
         # Create existing config
-        config_path = Path(temp_dir) / '.ez-appsec.yaml'
+        config_path = Path(temp_dir) / '.sourcebastion.yaml'
         config_path.write_text("# Existing config")
 
         runner = CliRunner()
@@ -356,7 +356,7 @@ class TestInitCommand:
 
 class TestWebReportCommand:
     def test_web_report_loads_project_config(self, tmp_path):
-        config_path = tmp_path / ".ez-appsec.yaml"
+        config_path = tmp_path / ".sourcebastion.yaml"
         config_path.write_text(
             """ignore:
   - file_path: tests/fixtures/**

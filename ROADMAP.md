@@ -68,12 +68,12 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 
 ---
 
-#### PLAN-02: Ignore Rules (`.ez-appsec.yaml`)
+#### PLAN-02: Ignore Rules (`.sourcebastion.yaml`)
 
 **Problem:** Every codebase has known false positives — test credentials, example configs, vendored code. Without ignore rules, the same noise appears in every scan.
 
 **Scope:**
-- `.ez-appsec.yaml` config file at repo root (or path passed via `--config`)
+- `.sourcebastion.yaml` config file at repo root (or path passed via `--config`)
 - Ignore by: rule ID, file path (glob), finding message substring, CVE ID
 - Ignore scopes: `permanent` (suppress forever) or `until: <ISO date>` (expires and resurfaces)
 - `ez-appsec check` command validates the config file syntax
@@ -205,7 +205,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 
 **Scope:**
 - Webhook notification when a scan produces new critical or high findings
-- Configurable via `EZ_APPSEC_SLACK_WEBHOOK` / `EZ_APPSEC_TEAMS_WEBHOOK` CI variable
+- Configurable via `SOURCEBASTION_SLACK_WEBHOOK` / `SOURCEBASTION_TEAMS_WEBHOOK` CI variable
 - Message format: project name, finding count by severity, top 3 findings, dashboard link
 - Deduplication: only notify on findings that are *new* since the previous scan (requires PLAN-03 or its own simple snapshot)
 
@@ -230,7 +230,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Scope:**
 - Create Jira issues for new critical/high findings
 - Update existing issues when findings are resolved (close the ticket)
-- Configurable via: `EZ_APPSEC_JIRA_URL`, `EZ_APPSEC_JIRA_TOKEN`, `EZ_APPSEC_JIRA_PROJECT`
+- Configurable via: `SOURCEBASTION_JIRA_URL`, `SOURCEBASTION_JIRA_TOKEN`, `SOURCEBASTION_JIRA_PROJECT`
 - Jira issue contains: severity, scanner, file location, AI remediation guidance, dashboard link
 - Dedup: track `finding_fingerprint → jira_issue_key` in dashboard to avoid duplicate tickets
 
@@ -259,7 +259,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Problem:** "Fail the build if there are any critical findings" is too blunt. Teams need policies like "fail only on critical secrets findings" or "warn on high CVEs older than 30 days."
 
 **Scope:**
-- Policy rules defined in `.ez-appsec.yaml` under a `policy:` key
+- Policy rules defined in `.sourcebastion.yaml` under a `policy:` key
 - Rule attributes: `severity`, `category` (secrets/sast/iac/cve), `max_count`, `action` (fail/warn/ignore)
 - `ez-appsec scan` exits non-zero when a `fail` policy is violated
 - Policy evaluation result included in `vulnerabilities.json` as `policy_violations: []`
@@ -307,7 +307,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 
 **Scope:**
 - Extract license data from grype/syft SBOM output
-- Configurable allowed/denied license lists in `.ez-appsec.yaml`
+- Configurable allowed/denied license lists in `.sourcebastion.yaml`
 - License violations appear as `category: license_compliance` findings in `vulnerabilities.json`
 - Dashboard shows license breakdown by type
 
@@ -491,8 +491,8 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Problem:** Enterprise customers need to manage ez-appsec across hundreds of repos. Today each repo is configured individually.
 
 **Scope:**
-- Organization-level `.ez-appsec.yaml` in a designated config repo
-- Child repos inherit org policy; local `.ez-appsec.yaml` can override specific rules
+- Organization-level `.sourcebastion.yaml` in a designated config repo
+- Child repos inherit org policy; local `.sourcebastion.yaml` can override specific rules
 - `ez-appsec org-sync --org <github-org>` discovers all repos, installs/updates workflows
 - Org-level dashboard aggregates findings across all repos with drill-down
 

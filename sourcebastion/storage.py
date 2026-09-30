@@ -255,10 +255,10 @@ class SqlBackend(StorageBackend):
         input (e.g. CLI args from an HTTP request) — an attacker could redirect
         persistence to an internal resource (SSRF) or exfiltrate findings to an
         attacker-controlled DSN. Source it from a deployment-controlled
-        environment variable (``EZ_APPSEC_STORAGE_URL``) via :meth:`from_env`.
+        environment variable (``SOURCEBASTION_STORAGE_URL``) via :meth:`from_env`.
         """
         if not storage_url:
-            raise ConfigurationError("SQL storage requires EZ_APPSEC_STORAGE_URL to be set.")
+            raise ConfigurationError("SQL storage requires SOURCEBASTION_STORAGE_URL to be set.")
 
         try:
             from sqlalchemy import create_engine, select
@@ -278,11 +278,11 @@ class SqlBackend(StorageBackend):
 
     @classmethod
     def from_env(cls) -> "SqlBackend":
-        """Create a SQL backend from EZ_APPSEC_STORAGE_URL."""
+        """Create a SQL backend from SOURCEBASTION_STORAGE_URL."""
 
-        storage_url = os.getenv("EZ_APPSEC_STORAGE_URL", "")
+        storage_url = os.getenv("SOURCEBASTION_STORAGE_URL", "")
         if not storage_url:
-            raise ConfigurationError("SQL storage requires EZ_APPSEC_STORAGE_URL to be set.")
+            raise ConfigurationError("SQL storage requires SOURCEBASTION_STORAGE_URL to be set.")
         return cls(storage_url)
 
     def write_findings(
@@ -402,9 +402,9 @@ class SqlBackend(StorageBackend):
 
 def get_storage_backend() -> StorageBackend:
     """Return the configured storage backend, defaulting to JSON files."""
-    backend = os.getenv("EZ_APPSEC_STORAGE_BACKEND", DEFAULT_STORAGE_BACKEND).strip().lower()
+    backend = os.getenv("SOURCEBASTION_STORAGE_BACKEND", DEFAULT_STORAGE_BACKEND).strip().lower()
     if backend in {"", "json", "jsonfile", "json-file"}:
         return JsonFileBackend()
     if backend == "sql":
         return SqlBackend.from_env()
-    raise ConfigurationError(f"Unsupported EZ_APPSEC_STORAGE_BACKEND: {backend}")
+    raise ConfigurationError(f"Unsupported SOURCEBASTION_STORAGE_BACKEND: {backend}")

@@ -23,9 +23,9 @@ def _configured_api_key() -> str:
     Failing at startup means misconfiguration surfaces in container logs
     immediately rather than as a 500 on the first authenticated request.
     """
-    expected = os.environ.get("EZ_APPSEC_API_KEY", "")
+    expected = os.environ.get("SOURCEBASTION_API_KEY", "")
     if not expected:
-        raise RuntimeError("EZ_APPSEC_API_KEY must be set before starting the API")
+        raise RuntimeError("SOURCEBASTION_API_KEY must be set before starting the API")
     return expected
 
 

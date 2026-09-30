@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture(autouse=True)
 def _set_api_key(monkeypatch):
-    monkeypatch.setenv("EZ_APPSEC_API_KEY", "test-key-123")
+    monkeypatch.setenv("SOURCEBASTION_API_KEY", "test-key-123")
 
 
 @pytest.fixture()
@@ -83,14 +83,14 @@ class TestAuthMiddleware:
 
 
 def test_missing_api_key_at_startup_raises(monkeypatch):
-    """Process must fail fast when EZ_APPSEC_API_KEY is unset (review #6)."""
-    monkeypatch.delenv("EZ_APPSEC_API_KEY", raising=False)
+    """Process must fail fast when SOURCEBASTION_API_KEY is unset (review #6)."""
+    monkeypatch.delenv("SOURCEBASTION_API_KEY", raising=False)
     # Drop the cached module so _configured_api_key re-runs on import.
     import sys
 
     sys.modules.pop("api.main", None)
     try:
-        with pytest.raises(RuntimeError, match="EZ_APPSEC_API_KEY"):
+        with pytest.raises(RuntimeError, match="SOURCEBASTION_API_KEY"):
             import importlib
 
             importlib.import_module("api.main")
@@ -129,13 +129,13 @@ class TestPostScan:
         assert resp.status_code == 400
 
     def test_scan_rejects_path_outside_allowlist(self, client, monkeypatch):
-        """EZ_APPSEC_ALLOWED_ROOTS confines local scan targets (review #2)."""
-        monkeypatch.setenv("EZ_APPSEC_ALLOWED_ROOTS", "/safe/dir")
+        """SOURCEBASTION_ALLOWED_ROOTS confines local scan targets (review #2)."""
+        monkeypatch.setenv("SOURCEBASTION_ALLOWED_ROOTS", "/safe/dir")
         resp = client.post("/scan", json={"path": "/etc/passwd"}, headers=AUTH)
         assert resp.status_code == 400
 
     def test_scan_accepts_path_inside_allowlist(self, client, monkeypatch):
-        monkeypatch.setenv("EZ_APPSEC_ALLOWED_ROOTS", "/tmp")
+        monkeypatch.setenv("SOURCEBASTION_ALLOWED_ROOTS", "/tmp")
         resp = client.post("/scan", json={"path": "/tmp/repo"}, headers=AUTH)
         assert resp.status_code == 202
 

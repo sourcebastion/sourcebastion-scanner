@@ -13,7 +13,7 @@ ez-appsec contract-scan /workspace/source \
 ```
 
 `--scanner-image` may instead be supplied through
-`EZ_APPSEC_SCANNER_IMAGE`. It must be the immutable digest in the plan. The
+`SOURCEBASTION_SCANNER_IMAGE`. It must be the immutable digest in the plan. The
 checkout's locally observed Git `HEAD` must also equal the plan's exact head.
 
 The command validates the plan version, canonical digest, identities, baseline

@@ -1,0 +1,89 @@
+name: Build image with bounded retries
+description: Retry build failures twice; never publish or hide an exhausted failure.
+inputs:
+  context:
+    default: '.'
+    description: Build context
+  file:
+    required: true
+    description: Dockerfile path
+  tags:
+    required: true
+    description: Image tags
+  labels:
+    default: ''
+    description: Image labels
+  platforms:
+    required: true
+    description: Target platforms
+  load:
+    default: 'false'
+    description: Load image into local Docker
+  cache-from:
+    default: type=gha
+    description: Cache import
+  cache-to:
+    default: ''
+    description: Cache export
+outputs:
+  digest:
+    description: Digest from the successful attempt
+    value: ${{ steps.third.outputs.digest || steps.second.outputs.digest || steps.first.outputs.digest }}
+runs:
+  using: composite
+  steps:
+    - name: Build (attempt 1 of 3)
+      id: first
+      continue-on-error: true
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.file }}
+        push: false
+        load: ${{ inputs.load }}
+        tags: ${{ inputs.tags }}
+        labels: ${{ inputs.labels }}
+        platforms: ${{ inputs.platforms }}
+        cache-from: ${{ inputs.cache-from }}
+        cache-to: ${{ inputs.cache-to }}
+    - name: Back off before second attempt
+      if: ${{ !cancelled() && steps.first.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo '::warning::Image build failed; retrying in 15 seconds (attempt 2 of 3).'
+        sleep 15
+    - name: Build (attempt 2 of 3)
+      id: second
+      if: ${{ !cancelled() && steps.first.outcome == 'failure' }}
+      continue-on-error: true
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.file }}
+        push: false
+        load: ${{ inputs.load }}
+        tags: ${{ inputs.tags }}
+        labels: ${{ inputs.labels }}
+        platforms: ${{ inputs.platforms }}
+        cache-from: ${{ inputs.cache-from }}
+        cache-to: ${{ inputs.cache-to }}
+    - name: Back off before final attempt
+      if: ${{ !cancelled() && steps.second.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo '::warning::Image build failed again; final retry in 30 seconds.'
+        sleep 30
+    - name: Build (attempt 3 of 3; failure is fatal)
+      id: third
+      if: ${{ !cancelled() && steps.second.outcome == 'failure' }}
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.file }}
+        push: false
+        load: ${{ inputs.load }}
+        tags: ${{ inputs.tags }}
+        labels: ${{ inputs.labels }}
+        platforms: ${{ inputs.platforms }}
+        cache-from: ${{ inputs.cache-from }}
+        cache-to: ${{ inputs.cache-to }}

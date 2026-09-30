@@ -8,6 +8,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_ROOTS = (
+    ROOT / ".github" / "actions",
     ROOT / ".github" / "workflows",
     ROOT / "dashboard" / ".github" / "workflows",
     ROOT / "github" / "dashboard",

@@ -63,7 +63,10 @@ RUN ARCH=$(uname -m) && \
     grype version
 
 # Install semgrep
-RUN pip install --no-cache-dir semgrep && \
+COPY scripts/scanner_artifacts.py /opt/sourcebastion/scanner_artifacts.py
+COPY .github/semgrep-artifacts.json .github/scanner-versions.json /opt/sourcebastion/
+RUN python3 /opt/sourcebastion/scanner_artifacts.py install --libc glibc \
+      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json && \
     semgrep --version
 
 # Copy kics binary and assets from official image

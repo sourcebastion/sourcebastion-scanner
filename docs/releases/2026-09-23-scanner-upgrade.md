@@ -1,4 +1,4 @@
-# Scanner upgrade record — 2026-09-23
+# Scanner upgrade record — 2026-09-28
 
 Gitleaks and Grype passed the three-day soak and now use authenticated release
 archives and GitHub API SHA-256 digests before extraction. The verified
@@ -11,7 +11,7 @@ The self-scan reads these reviewed values from
 before exposing an allowlisted step output, so future maintenance PRs can
 refresh scanner pins without modifying executable workflow code.
 
-KICS v2.2.0 and Semgrep v1.177.0 also passed the soak, but their GitHub release
-evidence contained no matching immutable image digest or package checksum.
-Their existing pins remain unchanged until trustworthy integrity metadata is
-available.
+KICS v2.2.0 and Semgrep v1.178.0 passed the soak, but the authenticated GitHub
+release data contained no release assets. Without a matching immutable image
+digest for KICS or a package checksum for Semgrep, their existing pins remain
+unchanged.

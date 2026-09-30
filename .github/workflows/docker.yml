@@ -1,5 +1,6 @@
 # Docker validation workflow.
-# Builds every image variant without publishing; release.yml is the sole publisher.
+# PRs run source checks only. Release callers also validate every image variant.
+# release.yml is the sole scanner image publisher.
 
 name: Docker Validation
 
@@ -8,6 +9,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      build_images:
+        description: Validate image builds and runtime before release publication
+        type: boolean
+        default: false
 
 env:
   PYTHON_VERSION: '3.11'
@@ -244,6 +251,8 @@ jobs:
 
   build-docker-standard:
     name: Build Standard Docker Image
+    if: inputs.build_images == true
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -271,13 +280,12 @@ jobs:
             type=sha,format=long,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push standard image
+      - name: Build standard image with retries
         id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        uses: ./.github/actions/build-with-retry
         with:
           context: .
           file: ./images/Dockerfile
-          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -285,11 +293,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build local standard image for rule fixture tests
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        uses: ./.github/actions/build-with-retry
         with:
           context: .
           file: ./images/Dockerfile
-          push: false
           load: true
           tags: ez-appsec:standard-rule-test
           cache-from: type=gha
@@ -323,6 +330,7 @@ jobs:
 
   build-docker-slim:
     name: Build Slim Docker Image
+    if: inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -381,6 +389,7 @@ jobs:
 
   build-docker-micro:
     name: Build Micro Docker Image
+    if: inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -439,6 +448,7 @@ jobs:
 
   build-docker-thin:
     name: Build Thin Docker Image
+    if: inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -497,6 +507,7 @@ jobs:
 
   build-docker-semgrep:
     name: Build Semgrep Docker Image
+    if: inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:

@@ -3,6 +3,7 @@
 import pytest
 import json
 import tempfile
+import yaml
 from pathlib import Path
 from ez_appsec.converters import (
     GitHubSarifFormat,
@@ -28,7 +29,8 @@ def test_self_scan_installs_pinned_external_toolchain():
 
     assert pins["gitleaks"]["version"] == "8.30.1"
     assert pins["grype"]["version"] == "0.119.0"
-    assert pins["semgrep"]["version"] == "1.176.1"
+    artifacts = json.loads((SCANNER_VERSIONS.parent / "semgrep-artifacts.json").read_text())
+    assert pins["semgrep"]["version"] == artifacts["version"]
     assert pins["kics"]["image"].startswith("checkmarx/kics@sha256:")
     assert "Load validated scanner versions" in workflow
     assert 'echo "${SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -' in workflow
@@ -69,12 +71,25 @@ def test_pull_request_build_never_publishes_images():
     workflow = DOCKER_WORKFLOW.read_text()
 
     assert "push:" not in workflow.split("on:", 1)[1].split("env:", 1)[0]
-    assert workflow.count("push: false") == 10
+    parsed = yaml.load(workflow, Loader=yaml.BaseLoader)
+    build_steps = [
+        step for job in parsed['jobs'].values() for step in job['steps']
+        if step.get('uses', '').startswith('docker/build-push-action@')
+    ]
+    assert len(build_steps) == 8
+    assert all(step['with']['push'] == 'false' for step in build_steps)
+    retry = yaml.load(
+        (DOCKER_WORKFLOW.parent.parent / 'actions/build-with-retry/action.yml').read_text(),
+        Loader=yaml.BaseLoader,
+    )
+    attempts = [step for step in retry['runs']['steps'] if 'uses' in step]
+    assert len(attempts) == 3
+    assert all(step['with']['push'] == 'false' for step in attempts)
     assert "docker/login-action" not in workflow
 
 
 def test_dependabot_runs_targeted_checks_instead_of_full_docker_regression():
-    """The weekly integration PR, not each source PR, owns the full matrix."""
+    """Dependabot keeps targeted checks; full image validation runs at release."""
     workflow = DOCKER_WORKFLOW.read_text()
 
     assert workflow.count("if: github.actor != 'dependabot[bot]'") == 5

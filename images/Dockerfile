@@ -74,8 +74,11 @@ RUN ARCH=$(uname -m) && \
     chmod +x /usr/local/bin/grype && \
     grype version
 
-# semgrep via pip (pinned)
-RUN pip install --no-cache-dir semgrep==1.157.0 && \
+# Install only the reviewed, hash-verified Semgrep wheel.
+COPY scripts/scanner_artifacts.py /opt/sourcebastion/scanner_artifacts.py
+COPY .github/semgrep-artifacts.json .github/scanner-versions.json /opt/sourcebastion/
+RUN python3 /opt/sourcebastion/scanner_artifacts.py install --libc musl \
+      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json && \
     semgrep --version && \
     find /usr/lib/python3.11/site-packages -depth -type d -name __pycache__ -exec rm -rf {} + && \
     rm -rf /usr/lib/python3.11/ensurepip

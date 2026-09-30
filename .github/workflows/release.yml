@@ -30,8 +30,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify-scanner-artifacts:
+    name: Verify pinned scanner supply chain
+    uses: ./.github/workflows/scanner-integrity.yml
+
   prepare-release:
     name: Approve and prepare release
+    needs: verify-scanner-artifacts
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -118,6 +123,11 @@ jobs:
           echo "release_version=${REQUESTED_VERSION#v}" >> "$GITHUB_OUTPUT"
           echo "release_sha=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
 
+      - name: Validate versioned changelog entry
+        env:
+          VERSION: ${{ steps.release_metadata.outputs.release_version }}
+        run: python3 scripts/release-changelog.py --version "$VERSION"
+
       - name: Create the draft release and immutable tag
         if: steps.release_metadata.outputs.release_exists != 'true'
         env:
@@ -132,10 +142,18 @@ jobs:
             --generate-notes \
             --draft
 
+  validate-images:
+    name: Validate release images and runtime
+    needs: prepare-release
+    if: needs.prepare-release.outputs.release_ready == 'true'
+    uses: ./.github/workflows/docker.yml
+    with:
+      build_images: true
+
   build-docker-standard:
     name: Build Standard Docker Image
     runs-on: ubuntu-latest
-    needs: prepare-release
+    needs: [prepare-release, validate-images]
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
       artifact-metadata: write
@@ -190,7 +208,7 @@ jobs:
   build-docker-slim:
     name: Build Slim Docker Image
     runs-on: ubuntu-latest
-    needs: prepare-release
+    needs: [prepare-release, validate-images]
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
       artifact-metadata: write
@@ -245,7 +263,7 @@ jobs:
   build-docker-micro:
     name: Build Micro Docker Image
     runs-on: ubuntu-latest
-    needs: prepare-release
+    needs: [prepare-release, validate-images]
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
       artifact-metadata: write
@@ -300,7 +318,7 @@ jobs:
   build-docker-thin:
     name: Build Thin Docker Image
     runs-on: ubuntu-latest
-    needs: prepare-release
+    needs: [prepare-release, validate-images]
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
       artifact-metadata: write
@@ -355,7 +373,7 @@ jobs:
   build-docker-semgrep:
     name: Build Semgrep Docker Image
     runs-on: ubuntu-latest
-    needs: prepare-release
+    needs: [prepare-release, validate-images]
     if: needs.prepare-release.outputs.release_ready == 'true'
     permissions:
       artifact-metadata: write
@@ -582,6 +600,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_sha }}
 
       - name: Create GitHub Release with Docker Info
         run: |
@@ -630,7 +650,9 @@ jobs:
 
           # Fetch existing release notes then append
           gh release view "v${VERSION}" --json body -q .body > /tmp/existing_notes.md
-          cat /tmp/existing_notes.md /tmp/release_addendum.md > /tmp/release_notes.md
+          python3 scripts/release-changelog.py --version "$VERSION" \
+            --notes-file /tmp/existing_notes.md > /tmp/release_notes.md
+          cat /tmp/release_addendum.md >> /tmp/release_notes.md
           gh release edit "v${VERSION}" --notes-file /tmp/release_notes.md --draft=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

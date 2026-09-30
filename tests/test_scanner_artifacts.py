@@ -176,6 +176,38 @@ def test_release_and_merge_exercise_are_fail_closed():
     assert update['jobs']['propose']['if'] == "github.ref == 'refs/heads/main'"
 
 
+def test_weekly_updates_use_scoped_existing_app_not_actions_identity():
+    text = (ROOT / '.github/workflows/scanner-artifact-update.yml').read_text()
+    workflow = yaml.load(text, Loader=yaml.BaseLoader)
+    assert workflow['permissions'] == {'contents': 'read'}
+    job = workflow['jobs']['propose']
+    assert job['if'] == "github.ref == 'refs/heads/main'"
+    assert job['environment'] == 'scanner-maintenance'
+    assert 'permissions' not in job
+    steps = job['steps']
+    mint = next(s for s in steps if s.get('id') == 'app-token')
+    assert mint['uses'] == 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1'
+    assert mint['if'] == "steps.changes.outputs.changed == 'true'"
+    assert mint['with'] == {
+        'app-id': '${{ secrets.SOURCEBASTION_BOT_APP_ID }}',
+        'private-key': '${{ secrets.SOURCEBASTION_BOT_PRIVATE_KEY }}',
+        'owner': '${{ github.repository_owner }}',
+        'repositories': '${{ github.event.repository.name }}',
+        'permission-contents': 'write',
+        'permission-pull-requests': 'write',
+    }
+    assert steps.index(mint) > next(i for i, s in enumerate(steps)
+                                   if s.get('run', '').startswith('python -m pytest'))
+    publish = steps[-1]
+    assert publish['if'] == mint['if']
+    assert publish['env']['GH_TOKEN'] == '${{ steps.app-token.outputs.token }}'
+    assert "if [ \"$APP_SLUG\" != 'sourcebastion-bot' ]" in publish['run']
+    assert 'gh workflow run' not in text
+    assert 'gh pr merge' not in text
+    assert 'gh pr review' not in text
+    assert '${{ github.token }}' not in text
+
+
 def test_release_images_install_locked_wheel():
     for name in ('Dockerfile', 'Dockerfile.slim', 'Dockerfile.thin', 'Dockerfile.semgrep'):
         content = (ROOT / 'images' / name).read_text()

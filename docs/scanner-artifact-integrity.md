@@ -21,13 +21,23 @@ lock/version changes in a PR. It never approves, merges, or releases changes.
 No pin files change if verification fails. A candidate artifact is retained
 for review/recovery if GitHub cannot open the PR.
 
-The weekly job needs the repository setting **Allow GitHub Actions to create
-and approve pull requests** enabled for PR creation. This workflow never
-approves a PR. PRs created with `GITHUB_TOKEN` do not automatically trigger
-`pull_request` workflows, so the job explicitly dispatches `Scanner artifact
-integrity` and source validation on the candidate branch. Wait for those
-checks before merging. If either dispatch fails, the job fails and the PR
-remains open for manual recovery.
+The weekly job uses the existing `sourcebastion-bot` GitHub App, not
+`GITHUB_TOKEN`, to push the candidate and open its PR. The organization and
+repository restrictions on Actions-created/approved PRs stay unchanged.
+App-created PRs trigger normal `pull_request` checks; no manual CI dispatch
+or Actions write permission is needed. Wait for those checks before merging.
+
+Provision the existing App's ID and private key as environment secrets
+`SOURCEBASTION_BOT_APP_ID` and `SOURCEBASTION_BOT_PRIVATE_KEY` in the repository's
+`scanner-maintenance` environment, with deployment branches restricted to
+`main` only (no tags). Do not create another App. The App installation must
+include this repository and grant Contents and Pull requests write access.
+The workflow mints a short-lived installation token only after verification
+finds a change, scopes it to this repository and those two permissions, and
+checks the App slug before writing. The pinned token action revokes it at job
+completion. `GITHUB_TOKEN` remains read-only and checkout persists no token.
+Missing credentials or insufficient App permissions fail the job; there is
+no fallback to a personal token or relaxed organization policy.
 Weekly scheduling begins only after this workflow reaches main.
 
 The integrity workflow also runs on PRs targeting main or

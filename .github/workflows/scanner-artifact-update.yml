@@ -15,12 +15,9 @@ concurrency:
 jobs:
   propose:
     if: github.ref == 'refs/heads/main'
+    environment: scanner-maintenance
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions:
-      contents: write
-      pull-requests: write
-      actions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -42,14 +39,36 @@ jobs:
           path: |
             .github/semgrep-artifacts.json
             .github/scanner-versions.json
-      - name: Open reviewed update PR (never approve or merge)
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Check for a verified version change
+        id: changes
         run: |
           set -euo pipefail
           if git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json; then
             echo 'No verified version change.'
             exit 0
+          fi
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+      - name: Mint repository-scoped SourceBastion bot token
+        if: steps.changes.outputs.changed == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.SOURCEBASTION_BOT_APP_ID }}
+          private-key: ${{ secrets.SOURCEBASTION_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Open reviewed update PR (never approve or merge)
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          set -euo pipefail
+          if [ "$APP_SLUG" != 'sourcebastion-bot' ]; then
+            echo '::error::Expected the existing sourcebastion-bot App.'
+            exit 1
           fi
           version=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
           branch="bot/semgrep-artifacts-${version}"
@@ -65,6 +84,4 @@ jobs:
           git -c credential.helper='!gh auth git-credential' push origin "$branch"
           gh pr create --base main --head "$branch" \
             --title "chore(deps): verified Semgrep ${version}" \
-            --body 'All four Linux wheels passed SHA-256 and publisher-attestation verification. KICS is unchanged. Human review and successful checks are required. The update job explicitly dispatches integrity and source validation because GitHub-token-created PRs do not trigger pull_request workflows. Release verification remains mandatory.'
-          gh workflow run scanner-integrity.yml --ref "$branch"
-          gh workflow run docker.yml --ref "$branch"
+            --body 'All four Linux wheels passed SHA-256 and publisher-attestation verification. KICS is unchanged. Human review and successful checks are required. Created by the SourceBastion bot App so normal pull_request checks run. Release verification remains mandatory.'

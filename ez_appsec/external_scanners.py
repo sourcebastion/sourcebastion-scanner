@@ -239,6 +239,31 @@ def _scoped_iac_tree(source_root: str, units: List[str]) -> Iterator[Path]:
         yield scoped_root
 
 
+# Per-component budgets, resolved at run time. `scan` bounds the component's
+# own analysis; `setup` bounds work done before it that is not analysis.
+#
+# KICS is 600 rather than the 120 it shipped with: `kics scan -p .` runs with
+# no path exclusions, so its cost tracks repository size, and 120 stopped being
+# enough on an ordinary repository. Raising it is a stopgap -- bounding the work
+# is the actual fix (#52) -- but a stopgap that can be changed without building
+# an image is worth having.
+#
+# grype's `setup` covers a vulnerability-database refresh, whose cost tracks
+# network throughput rather than the repository. 120 demonstrably failed on a
+# cold container. The better answer is not to fetch it during a scan at all
+# (#54); until then this is at least tunable.
+DEFAULT_COMPONENT_TIMEOUTS = {
+    "gitleaks": {"scan": 60},
+    "semgrep": {"scan": 300},
+    "kics": {"scan": 600},
+    "grype": {"scan": 300, "setup": 300},
+}
+
+# A probe is not tunable. A tool that cannot answer `--version` inside this is
+# broken, not slow, and making it configurable only delays that verdict.
+PROBE_TIMEOUT_SECONDS = 30
+
+
 class ScannerExecutionError(RuntimeError):
     """A bounded, non-sensitive failure for one enabled scanner component."""
 
@@ -268,6 +293,43 @@ class ScannerWrapper(ABC):
         self.enabled = enabled
         self.name = getattr(self, "component_name", self.__class__.__name__.lower())
         self._execution_deadline: Optional[float] = None
+        self._configured: dict = {}
+
+    def configure_timeouts(self, settings) -> None:
+        """Apply per-scanner configuration for this component, if any."""
+        for kind in ("scan", "setup"):
+            value = getattr(settings, "timeout" if kind == "scan" else "setup_timeout", None)
+            if value is not None:
+                self._configured[kind] = int(value)
+
+    def _budget(self, kind: str) -> float:
+        """The configured, environment-set, or default ceiling for *kind*.
+
+        Precedence is narrowest last: the component default, then the
+        environment so a hosted deployment can retune without building an
+        image, then the repository's own configuration.
+        """
+        import os as _os
+
+        # Imported here rather than at module scope: config imports
+        # license_checker, which imports this module.
+        from ez_appsec.config import MAX_SCANNER_TIMEOUT_SECONDS
+
+        default = DEFAULT_COMPONENT_TIMEOUTS.get(self.name, {}).get(kind)
+        if default is None:
+            raise ValueError(f"no {kind} budget defined for {self.name}")
+        variable = f"SOURCEBASTION_{kind.upper()}_TIMEOUT_{self.name.upper().replace('-', '_')}"
+        raw = _os.environ.get(variable)
+        if raw is not None:
+            # Rejected rather than defaulted: an operator who set this believes
+            # it took effect, and a silently ignored value is worse than a
+            # refusal that names the variable.
+            if not raw.isdigit() or not 1 <= int(raw) <= MAX_SCANNER_TIMEOUT_SECONDS:
+                raise ValueError(
+                    f"{variable} must be an integer between 1 and {MAX_SCANNER_TIMEOUT_SECONDS}"
+                )
+            default = int(raw)
+        return self._timeout(self._configured.get(kind, default))
 
     def set_execution_deadline(self, deadline: float) -> None:
         """Limit subsequent tool calls to an absolute monotonic deadline."""
@@ -368,7 +430,7 @@ class GitleaksScanner(ScannerWrapper):
                 ["gitleaks", "version"],
                 capture_output=True,
                 check=True,
-                timeout=self._timeout(30),
+                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
             )
             return True
         except subprocess.TimeoutExpired:
@@ -493,7 +555,7 @@ class GitleaksScanner(ScannerWrapper):
                 command,
                 capture_output=True,
                 text=True,
-                timeout=self._timeout(60),
+                timeout=self._budget("scan"),
             )
 
             # Gitleaks uses exit 1 to report that leaks were found. Other exit
@@ -695,7 +757,7 @@ class SemgrepScanner(ScannerWrapper):
                 ["semgrep", "--version"],
                 capture_output=True,
                 check=True,
-                timeout=self._timeout(30),
+                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
             )
             return True
         except subprocess.TimeoutExpired:
@@ -801,7 +863,7 @@ class SemgrepScanner(ScannerWrapper):
                 ["semgrep"] + config_flags + ["--json", "--output", raw_output_path, path],
                 capture_output=True,
                 text=True,
-                timeout=self._timeout(300),
+                timeout=self._budget("scan"),
             )
 
             # Semgrep reserves exit 1 for blocking findings. Fatal errors use
@@ -1083,7 +1145,7 @@ class KicsScanner(ScannerWrapper):
                 ["kics", "version"],
                 capture_output=True,
                 check=True,
-                timeout=self._timeout(30),
+                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
             )
             return self._find_assets_path() is not None
         except subprocess.TimeoutExpired:
@@ -1157,7 +1219,7 @@ class KicsScanner(ScannerWrapper):
                 ],
                 capture_output=True,
                 text=True,
-                timeout=self._timeout(120),
+                timeout=self._budget("scan"),
             )
 
             # KICS uses 20-60 for successful scans that found results.
@@ -1372,7 +1434,7 @@ class GrypeScanner(ScannerWrapper):
                 ["grype", "--version"],
                 capture_output=True,
                 check=True,
-                timeout=self._timeout(30),
+                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
             )
             return True
         except subprocess.TimeoutExpired:
@@ -1407,7 +1469,7 @@ class GrypeScanner(ScannerWrapper):
                         capture_output=True,
                         text=True,
                         cwd=path,
-                        timeout=self._timeout(300),
+                        timeout=self._budget("scan"),
                     )
                 except FileNotFoundError:
                     self._fail("not_installed")
@@ -1433,14 +1495,16 @@ class GrypeScanner(ScannerWrapper):
             db_check = subprocess.run(
                 ["grype", "db", "status"],
                 capture_output=True,
-                timeout=self._timeout(30),
+                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
             )
             if db_check.returncode != 0:
                 logger.info("grype database missing, updating...")
                 db_update = subprocess.run(
                     ["grype", "db", "update"],
                     capture_output=True,
-                    timeout=self._timeout(120),
+                    # Setup, not analysis: this cost tracks network throughput
+                    # and database size, not the repository being scanned.
+                    timeout=self._budget("setup"),
                 )
                 if db_update.returncode != 0:
                     self._fail("execution_failed")
@@ -1451,7 +1515,7 @@ class GrypeScanner(ScannerWrapper):
                 ["grype", "dir:" + path, "-o", "json", "--file", raw_output_path],
                 capture_output=True,
                 text=True,
-                timeout=self._timeout(300),
+                timeout=self._budget("scan"),
             )
 
             # Exit 1 is a complete report when fail-on-severity is configured.
@@ -1680,7 +1744,7 @@ class GrypeImageScanner:
 class ExternalScannerManager:
     """Manages all external scanners"""
 
-    def __init__(self, enabled_scanners: Optional[List[str]] = None):
+    def __init__(self, enabled_scanners: Optional[List[str]] = None, scanner_settings: Optional[dict] = None):
         """
         Initialize scanner manager
 
@@ -1698,6 +1762,11 @@ class ExternalScannerManager:
         if enabled_scanners:
             for scanner_name in self.scanners:
                 self.scanners[scanner_name].enabled = scanner_name in enabled_scanners
+
+        for scanner_name, settings in (scanner_settings or {}).items():
+            scanner = self.scanners.get(scanner_name)
+            if scanner is not None:
+                scanner.configure_timeouts(settings)
     
     def get_installed(self) -> Dict[str, bool]:
         """Get status of all scanners"""

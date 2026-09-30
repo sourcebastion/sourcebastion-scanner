@@ -14,7 +14,11 @@ from sourcebastion.jira_sync import JiraConfig, sync_findings as jira_sync_findi
 
 
 @click.group()
-@click.version_option()
+# Named explicitly: click otherwise infers the distribution from the module,
+# and the module is `sourcebastion` while the distribution is
+# `sourcebastion-scanner`. Without this, `--version` raises
+# "'sourcebastion' is not installed" on a correctly installed package.
+@click.version_option(package_name="sourcebastion-scanner")
 def main():
     """SourceBastion Scan: deterministic application security scanning."""
     pass

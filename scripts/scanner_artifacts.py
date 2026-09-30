@@ -46,6 +46,10 @@ def fetch(url, limit=200 * 1024 * 1024):
             if attempt == 2:
                 raise
         time.sleep((5, 15)[attempt])
+    # Unreachable: the final attempt re-raises in both handlers. Stated so a
+    # later edit to either cannot turn an exhausted retry into a silent None,
+    # which every caller would then treat as artifact bytes.
+    raise AssertionError('retries exhausted without raising')
 
 
 def fetch_json(url):

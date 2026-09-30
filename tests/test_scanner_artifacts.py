@@ -188,14 +188,21 @@ def test_weekly_updates_use_scoped_existing_app_not_actions_identity():
     mint = next(s for s in steps if s.get('id') == 'app-token')
     assert mint['uses'] == 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1'
     assert mint['if'] == "steps.changes.outputs.changed == 'true'"
+    # Scope must not depend on the event payload. The action scopes a token to
+    # the current repository only when BOTH `owner` and `repositories` are
+    # unset; `owner` set with an empty `repositories` scopes it to *every*
+    # repository in that owner's installation. `github.event.repository.name`
+    # is populated for workflow_dispatch but is not guaranteed for `schedule`,
+    # so relying on it risks org-wide Contents and Pull requests write on the
+    # weekly run — silently, and in the wrong direction.
     assert mint['with'] == {
         'app-id': '${{ secrets.SOURCEBASTION_BOT_APP_ID }}',
         'private-key': '${{ secrets.SOURCEBASTION_BOT_PRIVATE_KEY }}',
-        'owner': '${{ github.repository_owner }}',
-        'repositories': '${{ github.event.repository.name }}',
         'permission-contents': 'write',
         'permission-pull-requests': 'write',
     }
+    assert 'owner' not in mint['with'], 'owner without a literal repository list over-scopes'
+    assert not any('github.event' in value for value in mint['with'].values())
     assert steps.index(mint) > next(i for i, s in enumerate(steps)
                                    if s.get('run', '').startswith('python -m pytest'))
     publish = steps[-1]

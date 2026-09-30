@@ -51,6 +51,23 @@ errors, HTTP 429, and selected 5xx responses. Missing attestations, unexpected
 publishers, signature errors and hash mismatches fail closed. Verification
 unavailability blocks release; it never falls back to unchecked installation.
 
+## How the workflow restriction is enforced
+
+`pypi_attestations verify pypi` is invoked with `--repository` and has no
+`--workflow` flag, so the restriction to `pro-release.yml` looks advisory at
+the call site. It is not. The tool builds its Sigstore policy from the
+provenance's own publisher object — `publisher._as_policy()` yielding
+`_GitHubTrustedPublisherPolicy(repository, workflow)` — whose expected
+certificate SAN is
+`https://github.com/{repository}/.github/workflows/{workflow}@{ref}`.
+
+Both halves are therefore needed and both are present: `verify_artifact`
+rejects any provenance whose publisher is not GitHub /
+`semgrep/semgrep-proprietary` / `pro-release.yml`, and the tool then verifies
+every attestation's certificate against a policy derived from that same
+publisher. A forged provenance fails the first check; a genuine provenance
+signed by a different workflow fails the certificate check.
+
 KICS remains at its reviewed digest. Neither the candidate job nor this
 Semgrep verifier updates or claims to authenticate KICS publisher provenance.
 Establishing that provenance is a separate prerequisite for automatic KICS

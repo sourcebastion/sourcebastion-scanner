@@ -55,8 +55,15 @@ jobs:
         with:
           app-id: ${{ secrets.SOURCEBASTION_BOT_APP_ID }}
           private-key: ${{ secrets.SOURCEBASTION_BOT_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
+          # `owner` and `repositories` are deliberately unset. The action
+          # documents that omitting both scopes the token "to only the current
+          # repository", while setting `owner` with an empty `repositories`
+          # scopes it to *every* repository in that owner's installation.
+          # `github.event.repository.name` is populated for workflow_dispatch
+          # but must not be relied on for `schedule`, and the failure is silent
+          # and in the wrong direction: org-wide Contents and Pull requests
+          # write instead of one repository. Do not reintroduce `owner` here
+          # without a literal repository list beside it.
           permission-contents: write
           permission-pull-requests: write
       - name: Open reviewed update PR (never approve or merge)

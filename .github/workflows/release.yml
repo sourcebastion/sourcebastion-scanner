@@ -30,8 +30,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify-scanner-artifacts:
+    name: Verify pinned scanner supply chain
+    uses: ./.github/workflows/scanner-integrity.yml
+
   prepare-release:
     name: Approve and prepare release
+    needs: verify-scanner-artifacts
     runs-on: ubuntu-latest
     environment: release
     permissions:

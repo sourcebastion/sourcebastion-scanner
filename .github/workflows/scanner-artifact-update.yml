@@ -1,0 +1,70 @@
+name: Propose verified scanner artifacts
+
+on:
+  schedule:
+    - cron: '37 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scanner-artifact-update
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install pinned verifier
+        run: python -m pip install pypi-attestations==0.0.30 pytest pyyaml
+      - name: Discover and verify candidate without executing its code
+        run: python scripts/scanner_artifacts.py candidate
+      - name: Test candidate lock and rejection behavior
+        run: python -m pytest -q tests/test_scanner_artifacts.py tests/test_scanner_pins.py
+      - name: Upload verified candidate for review or manual recovery
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: verified-scanner-pins
+          include-hidden-files: true
+          path: |
+            .github/semgrep-artifacts.json
+            .github/scanner-versions.json
+      - name: Open reviewed update PR (never approve or merge)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json; then
+            echo 'No verified version change.'
+            exit 0
+          fi
+          version=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
+          branch="bot/semgrep-artifacts-${version}"
+          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            echo 'A candidate PR already exists; leave its reviewed contents unchanged.'
+            exit 0
+          fi
+          git switch -c "$branch"
+          git config user.name 'sourcebastion-bot[bot]'
+          git config user.email 'sourcebastion-bot[bot]@users.noreply.github.com'
+          git add .github/scanner-versions.json .github/semgrep-artifacts.json
+          git commit -m "chore(deps): verify Semgrep ${version} artifacts"
+          git -c credential.helper='!gh auth git-credential' push origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "chore(deps): verified Semgrep ${version}" \
+            --body 'All four Linux wheels passed SHA-256 and publisher-attestation verification. KICS is unchanged. Human review and successful checks are required. The update job explicitly dispatches integrity and source validation because GitHub-token-created PRs do not trigger pull_request workflows. Release verification remains mandatory.'
+          gh workflow run scanner-integrity.yml --ref "$branch"
+          gh workflow run docker.yml --ref "$branch"

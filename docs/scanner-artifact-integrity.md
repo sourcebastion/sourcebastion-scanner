@@ -10,15 +10,22 @@ and transparency-log evidence. Changing this allowlist requires code review.
 
 Docker builds install the exact wheel from this lock after independently
 checking its hash. They do not select the newest version at build time. This
-lock covers Semgrep itself, **not its transitive Python dependencies** or all
-other software in the image. It is publishing provenance, not proof of a
+artifact lock establishes provenance for Semgrep itself. Separate
+`.github/python-locks/` requirements locks cover Python build tools, the
+SourceBastion runtime, and Semgrep plus the SourceBastion runtime, for CPython
+3.11 on each of the four Linux targets. These provide **hash integrity, not
+publisher provenance**, for transitive dependencies. Neither lock covers OS
+packages, base images, bundled bootstrap pip/ensurepip, other scanner binaries,
+or externally downloaded rule packs. It is not proof of a
 reproducible build or that the source has no vulnerabilities.
 
 `Propose verified scanner artifacts` runs Mondays at 06:37 UTC on main. It
 discovers a stable PyPI version, rejects yanked/missing platforms, verifies all
 wheels without installing or executing them, then proposes only the Semgrep
-lock/version changes in a PR. It never approves, merges, or releases changes.
-No pin files change if verification fails. A candidate artifact is retained
+artifact/version and dependency-lock changes in a PR. Dependency-only updates
+are detected even when the Semgrep version stays unchanged; the proposed
+branch includes the lock manifest digest. It never approves, merges, or
+releases changes. No reviewed files change if verification fails. A candidate artifact is retained
 for review/recovery if GitHub cannot open the PR.
 
 The weekly job uses the existing `sourcebastion-bot` GitHub App, not
@@ -40,11 +47,41 @@ Missing credentials or insufficient App permissions fail the job; there is
 no fallback to a personal token or relaxed organization policy.
 Weekly scheduling begins only after this workflow reaches main.
 
-The integrity workflow also runs on PRs targeting main or
-`bot/scanner-refresh-20260928`, and on pushes to that latter branch. This
-exercises the integrated result after the stacked PR merges into #46 without
-publishing anything. Once #46 merges, the temporary branch triggers can be
-removed.
+The integrity workflow runs on PRs targeting main, manual dispatch, and calls
+from the release workflow. The temporary #46/#47 stacked-branch triggers have
+been removed after that stack merged.
+
+## Python dependency locks
+
+`scripts/python-build.in` and `scripts/python-runtime.in` declare reviewed
+roots. The runtime input must match `setup.py` (a test enforces this).
+`uv==0.11.0` resolves each target without building or executing distributions.
+Semgrep is bound to its exact attested wheel URL/hash; every dependency has an
+exact version and SHA-256 hashes. A manifest binds all twelve lock files to
+their Python and Semgrep versions. Wheels for every target are downloaded
+with pip hash enforcement before candidate files are published. Source
+distributions and unpinned requirements are rejected, not built as a fallback.
+
+Image installs enforce `--require-hashes --only-binary=:all:` and run
+`pip check`. Locally built SourceBastion wheels are trusted build outputs from
+the reviewed source, installed with `--no-index --no-deps`; building them uses
+the locked build tools and `--no-isolation`, preventing hidden build dependency
+downloads. No external Python package is resolved unpinned by these five
+scanner Dockerfiles. The separate API image and development installs are not
+part of this contract. Changing Python requires new locks and matching tests.
+
+Refresh dependency locks for the currently reviewed Semgrep version:
+
+```sh
+python -m pip install pypi-attestations==0.0.30 uv==0.11.0
+python scripts/scanner_artifacts.py lock-dependencies
+python scripts/scanner_artifacts.py verify-dependencies
+```
+
+This verifies Semgrep provenance first, resolves and verifies all dependency
+sets in temporary storage, and only then replaces reviewed files. Review hash
+and version changes before merging. Re-run the integrity workflow and release
+image/runtime validation; ordinary PR checks do not build scanner images.
 
 Network reads retry at most three times (5/15-second delays) for connection
 errors, HTTP 429, and selected 5xx responses. Missing attestations, unexpected
@@ -58,7 +95,7 @@ unavailability blocks release; it never falls back to unchecked installation.
 the call site. It is not. The tool builds its Sigstore policy from the
 provenance's own publisher object — `publisher._as_policy()` yielding
 `_GitHubTrustedPublisherPolicy(repository, workflow)` — whose expected
-certificate SAN is
+certificate Build Config URI extension is
 `https://github.com/{repository}/.github/workflows/{workflow}@{ref}`.
 
 Both halves are therefore needed and both are present: `verify_artifact`

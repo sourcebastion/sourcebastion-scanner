@@ -6,25 +6,22 @@ FROM python:3.11-alpine AS builder
 RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev git
 
 WORKDIR /app
-COPY requirements.txt .
-RUN python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
-
 COPY . .
-RUN /opt/venv/bin/pip install --no-cache-dir -e .
+RUN python scripts/scanner_artifacts.py install --libc musl --group build && \
+    python -m build --no-isolation --wheel --outdir /dist
 
 # ── runtime ───────────────────────────────────────────────────────────────────
 FROM python:3.11-alpine
 
 COPY scripts/scanner_artifacts.py /opt/sourcebastion/scanner_artifacts.py
 COPY .github/semgrep-artifacts.json .github/scanner-versions.json /opt/sourcebastion/
-RUN apk add --no-cache gcc musl-dev && \
-    python3 /opt/sourcebastion/scanner_artifacts.py install --libc musl \
-      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json && \
-    apk del gcc musl-dev
+COPY .github/python-locks /opt/sourcebastion/python-locks
+RUN python3 /opt/sourcebastion/scanner_artifacts.py install --libc musl \
+      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json \
+      --dependencies /opt/sourcebastion/python-locks
 
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+COPY --from=builder /dist/*.whl /tmp/
+RUN pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && pip check && rm /tmp/*.whl
 
 WORKDIR /scan
 ENTRYPOINT ["semgrep"]

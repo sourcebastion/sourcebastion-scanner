@@ -1,0 +1,5 @@
+# Tools used to build the local SourceBastion wheel without build isolation.
+pip==26.0.1
+build==1.4.0
+setuptools>=45
+wheel

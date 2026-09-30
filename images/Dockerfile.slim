@@ -11,16 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git gcc musl-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
 COPY . /app
-WORKDIR /app
-RUN pip install --no-cache-dir -e .
+RUN python scripts/scanner_artifacts.py install --libc glibc --group build && \
+    python -m build --no-isolation --wheel --outdir /dist
 
 
 FROM python:3.11-slim
@@ -65,8 +59,10 @@ RUN ARCH=$(uname -m) && \
 # Install semgrep
 COPY scripts/scanner_artifacts.py /opt/sourcebastion/scanner_artifacts.py
 COPY .github/semgrep-artifacts.json .github/scanner-versions.json /opt/sourcebastion/
+COPY .github/python-locks /opt/sourcebastion/python-locks
 RUN python3 /opt/sourcebastion/scanner_artifacts.py install --libc glibc \
-      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json && \
+      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json \
+      --dependencies /opt/sourcebastion/python-locks && \
     semgrep --version
 
 # Copy kics binary and assets from official image
@@ -74,10 +70,10 @@ COPY --from=kics /app/bin/kics /usr/local/bin/kics
 COPY --from=kics /app/bin/assets /usr/local/bin/assets
 RUN kics version
 
-COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /dist/*.whl /tmp/
+RUN pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && pip check && rm /tmp/*.whl
 
-ENV PATH="/opt/venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1 \
+ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /scan

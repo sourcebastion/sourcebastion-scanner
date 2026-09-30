@@ -17,20 +17,20 @@ jobs:
     if: github.ref == 'refs/heads/main'
     environment: scanner-maintenance
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.12'
+          python-version: '3.11'
       - name: Install pinned verifier
-        run: python -m pip install pypi-attestations==0.0.30 pytest pyyaml
+        run: python -m pip install pypi-attestations==0.0.30 uv==0.11.0 packaging==26.3 pytest pyyaml
       - name: Discover and verify candidate without executing its code
         run: python scripts/scanner_artifacts.py candidate
       - name: Test candidate lock and rejection behavior
-        run: python -m pytest -q tests/test_scanner_artifacts.py tests/test_scanner_pins.py
+        run: python -m pytest -q tests/test_scanner_artifacts.py tests/test_python_dependency_locks.py tests/test_scanner_pins.py
       - name: Upload verified candidate for review or manual recovery
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -39,12 +39,13 @@ jobs:
           path: |
             .github/semgrep-artifacts.json
             .github/scanner-versions.json
+            .github/python-locks/
       - name: Check for a verified version change
         id: changes
         run: |
           set -euo pipefail
-          if git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json; then
-            echo 'No verified version change.'
+          if git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks; then
+            echo 'No verified artifact or dependency change.'
             exit 0
           fi
           echo 'changed=true' >> "$GITHUB_OUTPUT"
@@ -78,15 +79,23 @@ jobs:
             exit 1
           fi
           version=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
-          branch="bot/semgrep-artifacts-${version}"
-          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
-            echo 'A candidate PR already exists; leave its reviewed contents unchanged.'
+          lock_digest=$(sha256sum .github/python-locks/manifest.json | cut -c1-12)
+          branch="bot/semgrep-artifacts-${version}-${lock_digest}"
+          # Matched on the prefix, not on "$branch". The branch name now carries
+          # the lock digest, which changes whenever any transitive dependency
+          # resolves differently — the ordinary week-to-week case. Comparing the
+          # full name would therefore stop matching and open a second candidate
+          # beside the one still under review, every week.
+          open_candidate=$(gh pr list --state open --json number,headRefName             --jq '[.[] | select(.headRefName | startswith("bot/semgrep-artifacts-"))][0]
+                  | select(. != null) | "#\(.number) \(.headRefName)"')
+          if [ -n "$open_candidate" ]; then
+            echo "A candidate is already open ($open_candidate); leaving its reviewed contents unchanged."
             exit 0
           fi
           git switch -c "$branch"
           git config user.name 'sourcebastion-bot[bot]'
           git config user.email 'sourcebastion-bot[bot]@users.noreply.github.com'
-          git add .github/scanner-versions.json .github/semgrep-artifacts.json
+          git add .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks
           git commit -m "chore(deps): verify Semgrep ${version} artifacts"
           git -c credential.helper='!gh auth git-credential' push origin "$branch"
           gh pr create --base main --head "$branch" \

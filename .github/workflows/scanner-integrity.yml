@@ -2,10 +2,7 @@ name: Scanner artifact integrity
 
 on:
   pull_request:
-    branches: [main, bot/scanner-refresh-20260928]
-  push:
-    # Exercise the exact integrated result when the stacked PR merges into #46.
-    branches: [bot/scanner-refresh-20260928]
+    branches: [main]
   workflow_dispatch:
   workflow_call:
 
@@ -16,20 +13,22 @@ jobs:
   verify:
     name: Verify reviewed scanner artifacts
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.12'
+          python-version: '3.11'
       - name: Install pinned attestation verifier
-        run: python -m pip install pypi-attestations==0.0.30 pytest pyyaml
+        run: python -m pip install pypi-attestations==0.0.30 packaging==26.3 pytest pyyaml
       - name: Test fail-closed behavior
-        run: python -m pytest -q tests/test_scanner_artifacts.py
+        run: python -m pytest -q tests/test_scanner_artifacts.py tests/test_python_dependency_locks.py
       - name: Verify hashes and publisher attestations for every wheel
         run: python scripts/scanner_artifacts.py verify
+      - name: Verify all Python dependency locks without executing packages
+        run: python scripts/scanner_artifacts.py verify-dependencies
       - name: Exercise locked installer without a Docker build
         env:
           SEMGREP_SEND_METRICS: 'off'
@@ -40,3 +39,16 @@ jobs:
           expected=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
           actual=$("$RUNNER_TEMP/semgrep-smoke/bin/semgrep" --version)
           test "$actual" = "$expected"
+      - name: Exercise locked build tools and offline local wheel installation
+        run: |
+          python -m venv "$RUNNER_TEMP/build-smoke"
+          "$RUNNER_TEMP/build-smoke/bin/python" scripts/scanner_artifacts.py install --libc glibc --group build
+          "$RUNNER_TEMP/build-smoke/bin/python" -m build --no-isolation --wheel --outdir "$RUNNER_TEMP/scanner-dist"
+          "$RUNNER_TEMP/semgrep-smoke/bin/pip" install --no-index --no-deps "$RUNNER_TEMP"/scanner-dist/*.whl
+          "$RUNNER_TEMP/semgrep-smoke/bin/pip" check
+          "$RUNNER_TEMP/semgrep-smoke/bin/sourcebastion" --version
+          python -m venv "$RUNNER_TEMP/runtime-smoke"
+          "$RUNNER_TEMP/runtime-smoke/bin/python" scripts/scanner_artifacts.py install --libc glibc --group runtime
+          "$RUNNER_TEMP/runtime-smoke/bin/pip" install --no-index --no-deps "$RUNNER_TEMP"/scanner-dist/*.whl
+          "$RUNNER_TEMP/runtime-smoke/bin/pip" check
+          "$RUNNER_TEMP/runtime-smoke/bin/sourcebastion" --version

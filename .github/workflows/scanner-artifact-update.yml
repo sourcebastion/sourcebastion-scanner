@@ -26,7 +26,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install pinned verifier
-        run: python -m pip install pypi-attestations==0.0.30 uv==0.11.0 pytest pyyaml
+        run: python -m pip install pypi-attestations==0.0.30 uv==0.11.0 packaging==26.3 pytest pyyaml
       - name: Discover and verify candidate without executing its code
         run: python scripts/scanner_artifacts.py candidate
       - name: Test candidate lock and rejection behavior
@@ -81,8 +81,15 @@ jobs:
           version=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
           lock_digest=$(sha256sum .github/python-locks/manifest.json | cut -c1-12)
           branch="bot/semgrep-artifacts-${version}-${lock_digest}"
-          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
-            echo 'A candidate PR already exists; leave its reviewed contents unchanged.'
+          # Matched on the prefix, not on "$branch". The branch name now carries
+          # the lock digest, which changes whenever any transitive dependency
+          # resolves differently — the ordinary week-to-week case. Comparing the
+          # full name would therefore stop matching and open a second candidate
+          # beside the one still under review, every week.
+          open_candidate=$(gh pr list --state open --json number,headRefName             --jq '[.[] | select(.headRefName | startswith("bot/semgrep-artifacts-"))][0]
+                  | select(. != null) | "#\(.number) \(.headRefName)"')
+          if [ -n "$open_candidate" ]; then
+            echo "A candidate is already open ($open_candidate); leaving its reviewed contents unchanged."
             exit 0
           fi
           git switch -c "$branch"

@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install pinned attestation verifier
-        run: python -m pip install pypi-attestations==0.0.30 pytest pyyaml
+        run: python -m pip install pypi-attestations==0.0.30 packaging==26.3 pytest pyyaml
       - name: Test fail-closed behavior
         run: python -m pytest -q tests/test_scanner_artifacts.py tests/test_python_dependency_locks.py
       - name: Verify hashes and publisher attestations for every wheel

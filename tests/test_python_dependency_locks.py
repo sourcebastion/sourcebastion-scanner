@@ -141,6 +141,15 @@ def test_all_scanner_images_disable_unlocked_python_downloads():
         assert '--no-index --no-deps' in text
         assert 'pip install --no-cache-dir -r' not in text
         assert 'pip install --no-cache-dir -e' not in text
+        # The locks must also be *reachable*. Four images copy the script to
+        # /opt and pass explicit paths; micro copies the whole context and
+        # relies on ROOT defaults. Either is fine, and an edit that copies the
+        # script without the locks is not — it would pass every other
+        # assertion here and fail only at release, because image builds are
+        # deliberately release-only.
+        explicit = '--dependencies' in text and 'python-locks' in text
+        whole_context = 'COPY . .' in text
+        assert explicit or whole_context, name
 
 
 def test_weekly_refresh_includes_dependency_only_updates():
@@ -149,6 +158,11 @@ def test_weekly_refresh_includes_dependency_only_updates():
     assert 'git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks' in text
     assert 'git add .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks' in text
     assert '${version}-${lock_digest}' in text
+    # A digest in the branch name must not defeat the single-candidate guard:
+    # matching the full name would open a second PR beside the one under
+    # review every time a transitive dependency moved.
+    assert 'startswith("bot/semgrep-artifacts-")' in text
+    assert 'gh pr list --head' not in text
 
 
 def make_metadata_wheel(directory, name, version='1.0', requires=()):

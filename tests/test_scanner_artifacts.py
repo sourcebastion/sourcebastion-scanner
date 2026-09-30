@@ -111,11 +111,13 @@ def test_only_transient_http_errors_are_retried(monkeypatch, code, attempts):
     assert len(calls) == attempts
 
 
-def test_installer_checks_hash_before_pip(lock, tmp_path, monkeypatch):
+def test_installer_checks_lock_before_pip(lock, tmp_path, monkeypatch):
+    monkeypatch.setattr(artifacts.sys, 'version_info', (3, 11))
     monkeypatch.setattr(artifacts.platform, 'machine', lambda: 'x86_64')
-    monkeypatch.setattr(artifacts, 'fetch', lambda *a: b'bad')
+    monkeypatch.setattr(artifacts, 'validate_dependencies',
+                        lambda *a: (_ for _ in ()).throw(ValueError('dependency lock digest mismatch')))
     monkeypatch.setattr(artifacts.subprocess, 'run', lambda *a, **kw: pytest.fail('pip must not run'))
-    with pytest.raises(ValueError, match='SHA-256'):
+    with pytest.raises(ValueError, match='digest mismatch'):
         artifacts.install(lock, 'musl')
 
 
@@ -152,7 +154,8 @@ def test_successful_candidate_updates_semgrep_only(lock, tmp_path, monkeypatch):
     output = tmp_path / 'lock.json'
     monkeypatch.setattr(artifacts, 'candidate', lambda *a: lock)
     monkeypatch.setattr(artifacts, 'verify', lambda *a: None)
-    monkeypatch.setattr(artifacts.sys, 'argv', ['scanner_artifacts.py', 'candidate', '--pins', str(pins), '--lock', str(output)])
+    monkeypatch.setattr(artifacts, 'generate_dependencies', lambda *a: None)
+    monkeypatch.setattr(artifacts.sys, 'argv', ['scanner_artifacts.py', 'candidate', '--pins', str(pins), '--lock', str(output), '--dependencies', str(tmp_path / 'dependencies')])
     artifacts.main()
     actual = json.loads(pins.read_text())
     assert actual['kics'] == original['kics']
@@ -168,7 +171,8 @@ def test_release_and_merge_exercise_are_fail_closed():
     assert release['prepare-release']['needs'] == 'verify-scanner-artifacts'
     assert release['verify-scanner-artifacts']['uses'] == './.github/workflows/scanner-integrity.yml'
     verify = workflow('scanner-integrity.yml')
-    assert 'bot/scanner-refresh-20260928' in verify['on']['push']['branches']
+    assert verify['on']['pull_request']['branches'] == ['main']
+    assert set(verify['on']) == {'pull_request', 'workflow_dispatch', 'workflow_call'}
     assert verify['permissions'] == {'contents': 'read'}
     assert all('continue-on-error' not in s for s in verify['jobs']['verify']['steps'])
     update = workflow('scanner-artifact-update.yml')

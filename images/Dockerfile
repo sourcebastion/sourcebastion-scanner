@@ -15,12 +15,11 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy and build wheel
 COPY . /app
-RUN pip install --no-cache-dir build==1.4.0 && python -m build --wheel --outdir /dist
+RUN python scripts/scanner_artifacts.py install --libc musl --group build && \
+    python -m build --no-isolation --wheel --outdir /dist
 
 
 FROM alpine:3.18
@@ -42,8 +41,7 @@ RUN apk add --no-cache \
     openssl=3.1.8-r0 \
     nodejs=18.20.1-r0 \
     npm=9.6.6-r0 && \
-    python3 -m ensurepip && \
-    python3 -m pip install --no-cache-dir --upgrade pip==26.0.1
+    python3 -m ensurepip
 
 # Install scanners with explicit versions or static binaries
 RUN ARCH=$(uname -m) && \
@@ -77,8 +75,10 @@ RUN ARCH=$(uname -m) && \
 # Install only the reviewed, hash-verified Semgrep wheel.
 COPY scripts/scanner_artifacts.py /opt/sourcebastion/scanner_artifacts.py
 COPY .github/semgrep-artifacts.json .github/scanner-versions.json /opt/sourcebastion/
+COPY .github/python-locks /opt/sourcebastion/python-locks
 RUN python3 /opt/sourcebastion/scanner_artifacts.py install --libc musl \
-      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json && \
+      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json \
+      --dependencies /opt/sourcebastion/python-locks && \
     semgrep --version && \
     find /usr/lib/python3.11/site-packages -depth -type d -name __pycache__ -exec rm -rf {} + && \
     rm -rf /usr/lib/python3.11/ensurepip
@@ -101,9 +101,8 @@ RUN kics version
 
 # Install SourceBastion scanner wheel and dependencies from builder
 COPY --from=builder /dist/*.whl /tmp/
-COPY --from=builder /app/requirements.txt /tmp/
-RUN pip install --no-cache-dir -r /tmp/requirements.txt /tmp/*.whl && \
-    rm /tmp/*.whl /tmp/requirements.txt && \
+RUN pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && pip check && \
+    rm /tmp/*.whl && \
     find /usr/lib/python3.11/site-packages -depth -type d -name __pycache__ -exec rm -rf {} + && \
     rm -rf /usr/lib/python3.11/ensurepip
 

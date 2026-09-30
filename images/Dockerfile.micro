@@ -9,12 +9,13 @@ FROM python:3.11-alpine AS builder
 RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev git
 
 WORKDIR /app
-COPY requirements.txt .
-RUN python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
-
 COPY . .
-RUN /opt/venv/bin/pip install --no-cache-dir .
+RUN python scripts/scanner_artifacts.py install --libc musl --group build && \
+    python -m build --no-isolation --wheel --outdir /dist && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/python scripts/scanner_artifacts.py install --libc musl --group runtime && \
+    /opt/venv/bin/pip install --no-cache-dir --no-index --no-deps /dist/*.whl && \
+    /opt/venv/bin/pip check
 
 # ── runtime ───────────────────────────────────────────────────────────────────
 FROM alpine:3.18

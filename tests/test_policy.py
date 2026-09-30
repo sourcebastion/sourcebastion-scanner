@@ -4,8 +4,8 @@ import os
 import tempfile
 import pytest
 
-from ez_appsec.policy import PolicyRule, PolicyEngine, VALID_SEVERITIES, VALID_CATEGORIES, VALID_ACTIONS
-from ez_appsec.config import Config
+from sourcebastion.policy import PolicyRule, PolicyEngine, VALID_SEVERITIES, VALID_CATEGORIES, VALID_ACTIONS
+from sourcebastion.config import Config
 
 
 # --- Test fixtures ---
@@ -391,7 +391,7 @@ class TestPolicyInScanOutput:
 
     def test_policy_violations_in_results(self):
         from unittest.mock import MagicMock
-        from ez_appsec.scanner import SecurityScanner
+        from sourcebastion.scanner import SecurityScanner
 
         config = Config(
             policy_rules=[
@@ -414,7 +414,7 @@ class TestPolicyInScanOutput:
         assert len(results["policy_violations"]) == 1
 
     def test_no_policy_rules_no_key(self):
-        from ez_appsec.scanner import SecurityScanner
+        from sourcebastion.scanner import SecurityScanner
 
         config = Config()
         scanner = SecurityScanner(config, use_external_scanners=False)
@@ -425,7 +425,7 @@ class TestPolicyInScanOutput:
 
     def test_policy_pass_not_failed(self):
         from unittest.mock import MagicMock
-        from ez_appsec.scanner import SecurityScanner
+        from sourcebastion.scanner import SecurityScanner
 
         config = Config(
             policy_rules=[

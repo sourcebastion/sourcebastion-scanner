@@ -137,7 +137,7 @@ The dashboard reads from the following files in the dashboard repo:
 ```
 data/
   index.json                         # Project registry (auto-generated)
-  config.json                        # Dashboard metadata (ez_appsec_version)
+  config.json                        # Dashboard metadata (sourcebastion_version)
   vulnerabilities/
     repo-name.json                   # Per-repo findings
     team/repo-name.json              # Optional team grouping (EZ_APPSEC_TEAM)

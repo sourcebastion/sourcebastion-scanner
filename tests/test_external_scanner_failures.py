@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from ez_appsec.external_scanners import (
+from sourcebastion.external_scanners import (
     ExternalScannerManager,
     GitleaksScanner,
     GrypeScanner,
@@ -17,8 +17,8 @@ from ez_appsec.external_scanners import (
     ScannerExecutionError,
     SemgrepScanner,
 )
-from ez_appsec.converters import VulnerabilityConverters
-from ez_appsec.scanner import SecurityScanner
+from sourcebastion.converters import VulnerabilityConverters
+from sourcebastion.scanner import SecurityScanner
 
 
 def test_repository_grype_exclusion_uses_supported_path_prefix():
@@ -51,7 +51,7 @@ def test_timeout_is_a_bounded_failure(tmp_path):
     with (
         patch.object(scanner, "is_installed", return_value=True),
         patch(
-            "ez_appsec.external_scanners.subprocess.run",
+            "sourcebastion.external_scanners.subprocess.run",
             side_effect=subprocess.TimeoutExpired("gitleaks", 60),
         ),
     ):
@@ -67,7 +67,7 @@ def test_timeout_is_a_bounded_failure(tmp_path):
 def test_contract_deadline_caps_external_scanner_timeout(monkeypatch):
     scanner = GitleaksScanner()
     scanner.set_execution_deadline(101.5)
-    monkeypatch.setattr("ez_appsec.external_scanners.time.monotonic", lambda: 100.0)
+    monkeypatch.setattr("sourcebastion.external_scanners.time.monotonic", lambda: 100.0)
 
     assert scanner._timeout(60) == 1.5
 
@@ -75,7 +75,7 @@ def test_contract_deadline_caps_external_scanner_timeout(monkeypatch):
 def test_expired_contract_deadline_fails_before_starting_tool(monkeypatch):
     scanner = GitleaksScanner()
     scanner.set_execution_deadline(100.0)
-    monkeypatch.setattr("ez_appsec.external_scanners.time.monotonic", lambda: 100.0)
+    monkeypatch.setattr("sourcebastion.external_scanners.time.monotonic", lambda: 100.0)
 
     with pytest.raises(ScannerExecutionError) as raised:
         scanner.is_installed()
@@ -88,7 +88,7 @@ def test_invalid_json_is_not_empty_success(tmp_path):
     completed = subprocess.CompletedProcess([], 0, "", "")
     with (
         patch.object(scanner, "is_installed", return_value=True),
-        patch("ez_appsec.external_scanners.subprocess.run", return_value=completed),
+        patch("sourcebastion.external_scanners.subprocess.run", return_value=completed),
     ):
         with pytest.raises(ScannerExecutionError) as raised:
             scanner.scan(str(tmp_path))
@@ -107,7 +107,7 @@ def test_tool_specific_finding_exit_codes_are_complete(tmp_path):
 
     with (
         patch.object(scanner, "is_installed", return_value=True),
-        patch("ez_appsec.external_scanners.subprocess.run", side_effect=write_empty_report),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_empty_report),
     ):
         issues, raw_path = scanner.scan_with_raw_output(str(tmp_path))
 
@@ -123,7 +123,7 @@ def test_gitleaks_success_with_empty_report_is_complete(tmp_path):
     completed = subprocess.CompletedProcess([], 0, "", "")
     with (
         patch.object(scanner, "is_installed", return_value=True),
-        patch("ez_appsec.external_scanners.subprocess.run", return_value=completed),
+        patch("sourcebastion.external_scanners.subprocess.run", return_value=completed),
     ):
         issues, raw_path = scanner.scan_with_raw_output(str(tmp_path))
 
@@ -139,7 +139,7 @@ def test_gitleaks_finding_exit_with_empty_report_fails_closed(tmp_path):
     completed = subprocess.CompletedProcess([], 1, "", "")
     with (
         patch.object(scanner, "is_installed", return_value=True),
-        patch("ez_appsec.external_scanners.subprocess.run", return_value=completed),
+        patch("sourcebastion.external_scanners.subprocess.run", return_value=completed),
     ):
         with pytest.raises(ScannerExecutionError) as raised:
             scanner.scan_with_raw_output(str(tmp_path))
@@ -157,7 +157,7 @@ def test_semgrep_finding_exit_code_is_complete(tmp_path):
 
     with (
         patch.object(scanner, "is_installed", return_value=True),
-        patch("ez_appsec.external_scanners.subprocess.run", side_effect=write_empty_report),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_empty_report),
     ):
         issues, raw_path = scanner.scan_with_raw_output(str(tmp_path))
 
@@ -173,7 +173,7 @@ def test_kics_engine_exit_is_a_failure(tmp_path):
     with (
         patch.object(scanner, "is_installed", return_value=True),
         patch.object(scanner, "_find_assets_path", return_value=tmp_path),
-        patch("ez_appsec.external_scanners.subprocess.run", return_value=completed),
+        patch("sourcebastion.external_scanners.subprocess.run", return_value=completed),
     ):
         with pytest.raises(ScannerExecutionError) as raised:
             scanner.scan(str(tmp_path))
@@ -194,14 +194,14 @@ def test_kics_requires_binary_and_query_assets(tmp_path, monkeypatch):
     monkeypatch.setattr(shutil, "which", lambda _name: str(binary))
 
     with patch(
-        "ez_appsec.external_scanners.subprocess.run",
+        "sourcebastion.external_scanners.subprocess.run",
         return_value=subprocess.CompletedProcess([], 0, "", ""),
     ):
         assert scanner.is_installed()
 
     (assets / "queries").rmdir()
     with patch(
-        "ez_appsec.external_scanners.subprocess.run",
+        "sourcebastion.external_scanners.subprocess.run",
         return_value=subprocess.CompletedProcess([], 0, "", ""),
     ):
         assert not scanner.is_installed()
@@ -223,7 +223,7 @@ def test_kics_passes_matching_query_and_library_paths(tmp_path):
     with (
         patch.object(scanner, "is_installed", return_value=True),
         patch.object(scanner, "_find_assets_path", return_value=assets),
-        patch("ez_appsec.external_scanners.subprocess.run", side_effect=write_empty_report),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_empty_report),
     ):
         issues, raw_path = scanner.scan_with_raw_output(str(tmp_path))
 
@@ -240,7 +240,7 @@ def test_grype_dependency_preparation_failure_is_explicit(tmp_path):
     with (
         patch.object(scanner, "is_installed", return_value=True),
         patch(
-            "ez_appsec.external_scanners.subprocess.run",
+            "sourcebastion.external_scanners.subprocess.run",
             side_effect=[db_ready, FileNotFoundError("npm")],
         ),
     ):
@@ -255,7 +255,7 @@ def test_grype_dependency_preparation_failure_is_explicit(tmp_path):
 def test_php_failure_is_not_empty_success(tmp_path):
     scanner = PHPVulnScanner()
     with patch(
-        "ez_appsec.php_vuln_scanner_simple.run_php_scanners",
+        "sourcebastion.php_vuln_scanner_simple.run_php_scanners",
         side_effect=RuntimeError("source fragment must stay private"),
     ):
         with pytest.raises(ScannerExecutionError) as raised:

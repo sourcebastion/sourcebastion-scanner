@@ -3,7 +3,7 @@
 from unittest.mock import patch
 
 import pytest
-from ez_appsec.external_scanners import (
+from sourcebastion.external_scanners import (
     GitleaksScanner,
     SemgrepScanner,
     KicsScanner,
@@ -285,7 +285,7 @@ class TestGrypeDependencyInstall:
         (tmp_path / "package.json").write_text('{"name":"demo","dependencies":{"left-pad":"1.3.0"}}')
         scanner = GrypeScanner()
 
-        with patch("ez_appsec.external_scanners.subprocess.run", side_effect=FileNotFoundError("npm")):
+        with patch("sourcebastion.external_scanners.subprocess.run", side_effect=FileNotFoundError("npm")):
             with pytest.raises(ScannerExecutionError) as raised:
                 scanner._install_dependencies(str(tmp_path))
 
@@ -360,7 +360,7 @@ class TestGrypeAIRemediation:
 class TestBaseAIRemediationNoOp:
     def test_default_hook_is_noop(self):
         """Base class default returns finding unchanged."""
-        from ez_appsec.external_scanners import ScannerWrapper
+        from sourcebastion.external_scanners import ScannerWrapper
 
         # Use a concrete subclass to instantiate
         scanner = GitleaksScanner()

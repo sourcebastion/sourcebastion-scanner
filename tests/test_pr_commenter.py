@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock, mock_open
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from ez_appsec.pr_commenter import (
+from sourcebastion.pr_commenter import (
     GitHubPRCommenter,
     GitLabMRCommenter,
     PRDiffParser,
@@ -69,7 +69,7 @@ index 1234567..abcdef 100644
 +y
  z"""
 
-        with patch('ez_appsec.pr_commenter.subprocess.run') as mock_run:
+        with patch('sourcebastion.pr_commenter.subprocess.run') as mock_run:
             # Mock the gh pr diff --json files command
             mock_run.side_effect = [
                 MagicMock(stdout='[{"path": "test.py"}]', returncode=0),  # files command
@@ -125,7 +125,7 @@ class TestGitHubPRCommenter:
         assert commenter.pr_number == 123
         assert commenter.token == 'token'
 
-    @patch('ez_appsec.pr_commenter.subprocess.run')
+    @patch('sourcebastion.pr_commenter.subprocess.run')
     def test_post_findings_filters_by_diff(self, mock_run, sample_findings):
         """Test that only findings on changed lines are posted"""
         # Mock diff to only include line 10 in config.py
@@ -137,7 +137,7 @@ class TestGitHubPRCommenter:
             returncode=0
         )
 
-        with patch('ez_appsec.pr_commenter.urllib.request.urlopen') as mock_urlopen:
+        with patch('sourcebastion.pr_commenter.urllib.request.urlopen') as mock_urlopen:
             mock_response = MagicMock()
             mock_response.read.return_value = b'{"id": 12345}'
             mock_urlopen.return_value.__enter__.return_value = mock_response
@@ -150,7 +150,7 @@ class TestGitHubPRCommenter:
             assert results['skipped'] == 2
             assert 'config.py' in results['files_commented']
 
-    @patch('ez_appsec.pr_commenter.subprocess.run')
+    @patch('sourcebastion.pr_commenter.subprocess.run')
     def test_post_findings_groups_multiple_per_file(self, mock_run, sample_findings):
         """Test that multiple findings on the same file are grouped"""
         # Mock diff to include both lines in config.py
@@ -161,7 +161,7 @@ class TestGitHubPRCommenter:
             returncode=0
         )
 
-        with patch('ez_appsec.pr_commenter.urllib.request.urlopen') as mock_urlopen:
+        with patch('sourcebastion.pr_commenter.urllib.request.urlopen') as mock_urlopen:
             mock_response = MagicMock()
             mock_response.read.return_value = b'{"id": 12345}'
             mock_urlopen.return_value.__enter__.return_value = mock_response
@@ -198,8 +198,8 @@ class TestGitHubPRCommenter:
         assert 'Fix it' in body
         assert 'SourceBastion Scan' in body
 
-    @patch('ez_appsec.pr_commenter.subprocess.run')
-    @patch('ez_appsec.pr_commenter.urllib.request.urlopen')
+    @patch('sourcebastion.pr_commenter.subprocess.run')
+    @patch('sourcebastion.pr_commenter.urllib.request.urlopen')
     def test_post_inline_comment_api_call(self, mock_urlopen, mock_run):
         """Test that correct API endpoint is called"""
         mock_run.return_value = MagicMock(
@@ -264,7 +264,7 @@ class TestGitLabMRCommenter:
         # Mock diff to only include line 10
         diff = PRDiff({'config.py': {10}, 'database.py': set()})
 
-        with patch('ez_appsec.pr_commenter.urllib.request.urlopen') as mock_urlopen:
+        with patch('sourcebastion.pr_commenter.urllib.request.urlopen') as mock_urlopen:
             mock_response = MagicMock()
             mock_response.read.return_value = b'{"id": 789, "notes": [{"id": 790}]}'
             mock_urlopen.return_value.__enter__.return_value = mock_response
@@ -275,7 +275,7 @@ class TestGitLabMRCommenter:
             assert results['posted'] == 1
             assert results['skipped'] == 1
 
-    @patch('ez_appsec.pr_commenter.urllib.request.urlopen')
+    @patch('sourcebastion.pr_commenter.urllib.request.urlopen')
     def test_post_diff_note_api_call(self, mock_urlopen):
         """Test that correct API endpoint is called"""
         mock_response = MagicMock()

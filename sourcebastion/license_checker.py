@@ -9,7 +9,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from ez_appsec.external_scanners import ScannerExecutionError
+from sourcebastion.external_scanners import ScannerExecutionError
 
 logger = logging.getLogger(__name__)
 

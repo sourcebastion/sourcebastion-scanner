@@ -6,7 +6,7 @@ import os
 import pytest
 from unittest.mock import patch, MagicMock, call
 
-from ez_appsec.org_manager import OrgManager, _build_scan_workflow
+from sourcebastion.org_manager import OrgManager, _build_scan_workflow
 
 
 SAMPLE_REPOS = [
@@ -204,11 +204,11 @@ class TestBuildScanWorkflow:
 
 
 class TestCLIOrgSync:
-    @patch("ez_appsec.org_manager.OrgManager.sync_all")
-    @patch("ez_appsec.org_manager.OrgManager.discover_repos")
+    @patch("sourcebastion.org_manager.OrgManager.sync_all")
+    @patch("sourcebastion.org_manager.OrgManager.discover_repos")
     def test_org_sync_dry_run(self, mock_discover, mock_sync):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         mock_sync.return_value = [
             {"repo": "myorg/app", "actions": ["would update workflow"], "dry_run": True},
@@ -226,7 +226,7 @@ class TestCLIOrgSync:
 
     def test_org_sync_no_token(self):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         runner = CliRunner()
         result = runner.invoke(
@@ -238,10 +238,10 @@ class TestCLIOrgSync:
         assert result.exit_code == 1
         assert "GITHUB_TOKEN" in result.output
 
-    @patch("ez_appsec.org_manager.OrgManager.sync_all")
+    @patch("sourcebastion.org_manager.OrgManager.sync_all")
     def test_org_sync_no_repos(self, mock_sync):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         mock_sync.return_value = []
 

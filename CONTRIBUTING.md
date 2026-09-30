@@ -23,7 +23,7 @@ A proposal is ready to become a plan when it satisfies all of these:
 
 | Criterion | Why it matters |
 |---|---|
-| **One primary new module** — the feature lives in a single new file (`ez_appsec/<feature>.py`) | Prevents merge conflicts; each plan owns its module |
+| **One primary new module** — the feature lives in a single new file (`sourcebastion/<feature>.py`) | Prevents merge conflicts; each plan owns its module |
 | **Additive-only changes to shared files** — only appends to `cli.py`, `scanner.py`, `external_scanners.py` | Multiple plans can touch shared files without blocking each other |
 | **Testable without a running scanner** — unit tests use mocks, not real Docker processes | CI runs fast; tests pass in any environment |
 | **Append-only schema changes** — adds new fields to `vulnerabilities.json`, never renames or removes | Existing consumers don't break when the plan merges |
@@ -130,7 +130,7 @@ Implement it exactly as specified:
 - Read the files listed under "Read first" before writing any code
 - Write the tests in "Done criteria" first, then the implementation
 - After each new file: run `pytest tests/ -x -q` and fix all failures before continuing
-- Before opening the PR: run `black ez_appsec/ tests/` to format
+- Before opening the PR: run `black sourcebastion/ tests/` to format
 - When every done criterion is met:
     git add -p   # stage only your changes, file by file
     git commit -m "feat: [PLAN TITLE]"
@@ -151,7 +151,7 @@ The plan is fetched to a local `.plan-context.md` file (gitignored) so the AI re
 4. Create files listed under "New files"; add only what "Modified files" specifies
 5. Do not touch files listed under "Conflict guard"
 6. Write tests first; run `pytest tests/ -x -q` after each file
-7. Run `black ez_appsec/ tests/` before opening a PR
+7. Run `black sourcebastion/ tests/` before opening a PR
 8. Open a draft PR when all done criteria pass
 
 ### When a dependency plan hasn't merged yet
@@ -176,7 +176,7 @@ This lets multiple contributors (human or AI-assisted) work on different plans s
 
 ### Conflict avoidance rules
 
-- Each plan owns its **primary new module** (`ez_appsec/<feature>.py`). Never modify another plan's primary module.
+- Each plan owns its **primary new module** (`sourcebastion/<feature>.py`). Never modify another plan's primary module.
 - Additions to shared files (`cli.py`, `scanner.py`, `external_scanners.py`) are always **appended** — new functions or isolated `if` blocks at the bottom. Never restructure existing code in these files.
 - The `vulnerabilities.json` schema is **append-only**. Add new fields; never rename or remove existing ones.
 - If two plans both need a utility (e.g., the finding fingerprint hash), the second to merge imports it from the first. If it hasn't merged yet, see "When a dependency plan hasn't merged yet" above.
@@ -350,7 +350,7 @@ This will prevent non-conventional commits from being pushed.
 
 - Write tests for new features
 - Ensure all tests pass: `pytest tests/`
-- Run linting: `black ez_appsec/ tests/`
+- Run linting: `black sourcebastion/ tests/`
 - Update documentation as needed
 
 ## Questions?

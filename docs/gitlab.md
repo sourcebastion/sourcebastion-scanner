@@ -8,7 +8,7 @@ This guide walks through adding ez-appsec to a GitLab project and setting up the
 
 - [Claude Code](https://claude.ai/code) with the ez-appsec skill installed
 - [glab CLI](https://gitlab.com/gitlab-org/cli) authenticated (`glab auth status`)
-- A GitLab group for your projects (e.g. `your-group/ez_appsec`)
+- A GitLab group for your projects (e.g. `your-group/sourcebastion`)
 
 ### Install the ez-appsec skill (one-time)
 
@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/skills/ins
 The dashboard is a GitLab Pages site that aggregates scan results. Set it up once for your group before installing ez-appsec on individual projects.
 
 ```
-/ez-appsec install-dashboard your-group/ez_appsec
+/ez-appsec install-dashboard your-group/sourcebastion
 ```
 
 The skill will:
@@ -92,7 +92,7 @@ Opens a merge request that removes the `scan.yml` include from `.gitlab-ci.yml`.
 
 | Variable | Scope | Description |
 |----------|-------|-------------|
-| `EZ_APPSEC_DASHBOARD_PROJECT` | Group | Full path of the dashboard project (e.g. `your-group/ez_appsec/ez-appsec-dashboard`) |
+| `EZ_APPSEC_DASHBOARD_PROJECT` | Group | Full path of the dashboard project (e.g. `your-group/sourcebastion/ez-appsec-dashboard`) |
 | `EZ_APPSEC_DASHBOARD_DEPLOY_KEY` | Group | Base64-encoded ed25519 private key — allows scan jobs to push to the dashboard |
 | `EZ_APPSEC_VERSION` | Project | Docker image tag to use (default: `latest`) — set by `install` automatically |
 | `GITLAB_ACCESS_TOKEN` | Project | Access token for MR comments — set in **Settings → CI/CD → Variables** |
@@ -140,7 +140,7 @@ This triggers `CI_PIPELINE_SOURCE=api`, which activates the `cold:scan` job.
 
 ```bash
 bash gitlab/scripts/gitlab-pipeline-test.sh \
-  --project your-group/ez_appsec/repo-name \
+  --project your-group/sourcebastion/repo-name \
   --ref master \
   --check-dashboard
 ```

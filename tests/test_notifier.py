@@ -1,11 +1,11 @@
-"""Tests for ez_appsec.notifier (PLAN-07: Slack / Teams Notifications)."""
+"""Tests for sourcebastion.notifier (PLAN-07: Slack / Teams Notifications)."""
 
 import json
 from unittest.mock import patch, MagicMock
 
 import pytest
 
-from ez_appsec.notifier import (
+from sourcebastion.notifier import (
     NotificationPayload,
     SlackNotifier,
     TeamsNotifier,
@@ -156,7 +156,7 @@ class TestSlackNotifier:
         flat = json.dumps(msg)
         assert "View Dashboard" not in flat
 
-    @patch("ez_appsec.notifier._post_json")
+    @patch("sourcebastion.notifier._post_json")
     def test_send_calls_post_json(self, mock_post):
         mock_post.return_value = True
         n = SlackNotifier("https://hooks.slack.com/test")
@@ -212,7 +212,7 @@ class TestTeamsNotifier:
         content = msg["attachments"][0]["content"]
         assert "actions" not in content
 
-    @patch("ez_appsec.notifier._post_json")
+    @patch("sourcebastion.notifier._post_json")
     def test_send_calls_post_json(self, mock_post):
         mock_post.return_value = True
         n = TeamsNotifier("https://outlook.office.com/webhook/test")
@@ -230,7 +230,7 @@ class TestTeamsNotifier:
 # ---------------------------------------------------------------------------
 
 class TestNotifyOnNewFindings:
-    @patch("ez_appsec.notifier._post_json", return_value=True)
+    @patch("sourcebastion.notifier._post_json", return_value=True)
     def test_sends_slack_on_critical(self, mock_post):
         result = notify_on_new_findings(
             [CRITICAL_FINDING],
@@ -241,7 +241,7 @@ class TestNotifyOnNewFindings:
         assert result["slack"] is True
         assert result["teams"] is None
 
-    @patch("ez_appsec.notifier._post_json", return_value=True)
+    @patch("sourcebastion.notifier._post_json", return_value=True)
     def test_sends_teams_on_high(self, mock_post):
         result = notify_on_new_findings(
             [HIGH_FINDING],
@@ -252,7 +252,7 @@ class TestNotifyOnNewFindings:
         assert result["teams"] is True
         assert result["slack"] is None
 
-    @patch("ez_appsec.notifier._post_json", return_value=True)
+    @patch("sourcebastion.notifier._post_json", return_value=True)
     def test_sends_both_when_configured(self, mock_post):
         result = notify_on_new_findings(
             MIXED_FINDINGS,
@@ -270,7 +270,7 @@ class TestNotifyOnNewFindings:
         assert result["notified"] is False
         assert result["reason"] == "no webhook configured"
 
-    @patch("ez_appsec.notifier._post_json", return_value=True)
+    @patch("sourcebastion.notifier._post_json", return_value=True)
     def test_no_notification_on_empty_findings(self, mock_post):
         result = notify_on_new_findings(
             [],
@@ -281,7 +281,7 @@ class TestNotifyOnNewFindings:
         assert result["reason"] == "no new findings"
         mock_post.assert_not_called()
 
-    @patch("ez_appsec.notifier._post_json", return_value=True)
+    @patch("sourcebastion.notifier._post_json", return_value=True)
     def test_no_notification_on_medium_only(self, mock_post):
         result = notify_on_new_findings(
             [MEDIUM_FINDING],
@@ -292,7 +292,7 @@ class TestNotifyOnNewFindings:
         assert result["reason"] == "no critical/high findings"
         mock_post.assert_not_called()
 
-    @patch("ez_appsec.notifier._post_json", return_value=True)
+    @patch("sourcebastion.notifier._post_json", return_value=True)
     def test_reads_env_vars(self, mock_post, monkeypatch):
         monkeypatch.setenv("EZ_APPSEC_SLACK_WEBHOOK", "https://hooks.slack.com/env")
         monkeypatch.setenv("EZ_APPSEC_PROJECT_NAME", "env-proj")
@@ -304,7 +304,7 @@ class TestNotifyOnNewFindings:
         flat = json.dumps(body)
         assert "env-proj" in flat
 
-    @patch("ez_appsec.notifier._post_json", return_value=False)
+    @patch("sourcebastion.notifier._post_json", return_value=False)
     def test_reports_send_failure(self, mock_post):
         result = notify_on_new_findings(
             [CRITICAL_FINDING],

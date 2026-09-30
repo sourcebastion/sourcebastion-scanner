@@ -5,10 +5,10 @@ import hashlib
 import json
 from pathlib import Path
 
-import ez_appsec
-from ez_appsec.config import Config
-from ez_appsec.policy import PolicyRule
-from ez_appsec.scanner import SecurityScanner
+import sourcebastion
+from sourcebastion.config import Config
+from sourcebastion.policy import PolicyRule
+from sourcebastion.scanner import SecurityScanner
 
 
 def main() -> None:
@@ -17,7 +17,7 @@ def main() -> None:
     parser.add_argument("--bundle", required=True)
     parser.add_argument("--artifacts", required=True)
     args = parser.parse_args()
-    installed_from = Path(ez_appsec.__file__).resolve()
+    installed_from = Path(sourcebastion.__file__).resolve()
     assert "site-packages" in installed_from.parts, installed_from
     binary = Path(args.engine).resolve()
     bundle = Path(args.bundle).resolve()

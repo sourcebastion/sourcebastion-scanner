@@ -49,7 +49,7 @@ git commit -m "Add feature description"
 pytest tests/ -v
 
 # Run with coverage
-pytest tests/ --cov=ez_appsec --cov-report=html
+pytest tests/ --cov=sourcebastion --cov-report=html
 
 # Run specific test
 pytest tests/test_scanner.py::test_scanner_initialization -v
@@ -62,19 +62,19 @@ pytest tests/ -n auto
 
 ```bash
 # Format code with black
-black ez_appsec tests
+black sourcebastion tests
 
 # Sort imports with isort
-isort ez_appsec tests
+isort sourcebastion tests
 
 # Lint with flake8
-flake8 ez_appsec tests
+flake8 sourcebastion tests
 
 # Full analysis with pylint
-pylint ez_appsec
+pylint sourcebastion
 
 # Security check with bandit
-bandit -r ez_appsec
+bandit -r sourcebastion
 
 # Check vulnerable dependencies
 safety check
@@ -116,7 +116,7 @@ git push origin feature/my-feature
 
 ```bash
 # Run tests exactly as CI does
-pytest tests/ -v --cov=ez_appsec
+pytest tests/ -v --cov=sourcebastion
 
 # Check Python version
 python --version  # Should be 3.11+
@@ -140,11 +140,11 @@ python -c "import sys; print(sys.path)"
 
 ```bash
 # Auto-fix with black and isort
-black ez_appsec tests
-isort ez_appsec tests
+black sourcebastion tests
+isort sourcebastion tests
 
 # Check what black would change
-black --diff ez_appsec tests
+black --diff sourcebastion tests
 ```
 
 ### Docker Build Fails
@@ -222,7 +222,7 @@ docker build -t ez-appsec:dev .
 git diff --name-only | xargs flake8
 
 # Use Python 3.11 for faster startup
-python3.11 -m flake8 ez_appsec
+python3.11 -m flake8 sourcebastion
 ```
 
 ## Useful Links

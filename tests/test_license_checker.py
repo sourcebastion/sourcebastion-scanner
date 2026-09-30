@@ -6,7 +6,7 @@ import tempfile
 import json
 import pytest
 
-from ez_appsec.license_checker import (
+from sourcebastion.license_checker import (
     LicensePolicy,
     PackageLicense,
     extract_licenses_from_syft,
@@ -15,8 +15,8 @@ from ez_appsec.license_checker import (
     _matches_any,
     _normalize_license,
 )
-from ez_appsec.config import Config, LicensePolicyConfig
-from ez_appsec.external_scanners import ScannerExecutionError
+from sourcebastion.config import Config, LicensePolicyConfig
+from sourcebastion.external_scanners import ScannerExecutionError
 
 
 # --- Helpers ---
@@ -299,7 +299,7 @@ class TestCheckLicenses:
     def test_no_syft_data_is_not_a_passing_empty_scan(self, monkeypatch):
         policy = LicensePolicy(denied_licenses=["GPL*"])
         monkeypatch.setattr(
-            "ez_appsec.license_checker.run_syft",
+            "sourcebastion.license_checker.run_syft",
             lambda _path: (None, ""),
         )
         with pytest.raises(ScannerExecutionError, match="not_installed"):
@@ -308,7 +308,7 @@ class TestCheckLicenses:
     def test_syft_execution_failure_is_not_a_passing_empty_scan(self, monkeypatch):
         policy = LicensePolicy(denied_licenses=["GPL*"])
         monkeypatch.setattr(
-            "ez_appsec.license_checker.run_syft",
+            "sourcebastion.license_checker.run_syft",
             lambda _path: (None, "/tmp/syft-incomplete.json"),
         )
 
@@ -496,14 +496,14 @@ license_policy:
 class TestLicenseInScanOutput:
     def test_license_findings_in_scan_results(self):
         from unittest.mock import patch
-        from ez_appsec.scanner import SecurityScanner
+        from sourcebastion.scanner import SecurityScanner
 
         config = Config(
             license_policy=LicensePolicyConfig(denied_licenses=["GPL*"]),
         )
         scanner = SecurityScanner(config, use_external_scanners=False, license_check=True)
 
-        with patch("ez_appsec.scanner.check_licenses") as mock_check:
+        with patch("sourcebastion.scanner.check_licenses") as mock_check:
             mock_check.return_value = {
                 "findings": [
                     {
@@ -540,7 +540,7 @@ class TestLicenseInScanOutput:
         assert license_findings[0]["solution"] != ""
 
     def test_no_license_check_no_key(self):
-        from ez_appsec.scanner import SecurityScanner
+        from sourcebastion.scanner import SecurityScanner
 
         config = Config()
         scanner = SecurityScanner(config, use_external_scanners=False)
@@ -550,7 +550,7 @@ class TestLicenseInScanOutput:
         assert "license_summary" not in results
 
     def test_license_check_disabled_no_key(self):
-        from ez_appsec.scanner import SecurityScanner
+        from sourcebastion.scanner import SecurityScanner
 
         config = Config(
             license_policy=LicensePolicyConfig(denied_licenses=["GPL*"]),
@@ -564,8 +564,8 @@ class TestLicenseInScanOutput:
     def test_license_findings_respect_ignore_rules(self):
         """License findings should be suppressible via ignore rules."""
         from unittest.mock import patch
-        from ez_appsec.scanner import SecurityScanner
-        from ez_appsec.config import IgnoreRule
+        from sourcebastion.scanner import SecurityScanner
+        from sourcebastion.config import IgnoreRule
 
         config = Config(
             license_policy=LicensePolicyConfig(denied_licenses=["GPL*"]),
@@ -579,7 +579,7 @@ class TestLicenseInScanOutput:
         )
         scanner = SecurityScanner(config, use_external_scanners=False, license_check=True)
 
-        with patch("ez_appsec.scanner.check_licenses") as mock_check:
+        with patch("sourcebastion.scanner.check_licenses") as mock_check:
             mock_check.return_value = {
                 "findings": [
                     {
@@ -653,18 +653,18 @@ class TestPolicyEdgeCases:
 class TestRunSyft:
     def test_syft_not_installed(self):
         from unittest.mock import patch
-        from ez_appsec.license_checker import run_syft
+        from sourcebastion.license_checker import run_syft
 
-        with patch("ez_appsec.license_checker.subprocess.run", side_effect=FileNotFoundError):
+        with patch("sourcebastion.license_checker.subprocess.run", side_effect=FileNotFoundError):
             data, raw_path = run_syft(".")
         assert data is None
         assert raw_path == ""
 
     def test_syft_version_check_fails(self):
         from unittest.mock import patch, MagicMock
-        from ez_appsec.license_checker import run_syft
+        from sourcebastion.license_checker import run_syft
 
-        with patch("ez_appsec.license_checker.subprocess.run") as mock_run:
+        with patch("sourcebastion.license_checker.subprocess.run") as mock_run:
             mock_run.side_effect = subprocess.CalledProcessError(1, "syft")
             data, raw_path = run_syft(".")
         assert data is None
@@ -672,12 +672,12 @@ class TestRunSyft:
 
     def test_syft_nonzero_exit_code(self):
         from unittest.mock import patch, MagicMock, call
-        from ez_appsec.license_checker import run_syft
+        from sourcebastion.license_checker import run_syft
 
         version_result = MagicMock(returncode=0)
         scan_result = MagicMock(returncode=1, stderr="error: bad path")
 
-        with patch("ez_appsec.license_checker.subprocess.run", side_effect=[version_result, scan_result]):
+        with patch("sourcebastion.license_checker.subprocess.run", side_effect=[version_result, scan_result]):
             with patch("tempfile.NamedTemporaryFile") as mock_tmp:
                 mock_tmp.return_value.__enter__ = lambda s: MagicMock(name="/tmp/test.json")
                 mock_tmp.return_value.__exit__ = lambda s, *a: None
@@ -688,11 +688,11 @@ class TestRunSyft:
     def test_syft_timeout(self):
         import subprocess as sp
         from unittest.mock import patch, MagicMock
-        from ez_appsec.license_checker import run_syft
+        from sourcebastion.license_checker import run_syft
 
         version_result = MagicMock(returncode=0)
 
-        with patch("ez_appsec.license_checker.subprocess.run") as mock_run:
+        with patch("sourcebastion.license_checker.subprocess.run") as mock_run:
             mock_run.side_effect = [version_result, sp.TimeoutExpired("syft", 300)]
             with patch("tempfile.NamedTemporaryFile") as mock_tmp:
                 mock_file = MagicMock()
@@ -710,7 +710,7 @@ class TestRunSyft:
 
 class TestUnifiedDiffParser:
     def test_parse_simple_addition(self):
-        from ez_appsec.pr_commenter import PRDiffParser
+        from sourcebastion.pr_commenter import PRDiffParser
 
         diff = (
             "diff --git a/foo.py b/foo.py\n"
@@ -727,7 +727,7 @@ class TestUnifiedDiffParser:
         assert 2 in result["foo.py"]
 
     def test_parse_deletion_only(self):
-        from ez_appsec.pr_commenter import PRDiffParser
+        from sourcebastion.pr_commenter import PRDiffParser
 
         diff = (
             "diff --git a/bar.py b/bar.py\n"
@@ -743,7 +743,7 @@ class TestUnifiedDiffParser:
         assert result.get("bar.py", set()) == set()
 
     def test_parse_multiple_hunks(self):
-        from ez_appsec.pr_commenter import PRDiffParser
+        from sourcebastion.pr_commenter import PRDiffParser
 
         diff = (
             "diff --git a/multi.py b/multi.py\n"
@@ -765,7 +765,7 @@ class TestUnifiedDiffParser:
         assert 12 in result["multi.py"]
 
     def test_parse_multiple_files(self):
-        from ez_appsec.pr_commenter import PRDiffParser
+        from sourcebastion.pr_commenter import PRDiffParser
 
         diff = (
             "diff --git a/a.py b/a.py\n"
@@ -788,7 +788,7 @@ class TestUnifiedDiffParser:
         assert 6 in result["b.py"]
 
     def test_empty_diff(self):
-        from ez_appsec.pr_commenter import PRDiffParser
+        from sourcebastion.pr_commenter import PRDiffParser
 
         result = PRDiffParser._parse_unified_diff("")
         assert result == {}
@@ -877,7 +877,7 @@ class TestFindingUsability:
 
     def test_pr_comment_omits_line_for_license_findings(self):
         """PR comments should not show '(line 1)' for license findings."""
-        from ez_appsec.pr_commenter import GitHubPRCommenter
+        from sourcebastion.pr_commenter import GitHubPRCommenter
 
         commenter = GitHubPRCommenter("owner/repo", 1, "fake-token")
         findings = [{
@@ -896,7 +896,7 @@ class TestFindingUsability:
 
     def test_pr_comment_shows_line_for_code_findings(self):
         """PR comments should still show line numbers for code findings."""
-        from ez_appsec.pr_commenter import GitHubPRCommenter
+        from sourcebastion.pr_commenter import GitHubPRCommenter
 
         commenter = GitHubPRCommenter("owner/repo", 1, "fake-token")
         findings = [{

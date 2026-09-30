@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import Counter
 
-from ez_appsec.history import append_history, make_entry
+from sourcebastion.history import append_history, make_entry
 
 
 def load_vulnerabilities(vuln_file: Path) -> tuple:

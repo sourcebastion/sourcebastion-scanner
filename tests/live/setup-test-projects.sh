@@ -16,9 +16,9 @@
 #
 # Optional overrides:
 #   GITHUB_ORG       default: ez-appsec
-#   GITLAB_GROUP     default: jfelten.work-group/ez_appsec
+#   GITLAB_GROUP     default: jfelten.work-group/sourcebastion
 #   GITHUB_DASHBOARD default: ez-appsec/ez-appsec-dashboard
-#   GITLAB_DASHBOARD default: jfelten.work-group/ez_appsec/ez-appsec-dashboard
+#   GITLAB_DASHBOARD default: jfelten.work-group/sourcebastion/ez-appsec-dashboard
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -37,9 +37,9 @@ fi
 
 # ─── Config ─────────────────────────────────────────────────────────────────
 GITHUB_ORG="${GITHUB_ORG:-ez-appsec}"
-GITLAB_GROUP="${GITLAB_GROUP:-jfelten.work-group/ez_appsec}"
+GITLAB_GROUP="${GITLAB_GROUP:-jfelten.work-group/sourcebastion}"
 GITHUB_DASHBOARD="${GITHUB_DASHBOARD:-ez-appsec/ez-appsec-dashboard}"
-GITLAB_DASHBOARD="${GITLAB_DASHBOARD:-jfelten.work-group/ez_appsec/ez-appsec-dashboard}"
+GITLAB_DASHBOARD="${GITLAB_DASHBOARD:-jfelten.work-group/sourcebastion/ez-appsec-dashboard}"
 
 # PAT used both to authenticate gh CLI ops and as DASHBOARD_PUSH_TOKEN
 GH_PAT="${GH_PAT:-${GITHUB_ACCESS_TOKEN:-}}"

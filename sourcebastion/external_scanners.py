@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import List, Dict, Any, Iterator, Optional, Tuple
 from abc import ABC, abstractmethod
-from ez_appsec.schema import compute_finding_id
+from sourcebastion.schema import compute_finding_id
 
 logger = logging.getLogger(__name__)
 
@@ -1554,7 +1554,7 @@ class PHPVulnScanner(ScannerWrapper):
     def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
         """Run PHP vulnerability scan and return raw output file path"""
         try:
-            from ez_appsec.php_vuln_scanner_simple import run_php_scanners
+            from sourcebastion.php_vuln_scanner_simple import run_php_scanners
 
             issues = run_php_scanners(path)
 

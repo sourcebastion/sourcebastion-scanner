@@ -634,7 +634,7 @@ def create_rotation_pr(
 
     env = os.environ.copy()
 
-    from ez_appsec.fix_pr import _run_git
+    from sourcebastion.fix_pr import _run_git
 
     _run_git(["checkout", "-b", branch], cwd=repo_path, env=env)
     _run_git(["add"] + files_modified, cwd=repo_path, env=env)

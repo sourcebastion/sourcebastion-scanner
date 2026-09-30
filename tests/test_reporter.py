@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from ez_appsec.reporter import Reporter
+from sourcebastion.reporter import Reporter
 
 
 @pytest.mark.parametrize(

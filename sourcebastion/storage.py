@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Optional, Sequence, Tuple, Type
 
-from ez_appsec.schema import FindingV2, ScanRecord, finding_from_dict, normalize_path
+from sourcebastion.schema import FindingV2, ScanRecord, finding_from_dict, normalize_path
 
 
 SCHEMA_VERSION = "2"

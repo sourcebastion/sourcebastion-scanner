@@ -87,7 +87,7 @@ def all_rules() -> list[tuple[str, Path]]:
 
 
 def validate_rule(rule_yaml: Path) -> list[str]:
-    empty_target = Path(tempfile.gettempdir()) / "ez_appsec_empty_target"
+    empty_target = Path(tempfile.gettempdir()) / "sourcebastion_empty_target"
     empty_target.mkdir(exist_ok=True)
     _, errors = run_semgrep(rule_yaml, empty_target)
     return errors

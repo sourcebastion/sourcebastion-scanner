@@ -207,16 +207,24 @@ class VulnerabilityDashboard {
 
     // ── Config ─────────────────────────────────────────────────────────────
 
+    dashboardVersion() {
+        // `data/config.json` is persisted in existing deployments, so accept
+        // either key: producers now write `sourcebastion_version`, while a
+        // dashboard that has not regenerated its file still has the old one.
+        // Remove the fallback once no supported deployment predates the rename.
+        return this.config?.sourcebastion_version ?? this.config?.ez_appsec_version;
+    }
+
     async loadConfig() {
         try {
             const r = await fetch('data/config.json');
             if (!r.ok) return;
             this.config = await r.json();
 
-            if (this.config.ez_appsec_version) {
+            if (this.dashboardVersion()) {
                 const versionLabel = document.getElementById('version-label');
                 if (versionLabel) {
-                    versionLabel.textContent = `v${this.config.ez_appsec_version}`;
+                    versionLabel.textContent = `v${this.dashboardVersion()}`;
                     versionLabel.hidden = false;
                 }
                 this.checkForUpgrade(this.config.gitlab_url);
@@ -232,10 +240,10 @@ class VulnerabilityDashboard {
             const release = await r.json();
             const latest  = (release.tag_name || '').replace(/^v/, '');
 
-            if (this.isOutdated(this.config.ez_appsec_version, latest)) {
+            if (this.isOutdated(this.dashboardVersion(), latest)) {
                 const btn   = document.getElementById('upgrade-btn');
                 btn.href    = release.html_url || 'https://github.com/ez-appsec/ez-appsec/releases';
-                btn.title   = `Upgrade from ${this.config.ez_appsec_version} to ${latest}`;
+                btn.title   = `Upgrade from ${this.dashboardVersion()} to ${latest}`;
                 btn.textContent = `Upgrade to ${latest}`;
                 btn.hidden  = false;
             }

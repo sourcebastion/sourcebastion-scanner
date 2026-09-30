@@ -5,7 +5,7 @@ import pytest
 import tempfile
 from datetime import datetime, timedelta
 
-from ez_appsec.config import Config, IgnoreRule
+from sourcebastion.config import Config, IgnoreRule
 
 
 # --- Existing tests ---

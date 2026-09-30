@@ -5,7 +5,7 @@ import json
 import tempfile
 import yaml
 from pathlib import Path
-from ez_appsec.converters import (
+from sourcebastion.converters import (
     GitHubSarifFormat,
     GitHubGitleaksConverter,
     GitHubSemgrepConverter,

@@ -6,12 +6,12 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from ez_appsec.agent import (
+from sourcebastion.agent import (
     AgentResult,
     LLM_AGENT_REMOVED_MESSAGE,
     SecurityAgent,
 )
-from ez_appsec.cli import main
+from sourcebastion.cli import main
 
 
 def test_legacy_agent_result_remains_importable():

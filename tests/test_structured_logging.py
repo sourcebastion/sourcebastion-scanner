@@ -3,8 +3,8 @@
 import json
 import logging
 
-from ez_appsec.config import Config
-from ez_appsec.scanner import (
+from sourcebastion.config import Config
+from sourcebastion.scanner import (
     JsonLogFormatter,
     SecurityScanner,
     _build_otel_attributes,
@@ -21,7 +21,7 @@ def test_default_logging_configuration_unchanged(monkeypatch):
 def test_json_log_formatter_includes_context_fields():
     formatter = JsonLogFormatter()
     record = logging.LogRecord(
-        name="ez_appsec.scanner",
+        name="sourcebastion.scanner",
         level=logging.INFO,
         pathname=__file__,
         lineno=1,
@@ -56,19 +56,19 @@ def test_json_log_format_env_configures_existing_handlers(monkeypatch):
 
 def test_scan_tracking_populates_otel_attributes_when_sdk_available(monkeypatch):
     scanner = SecurityScanner(Config(), use_external_scanners=False)
-    monkeypatch.setattr("ez_appsec.scanner._opentelemetry_sdk_available", lambda: True)
+    monkeypatch.setattr("sourcebastion.scanner._opentelemetry_sdk_available", lambda: True)
     issues = [{"rule_id": "xss", "file": "app.py", "line": 10, "severity": "high"}]
 
     scanner._apply_scan_tracking(issues, [], "scan-123", __import__("datetime").datetime.now(__import__("datetime").timezone.utc))
 
-    assert issues[0]["otel_attributes"]["ez_appsec.scan_id"] == "scan-123"
-    assert issues[0]["otel_attributes"]["ez_appsec.rule_id"] == "xss"
+    assert issues[0]["otel_attributes"]["sourcebastion.scan_id"] == "scan-123"
+    assert issues[0]["otel_attributes"]["sourcebastion.rule_id"] == "xss"
     assert issues[0]["otel_attributes"]["code.filepath"] == "app.py"
 
 
 def test_scan_tracking_skips_otel_attributes_without_sdk(monkeypatch):
     scanner = SecurityScanner(Config(), use_external_scanners=False)
-    monkeypatch.setattr("ez_appsec.scanner._opentelemetry_sdk_available", lambda: False)
+    monkeypatch.setattr("sourcebastion.scanner._opentelemetry_sdk_available", lambda: False)
     issues = [{"rule_id": "xss"}]
 
     scanner._apply_scan_tracking(issues, [], "scan-123", __import__("datetime").datetime.now(__import__("datetime").timezone.utc))
@@ -79,6 +79,6 @@ def test_scan_tracking_skips_otel_attributes_without_sdk(monkeypatch):
 def test_build_otel_attributes_omits_empty_values():
     attrs = _build_otel_attributes({"finding_id": "f1", "line": 0}, "scan-123")
 
-    assert attrs["ez_appsec.scan_id"] == "scan-123"
-    assert attrs["ez_appsec.finding_id"] == "f1"
-    assert "ez_appsec.rule_id" not in attrs
+    assert attrs["sourcebastion.scan_id"] == "scan-123"
+    assert attrs["sourcebastion.finding_id"] == "f1"
+    assert "sourcebastion.rule_id" not in attrs

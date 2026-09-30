@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock, call
 from tempfile import TemporaryDirectory
 
-from ez_appsec.fix_pr import (
+from sourcebastion.fix_pr import (
     VulnerableDependency,
     EcosystemFixPlan,
     parse_grype_findings,
@@ -501,8 +501,8 @@ class TestBuildPrTitle:
 
 
 class TestCreateGithubPr:
-    @patch("ez_appsec.fix_pr.subprocess.run")
-    @patch("ez_appsec.fix_pr.apply_version_bump")
+    @patch("sourcebastion.fix_pr.subprocess.run")
+    @patch("sourcebastion.fix_pr.apply_version_bump")
     def test_creates_pr_with_correct_commands(self, mock_bump, mock_run):
         mock_bump.return_value = ["package.json"]
         mock_run.return_value = MagicMock(returncode=0, stdout="https://github.com/owner/repo/pull/42\n", stderr="")
@@ -531,8 +531,8 @@ class TestCreateGithubPr:
         assert "--repo" in gh_call[0][0]
         assert "owner/repo" in gh_call[0][0]
 
-    @patch("ez_appsec.fix_pr.subprocess.run")
-    @patch("ez_appsec.fix_pr.apply_version_bump")
+    @patch("sourcebastion.fix_pr.subprocess.run")
+    @patch("sourcebastion.fix_pr.apply_version_bump")
     def test_dry_run_skips_git_and_gh(self, mock_bump, mock_run):
         mock_bump.return_value = ["package.json"]
 
@@ -548,7 +548,7 @@ class TestCreateGithubPr:
         assert result["pr_url"] is None
         mock_run.assert_not_called()
 
-    @patch("ez_appsec.fix_pr.apply_version_bump")
+    @patch("sourcebastion.fix_pr.apply_version_bump")
     def test_no_modifications_returns_error(self, mock_bump):
         mock_bump.return_value = []
 
@@ -562,8 +562,8 @@ class TestCreateGithubPr:
         assert result.get("error")
         assert result["pr_url"] is None
 
-    @patch("ez_appsec.fix_pr.subprocess.run")
-    @patch("ez_appsec.fix_pr.apply_version_bump")
+    @patch("sourcebastion.fix_pr.subprocess.run")
+    @patch("sourcebastion.fix_pr.apply_version_bump")
     def test_gh_failure_raises(self, mock_bump, mock_run):
         mock_bump.return_value = ["package.json"]
 
@@ -583,8 +583,8 @@ class TestCreateGithubPr:
         with pytest.raises(RuntimeError, match="gh pr create failed"):
             create_github_pr("owner/repo", "/tmp/repo", plans, token="t")
 
-    @patch("ez_appsec.fix_pr.subprocess.run")
-    @patch("ez_appsec.fix_pr.apply_version_bump")
+    @patch("sourcebastion.fix_pr.subprocess.run")
+    @patch("sourcebastion.fix_pr.apply_version_bump")
     def test_branch_name_in_push(self, mock_bump, mock_run):
         mock_bump.return_value = ["package.json"]
         mock_run.return_value = MagicMock(returncode=0, stdout="https://gh/pr/1\n", stderr="")
@@ -606,8 +606,8 @@ class TestCreateGithubPr:
 
 
 class TestCreateGitlabMr:
-    @patch("ez_appsec.fix_pr.subprocess.run")
-    @patch("ez_appsec.fix_pr.apply_version_bump")
+    @patch("sourcebastion.fix_pr.subprocess.run")
+    @patch("sourcebastion.fix_pr.apply_version_bump")
     def test_creates_mr(self, mock_bump, mock_run):
         mock_bump.return_value = ["requirements.txt"]
         mock_run.return_value = MagicMock(
@@ -629,7 +629,7 @@ class TestCreateGitlabMr:
         assert "mr" in glab_call[0][0]
         assert "create" in glab_call[0][0]
 
-    @patch("ez_appsec.fix_pr.apply_version_bump")
+    @patch("sourcebastion.fix_pr.apply_version_bump")
     def test_no_modifications_returns_error(self, mock_bump):
         mock_bump.return_value = []
 
@@ -669,7 +669,7 @@ class TestApplyVersionBump:
 class TestEndToEnd:
     """Integration-style tests with real files, mocked git/gh."""
 
-    @patch("ez_appsec.fix_pr.subprocess.run")
+    @patch("sourcebastion.fix_pr.subprocess.run")
     def test_grype_to_github_pr(self, mock_run, tmp_path):
         mock_run.return_value = MagicMock(returncode=0, stdout="https://gh/pr/1\n", stderr="")
 

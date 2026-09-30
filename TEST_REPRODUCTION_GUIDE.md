@@ -61,7 +61,7 @@ python -m pytest tests/ -v -m unit
 python -m pytest tests/test_scanner.py -v
 
 # Run with coverage
-python -m pytest tests/ -v --cov=ez_appsec --cov-report=html
+python -m pytest tests/ -v --cov=sourcebastion --cov-report=html
 ```
 
 ### Performance Tests

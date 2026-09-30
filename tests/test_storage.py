@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from ez_appsec.schema import Category, FindingV2, ScanRecord, Trend
-from ez_appsec.storage import ConfigurationError, JsonFileBackend, SqlBackend, get_storage_backend
+from sourcebastion.schema import Category, FindingV2, ScanRecord, Trend
+from sourcebastion.storage import ConfigurationError, JsonFileBackend, SqlBackend, get_storage_backend
 
 
 def make_finding(**overrides):
@@ -51,7 +51,7 @@ def make_scan_record(**overrides):
 class TestJsonFileBackend:
     def test_write_drops_empty_optional_noise_fields(self, tmp_path):
         """UX-3: a minimal finding must not be padded with 16 null v2 keys."""
-        from ez_appsec.schema import FindingV2, Category, Trend
+        from sourcebastion.schema import FindingV2, Category, Trend
         backend = JsonFileBackend()
         minimal = FindingV2(
             rule_id="r1", file="a.py", line=3, severity="high", message="m",

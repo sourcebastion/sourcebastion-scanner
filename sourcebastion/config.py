@@ -8,8 +8,8 @@ from pydantic import BaseModel, Field, field_validator
 
 import yaml
 
-from ez_appsec.policy import PolicyRule
-from ez_appsec.license_checker import LicensePolicy
+from sourcebastion.policy import PolicyRule
+from sourcebastion.license_checker import LicensePolicy
 
 
 class LicensePolicyConfig(BaseModel):

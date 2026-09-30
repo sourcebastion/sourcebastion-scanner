@@ -65,7 +65,7 @@ fi
 CURRENT_VERSION=$(gh api /repos/${DASHBOARD_REPO}/contents/data/config.json \
   --jq '.content' 2>/dev/null \
   | base64 --decode \
-  | python3 -c "import json,sys; print(json.load(sys.stdin).get('ez_appsec_version','unknown'))" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin).get('sourcebastion_version','unknown'))" \
   2>/dev/null || echo "unknown")
 
 # Last commit date on dashboard main

@@ -99,7 +99,7 @@ exclude: |
     \.eggs/|
     build/|
     dist/|
-    ez_appsec\.egg-info/
+    sourcebastion\.egg-info/
   )
 
 ci:

@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from ez_appsec.cedar_adapter import evaluate_cedar, parity_result
-from ez_appsec.policy import PolicyEngine, PolicyRule
+from sourcebastion.cedar_adapter import evaluate_cedar, parity_result
+from sourcebastion.policy import PolicyEngine, PolicyRule
 
 
 @pytest.mark.integration

@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from ez_appsec.baseline import Baseline, load_baseline, diff_findings, _fingerprint
+from sourcebastion.baseline import Baseline, load_baseline, diff_findings, _fingerprint
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from ez_appsec.external_scanners import resolve_rules_dirs, RULES_LANGUAGE_MAP
+from sourcebastion.external_scanners import resolve_rules_dirs, RULES_LANGUAGE_MAP
 
 RULES_ROOT = Path(__file__).parent.parent / "rules"
 LANGUAGES = ["python", "ruby", "java", "javascript", "php"]
@@ -163,12 +163,12 @@ class TestSemgrepScannerExtraRules:
     """Test that SemgrepScanner accepts extra_rules_dirs."""
 
     def test_init_default_empty(self):
-        from ez_appsec.external_scanners import SemgrepScanner
+        from sourcebastion.external_scanners import SemgrepScanner
         scanner = SemgrepScanner()
         assert scanner.extra_rules_dirs == []
 
     def test_init_with_dirs(self):
-        from ez_appsec.external_scanners import SemgrepScanner
+        from sourcebastion.external_scanners import SemgrepScanner
         dirs = ["/tmp/rules/python"]
         scanner = SemgrepScanner(extra_rules_dirs=dirs)
         assert scanner.extra_rules_dirs == dirs

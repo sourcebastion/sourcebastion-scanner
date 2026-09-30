@@ -38,8 +38,8 @@ Paste the printed prompt into any AI coding assistant (Claude Code, Cursor, Copi
 <!-- List 2–4 files the implementer needs to read to understand the context.
      Be specific — include the function or class name if relevant.
      Example:
-- `ez_appsec/scanner.py` — `SecurityScanner.scan()` method (lines 25–55): this is where your hook goes
-- `ez_appsec/config.py` — `Config` class: add your new field here
+- `sourcebastion/scanner.py` — `SecurityScanner.scan()` method (lines 25–55): this is where your hook goes
+- `sourcebastion/config.py` — `Config` class: add your new field here
 -->
 - <!-- file: why -->
 - <!-- file: why -->

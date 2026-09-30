@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ez_appsec.config import Config
+from sourcebastion.config import Config
 
 
 class AIAnalyzer:

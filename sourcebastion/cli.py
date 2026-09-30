@@ -6,11 +6,11 @@ import click
 import sys
 from pathlib import Path
 
-from ez_appsec.scanner import SecurityScanner
-from ez_appsec.config import Config
-from ez_appsec.baseline import load_baseline, diff_findings
-from ez_appsec.notifier import notify_on_new_findings
-from ez_appsec.jira_sync import JiraConfig, sync_findings as jira_sync_findings, should_sync as jira_should_sync
+from sourcebastion.scanner import SecurityScanner
+from sourcebastion.config import Config
+from sourcebastion.baseline import load_baseline, diff_findings
+from sourcebastion.notifier import notify_on_new_findings
+from sourcebastion.jira_sync import JiraConfig, sync_findings as jira_sync_findings, should_sync as jira_should_sync
 
 
 @click.group()
@@ -60,7 +60,7 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
         scanner = SecurityScanner(config, license_check=license_check)
 
         if rules and scanner.external:
-            from ez_appsec.external_scanners import resolve_rules_dirs
+            from sourcebastion.external_scanners import resolve_rules_dirs
             extra_dirs = resolve_rules_dirs(list(rules))
             if extra_dirs and "semgrep" in scanner.external.scanners:
                 scanner.external.scanners["semgrep"].extra_rules_dirs = extra_dirs
@@ -192,7 +192,7 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
                 click.echo(f"  ⚠ {len(errors)} Jira error(s)", err=True)
 
         if sbom:
-            from ez_appsec.sbom import generate_cyclonedx
+            from sourcebastion.sbom import generate_cyclonedx
             try:
                 generate_cyclonedx(path, sbom_output)
                 click.echo(f"\n✓ SBOM generated: {sbom_output}")
@@ -259,7 +259,7 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
 @click.option("--scanner-image", envvar="EZ_APPSEC_SCANNER_IMAGE", required=True)
 def contract_scan(path, plan_path, result_envelope, scanner_image):
     """Execute a versioned SourceBastion scan plan and emit its result envelope."""
-    from ez_appsec.incremental_contract import (
+    from sourcebastion.incremental_contract import (
         IncrementalContractError,
         execute_scan_plan,
         load_scan_plan,
@@ -540,7 +540,7 @@ def check_config(config_path):
 @main.command()
 def status():
     """Check status of all security scanners"""
-    from ez_appsec.external_scanners import ExternalScannerManager
+    from sourcebastion.external_scanners import ExternalScannerManager
 
     manager = ExternalScannerManager()
     installed = manager.get_installed()
@@ -605,7 +605,7 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
     if storage_backend:
         os.environ["EZ_APPSEC_STORAGE_BACKEND"] = storage_backend
 
-    from ez_appsec.metrics_endpoint import (
+    from sourcebastion.metrics_endpoint import (
         MetricsDependencyError,
         serve_metrics as _serve,
     )
@@ -815,7 +815,7 @@ def pr_comment(platform, findings, pr, mr, repo, gitlab_url):
     For GitLab, uses GITLAB_ACCESS_TOKEN, CI_PROJECT_ID, and CI_MERGE_REQUEST_IID
     env vars if not provided.
     """
-    from ez_appsec.pr_commenter import (
+    from sourcebastion.pr_commenter import (
         GitHubPRCommenter,
         GitLabMRCommenter,
         load_findings_from_json
@@ -924,7 +924,7 @@ def fix_pr(repo, platform, findings, findings_format, repo_path, gitlab_url, dry
 
     Supports: package.json, requirements.txt, go.mod, Gemfile, pom.xml
     """
-    from ez_appsec.fix_pr import (
+    from sourcebastion.fix_pr import (
         parse_grype_findings,
         parse_gitlab_findings,
         group_by_ecosystem,
@@ -1009,7 +1009,7 @@ def report(framework, findings, output):
     Maps security scan findings to compliance control IDs (SOC 2, PCI DSS 4.0,
     or HIPAA §164.312) and renders a self-contained HTML report.
     """
-    from ez_appsec.compliance_reporter import (
+    from sourcebastion.compliance_reporter import (
         ComplianceReporter,
         load_findings_from_file,
     )
@@ -1050,7 +1050,7 @@ def report(framework, findings, output):
 @click.option("--path", "root_path", type=click.Path(exists=True), default=".", help="Project root for path validation")
 def agent_cmd(task, model, root_path):
     """Deprecated: LLM-assisted maintenance moved to SourceBastion Ops."""
-    from ez_appsec.agent import LLM_AGENT_REMOVED_MESSAGE
+    from sourcebastion.agent import LLM_AGENT_REMOVED_MESSAGE
 
     del task, model, root_path
     raise click.ClickException(LLM_AGENT_REMOVED_MESSAGE)
@@ -1080,7 +1080,7 @@ def rotate_secrets_cmd(repo, platform, findings, repo_path, gitlab_url, dry_run,
       ez-appsec rotate-secrets --repo owner/repo --findings gitleaks.json --dry-run
       ez-appsec rotate-secrets --repo owner/repo --findings gitleaks.json --secret-store github
     """
-    from ez_appsec.secret_rotator import (
+    from sourcebastion.secret_rotator import (
         parse_gitleaks_findings,
         rotate_secrets as do_rotate,
         create_secret_store,
@@ -1208,7 +1208,7 @@ def org_sync(org, config_repo, dry_run):
 
     Requires GITHUB_TOKEN with org:read and repo:write permissions.
     """
-    from ez_appsec.org_manager import OrgManager
+    from sourcebastion.org_manager import OrgManager
 
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     if not token:

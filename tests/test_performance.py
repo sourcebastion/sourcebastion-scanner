@@ -10,8 +10,8 @@ import tempfile
 import shutil
 from pathlib import Path
 from typing import Dict, List, Any
-from ez_appsec.config import Config
-from ez_appsec.scanner import SecurityScanner
+from sourcebastion.config import Config
+from sourcebastion.scanner import SecurityScanner
 
 psutil = pytest.importorskip("psutil", reason="psutil required for performance tests")
 

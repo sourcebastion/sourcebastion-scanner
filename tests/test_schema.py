@@ -1,8 +1,8 @@
-"""Tests for ez_appsec.schema — FindingV2, finding_id, ScanRecord."""
+"""Tests for sourcebastion.schema — FindingV2, finding_id, ScanRecord."""
 
 from datetime import datetime, timezone
 
-from ez_appsec.schema import (
+from sourcebastion.schema import (
     Category,
     FindingV2,
     ScanRecord,
@@ -321,10 +321,10 @@ class TestFindingV2AIRemediation:
 
 
 def test_finding_v2_has_optional_otel_attributes():
-    f = FindingV2(otel_attributes={"ez_appsec.scan_id": "scan-123", "code.filepath": "app.py"})
+    f = FindingV2(otel_attributes={"sourcebastion.scan_id": "scan-123", "code.filepath": "app.py"})
 
-    assert f.otel_attributes == {"ez_appsec.scan_id": "scan-123", "code.filepath": "app.py"}
-    assert f.model_dump()["otel_attributes"] == {"ez_appsec.scan_id": "scan-123", "code.filepath": "app.py"}
+    assert f.otel_attributes == {"sourcebastion.scan_id": "scan-123", "code.filepath": "app.py"}
+    assert f.model_dump()["otel_attributes"] == {"sourcebastion.scan_id": "scan-123", "code.filepath": "app.py"}
 
 
 def test_finding_v2_otel_attributes_default_to_none():

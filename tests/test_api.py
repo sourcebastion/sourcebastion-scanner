@@ -605,37 +605,37 @@ class TestSharedSchemaHelpers:
     """finding_file_path / finding_scanner_name (review #14)."""
 
     def test_finding_file_path_handles_flat_file(self):
-        from ez_appsec.schema import finding_file_path
+        from sourcebastion.schema import finding_file_path
 
         assert finding_file_path({"file": "src/app.py"}) == "src/app.py"
 
     def test_finding_file_path_handles_file_name(self):
-        from ez_appsec.schema import finding_file_path
+        from sourcebastion.schema import finding_file_path
 
         assert finding_file_path({"file_name": "config/x.js"}) == "config/x.js"
 
     def test_finding_file_path_handles_object_location(self):
-        from ez_appsec.schema import finding_file_path
+        from sourcebastion.schema import finding_file_path
 
         assert finding_file_path({"location": {"file": {"file_name": "pkg/main.go"}}}) == "pkg/main.go"
 
     def test_finding_file_path_handles_string_location_file(self):
-        from ez_appsec.schema import finding_file_path
+        from sourcebastion.schema import finding_file_path
 
         assert finding_file_path({"location": {"file": "str.go"}}) == "str.go"
 
     def test_finding_file_path_empty_when_unknown(self):
-        from ez_appsec.schema import finding_file_path
+        from sourcebastion.schema import finding_file_path
 
         assert finding_file_path({}) == ""
         assert finding_file_path({"location": {}}) == ""
 
     def test_finding_scanner_name_string(self):
-        from ez_appsec.schema import finding_scanner_name
+        from sourcebastion.schema import finding_scanner_name
 
         assert finding_scanner_name({"scanner": "gitleaks"}) == "gitleaks"
 
     def test_finding_scanner_name_object(self):
-        from ez_appsec.schema import finding_scanner_name
+        from sourcebastion.schema import finding_scanner_name
 
         assert finding_scanner_name({"scanner": {"id": "semgrep", "name": "Semgrep"}}) == "Semgrep"

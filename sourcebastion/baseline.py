@@ -5,7 +5,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
-from ez_appsec.schema import compute_finding_id
+from sourcebastion.schema import compute_finding_id
 
 
 def _fingerprint(finding: Dict[str, Any]) -> str:

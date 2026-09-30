@@ -262,7 +262,7 @@ See [ROADMAP.md](ROADMAP.md) for the path to feature parity with commercial AppS
 | | |
 |---|---|
 | GitHub Issues | [SourceBastion Scanner issues](https://github.com/sourcebastion/sourcebastion-scanner/issues) |
-| GitLab Tracking | [jfelten.work-group/ez_appsec/ez-appsec-roadmap](https://gitlab.com/jfelten.work-group/ez_appsec/ez-appsec-roadmap) |
+| GitLab Tracking | [jfelten.work-group/sourcebastion/ez-appsec-roadmap](https://gitlab.com/jfelten.work-group/sourcebastion/ez-appsec-roadmap) |
 
 ## License
 

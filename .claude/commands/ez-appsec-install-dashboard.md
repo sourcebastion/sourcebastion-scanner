@@ -69,7 +69,7 @@ WORKFLOW_SHA=$(gh api /repos/$DASHBOARD_REPO/contents/.github/workflows/update-a
 # Current asset version (from data/config.json if present)
 CURRENT_VERSION=$(gh api /repos/$DASHBOARD_REPO/contents/data/config.json \
   --jq '.content' 2>/dev/null | base64 --decode \
-  | python3 -c "import json,sys; print(json.load(sys.stdin).get('ez_appsec_version','none'))" 2>/dev/null || echo "none")
+  | python3 -c "import json,sys; print(json.load(sys.stdin).get('sourcebastion_version','none'))" 2>/dev/null || echo "none")
 
 # Latest ez-appsec release
 LATEST_TAG=$(gh api /repos/$EZ_APPSEC_REPO/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
@@ -147,7 +147,7 @@ mkdir -p data/vulnerabilities
 if [ ! -f data/index.json ]; then
   printf '{\n  "last_updated": null,\n  "projects": []\n}\n' > data/index.json
 fi
-printf '{\n  "ez_appsec_version": "%s"\n}\n' "${LATEST_TAG#v}" > data/config.json
+printf '{\n  "sourcebastion_version": "%s"\n}\n' "${LATEST_TAG#v}" > data/config.json
 
 git config user.name "ez-appsec installer"
 git config user.email "ci@ez-appsec.ai"

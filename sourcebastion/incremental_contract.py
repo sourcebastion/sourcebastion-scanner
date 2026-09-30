@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict
 
-from ez_appsec.external_scanners import ExternalScannerManager, ScannerExecutionError
+from sourcebastion.external_scanners import ExternalScannerManager, ScannerExecutionError
 
 
 PLAN_VERSION = "sourcebastion.scan-plan.v1"

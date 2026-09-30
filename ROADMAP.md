@@ -4,7 +4,7 @@
 
 Each body of work below is **atomic and independent** — no plan has a hard dependency on another unless listed. Every plan ships its own tests and must pass the full existing test suite before merge.
 
-Work is tracked in the [ez-appsec GitHub Project](https://github.com/orgs/ez-appsec/projects) and mirrored to the [GitLab group](https://gitlab.com/jfelten.work-group/ez_appsec) for reporting.
+Work is tracked in the [ez-appsec GitHub Project](https://github.com/orgs/ez-appsec/projects) and mirrored to the [GitLab group](https://gitlab.com/jfelten.work-group/sourcebastion) for reporting.
 
 ---
 
@@ -54,7 +54,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Resolving/dismissing comments automatically; Bitbucket.
 
 **Technical approach:**
-- New `ez_appsec/pr_commenter.py` module
+- New `sourcebastion/pr_commenter.py` module
 - Add `--pr-comment` flag to `github-scan` and `gitlab_scan` CLI commands
 - GitHub: read `GITHUB_TOKEN` + `GITHUB_EVENT_PATH` from Actions environment
 - GitLab: read `CI_MERGE_REQUEST_IID` + `GITLAB_ACCESS_TOKEN` from CI environment
@@ -82,8 +82,8 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Web UI for managing ignores; team-level ignore sharing.
 
 **Technical approach:**
-- Extend `ez_appsec/config.py` with `IgnoreRule` dataclass and loader
-- Post-process findings in `ez_appsec/scanner.py` after all scanners complete
+- Extend `sourcebastion/config.py` with `IgnoreRule` dataclass and loader
+- Post-process findings in `sourcebastion/scanner.py` after all scanners complete
 - Store suppression reason in the finding's `suppressed_by` field in `vulnerabilities.json`
 
 **Done criteria:**
@@ -108,7 +108,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Automatic baseline promotion; persistent baseline storage.
 
 **Technical approach:**
-- New `ez_appsec/baseline.py` module with `diff_findings(current, baseline)` function
+- New `sourcebastion/baseline.py` module with `diff_findings(current, baseline)` function
 - Fingerprint is a stable hash of `rule_id + normalized_file_path + start_line`
 - Add `--baseline` and `--baseline-threshold` flags to `scan` and `github-scan` commands
 
@@ -133,7 +133,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** SAST/IaC fix PRs (too risky to auto-apply); secret rotation.
 
 **Technical approach:**
-- New `ez_appsec/fix_pr.py` module
+- New `sourcebastion/fix_pr.py` module
 - New `fix-pr` CLI command
 - Reuse version-bump logic from `/ez-appsec remediate` skill
 - GitHub PR via `gh` CLI or REST API; GitLab MR via `glab` or REST API
@@ -212,7 +212,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** PagerDuty; email; per-user DMs; notification rules engine.
 
 **Technical approach:**
-- New `ez_appsec/notifier.py` with `SlackNotifier` and `TeamsNotifier` classes
+- New `sourcebastion/notifier.py` with `SlackNotifier` and `TeamsNotifier` classes
 - Called at end of `scanner.py` scan pipeline if webhook env var is set
 - Slack: Block Kit message. Teams: Adaptive Card.
 
@@ -237,7 +237,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Linear; Asana; bidirectional sync; Jira Service Management.
 
 **Technical approach:**
-- New `ez_appsec/jira_sync.py` module using Jira REST API v3
+- New `sourcebastion/jira_sync.py` module using Jira REST API v3
 - Called post-scan if Jira env vars are set
 - Fingerprint → issue key map stored in `data/projects/<slug>/jira_map.json`
 
@@ -267,7 +267,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Org-level policy inheritance; policy-as-code DSL; OPA integration.
 
 **Technical approach:**
-- New `ez_appsec/policy.py` with `PolicyEngine` class
+- New `sourcebastion/policy.py` with `PolicyEngine` class
 - Extend config loader (PLAN-02's `config.py`) or implement standalone
 - Policy check runs after all scanners and after ignore-rule suppression
 
@@ -290,7 +290,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** SPDX format; SBOM signing; license data in SBOM (see PLAN-11).
 
 **Technical approach:**
-- New `ez_appsec/sbom.py` with `generate_cyclonedx(grype_output)` function
+- New `sourcebastion/sbom.py` with `generate_cyclonedx(grype_output)` function
 - Grype already outputs SBOM natively via `--output cyclonedx-json` — thin wrapper
 - Add `--sbom` flag to `scan` and `github-scan` commands
 
@@ -314,7 +314,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** License text extraction; OSI approval status lookup; FOSS compliance tooling.
 
 **Technical approach:**
-- New `ez_appsec/license_checker.py`
+- New `sourcebastion/license_checker.py`
 - Syft (bundled with grype) outputs license data — parse from its JSON output
 - Map SPDX license identifiers to policy rules
 
@@ -338,8 +338,8 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Automated evidence collection; GRC platform integration; dynamic control mapping updates.
 
 **Technical approach:**
-- New `ez_appsec/compliance_reporter.py`
-- Control mapping tables as static JSON in `ez_appsec/data/frameworks/`
+- New `sourcebastion/compliance_reporter.py`
+- Control mapping tables as static JSON in `sourcebastion/data/frameworks/`
 - HTML output rendered via Jinja2 template; PDF via `weasyprint` (optional dep)
 
 **Done criteria:**
@@ -420,7 +420,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Runtime container scanning; Kubernetes cluster scanning; distroless image analysis.
 
 **Technical approach:**
-- Extend `ez_appsec/external_scanners.py` with `GrypeImageScanner` class
+- Extend `sourcebastion/external_scanners.py` with `GrypeImageScanner` class
 - `grype <image>` already supports image scanning — wire it into the scanner pipeline
 - New `category: container_scanning` in the unified schema
 
@@ -446,7 +446,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Technical approach:**
 - New `rules/` directory with YAML rule files per language
 - Rules tested against fixtures in `rules/<language>/tests/`
-- Extend `ez_appsec/external_scanners.py` to pass `--config` flag to semgrep
+- Extend `sourcebastion/external_scanners.py` to pass `--config` flag to semgrep
 
 **Done criteria:**
 - Each rule pack has at minimum 5 rules, each with a true-positive and true-negative fixture
@@ -476,7 +476,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** GCP/Azure credentials; Slack tokens; database passwords; arbitrary secret types.
 
 **Technical approach:**
-- New `ez_appsec/secret_rotator.py` with provider plugin architecture
+- New `sourcebastion/secret_rotator.py` with provider plugin architecture
 - Each provider implements: `can_rotate(rule_id) → bool`, `rotate(value) → new_value`
 - Extend `fix-pr` command (PLAN-04) with `--rotate-secrets` flag
 
@@ -499,7 +499,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** SSO; RBAC beyond GitHub/GitLab native permissions; multi-cloud org management.
 
 **Technical approach:**
-- New `ez_appsec/org_manager.py` with repo discovery via GitHub/GitLab API
+- New `sourcebastion/org_manager.py` with repo discovery via GitHub/GitLab API
 - Config inheritance: merge org config + repo config with repo taking precedence on conflicts
 - New `org-sync` CLI command
 
@@ -529,8 +529,8 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Custom metric dimensions per rule; distributed tracing within the scanner; alerting rules.
 
 **Technical approach:**
-- New `ez_appsec/telemetry.py` with `ScanMetrics` dataclass and two emitters: `JsonFileEmitter` and `OtlpEmitter` (uses `opentelemetry-sdk`, optional dep)
-- `ScanMetrics` populated in `ez_appsec/scanner.py` via context manager wrapping each scanner call
+- New `sourcebastion/telemetry.py` with `ScanMetrics` dataclass and two emitters: `JsonFileEmitter` and `OtlpEmitter` (uses `opentelemetry-sdk`, optional dep)
+- `ScanMetrics` populated in `sourcebastion/scanner.py` via context manager wrapping each scanner call
 - `metrics.json` schema mirrors the history entry shape from PLAN-05 with added `duration_ms` and `scanner_errors` fields
 - `opentelemetry-sdk` added as an optional `extras_require` group in `setup.py`
 
@@ -555,10 +555,10 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Out of scope:** Cryptographic signing of log entries; log forwarding to SIEM; retention policy enforcement.
 
 **Technical approach:**
-- New `ez_appsec/audit.py` with `AuditEntry` dataclass and `append_audit_entry(slug, entry, dashboard_repo)` function
-- Called at end of scan pipeline in `ez_appsec/scanner.py`, after policy evaluation
+- New `sourcebastion/audit.py` with `AuditEntry` dataclass and `append_audit_entry(slug, entry, dashboard_repo)` function
+- Called at end of scan pipeline in `sourcebastion/scanner.py`, after policy evaluation
 - Dashboard repo write via the same `git commit` mechanism used for `vulnerabilities.json` ingest
-- `audit` sub-command added to the CLI via `ez_appsec/cli.py`
+- `audit` sub-command added to the CLI via `sourcebastion/cli.py`
 
 **Done criteria:**
 - `tests/test_audit.py` covering: entry appended on scan completion, finding delta calculated correctly, missing previous scan treated as all-new, `--format json` output is valid JSON array
@@ -594,7 +594,7 @@ Create `ROADMAP.md` as the canonical source of truth for planned work.
 Create a GitHub Project at `github.com/orgs/ez-appsec/projects` with one issue per PLAN. Issues use the labels: `roadmap`, `phase-1` through `phase-6`, and `good first issue` for PLAN-01, PLAN-02, PLAN-03.
 
 ### Step 3 — GitLab Mirror
-Create a GitLab group-level board at `gitlab.com/jfelten.work-group/ez_appsec` mirroring the GitHub issues. GitLab is used for sprint reporting and burn-down tracking.
+Create a GitLab group-level board at `gitlab.com/jfelten.work-group/sourcebastion` mirroring the GitHub issues. GitLab is used for sprint reporting and burn-down tracking.
 
 ### Step 4 — Issue Templates
 Add `.github/ISSUE_TEMPLATE/ai-plan.md` — a structured template for contributors (human or AI) claiming a PLAN. Fields: plan ID, approach notes, test strategy, PR link.

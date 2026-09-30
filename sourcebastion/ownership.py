@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from ez_appsec.baseline import _fingerprint
+from sourcebastion.baseline import _fingerprint
 
 
 @dataclass

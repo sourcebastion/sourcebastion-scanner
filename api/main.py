@@ -14,7 +14,7 @@ from fastapi.security import APIKeyHeader
 from api.dashboard_client import DashboardUnavailable, get_history, get_index, get_vulnerabilities
 from api.models import HistoryEntry, Project, ScanJob, ScanRequest, Vulnerability
 from api.scanner_client import get_job, submit_scan
-from ez_appsec.schema import finding_file_path, finding_scanner_name
+from sourcebastion.schema import finding_file_path, finding_scanner_name
 
 
 def _configured_api_key() -> str:

@@ -6,8 +6,8 @@ import uuid
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from pathlib import Path
-from ez_appsec import __version__
-from ez_appsec.schema import compute_finding_id
+from sourcebastion import __version__
+from sourcebastion.schema import compute_finding_id
 
 # Stable namespace key for the ez-appsec finding_id fingerprint in SARIF output.
 # Per SARIF 2.1: result.fingerprints keys are tool-defined namespaced identifiers.

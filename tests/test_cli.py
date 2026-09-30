@@ -8,17 +8,17 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from click.testing import CliRunner
-from ez_appsec.cli import main, scan, gitlab_scan, github_scan, init, check, status
-from ez_appsec.external_scanners import ScannerExecutionError
+from sourcebastion.cli import main, scan, gitlab_scan, github_scan, init, check, status
+from sourcebastion.external_scanners import ScannerExecutionError
 
 
 @pytest.fixture(autouse=True)
 def stub_external_scanner_execution():
     """CLI unit tests do not depend on host-installed scanner binaries."""
     with (
-        patch("ez_appsec.external_scanners.ExternalScannerManager.scan_all", return_value=[]),
+        patch("sourcebastion.external_scanners.ExternalScannerManager.scan_all", return_value=[]),
         patch(
-            "ez_appsec.external_scanners.ExternalScannerManager.scan_all_with_raw_outputs",
+            "sourcebastion.external_scanners.ExternalScannerManager.scan_all_with_raw_outputs",
             return_value=([], {}),
         ),
     ):
@@ -87,7 +87,7 @@ def example():
     def test_scan_reports_bounded_component_failure(self, sample_file):
         runner = CliRunner()
         with patch(
-            "ez_appsec.external_scanners.ExternalScannerManager.scan_all",
+            "sourcebastion.external_scanners.ExternalScannerManager.scan_all",
             side_effect=ScannerExecutionError("semgrep", "timeout"),
         ):
             result = runner.invoke(main, ["scan", sample_file])
@@ -267,7 +267,7 @@ class TestGithubScanCommand:
         runner = CliRunner()
 
         with patch(
-            "ez_appsec.scanner.SecurityScanner.scan_to_github_format",
+            "sourcebastion.scanner.SecurityScanner.scan_to_github_format",
             return_value=report,
         ):
             result = runner.invoke(main, ['github-scan', sample_file])
@@ -373,7 +373,7 @@ class TestWebReportCommand:
             return {"version": "15.0.0", "vulnerabilities": [], "remediations": []}
 
         with patch(
-            "ez_appsec.scanner.SecurityScanner.scan_to_gitlab_format",
+            "sourcebastion.scanner.SecurityScanner.scan_to_gitlab_format",
             new=fake_gitlab_scan,
         ):
             result = CliRunner().invoke(
@@ -456,7 +456,7 @@ class TestErrorHandling:
 
     def test_scan_summary_shows_trend_when_v2_computed(self, tmp_path, monkeypatch):
         """UX-1: new/resolved counts computed by the scanner must reach stdout."""
-        from ez_appsec import scanner as scanner_mod
+        from sourcebastion import scanner as scanner_mod
 
         sample_file = tmp_path / "sample.py"
         sample_file.write_text("password = 'hardcoded'\n")

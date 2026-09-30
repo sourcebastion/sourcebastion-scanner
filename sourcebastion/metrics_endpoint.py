@@ -7,8 +7,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Iterable, Optional, Type
 
-from ez_appsec.schema import FindingV2
-from ez_appsec.storage import StorageBackend, get_storage_backend
+from sourcebastion.schema import FindingV2
+from sourcebastion.storage import StorageBackend, get_storage_backend
 
 try:  # Optional dependency; importable without the metrics extra installed.
     from prometheus_client import CONTENT_TYPE_LATEST, CollectorRegistry, Gauge, generate_latest
@@ -20,7 +20,7 @@ except ImportError:  # pragma: no cover - constants are exercised via require_pr
 
 DEFAULT_FINDINGS_PATH = "vulnerabilities.json"
 DEFAULT_PROJECT = "unknown"
-METRIC_NAME = "ez_appsec_findings_total"
+METRIC_NAME = "sourcebastion_findings_total"
 
 
 class MetricsDependencyError(RuntimeError):

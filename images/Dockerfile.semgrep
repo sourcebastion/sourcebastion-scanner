@@ -16,8 +16,11 @@ RUN /opt/venv/bin/pip install --no-cache-dir -e .
 # ── runtime ───────────────────────────────────────────────────────────────────
 FROM python:3.11-alpine
 
+COPY scripts/scanner_artifacts.py /opt/sourcebastion/scanner_artifacts.py
+COPY .github/semgrep-artifacts.json .github/scanner-versions.json /opt/sourcebastion/
 RUN apk add --no-cache gcc musl-dev && \
-    pip install --no-cache-dir semgrep && \
+    python3 /opt/sourcebastion/scanner_artifacts.py install --libc musl \
+      --lock /opt/sourcebastion/semgrep-artifacts.json --pins /opt/sourcebastion/scanner-versions.json && \
     apk del gcc musl-dev
 
 COPY --from=builder /opt/venv /opt/venv

@@ -1,0 +1,42 @@
+name: Scanner artifact integrity
+
+on:
+  pull_request:
+    branches: [main, bot/scanner-refresh-20260928]
+  push:
+    # Exercise the exact integrated result when the stacked PR merges into #46.
+    branches: [bot/scanner-refresh-20260928]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify reviewed scanner artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install pinned attestation verifier
+        run: python -m pip install pypi-attestations==0.0.30 pytest pyyaml
+      - name: Test fail-closed behavior
+        run: python -m pytest -q tests/test_scanner_artifacts.py
+      - name: Verify hashes and publisher attestations for every wheel
+        run: python scripts/scanner_artifacts.py verify
+      - name: Exercise locked installer without a Docker build
+        env:
+          SEMGREP_SEND_METRICS: 'off'
+          SEMGREP_ENABLE_VERSION_CHECK: '0'
+        run: |
+          python -m venv "$RUNNER_TEMP/semgrep-smoke"
+          "$RUNNER_TEMP/semgrep-smoke/bin/python" scripts/scanner_artifacts.py install --libc glibc
+          expected=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
+          actual=$("$RUNNER_TEMP/semgrep-smoke/bin/semgrep" --version)
+          test "$actual" = "$expected"

@@ -29,7 +29,8 @@ def test_self_scan_installs_pinned_external_toolchain():
 
     assert pins["gitleaks"]["version"] == "8.30.1"
     assert pins["grype"]["version"] == "0.119.0"
-    assert pins["semgrep"]["version"] == "1.176.1"
+    artifacts = json.loads((SCANNER_VERSIONS.parent / "semgrep-artifacts.json").read_text())
+    assert pins["semgrep"]["version"] == artifacts["version"]
     assert pins["kics"]["image"].startswith("checkmarx/kics@sha256:")
     assert "Load validated scanner versions" in workflow
     assert 'echo "${SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -' in workflow

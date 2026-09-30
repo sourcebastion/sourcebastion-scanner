@@ -623,7 +623,7 @@ jobs:
             echo "| High     | ${HIGH} |"
             echo "| Total (medium+) | ${FINDINGS} |"
             echo ""
-            echo "📊 Full results: [ez-appsec.sarif](https://github.com/${IMAGE_NAME}/releases/download/v${VERSION}/ez-appsec.sarif) · [vulnerabilities.json](https://github.com/${IMAGE_NAME}/releases/download/v${VERSION}/vulnerabilities.json)"
+            echo "📊 Full results: [SourceBastion.sarif](https://github.com/${IMAGE_NAME}/releases/download/v${VERSION}/ez-appsec.sarif) · [vulnerabilities.json](https://github.com/${IMAGE_NAME}/releases/download/v${VERSION}/vulnerabilities.json)"
             echo ""
             echo "## Docker Images"
             echo ""

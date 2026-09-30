@@ -1,4 +1,4 @@
-# ez-appsec CI/CD Pipeline
+# SourceBastion CI/CD Pipeline
 # Stages: lint, test, build, deploy
 
 stages:

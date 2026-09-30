@@ -61,9 +61,13 @@ def test_public_workflows_use_sourcebastion_scan_branding():
     assert "## 🔒 SourceBastion Self-Scan Results" in self_scan_workflow
     assert "scanned with SourceBastion Scan" in release_workflow
 
-    # Retain the old heading only as a migration matcher for existing comments.
-    assert customer_workflow.count("ez-appsec Security Scan") == 1
-    assert self_scan_workflow.count("ez-appsec Self-Scan Results") == 1
+    # The old headings were retained as migration matchers, so a workflow could
+    # find and update a comment it had posted under the previous name instead of
+    # adding a second one. Inverted rather than deleted: with no deployment
+    # predating the rename there is no comment to match, and keeping a matcher
+    # for a name being retired would have been the only thing holding it alive.
+    assert "ez-appsec Security Scan" not in customer_workflow
+    assert "ez-appsec Self-Scan Results" not in self_scan_workflow
 
 
 def test_pull_request_build_never_publishes_images():

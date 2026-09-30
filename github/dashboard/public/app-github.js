@@ -1,6 +1,6 @@
 /**
  * Vulnerability Dashboard Application
- * GitHub Pages version for ez-appsec GitHub integration.
+ * GitHub Pages version for SourceBastion GitHub integration.
  * Supports single-project and multi-project (organization) modes.
  * Multi-project mode activates when data/index.json is present.
  */
@@ -339,7 +339,7 @@ class GitHubDashboard {
                 {
                     tool: {
                         driver: {
-                            name: 'ez-appsec',
+                            name: 'SourceBastion',
                             informationUri: 'https://github.com/ez-appsec/ez-appsec',
                             rules: Array.from(rules.values())
                         }

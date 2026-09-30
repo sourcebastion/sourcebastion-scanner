@@ -62,13 +62,13 @@ jobs:
           mkdir -p "${SOURCEBASTION_OUTPUT_DIR}"
 
           echo "Checking SourceBastion Scan status..."
-          ez-appsec status || true
+          sourcebastion status || true
 
           echo "Starting GitHub SARIF scan..."
           # Use 'all' severity for PRs, 'medium' for main branch
           SEVERITY="${{ github.event_name == 'pull_request' && 'all' || 'medium' }}"
           echo "Severity level: $SEVERITY"
-          ez-appsec github-scan . --output "${SOURCEBASTION_SARIF}" --severity "$SEVERITY"
+          sourcebastion github-scan . --output "${SOURCEBASTION_SARIF}" --severity "$SEVERITY"
 
           echo "Scan completed. Checking for output file..."
           if [ -f "${SOURCEBASTION_SARIF}" ]; then
@@ -111,7 +111,7 @@ jobs:
         id: web-report
         run: |
           mkdir -p "${SOURCEBASTION_OUTPUT_DIR}"
-          ez-appsec web-report . --output "${SOURCEBASTION_OUTPUT_DIR}"
+          sourcebastion web-report . --output "${SOURCEBASTION_OUTPUT_DIR}"
 
       - name: Upload vulnerabilities.json as artifact
         if: always()
@@ -341,7 +341,7 @@ jobs:
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
               (comment.body.includes('🔒 SourceBastion Scan') ||
-               comment.body.includes('🔒 ez-appsec Security Scan'))
+               comment.body.includes('🔒 SourceBastion Security Scan'))
             );
 
             if (botComment) {

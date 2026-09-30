@@ -39,7 +39,7 @@ jobs:
           persist-credentials: false
 
       # -----------------------------------------------------------------------
-      # Install ez-appsec from source
+      # Install SourceBastion from source
       # -----------------------------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -79,7 +79,7 @@ jobs:
                       raise SystemExit(f"invalid scanner pin: {name}")
                   print(f"{name}={value}", file=output)
 
-      - name: Install ez-appsec
+      - name: Install SourceBastion
         run: pip install -e .
 
       # -----------------------------------------------------------------------
@@ -136,7 +136,7 @@ jobs:
           grype version
 
       - name: Scanner status
-        run: ez-appsec status
+        run: sourcebastion status
 
       # -----------------------------------------------------------------------
       # Run scan
@@ -147,7 +147,7 @@ jobs:
           mkdir -p "${OUTPUT_DIR}"
           SEVERITY="${{ github.event_name == 'pull_request' && 'all' || 'medium' }}"
           echo "Severity: $SEVERITY"
-          ez-appsec github-scan . --output "${SARIF_FILE}" --severity "$SEVERITY"
+          sourcebastion github-scan . --output "${SARIF_FILE}" --severity "$SEVERITY"
           ls -lh "${SARIF_FILE}"
 
       - name: Count findings
@@ -196,7 +196,7 @@ jobs:
 
       - name: Generate vulnerabilities.json
         id: web-report
-        run: ez-appsec web-report . --output "${OUTPUT_DIR}"
+        run: sourcebastion web-report . --output "${OUTPUT_DIR}"
         continue-on-error: true
 
       # -----------------------------------------------------------------------
@@ -244,6 +244,10 @@ jobs:
         with:
           app-id: ${{ secrets.SOURCEBASTION_APP_ID }}
           private-key: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
+          # A real GitHub organization login, not branding: the dashboard
+          # repository lives at ez-appsec/ez-appsec-dashboard and there is no
+          # sourcebastion/ez-appsec-dashboard. Do not rename this with the
+          # product; a token minted for the wrong owner cannot push.
           owner: ez-appsec
           repositories: ez-appsec-dashboard
 
@@ -356,7 +360,7 @@ jobs:
             const existing = comments.find(c =>
               c.user.type === 'Bot' && (
                 c.body.includes('SourceBastion Self-Scan Results') ||
-                c.body.includes('ez-appsec Self-Scan Results')
+                c.body.includes('SourceBastion Self-Scan Results')
               )
             );
             const payload = {

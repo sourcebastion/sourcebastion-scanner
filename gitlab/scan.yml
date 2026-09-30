@@ -3,7 +3,7 @@
 # Run /ez-appsec-install-dashboard <group-path> to create and configure the dashboard project.
 
 stages:
-  - ez-appsec
+  - sourcebastion
 
 variables:
   SOURCEBASTION_VERSION: "latest"
@@ -19,8 +19,8 @@ variables:
   - echo "${SOURCEBASTION_DASHBOARD_DEPLOY_KEY}" | base64 -d > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
   - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts 2>/dev/null
   - export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
-  - git config --global user.email "ci@ez-appsec.ai"
-  - git config --global user.name "ez-appsec CI"
+  - git config --global user.email "ci@SourceBastion.ai"
+  - git config --global user.name "SourceBastion CI"
   - git clone "git@gitlab.com:${SOURCEBASTION_DASHBOARD_PROJECT}.git" /tmp/dash-work
   - mkdir -p "/tmp/dash-work/public/data/projects/${CI_PROJECT_PATH_SLUG}"
   - cp "${CI_PROJECT_DIR}/${SOURCEBASTION_REPORT}" "/tmp/dash-work/public/data/projects/${CI_PROJECT_PATH_SLUG}/vulnerabilities.json"
@@ -30,7 +30,7 @@ variables:
   - git -C /tmp/dash-work push origin main
 
 scan:pipeline:
-  stage: ez-appsec
+  stage: sourcebastion
   image:
     name: $SOURCEBASTION_IMAGE
     entrypoint: [""]
@@ -38,10 +38,10 @@ scan:pipeline:
     SOURCEBASTION_OUTPUT_DIR: "scan-results"
     SOURCEBASTION_REPORT: "${SOURCEBASTION_OUTPUT_DIR}/vulnerabilities.json"
   script:
-    - echo "Running ez-appsec scan..."
+    - echo "Running SourceBastion scan..."
     - mkdir -p "${SOURCEBASTION_OUTPUT_DIR}"
-    - ez-appsec status || true
-    - ez-appsec gitlab-scan . --output "${SOURCEBASTION_REPORT}"
+    - sourcebastion status || true
+    - sourcebastion gitlab-scan . --output "${SOURCEBASTION_REPORT}"
   artifacts:
     name: "ez-appsec-scan-${CI_COMMIT_SHA}"
     paths:
@@ -62,7 +62,7 @@ scan:pipeline:
     - when: manual
 
 update:vulns:
-  stage: ez-appsec
+  stage: sourcebastion
   image:
     name: $SOURCEBASTION_IMAGE
     entrypoint: [""]
@@ -92,7 +92,7 @@ update:vulns:
     - when: manual
 
 cold:scan:
-  stage: ez-appsec
+  stage: sourcebastion
   image:
     name: $SOURCEBASTION_IMAGE
     entrypoint: [""]
@@ -102,8 +102,8 @@ cold:scan:
   script:
     - echo "Running cold scan..."
     - mkdir -p "${SOURCEBASTION_OUTPUT_DIR}"
-    - ez-appsec status || true
-    - ez-appsec gitlab-scan . --output "${SOURCEBASTION_REPORT}"
+    - sourcebastion status || true
+    - sourcebastion gitlab-scan . --output "${SOURCEBASTION_REPORT}"
     - *ingest-script
   artifacts:
     name: "ez-appsec-cold-scan-${CI_COMMIT_SHA}"

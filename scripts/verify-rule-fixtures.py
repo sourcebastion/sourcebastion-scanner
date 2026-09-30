@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify custom semgrep rule packs against their TP/TN fixtures.
 
-This script is intentionally dependency-light enough to run inside ez-appsec
+This script is intentionally dependency-light enough to run inside SourceBastion
 Docker images after they are built. It verifies every rule file under rules/*:
   - rule YAML is parseable by semgrep
   - its true-positive fixture produces at least one finding

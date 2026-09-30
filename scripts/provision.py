@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Idempotent provisioner: push ez-appsec scan workflow + set secrets/variables in target repos.
+"""Idempotent provisioner: push sourcebastion scan workflow + set secrets/variables in target repos.
 
 Usage:
     python3 provision.py \
@@ -161,7 +161,7 @@ def provision_repo(repo: str, install_token: str, app_id: str, private_key: str)
         WORKFLOW_DEST,
         template,
         install_token,
-        message=f'ci: {action} ez-appsec security scan workflow',
+        message=f'ci: {action} SourceBastion security scan workflow',
         sha=sha,
     )
     print(f'    ✓ {"Updated" if exists else "Created"} {WORKFLOW_DEST}')
@@ -179,7 +179,7 @@ def provision_repo(repo: str, install_token: str, app_id: str, private_key: str)
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Provision ez-appsec into customer repos')
+    parser = argparse.ArgumentParser(description='Provision SourceBastion into customer repos')
     parser.add_argument('--token', required=True, help='GitHub App installation token')
     parser.add_argument('--repos', required=True,
                         help='Comma-separated list of owner/repo targets')

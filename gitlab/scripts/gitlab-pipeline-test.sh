@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# gitlab-pipeline-test.sh — Trigger, wait, and verify a GitLab ez-appsec cold:scan pipeline.
+# gitlab-pipeline-test.sh — Trigger, wait, and verify a GitLab SourceBastion cold:scan pipeline.
 #
 # Usage:
 #   gitlab-pipeline-test.sh [options]

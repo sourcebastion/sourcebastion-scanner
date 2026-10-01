@@ -1767,6 +1767,18 @@ class ExternalScannerManager:
             scanner = self.scanners.get(scanner_name)
             if scanner is not None:
                 scanner.configure_timeouts(settings)
+
+        # Resolve every enabled component's budgets now, so a malformed
+        # environment value fails here with the variable named. Left until the
+        # scan, the ValueError would be remapped by `scan_all` into
+        # `execution_failed` -- and `from None` discards the cause, so the
+        # operator would see a generic component failure with no hint that
+        # their override was the problem.
+        for scanner_name, scanner in self.scanners.items():
+            if not scanner.enabled:
+                continue
+            for kind in DEFAULT_COMPONENT_TIMEOUTS.get(scanner_name, {}):
+                scanner._budget(kind)
     
     def get_installed(self) -> Dict[str, bool]:
         """Get status of all scanners"""

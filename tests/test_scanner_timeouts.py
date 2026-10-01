@@ -117,3 +117,23 @@ class TestWiring:
         config = Config.from_file(str(config_file))
         assert config.scanners["kics"].timeout == 800
         assert config.scanners["grype"].setup_timeout == 400
+
+    def test_a_bad_override_fails_at_construction_not_mid_scan(self, monkeypatch):
+        """The variable must be named where the operator can see it.
+
+        `scan_all` remaps unexpected exceptions to `execution_failed` and
+        discards the cause with `from None`, so a ValueError raised while
+        scanning would reach the operator as a generic component failure with
+        no mention of their override. Resolving budgets when the manager is
+        built keeps the message.
+        """
+        monkeypatch.setenv("SOURCEBASTION_SCAN_TIMEOUT_KICS", "nonsense")
+        with pytest.raises(ValueError, match="SOURCEBASTION_SCAN_TIMEOUT_KICS"):
+            ExternalScannerManager()
+
+    def test_a_disabled_scanner_cannot_block_construction(self, monkeypatch):
+        """Only enabled components are validated: a build without a tool should
+        not fail because of an override that will never be used."""
+        monkeypatch.setenv("SOURCEBASTION_SCAN_TIMEOUT_KICS", "nonsense")
+        manager = ExternalScannerManager(enabled_scanners=["semgrep"])
+        assert manager.scanners["semgrep"]._budget("scan") > 0

@@ -1,4 +1,4 @@
-"""Main CLI entry point for ez-appsec"""
+"""Main CLI entry point for SourceBastion."""
 
 import json
 import os
@@ -6,6 +6,7 @@ import click
 import sys
 from pathlib import Path
 
+from sourcebastion.external_scanners import ScannerExecutionError
 from sourcebastion.scanner import SecurityScanner
 from sourcebastion.config import Config
 from sourcebastion.baseline import load_baseline, diff_findings
@@ -331,14 +332,14 @@ def gitlab_scan(path, ai_prompt, severity, output, config_file):
 
 @main.command()
 def init():
-    """Initialize ez-appsec configuration in current directory"""
+    """Initialize SourceBastion configuration in current directory"""
     config_path = Path(".sourcebastion.yaml")
 
     if config_path.exists():
         click.echo("✓ Configuration already exists at .sourcebastion.yaml")
         return
 
-    config_content = """# ez-appsec configuration
+    config_content = """# SourceBastion configuration
 languages:
   - python
   - javascript
@@ -372,7 +373,7 @@ severity: medium
 
 # License compliance - SPDX identifiers (see https://spdx.org/licenses/)
 # Supports wildcards: GPL* matches GPL-2.0, GPL-3.0-only, etc.
-# Run with: ez-appsec scan --license-check
+# Run with: sourcebastion scan --license-check
 # license_policy:
 #   allowed_licenses:
 #     - MIT
@@ -591,13 +592,13 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
     severity, category, and project. Reads findings from the configured
     storage backend (JSON file or SQL via SOURCEBASTION_STORAGE_URL).
 
-    Requires the optional 'metrics' extra: pip install 'ez-appsec[metrics]'.
+    Requires the optional 'metrics' extra: pip install 'sourcebastion-scanner[metrics]'.
 
     \b
     Examples:
-      ez-appsec serve-metrics
-      ez-appsec serve-metrics --findings /data/vulnerabilities.json --project api
-      SOURCEBASTION_STORAGE_URL=sqlite:///findings.db ez-appsec serve-metrics --storage-backend sql
+      sourcebastion serve-metrics
+      sourcebastion serve-metrics --findings /data/vulnerabilities.json --project api
+      SOURCEBASTION_STORAGE_URL=sqlite:///findings.db sourcebastion serve-metrics --storage-backend sql
 
     \b
     Note: --host 0.0.0.0 binds to all interfaces. The endpoint is
@@ -615,7 +616,7 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
     )
 
     try:
-        click.echo(f"Serving ez-appsec metrics on http://{host}:{port}/metrics")
+        click.echo(f"Serving SourceBastion metrics on http://{host}:{port}/metrics")
         click.echo(f"  findings: {storage_path}")
         if storage_backend:
             click.echo(f"  backend:  {storage_backend}")
@@ -793,11 +794,55 @@ def github_scan(path, ai_prompt, languages, severity, output, config_file):
         else:
             click.echo("  Use --output to save SARIF report to file")
 
+    except ScannerExecutionError as exc:
+        # The verdict is unchanged: one incomplete component fails the scan,
+        # because a green result with a tool missing under-reports findings.
+        # What changes is that the failure leaves evidence. Previously the only
+        # output was a traceback on stderr and no file at all, so CI uploaded
+        # nothing and "kics timed out" was indistinguishable from "the scanner
+        # is broken" without reading the log.
+        #
+        # Deliberately not a SARIF. A zero-result SARIF would be uploaded to
+        # code scanning and could clear alerts that were never fixed, turning a
+        # failed scan into an apparent all-clear.
+        click.echo(f"✗ Error: {exc}", err=True)
+        _write_scan_failure_evidence(output, exc)
+        sys.exit(1)
     except Exception as e:
         click.echo(f"✗ Error: {str(e)}", err=True)
         import traceback
         traceback.print_exc()
         sys.exit(1)
+
+
+def _write_scan_failure_evidence(output, exc) -> None:
+    """Record which component failed, beside where the SARIF would have gone."""
+    if not output:
+        return
+    from datetime import datetime, timezone
+
+    try:
+        destination = Path(output).parent / "scan-failure.json"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "outcome": "failed",
+                    "component": exc.scanner,
+                    "diagnostic_code": exc.code,
+                    "observed_at": datetime.now(timezone.utc).isoformat(),
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        click.echo(f"  failure recorded in: {destination}", err=True)
+    except OSError:
+        # Never convert a reporting problem into a different failure; the exit
+        # code and the message above already carry the outcome.
+        pass
 
 
 @main.command("pr-comment")
@@ -1081,8 +1126,8 @@ def rotate_secrets_cmd(repo, platform, findings, repo_path, gitlab_url, dry_run,
 
     \b
     Examples:
-      ez-appsec rotate-secrets --repo owner/repo --findings gitleaks.json --dry-run
-      ez-appsec rotate-secrets --repo owner/repo --findings gitleaks.json --secret-store github
+      sourcebastion rotate-secrets --repo owner/repo --findings gitleaks.json --dry-run
+      sourcebastion rotate-secrets --repo owner/repo --findings gitleaks.json --secret-store github
     """
     from sourcebastion.secret_rotator import (
         parse_gitleaks_findings,

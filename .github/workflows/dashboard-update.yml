@@ -24,12 +24,11 @@ jobs:
         with:
           app-id: ${{ secrets.SOURCEBASTION_APP_ID }}
           private-key: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
-          # A real GitHub organization login, not branding: the dashboard
-          # repository lives at ez-appsec/ez-appsec-dashboard and there is no
-          # sourcebastion/ez-appsec-dashboard. Do not rename this with the
-          # product; a token minted for the wrong owner cannot push.
-          owner: ez-appsec
-          repositories: SourceBastion
+          # This workflow commits github/dashboard data to its own checkout.
+          # Scope the token to that repository, not a branded display name or
+          # the separate customer-dashboard repository.
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

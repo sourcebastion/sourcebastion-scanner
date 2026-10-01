@@ -485,3 +485,81 @@ class TestErrorHandling:
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
+
+
+class TestAFailedScanLeavesEvidence:
+    """A tool failure must stay fatal, and must stop being invisible.
+
+    KICS timed out in CI and the only output was a traceback: no artifact, so
+    "one scanner exceeded its budget" looked identical to "the scanner is
+    broken" without reading the log.
+    """
+
+    def test_component_failure_still_fails_the_scan(self, tmp_path):
+        runner = CliRunner()
+        output = tmp_path / "scan-results" / "sourcebastion.sarif"
+        output.parent.mkdir(parents=True)
+
+        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+            scanner.return_value.scan_to_github_format.side_effect = (
+                ScannerExecutionError("kics", "timeout")
+            )
+            result = runner.invoke(
+                main, ["github-scan", str(tmp_path), "--output", str(output)]
+            )
+
+        assert result.exit_code == 1
+
+    def test_the_failed_component_and_code_are_recorded(self, tmp_path):
+        runner = CliRunner()
+        output = tmp_path / "scan-results" / "sourcebastion.sarif"
+        output.parent.mkdir(parents=True)
+
+        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+            scanner.return_value.scan_to_github_format.side_effect = (
+                ScannerExecutionError("kics", "timeout")
+            )
+            runner.invoke(
+                main, ["github-scan", str(tmp_path), "--output", str(output)]
+            )
+
+        evidence = json.loads((output.parent / "scan-failure.json").read_text())
+        assert evidence["outcome"] == "failed"
+        assert evidence["component"] == "kics"
+        assert evidence["diagnostic_code"] == "timeout"
+
+    def test_no_sarif_is_written_for_a_failed_scan(self, tmp_path):
+        """A zero-result SARIF would be uploaded and could clear real alerts.
+
+        The upload step runs whenever the SARIF exists, so writing one here
+        would turn a failed scan into an apparent all-clear in code scanning.
+        """
+        runner = CliRunner()
+        output = tmp_path / "scan-results" / "sourcebastion.sarif"
+        output.parent.mkdir(parents=True)
+
+        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+            scanner.return_value.scan_to_github_format.side_effect = (
+                ScannerExecutionError("kics", "timeout")
+            )
+            runner.invoke(
+                main, ["github-scan", str(tmp_path), "--output", str(output)]
+            )
+
+        assert not output.exists()
+
+    def test_reporting_failure_does_not_change_the_outcome(self, tmp_path):
+        """An unwritable directory must not turn a timeout into something else."""
+        runner = CliRunner()
+
+        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+            scanner.return_value.scan_to_github_format.side_effect = (
+                ScannerExecutionError("kics", "timeout")
+            )
+            with patch("ez_appsec.cli.Path.write_text", side_effect=OSError):
+                result = runner.invoke(
+                    main,
+                    ["github-scan", str(tmp_path), "--output", str(tmp_path / "o.sarif")],
+                )
+
+        assert result.exit_code == 1

@@ -1,5 +1,26 @@
 ## Unreleased
 
+## [1.7.34](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.33...v1.7.34) (2026-09-30)
+
+### Breaking changes
+
+* the Python package is `sourcebastion`, not `ez_appsec`, and the distribution is `sourcebastion-scanner`; the `ez-appsec` console script is removed, while published images already used `ENTRYPOINT ["sourcebastion"]`
+* configuration is read from `.sourcebastion.yaml`; `.ez-appsec.yaml` is no longer discovered
+* every `EZ_APPSEC_*` environment variable is now `SOURCEBASTION_*`, including the storage, Slack, Teams and Jira settings
+* the findings metric is `sourcebastion_findings_total`; a recording rule querying the previous series stops matching
+
+### Features
+
+* per-scanner budgets in a `scanners:` block of the configuration, resolved at run time as component default, then environment, then repository configuration, so a hosted deployment can retune without building an image
+* KICS defaults to a 600 second scan budget, raised from 120, which a repository of ordinary size had begun to exceed
+* `scan` and `setup` are separate budgets, because a vulnerability-database refresh scales with network throughput rather than with the repository
+
+### Fixes
+
+* a component failure records `scan-failure.json` beside the SARIF path, naming the component and its diagnostic code; previously the only output was a traceback and CI uploaded nothing. No SARIF is written for a failed scan, so a zero-result document cannot reach code scanning and clear alerts nobody fixed
+* a malformed timeout override is refused when the scanner manager is built, with the variable named, rather than being remapped to a generic component failure mid-scan
+* `--version` resolves against the renamed distribution
+
 ### Compatibility notes
 
 * persist container findings with the distinct `container` category instead of rewriting them as dependency findings

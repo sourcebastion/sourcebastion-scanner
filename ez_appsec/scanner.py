@@ -117,7 +117,13 @@ class SecurityScanner:
         self.license_check = license_check
 
         # External scanners only - custom detectors removed
-        self.external = ExternalScannerManager() if use_external_scanners else None
+        self.external = (
+            ExternalScannerManager(
+                scanner_settings=getattr(config, "scanners", None)
+            )
+            if use_external_scanners
+            else None
+        )
 
         # Track suppressed findings for reporting
         self.suppressed_count = 0

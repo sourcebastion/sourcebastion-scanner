@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from fnmatch import fnmatch
-from typing import List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 from pathlib import Path
 from pydantic import BaseModel, Field, field_validator
 
@@ -93,6 +93,29 @@ class IgnoreRule(BaseModel):
         return False
 
 
+MAX_SCANNER_TIMEOUT_SECONDS = 3600
+
+
+class ScannerSettings(BaseModel):
+    """Per-scanner tuning, resolved at run time rather than baked into an image.
+
+    Timeouts used to be literals in `external_scanners.py`, which meant a
+    tuning knob could only move through a scanner release, an image build, and
+    a digest pin advanced across nine platform surfaces. Everything here is
+    optional: an absent value keeps the component's default.
+
+    `timeout` bounds the scanner's own analysis. `setup_timeout` bounds work
+    done before it that is not analysis -- a vulnerability database refresh,
+    say -- because those costs scale with network and database size rather
+    than with the repository, and one number cannot bound both.
+    """
+
+    timeout: Optional[int] = Field(default=None, ge=1, le=MAX_SCANNER_TIMEOUT_SECONDS)
+    setup_timeout: Optional[int] = Field(
+        default=None, ge=1, le=MAX_SCANNER_TIMEOUT_SECONDS
+    )
+
+
 class Config(BaseModel):
     """Configuration for security scanning"""
 
@@ -107,6 +130,7 @@ class Config(BaseModel):
     cedar_policy_binary: Optional[str] = None
     cedar_binary_sha256: Optional[str] = None
     license_policy: Optional[LicensePolicyConfig] = None
+    scanners: Dict[str, ScannerSettings] = Field(default_factory=dict)
 
     class Config:
         arbitrary_types_allowed = True
@@ -139,6 +163,20 @@ class Config(BaseModel):
                 if isinstance(item, dict):
                     policy_rules.append(PolicyRule(**item))
             data["policy_rules"] = policy_rules
+
+        # Parse per-scanner settings if present. A malformed block is an error:
+        # silently ignoring it would run with a timeout the operator believes
+        # they changed.
+        scanner_data = data.pop("scanners", None)
+        if scanner_data is not None:
+            if not isinstance(scanner_data, dict):
+                raise ValueError("scanners must be a mapping of scanner name to settings")
+            settings = {}
+            for name, item in scanner_data.items():
+                if not isinstance(item, dict):
+                    raise ValueError(f"scanners.{name} must be a mapping")
+                settings[str(name)] = ScannerSettings(**item)
+            data["scanners"] = settings
 
         # Parse license policy if present
         license_data = data.pop("license_policy", None)

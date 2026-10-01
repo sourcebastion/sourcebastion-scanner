@@ -6,6 +6,7 @@ import click
 import sys
 from pathlib import Path
 
+from ez_appsec.external_scanners import ScannerExecutionError
 from ez_appsec.scanner import SecurityScanner
 from ez_appsec.config import Config
 from ez_appsec.baseline import load_baseline, diff_findings
@@ -789,11 +790,55 @@ def github_scan(path, ai_prompt, languages, severity, output, config_file):
         else:
             click.echo("  Use --output to save SARIF report to file")
 
+    except ScannerExecutionError as exc:
+        # The verdict is unchanged: one incomplete component fails the scan,
+        # because a green result with a tool missing under-reports findings.
+        # What changes is that the failure leaves evidence. Previously the only
+        # output was a traceback on stderr and no file at all, so CI uploaded
+        # nothing and "kics timed out" was indistinguishable from "the scanner
+        # is broken" without reading the log.
+        #
+        # Deliberately not a SARIF. A zero-result SARIF would be uploaded to
+        # code scanning and could clear alerts that were never fixed, turning a
+        # failed scan into an apparent all-clear.
+        click.echo(f"✗ Error: {exc}", err=True)
+        _write_scan_failure_evidence(output, exc)
+        sys.exit(1)
     except Exception as e:
         click.echo(f"✗ Error: {str(e)}", err=True)
         import traceback
         traceback.print_exc()
         sys.exit(1)
+
+
+def _write_scan_failure_evidence(output, exc) -> None:
+    """Record which component failed, beside where the SARIF would have gone."""
+    if not output:
+        return
+    from datetime import datetime, timezone
+
+    try:
+        destination = Path(output).parent / "scan-failure.json"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "outcome": "failed",
+                    "component": exc.scanner,
+                    "diagnostic_code": exc.code,
+                    "observed_at": datetime.now(timezone.utc).isoformat(),
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        click.echo(f"  failure recorded in: {destination}", err=True)
+    except OSError:
+        # Never convert a reporting problem into a different failure; the exit
+        # code and the message above already carry the outcome.
+        pass
 
 
 @main.command("pr-comment")

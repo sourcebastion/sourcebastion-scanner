@@ -16,13 +16,13 @@ jobs:
       - name: Mint installation token
         id: mint
         env:
-          EZ_APPSEC_APP_ID: ${{ secrets.EZ_APPSEC_APP_ID }}
-          EZ_APPSEC_PRIVATE_KEY: ${{ secrets.EZ_APPSEC_PRIVATE_KEY }}
+          SOURCEBASTION_APP_ID: ${{ secrets.SOURCEBASTION_APP_ID }}
+          SOURCEBASTION_PRIVATE_KEY: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
         run: |
           INSTALLATION_ID="${{ github.event.client_payload.installation_id }}"
           TOKEN=$(python3 scripts/mint-token.py \
-            "${EZ_APPSEC_APP_ID}" \
-            "${EZ_APPSEC_PRIVATE_KEY}" \
+            "${SOURCEBASTION_APP_ID}" \
+            "${SOURCEBASTION_PRIVATE_KEY}" \
             "${INSTALLATION_ID}")
           echo "token=${TOKEN}" >> $GITHUB_OUTPUT
 
@@ -30,8 +30,8 @@ jobs:
         id: provision
         env:
           PROVISION_TOKEN: ${{ steps.mint.outputs.token }}
-          EZ_APPSEC_APP_ID: ${{ secrets.EZ_APPSEC_APP_ID }}
-          EZ_APPSEC_PRIVATE_KEY: ${{ secrets.EZ_APPSEC_PRIVATE_KEY }}
+          SOURCEBASTION_APP_ID: ${{ secrets.SOURCEBASTION_APP_ID }}
+          SOURCEBASTION_PRIVATE_KEY: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
         run: |
           # Build comma-separated repo list from client_payload
           REPOS="${{ join(github.event.client_payload.repos, ',') }}"
@@ -45,8 +45,8 @@ jobs:
           python3 scripts/provision.py \
             --token "${PROVISION_TOKEN}" \
             --repos "${REPOS}" \
-            --app-id "${EZ_APPSEC_APP_ID}" \
-            --private-key "${EZ_APPSEC_PRIVATE_KEY}"
+            --app-id "${SOURCEBASTION_APP_ID}" \
+            --private-key "${SOURCEBASTION_PRIVATE_KEY}"
           echo "repos=${REPOS}" >> $GITHUB_OUTPUT
 
       - name: Trigger initial scan on provisioned repos

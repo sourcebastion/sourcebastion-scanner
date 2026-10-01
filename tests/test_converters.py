@@ -5,7 +5,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from ez_appsec.converters import (
+from sourcebastion.converters import (
     GitHubSarifFormat,
     GitHubGitleaksConverter,
     GitHubSemgrepConverter,
@@ -22,7 +22,7 @@ from ez_appsec.converters import (
     GitLabVulnerabilityFormat,
     _redact_secret,
 )
-from ez_appsec.schema import compute_finding_id
+from sourcebastion.schema import compute_finding_id
 
 
 class TestGitHubSarifFormat:

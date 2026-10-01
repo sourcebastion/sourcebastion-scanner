@@ -9,7 +9,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from ez_appsec.external_scanners import ScannerExecutionError
+from sourcebastion.external_scanners import ScannerExecutionError
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +266,7 @@ def check_licenses(
                         f"Review whether this license is compatible with your project."
                     )
                     solution = (
-                        f"If '{lic}' is acceptable, add it to allowed_licenses in .ez-appsec.yaml. "
+                        f"If '{lic}' is acceptable, add it to allowed_licenses in .sourcebastion.yaml. "
                         f"If not acceptable, add it to denied_licenses to flag it as high severity. "
                         f"To suppress: add an ignore rule (rule_id: license-unknown-{lic})."
                     )

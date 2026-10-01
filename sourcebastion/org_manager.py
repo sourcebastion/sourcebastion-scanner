@@ -25,7 +25,7 @@ class OrgManager:
         Args:
             org: GitHub organization login name.
             github_token: Personal access token or GitHub App token with org read access.
-            config_repo: Repository containing org-level .ez-appsec.yaml.
+            config_repo: Repository containing org-level .sourcebastion.yaml.
                          Defaults to ``<org>/.ez-appsec-config``.
         """
         self.org = org
@@ -84,7 +84,7 @@ class OrgManager:
         ]
 
     def get_org_config(self) -> Dict[str, Any]:
-        """Fetch the org-level .ez-appsec.yaml from the config repo.
+        """Fetch the org-level .sourcebastion.yaml from the config repo.
 
         Returns:
             Parsed YAML config as a dict, or empty dict if not found.
@@ -93,14 +93,14 @@ class OrgManager:
 
         url = (
             f"{GITHUB_API}/repos/{self.config_repo}"
-            f"/contents/.ez-appsec.yaml"
+            f"/contents/.sourcebastion.yaml"
         )
         try:
             data = self._github_get(url)
         except HTTPError as exc:
             if exc.code == 404:
                 logger.info(
-                    "No org config found at %s/.ez-appsec.yaml", self.config_repo
+                    "No org config found at %s/.sourcebastion.yaml", self.config_repo
                 )
                 return {}
             raise
@@ -110,14 +110,14 @@ class OrgManager:
         return yaml.safe_load(content) or {}
 
     def get_repo_config(self, repo: str) -> Dict[str, Any]:
-        """Fetch the repo-level .ez-appsec.yaml for a single repo.
+        """Fetch the repo-level .sourcebastion.yaml for a single repo.
 
         Returns:
             Parsed YAML config as a dict, or empty dict if not found.
         """
         import yaml
 
-        url = f"{GITHUB_API}/repos/{repo}/contents/.ez-appsec.yaml"
+        url = f"{GITHUB_API}/repos/{repo}/contents/.sourcebastion.yaml"
         try:
             data = self._github_get(url)
         except HTTPError as exc:

@@ -83,7 +83,7 @@ jobs:
         run: |
           docker build -f Dockerfile.api -t ez-appsec-api:smoke .
           docker run --rm -d --name api-smoke -p 8000:8000 \
-            -e EZ_APPSEC_API_KEY=smoke-key ez-appsec-api:smoke
+            -e SOURCEBASTION_API_KEY=smoke-key ez-appsec-api:smoke
           for i in $(seq 1 20); do
             if curl -sf http://localhost:8000/health >/dev/null; then
               echo "health check passed"

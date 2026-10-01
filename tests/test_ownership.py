@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ez_appsec.ownership import (
+from sourcebastion.ownership import (
     OwnershipRecord,
     assign_owner,
     fingerprint_finding,
@@ -51,7 +51,7 @@ class TestFingerprint:
         assert fp1 != fp2
 
     def test_matches_baseline_fingerprint(self):
-        from ez_appsec.baseline import _fingerprint
+        from sourcebastion.baseline import _fingerprint
         assert fingerprint_finding(SAMPLE_FINDING) == _fingerprint(SAMPLE_FINDING)
 
 

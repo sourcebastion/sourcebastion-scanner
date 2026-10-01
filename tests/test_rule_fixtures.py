@@ -37,7 +37,7 @@ LANGUAGES = ["python", "ruby", "java", "javascript", "php"]
 # Shared empty target dir used by the validate test. Semgrep's `--validate` flag
 # does not reliably emit JSON in all versions; instead we scan an empty dir and
 # inspect the errors array for rule parse failures.
-_EMPTY_TARGET = Path(tempfile.gettempdir()) / "ez_appsec_empty_target"
+_EMPTY_TARGET = Path(tempfile.gettempdir()) / "sourcebastion_empty_target"
 _EMPTY_TARGET.mkdir(exist_ok=True)
 
 # Match `# ruleid: <id>` or `# ok: <id>` (leading comment char varies by language).

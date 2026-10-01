@@ -53,25 +53,25 @@ jobs:
       - name: Run flake8
         run: |
           echo "🔍 Linting Python code with flake8..."
-          flake8 ez_appsec tests --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 sourcebastion tests --count --select=E9,F63,F7,F82 --show-source --statistics
           echo "✓ flake8 passed"
 
       - name: Check black formatting
         run: |
           echo "🔍 Checking code style with black..."
-          black --check ez_appsec tests || true
+          black --check sourcebastion tests || true
           echo "ℹ️  black formatting suggestions noted (not enforced)"
 
       - name: Check import sorting
         run: |
           echo "🔍 Checking import sorting with isort..."
-          isort --check-only ez_appsec tests || true
+          isort --check-only sourcebastion tests || true
           echo "ℹ️  isort suggestions noted (not enforced)"
 
       - name: Run pylint
         run: |
           echo "🔍 Linting with pylint..."
-          pylint ez_appsec --exit-zero --max-line-length=120
+          pylint sourcebastion --exit-zero --max-line-length=120
           echo "✓ Pylint checks completed"
 
   lint-docker:
@@ -193,7 +193,7 @@ jobs:
       - name: Run tests
         run: |
           echo "🧪 Running unit tests with pytest..."
-          pytest tests/ -v --cov=ez_appsec --cov-report=term-missing --cov-report=xml --cov-report=html -n auto
+          pytest tests/ -v --cov=sourcebastion --cov-report=term-missing --cov-report=xml --cov-report=html -n auto
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -234,7 +234,7 @@ jobs:
       - name: Run bandit
         run: |
           echo "🔒 Running security checks with bandit..."
-          bandit -r ez_appsec -ll --exit-zero || true
+          bandit -r sourcebastion -ll --exit-zero || true
           echo "✓ Bandit checks completed"
 
       - name: Check dependencies with safety
@@ -298,7 +298,7 @@ jobs:
           context: .
           file: ./images/Dockerfile
           load: true
-          tags: ez-appsec:standard-rule-test
+          tags: SourceBastion:standard-rule-test
           cache-from: type=gha
           platforms: linux/amd64
 
@@ -306,13 +306,13 @@ jobs:
         run: |
           docker run --rm --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            ez-appsec:standard-rule-test scripts/verify-rule-fixtures.py
+            SourceBastion:standard-rule-test scripts/verify-rule-fixtures.py
 
       - name: Run scanner integration tests in standard image
         run: |
           docker run --rm --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            ez-appsec:standard-rule-test scripts/verify-scanner-integration.py
+            SourceBastion:standard-rule-test scripts/verify-scanner-integration.py
 
       - name: Exercise release scanner runtime
         run: |
@@ -321,7 +321,7 @@ jobs:
           printf 'six==1.17.0\n' > "$smoke_dir/requirements.txt"
           cd "$smoke_dir"
           "$GITHUB_WORKSPACE/scripts/run-scanner-container.sh" \
-            ez-appsec:standard-rule-test \
+            SourceBastion:standard-rule-test \
             scan . --sbom --sbom-output scan-results/sbom.cdx.json \
               --severity medium --output scan-results/scan.json
           test -d .grype-deps
@@ -377,7 +377,7 @@ jobs:
           file: ./images/Dockerfile.slim
           push: false
           load: true
-          tags: ez-appsec:slim-rule-test
+          tags: SourceBastion:slim-rule-test
           cache-from: type=gha
           platforms: linux/amd64
 
@@ -385,7 +385,7 @@ jobs:
         run: |
           docker run --rm --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            ez-appsec:slim-rule-test scripts/verify-rule-fixtures.py
+            SourceBastion:slim-rule-test scripts/verify-rule-fixtures.py
 
   build-docker-micro:
     name: Build Micro Docker Image
@@ -436,7 +436,7 @@ jobs:
           file: ./images/Dockerfile.micro
           push: false
           load: true
-          tags: ez-appsec:micro-rule-test
+          tags: SourceBastion:micro-rule-test
           cache-from: type=gha
           platforms: linux/amd64
 
@@ -444,7 +444,7 @@ jobs:
         run: |
           docker run --rm --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            ez-appsec:micro-rule-test scripts/verify-rule-fixtures.py --allow-missing-semgrep
+            SourceBastion:micro-rule-test scripts/verify-rule-fixtures.py --allow-missing-semgrep
 
   build-docker-thin:
     name: Build Thin Docker Image
@@ -495,7 +495,7 @@ jobs:
           file: ./images/Dockerfile.thin
           push: false
           load: true
-          tags: ez-appsec:thin-rule-test
+          tags: SourceBastion:thin-rule-test
           cache-from: type=gha
           platforms: linux/amd64
 
@@ -503,7 +503,7 @@ jobs:
         run: |
           docker run --rm --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            ez-appsec:thin-rule-test scripts/verify-rule-fixtures.py
+            SourceBastion:thin-rule-test scripts/verify-rule-fixtures.py
 
   build-docker-semgrep:
     name: Build Semgrep Docker Image
@@ -554,7 +554,7 @@ jobs:
           file: ./images/Dockerfile.semgrep
           push: false
           load: true
-          tags: ez-appsec:semgrep-rule-test
+          tags: SourceBastion:semgrep-rule-test
           cache-from: type=gha
           platforms: linux/amd64
 
@@ -562,4 +562,4 @@ jobs:
         run: |
           docker run --rm --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            ez-appsec:semgrep-rule-test scripts/verify-rule-fixtures.py
+            SourceBastion:semgrep-rule-test scripts/verify-rule-fixtures.py

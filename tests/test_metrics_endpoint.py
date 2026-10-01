@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from ez_appsec.schema import Category, FindingV2, ScanRecord, Trend
-from ez_appsec.storage import JsonFileBackend
+from sourcebastion.schema import Category, FindingV2, ScanRecord, Trend
+from sourcebastion.storage import JsonFileBackend
 
 
 def make_finding(**overrides):
@@ -41,13 +41,13 @@ def make_scan_record(**overrides):
 
 
 def test_module_imports_without_prometheus_client():
-    from ez_appsec import metrics_endpoint
+    from sourcebastion import metrics_endpoint
 
-    assert metrics_endpoint.METRIC_NAME == "ez_appsec_findings_total"
+    assert metrics_endpoint.METRIC_NAME == "sourcebastion_findings_total"
 
 
 def test_missing_prometheus_client_raises_clear_error(monkeypatch):
-    from ez_appsec import metrics_endpoint
+    from sourcebastion import metrics_endpoint
 
     monkeypatch.setattr(metrics_endpoint, "CollectorRegistry", None)
     monkeypatch.setattr(metrics_endpoint, "Gauge", None)
@@ -59,7 +59,7 @@ def test_missing_prometheus_client_raises_clear_error(monkeypatch):
 
 def test_render_metrics_groups_findings_by_severity_category_and_project(tmp_path):
     pytest.importorskip("prometheus_client")
-    from ez_appsec.metrics_endpoint import render_metrics
+    from sourcebastion.metrics_endpoint import render_metrics
 
     backend = JsonFileBackend()
     findings_path = tmp_path / "vulnerabilities.json"
@@ -72,12 +72,12 @@ def test_render_metrics_groups_findings_by_severity_category_and_project(tmp_pat
 
     output = render_metrics(findings_path, backend=backend).decode("utf-8")
 
-    assert "# HELP ez_appsec_findings_total" in output
+    assert "# HELP sourcebastion_findings_total" in output
     assert (
-        'ez_appsec_findings_total{category="sast",project="checkout-api",severity="high"} 2.0'
+        'sourcebastion_findings_total{category="sast",project="checkout-api",severity="high"} 2.0'
         in output
     )
     assert (
-        'ez_appsec_findings_total{category="secrets",project="checkout-api",severity="low"} 1.0'
+        'sourcebastion_findings_total{category="secrets",project="checkout-api",severity="low"} 1.0'
         in output
     )

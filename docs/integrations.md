@@ -10,11 +10,11 @@ Set the following environment variables:
 
 | Variable | Required | Description |
 |---|---|---|
-| `EZ_APPSEC_JIRA_URL` | Yes | Jira instance URL (e.g. `https://myteam.atlassian.net`) |
-| `EZ_APPSEC_JIRA_EMAIL` | Yes | Email address of the Jira API user |
-| `EZ_APPSEC_JIRA_TOKEN` | Yes | Jira API token ([create one here](https://id.atlassian.com/manage-profile/security/api-tokens)) |
-| `EZ_APPSEC_JIRA_PROJECT` | Yes | Jira project key (e.g. `SEC`) |
-| `EZ_APPSEC_JIRA_ISSUE_TYPE` | No | Issue type name (default: `Bug`) |
+| `SOURCEBASTION_JIRA_URL` | Yes | Jira instance URL (e.g. `https://myteam.atlassian.net`) |
+| `SOURCEBASTION_JIRA_EMAIL` | Yes | Email address of the Jira API user |
+| `SOURCEBASTION_JIRA_TOKEN` | Yes | Jira API token ([create one here](https://id.atlassian.com/manage-profile/security/api-tokens)) |
+| `SOURCEBASTION_JIRA_PROJECT` | Yes | Jira project key (e.g. `SEC`) |
+| `SOURCEBASTION_JIRA_ISSUE_TYPE` | No | Issue type name (default: `Bug`) |
 
 Or pass them as CLI flags:
 
@@ -42,24 +42,24 @@ Each Jira issue includes:
 - Rule ID and file location
 - Finding description
 - Remediation guidance (when available)
-- Link to the dashboard (when `--dashboard-url` or `EZ_APPSEC_DASHBOARD_URL` is set)
+- Link to the dashboard (when `--dashboard-url` or `SOURCEBASTION_DASHBOARD_URL` is set)
 
 ### CI/CD example (GitHub Actions)
 
 ```yaml
 - name: Scan and sync to Jira
   env:
-    EZ_APPSEC_JIRA_URL: ${{ secrets.JIRA_URL }}
-    EZ_APPSEC_JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-    EZ_APPSEC_JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
-    EZ_APPSEC_JIRA_PROJECT: SEC
-    EZ_APPSEC_DASHBOARD_URL: https://security.example.com
+    SOURCEBASTION_JIRA_URL: ${{ secrets.JIRA_URL }}
+    SOURCEBASTION_JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+    SOURCEBASTION_JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+    SOURCEBASTION_JIRA_PROJECT: SEC
+    SOURCEBASTION_DASHBOARD_URL: https://security.example.com
   run: ez-appsec scan .
 ```
 
 ## Slack / Teams Notifications
 
-See the `--slack-webhook` and `--teams-webhook` options on the `scan` command. Set `EZ_APPSEC_SLACK_WEBHOOK` or `EZ_APPSEC_TEAMS_WEBHOOK` environment variables for CI/CD use.
+See the `--slack-webhook` and `--teams-webhook` options on the `scan` command. Set `SOURCEBASTION_SLACK_WEBHOOK` or `SOURCEBASTION_TEAMS_WEBHOOK` environment variables for CI/CD use.
 
 ## License Compliance
 
@@ -67,7 +67,7 @@ ez-appsec can check dependency licenses against configurable allowed and denied 
 
 ### Setup
 
-Add a `license_policy` section to your `.ez-appsec.yaml`:
+Add a `license_policy` section to your `.sourcebastion.yaml`:
 
 ```yaml
 license_policy:
@@ -148,8 +148,8 @@ internet exposure.
 
 | Env var | Required | Description |
 |---|---|---|
-| `EZ_APPSEC_API_KEY` | yes | API key; the process **fails fast at startup** if unset. Sent via `X-API-Key` header. |
-| `EZ_APPSEC_ALLOWED_ROOTS` | no | Colon-separated list of local paths scans may target. When set, `POST /scan` with a local path outside these roots is rejected (HTTP 400). Unset = no restriction. |
+| `SOURCEBASTION_API_KEY` | yes | API key; the process **fails fast at startup** if unset. Sent via `X-API-Key` header. |
+| `SOURCEBASTION_ALLOWED_ROOTS` | no | Colon-separated list of local paths scans may target. When set, `POST /scan` with a local path outside these roots is rejected (HTTP 400). Unset = no restriction. |
 | `EZ_DASHBOARD_OWNER` / `EZ_DASHBOARD_REPO` | no | Dashboard GitHub repo to read findings from. |
 | `GITHUB_TOKEN` | recommended | Raises the GitHub API rate limit for dashboard reads. |
 
@@ -159,6 +159,6 @@ internet exposure.
   every endpoint except `/health`.
 - Scan targets are validated before reaching a subprocess: leading-dash paths
   and SSH-style `git@` URLs are rejected (HTTP/HTTPS clone URLs only).
-- `EZ_APPSEC_ALLOWED_ROOTS` confines local scan targets to approved directories.
+- `SOURCEBASTION_ALLOWED_ROOTS` confines local scan targets to approved directories.
 - Scan jobs are tracked in a bounded, TTL-evicted store and run on a fixed-size
   worker pool to prevent unbounded resource use.

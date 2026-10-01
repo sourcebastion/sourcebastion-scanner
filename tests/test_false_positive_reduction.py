@@ -1,7 +1,7 @@
 """Test false positive reduction in external scanners"""
 import pytest
 from pathlib import Path
-from ez_appsec.external_scanners import KicsScanner, SemgrepScanner
+from sourcebastion.external_scanners import KicsScanner, SemgrepScanner
 
 
 class TestKicsFalsePositiveReduction:

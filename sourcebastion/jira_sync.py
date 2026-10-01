@@ -2,8 +2,8 @@
 
 Creates Jira issues for new critical/high findings, updates existing issues
 when findings change, and closes tickets when findings are resolved.
-Configurable via EZ_APPSEC_JIRA_URL, EZ_APPSEC_JIRA_TOKEN,
-EZ_APPSEC_JIRA_PROJECT env vars.
+Configurable via SOURCEBASTION_JIRA_URL, SOURCEBASTION_JIRA_TOKEN,
+SOURCEBASTION_JIRA_PROJECT env vars.
 """
 
 import hashlib
@@ -36,10 +36,10 @@ class JiraConfig:
 
     @classmethod
     def from_env(cls) -> Optional["JiraConfig"]:
-        url = os.environ.get("EZ_APPSEC_JIRA_URL", "").rstrip("/")
-        email = os.environ.get("EZ_APPSEC_JIRA_EMAIL", "")
-        token = os.environ.get("EZ_APPSEC_JIRA_TOKEN", "")
-        project = os.environ.get("EZ_APPSEC_JIRA_PROJECT", "")
+        url = os.environ.get("SOURCEBASTION_JIRA_URL", "").rstrip("/")
+        email = os.environ.get("SOURCEBASTION_JIRA_EMAIL", "")
+        token = os.environ.get("SOURCEBASTION_JIRA_TOKEN", "")
+        project = os.environ.get("SOURCEBASTION_JIRA_PROJECT", "")
         if not all([url, email, token, project]):
             return None
         return cls(
@@ -47,7 +47,7 @@ class JiraConfig:
             email=email,
             token=token,
             project_key=project,
-            issue_type=os.environ.get("EZ_APPSEC_JIRA_ISSUE_TYPE", "Bug"),
+            issue_type=os.environ.get("SOURCEBASTION_JIRA_ISSUE_TYPE", "Bug"),
         )
 
 

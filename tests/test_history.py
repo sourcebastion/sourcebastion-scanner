@@ -1,11 +1,11 @@
-"""Tests for ez_appsec.history (PLAN-05: Scan History & Trend Tracking)."""
+"""Tests for sourcebastion.history (PLAN-05: Scan History & Trend Tracking)."""
 
 import json
 from pathlib import Path
 
 import pytest
 
-from ez_appsec.history import (
+from sourcebastion.history import (
     HistoryEntry,
     append_history,
     compute_trend,

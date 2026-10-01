@@ -9,7 +9,7 @@ File layout:
   data/vulnerabilities/test/juice-shop.json     → slug "test/juice-shop"
 
 Metadata (project_name, project_path, scan_date) is read from fields embedded
-in each vulnerabilities file by ez-appsec web-report.
+in each vulnerabilities file by SourceBastion web-report.
 """
 
 import json
@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import Counter
 
-from ez_appsec.history import append_history, make_entry
+from sourcebastion.history import append_history, make_entry
 
 
 def load_vulnerabilities(vuln_file: Path) -> tuple:

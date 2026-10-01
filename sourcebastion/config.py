@@ -8,8 +8,8 @@ from pydantic import BaseModel, Field, field_validator
 
 import yaml
 
-from ez_appsec.policy import PolicyRule
-from ez_appsec.license_checker import LicensePolicy
+from sourcebastion.policy import PolicyRule
+from sourcebastion.license_checker import LicensePolicy
 
 
 class LicensePolicyConfig(BaseModel):
@@ -136,7 +136,7 @@ class Config(BaseModel):
         arbitrary_types_allowed = True
 
     @classmethod
-    def from_file(cls, path: str = ".ez-appsec.yaml") -> "Config":
+    def from_file(cls, path: str = ".sourcebastion.yaml") -> "Config":
         """Load configuration from YAML file"""
         config_path = Path(path)
 

@@ -41,10 +41,10 @@ Validates code quality and style before proceeding.
 
 ```bash
 # Local testing
-flake8 ez_appsec tests
-black --check ez_appsec tests
-isort --check-only ez_appsec tests
-pylint ez_appsec
+flake8 sourcebastion tests
+black --check sourcebastion tests
+isort --check-only sourcebastion tests
+pylint sourcebastion
 ```
 
 #### `lint:docker`
@@ -73,7 +73,7 @@ Runs automated tests and security checks.
 
 ```bash
 # Local testing
-pytest tests/ -v --cov=ez_appsec --cov-report=html
+pytest tests/ -v --cov=sourcebastion --cov-report=html
 ```
 
 #### `test:security`
@@ -85,7 +85,7 @@ pytest tests/ -v --cov=ez_appsec --cov-report=html
 
 ```bash
 # Local testing
-bandit -r ez_appsec
+bandit -r sourcebastion
 safety check
 ```
 
@@ -178,22 +178,22 @@ pre-commit install  # Auto-run checks before commit
 
 ```bash
 # Check with flake8
-flake8 ez_appsec tests
+flake8 sourcebastion tests
 
 # Format check with black
-black --check ez_appsec tests
+black --check sourcebastion tests
 
 # Auto-format code
-black ez_appsec tests
+black sourcebastion tests
 
 # Check import sorting
-isort --check-only ez_appsec tests
+isort --check-only sourcebastion tests
 
 # Auto-sort imports
-isort ez_appsec tests
+isort sourcebastion tests
 
 # Full pylint analysis
-pylint ez_appsec
+pylint sourcebastion
 ```
 
 ### Run Tests
@@ -203,7 +203,7 @@ pylint ez_appsec
 pytest tests/ -v
 
 # With coverage
-pytest tests/ --cov=ez_appsec --cov-report=html
+pytest tests/ --cov=sourcebastion --cov-report=html
 
 # Specific test file
 pytest tests/test_scanner.py -v
@@ -316,10 +316,10 @@ Pipeline automatically:
 **flake8 errors**:
 ```bash
 # Fix with black
-black ez_appsec tests
+black sourcebastion tests
 
 # Fix with isort
-isort ez_appsec tests
+isort sourcebastion tests
 ```
 
 **pylint warnings**:
@@ -336,7 +336,7 @@ pytest tests/test_scanner.py -v
 pytest tests/test_scanner.py -v -s
 
 # Generate coverage report
-pytest tests/ --cov=ez_appsec --cov-report=html
+pytest tests/ --cov=sourcebastion --cov-report=html
 open htmlcov/index.html
 ```
 

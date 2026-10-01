@@ -17,8 +17,8 @@ permissions:
   packages: read         # Required to pull the SourceBastion scanner image
 
 env:
-  EZ_APPSEC_OUTPUT_DIR: "scan-results"
-  EZ_APPSEC_SARIF: "scan-results/ez-appsec.sarif"
+  SOURCEBASTION_OUTPUT_DIR: "scan-results"
+  SOURCEBASTION_SARIF: "scan-results/ez-appsec.sarif"
 
 jobs:
   # Advisory: check if a newer SourceBastion Scan version is available. Never blocks the scan.
@@ -29,7 +29,7 @@ jobs:
       - name: Check for newer SourceBastion Scan release
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          CURRENT_VERSION: ${{ vars.EZ_APPSEC_VERSION || 'latest' }}
+          CURRENT_VERSION: ${{ vars.SOURCEBASTION_VERSION || 'latest' }}
         run: |
           python3 - <<'PY'
           import json
@@ -58,13 +58,13 @@ jobs:
           if current == "latest":
               print(
                   "::warning::SourceBastion Scan: using 'latest' image tag. "
-                  "Pin EZ_APPSEC_VERSION to a specific version for reproducible scans. "
+                  "Pin SOURCEBASTION_VERSION to a specific version for reproducible scans. "
                   f"Current release: {latest}"
               )
           elif current != latest:
               print(
                   f"::warning::SourceBastion Scan {current} is outdated. Latest release: {latest}. "
-                  "Update the EZ_APPSEC_VERSION variable."
+                  "Update the SOURCEBASTION_VERSION variable."
               )
           else:
               print(f"SourceBastion Scan {current} is up to date.")
@@ -91,42 +91,42 @@ jobs:
         id: scan
         run: |
           echo "Running SourceBastion Scan..."
-          mkdir -p "${EZ_APPSEC_OUTPUT_DIR}"
+          mkdir -p "${SOURCEBASTION_OUTPUT_DIR}"
 
           echo "Checking SourceBastion Scan status..."
-          ez-appsec status || true
+          sourcebastion status || true
 
           echo "Starting GitHub SARIF scan..."
           # Use 'all' severity for PRs, 'medium' for main branch
           SEVERITY="${{ github.event_name == 'pull_request' && 'all' || 'medium' }}"
           echo "Severity level: $SEVERITY"
-          ez-appsec github-scan . --output "${EZ_APPSEC_SARIF}" --severity "$SEVERITY"
+          sourcebastion github-scan . --output "${SOURCEBASTION_SARIF}" --severity "$SEVERITY"
 
           echo "Scan completed. Checking for output file..."
-          if [ -f "${EZ_APPSEC_SARIF}" ]; then
+          if [ -f "${SOURCEBASTION_SARIF}" ]; then
             echo "SARIF file created successfully"
-            ls -lh "${EZ_APPSEC_SARIF}"
+            ls -lh "${SOURCEBASTION_SARIF}"
           else
-            echo "ERROR: SARIF file not created at ${EZ_APPSEC_SARIF}"
+            echo "ERROR: SARIF file not created at ${SOURCEBASTION_SARIF}"
             exit 1
           fi
 
       - name: Count findings
         id: summary
         run: |
-          if [ ! -f "${EZ_APPSEC_SARIF}" ]; then
+          if [ ! -f "${SOURCEBASTION_SARIF}" ]; then
             echo "findings-count=0" >> "$GITHUB_OUTPUT"
             echo "No findings found"
             exit 0
           fi
-          COUNT=$(python3 -c "import json; print(len(json.load(open('${EZ_APPSEC_SARIF}'))['runs'][0]['results']))")
+          COUNT=$(python3 -c "import json; print(len(json.load(open('${SOURCEBASTION_SARIF}'))['runs'][0]['results']))")
           echo "findings-count=$COUNT" >> "$GITHUB_OUTPUT"
           echo "Found $COUNT security findings"
 
       - name: Validate SARIF for GitHub upload
         if: always()
         run: |
-          if [ ! -f "${EZ_APPSEC_SARIF}" ]; then
+          if [ ! -f "${SOURCEBASTION_SARIF}" ]; then
             echo "No SARIF file found; skipping validation"
             exit 0
           fi
@@ -134,7 +134,7 @@ jobs:
           import json
           import os
 
-          sarif_path = os.environ["EZ_APPSEC_SARIF"]
+          sarif_path = os.environ["SOURCEBASTION_SARIF"]
 
           def coerce_uri(value):
               if isinstance(value, dict):
@@ -182,7 +182,7 @@ jobs:
         if: ${{ false }}
         uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
-          sarif_file: ${{ env.EZ_APPSEC_SARIF }}
+          sarif_file: ${{ env.SOURCEBASTION_SARIF }}
         continue-on-error: true
 
       - name: Upload scan results as artifacts
@@ -190,22 +190,22 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ez-appsec-scan-${{ github.sha }}
-          path: ${{ env.EZ_APPSEC_SARIF }}
+          path: ${{ env.SOURCEBASTION_SARIF }}
           retention-days: 7
           if-no-files-found: warn
 
       - name: Generate dashboard vulnerabilities.json
         id: web-report
         run: |
-          mkdir -p "${EZ_APPSEC_OUTPUT_DIR}"
-          ez-appsec web-report . --output "${EZ_APPSEC_OUTPUT_DIR}"
+          mkdir -p "${SOURCEBASTION_OUTPUT_DIR}"
+          sourcebastion web-report . --output "${SOURCEBASTION_OUTPUT_DIR}"
 
       - name: Upload vulnerabilities.json as artifact
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ez-appsec-vulns-${{ github.sha }}
-          path: ${{ env.EZ_APPSEC_OUTPUT_DIR }}/vulnerabilities.json
+          path: ${{ env.SOURCEBASTION_OUTPUT_DIR }}/vulnerabilities.json
           retention-days: 7
           if-no-files-found: warn
 
@@ -213,7 +213,7 @@ jobs:
         id: findings-summary
         if: always()
         run: |
-          VULN_FILE="${EZ_APPSEC_OUTPUT_DIR}/vulnerabilities.json"
+          VULN_FILE="${SOURCEBASTION_OUTPUT_DIR}/vulnerabilities.json"
           if [ ! -f "${VULN_FILE}" ]; then
             echo "No vulnerabilities.json found" > /tmp/scan-summary.md
           else
@@ -300,10 +300,10 @@ jobs:
 
       - name: Mint App token for dashboard push
         id: mint-token
-        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && vars.EZ_APPSEC_DASHBOARD_REPO != ''
+        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && vars.SOURCEBASTION_DASHBOARD_REPO != ''
         env:
-          _APP_ID: ${{ secrets.EZ_APPSEC_APP_ID }}
-          _PRIVATE_KEY: ${{ secrets.EZ_APPSEC_PRIVATE_KEY }}
+          _APP_ID: ${{ secrets.SOURCEBASTION_APP_ID }}
+          _PRIVATE_KEY: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
         run: |
           python3 - <<'PYEOF'
           import os, sys, time, json, urllib.request, urllib.error
@@ -365,13 +365,13 @@ jobs:
       - name: Push scan results to dashboard (update:vulns)
         if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         env:
-          EZ_APPSEC_DASHBOARD_REPO: ${{ vars.EZ_APPSEC_DASHBOARD_REPO || 'ez-appsec/ez-appsec-dashboard' }}
+          SOURCEBASTION_DASHBOARD_REPO: ${{ vars.SOURCEBASTION_DASHBOARD_REPO || 'ez-appsec/ez-appsec-dashboard' }}
         run: |
           if [ -z "${_PUSH_TOKEN}" ]; then
             echo "No push token available — skipping dashboard update."
             exit 0
           fi
-          VULN_FILE="${EZ_APPSEC_OUTPUT_DIR}/vulnerabilities.json"
+          VULN_FILE="${SOURCEBASTION_OUTPUT_DIR}/vulnerabilities.json"
           if [ ! -f "${VULN_FILE}" ]; then
             echo "vulnerabilities.json not found — skipping dashboard update."
             exit 0
@@ -379,7 +379,7 @@ jobs:
 
           # Derive destination path: data/vulnerabilities/[TEAM/]REPO_NAME.json
           REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          TEAM="${{ vars.EZ_APPSEC_TEAM }}"
+          TEAM="${{ vars.SOURCEBASTION_TEAM }}"
           VULN_REL="vulnerabilities/${TEAM:+${TEAM}/}${REPO_NAME}.json"
           SCAN_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
@@ -400,7 +400,7 @@ jobs:
           PYEOF
 
           DASH_DIR=$(mktemp -d)
-          git clone "https://x-access-token:${_PUSH_TOKEN}@github.com/${EZ_APPSEC_DASHBOARD_REPO}.git" "${DASH_DIR}/dashboard"
+          git clone "https://x-access-token:${_PUSH_TOKEN}@github.com/${SOURCEBASTION_DASHBOARD_REPO}.git" "${DASH_DIR}/dashboard"
           mkdir -p "${DASH_DIR}/dashboard/data/$(dirname ${VULN_REL})"
           cp /tmp/vulns-with-meta.json "${DASH_DIR}/dashboard/data/${VULN_REL}"
 
@@ -417,7 +417,7 @@ jobs:
             git commit -m "chore: update scan results for ${{ github.repository }}"
           git push origin main
           rm -rf "${DASH_DIR}"
-          echo "Dashboard updated: https://github.com/${EZ_APPSEC_DASHBOARD_REPO}"
+          echo "Dashboard updated: https://github.com/${SOURCEBASTION_DASHBOARD_REPO}"
 
       - name: Comment on PR with findings
         # PR write-back is handled by pr-scan-writeback.yml, which never
@@ -444,7 +444,7 @@ jobs:
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' && (
                 comment.body.includes('🔒 SourceBastion Scan') ||
-                comment.body.includes('🔒 ez-appsec Security Scan')
+                comment.body.includes('🔒 SourceBastion Security Scan')
               )
             );
 

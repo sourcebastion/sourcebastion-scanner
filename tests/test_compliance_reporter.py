@@ -5,7 +5,7 @@ import os
 import tempfile
 import pytest
 
-from ez_appsec.compliance_reporter import (
+from sourcebastion.compliance_reporter import (
     ComplianceReporter,
     SUPPORTED_FRAMEWORKS,
     load_framework,
@@ -433,13 +433,13 @@ class TestLoadFindingsFromFile:
 
 class TestCLIReportCommand:
     def test_report_command_exists(self):
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
         commands = main.commands
         assert "report" in commands
 
     def test_report_generates_file(self, tmp_path):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         findings_path = str(tmp_path / "findings.json")
         _write_json(findings_path, {
@@ -456,7 +456,7 @@ class TestCLIReportCommand:
 
     def test_report_invalid_framework(self, tmp_path):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         findings_path = str(tmp_path / "f.json")
         _write_json(findings_path, {"issues": []})
@@ -466,7 +466,7 @@ class TestCLIReportCommand:
 
     def test_report_missing_findings_file(self):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         runner = CliRunner()
         result = runner.invoke(main, ["report", "--framework", "soc2", "--findings", "/tmp/no_such_file.json"])
@@ -474,7 +474,7 @@ class TestCLIReportCommand:
 
     def test_report_default_output_name(self, tmp_path, monkeypatch):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         findings_path = str(tmp_path / "findings.json")
         _write_json(findings_path, {"issues": []})
@@ -486,7 +486,7 @@ class TestCLIReportCommand:
 
     def test_report_shows_unmapped_count(self, tmp_path):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         findings_path = str(tmp_path / "findings.json")
         _write_json(findings_path, {
@@ -504,7 +504,7 @@ class TestCLIReportCommand:
 
     def test_report_all_mapped_shows_simple_count(self, tmp_path):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         findings_path = str(tmp_path / "findings.json")
         _write_json(findings_path, {
@@ -521,7 +521,7 @@ class TestCLIReportCommand:
 
     def test_report_normalizes_secret_detection(self, tmp_path):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         findings_path = str(tmp_path / "findings.json")
         _write_json(findings_path, {
@@ -545,7 +545,7 @@ class TestCLIReportCommand:
 
     def test_report_internal_format_type_field(self, tmp_path):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         findings_path = str(tmp_path / "findings.json")
         _write_json(findings_path, {

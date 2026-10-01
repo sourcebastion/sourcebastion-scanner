@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claim-plan.sh — prepare a contribution workspace for an ez-appsec plan
+# claim-plan.sh — prepare a contribution workspace for an SourceBastion plan
 #
 # Usage:  bash scripts/claim-plan.sh <plan-issue-number>
 # Example: bash scripts/claim-plan.sh 21

@@ -4,10 +4,10 @@ on:
   pull_request:
     paths:
       - '.github/workflows/cedar-adapter.yml'
-      - 'ez_appsec/cedar_adapter.py'
-      - 'ez_appsec/cli.py'
-      - 'ez_appsec/config.py'
-      - 'ez_appsec/scanner.py'
+      - 'sourcebastion/cedar_adapter.py'
+      - 'sourcebastion/cli.py'
+      - 'sourcebastion/config.py'
+      - 'sourcebastion/scanner.py'
       - 'scripts/verify_cedar_packaged.py'
       - 'tests/test_cedar_adapter.py'
       - 'tests/test_cedar_plan09_parity_live.py'

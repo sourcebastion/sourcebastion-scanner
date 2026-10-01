@@ -7,9 +7,9 @@ from unittest.mock import patch
 import pytest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-import ez_appsec.scanner as scanner_module
-from ez_appsec.scanner import SecurityScanner
-from ez_appsec.config import Config, IgnoreRule
+import sourcebastion.scanner as scanner_module
+from sourcebastion.scanner import SecurityScanner
+from sourcebastion.config import Config, IgnoreRule
 
 
 @pytest.fixture
@@ -70,9 +70,9 @@ def test_scanner_distribution_has_no_openai_runtime_dependency():
         assert "openai" not in dependency_file.read_text(encoding="utf-8").lower()
 
     scan_runtime_files = [
-        root / "ez_appsec" / "scanner.py",
-        root / "ez_appsec" / "ai_analyzer.py",
-        root / "ez_appsec" / "agent.py",
+        root / "sourcebastion" / "scanner.py",
+        root / "sourcebastion" / "ai_analyzer.py",
+        root / "sourcebastion" / "agent.py",
     ]
     for runtime_file in scan_runtime_files:
         source = runtime_file.read_text(encoding="utf-8").lower()
@@ -81,7 +81,7 @@ def test_scanner_distribution_has_no_openai_runtime_dependency():
 
 
 def test_legacy_ai_analyzer_is_a_deterministic_noop(tmp_path):
-    from ez_appsec.ai_analyzer import AIAnalyzer
+    from sourcebastion.ai_analyzer import AIAnalyzer
 
     issues = [{"title": "scanner finding"}]
     result = AIAnalyzer(Config()).analyze(issues, tmp_path, "ignored prompt")

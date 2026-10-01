@@ -7,7 +7,7 @@ import pytest
 import tempfile
 from unittest.mock import patch, MagicMock
 
-from ez_appsec.external_scanners import GrypeImageScanner, ScannerExecutionError
+from sourcebastion.external_scanners import GrypeImageScanner, ScannerExecutionError
 
 
 SAMPLE_GRYPE_OUTPUT = {
@@ -238,11 +238,11 @@ class TestContainerScanCLI:
 
     def test_image_flag_triggers_container_scan(self):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         runner = CliRunner()
-        with patch("ez_appsec.cli.SecurityScanner") as MockScanner, \
-             patch("ez_appsec.external_scanners.GrypeImageScanner") as MockImageScanner:
+        with patch("sourcebastion.cli.SecurityScanner") as MockScanner, \
+             patch("sourcebastion.external_scanners.GrypeImageScanner") as MockImageScanner:
             mock_scanner_instance = MagicMock()
             mock_scanner_instance.scan.return_value = {
                 "issues": [],
@@ -263,11 +263,11 @@ class TestContainerScanCLI:
 
     def test_registry_auth_flag_forwarded(self):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         runner = CliRunner()
-        with patch("ez_appsec.cli.SecurityScanner") as MockScanner, \
-             patch("ez_appsec.external_scanners.GrypeImageScanner") as MockImageScanner:
+        with patch("sourcebastion.cli.SecurityScanner") as MockScanner, \
+             patch("sourcebastion.external_scanners.GrypeImageScanner") as MockImageScanner:
             mock_scanner_instance = MagicMock()
             mock_scanner_instance.scan.return_value = {"issues": [], "total": 0, "scanner_results": {"image": 0}}
             MockScanner.return_value = mock_scanner_instance

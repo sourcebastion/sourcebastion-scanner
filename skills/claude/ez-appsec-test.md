@@ -21,7 +21,7 @@ Multiple suites may be given: `/ez-appsec test scan github`
 |---------------------|----------------------------------------------------|
 | GH_TEST_REPO        | `ez-appsec/juice-shop-public`                      |
 | GH_DASHBOARD_REPO   | `ez-appsec/ez-appsec-dashboard`                    |
-| GL_GROUP            | `jfelten.work-group/ez_appsec`                     |
+| GL_GROUP            | `jfelten.work-group/sourcebastion`                     |
 | GL_PROJECTS         | `juice-shop` `bwapp` `webgoat` `dvwa`              |
 | LOCAL_SCAN_TARGET   | `/Users/johnfelten/git/2026/ez-appsec`             |
 
@@ -265,7 +265,7 @@ Run all 4 projects sequentially (the test script handles one at a time):
 
 ```bash
 GL_SCRIPT="/Users/johnfelten/git/2026/ez-appsec/gitlab/scripts/gitlab-pipeline-test.sh"
-GL_GROUP="jfelten.work-group/ez_appsec"
+GL_GROUP="jfelten.work-group/sourcebastion"
 
 for proj in juice-shop bwapp webgoat dvwa; do
   echo "══ Testing ${proj} ══"

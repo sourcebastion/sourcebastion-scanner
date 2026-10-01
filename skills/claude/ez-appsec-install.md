@@ -69,7 +69,7 @@ stages:
 
 If the project already has a `stages:` key, replace it with the merged list (retaining any project-specific stages in their natural position).
 
-### 5. Set EZ_APPSEC_VERSION CI variable
+### 5. Set SOURCEBASTION_VERSION CI variable
 
 Fetch the latest released version:
 ```bash
@@ -81,19 +81,19 @@ Fall back to `"latest"` if empty.
 TARGET_PROJECT_ID=$(glab api "projects/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1],safe=""))' "<TARGET_PROJECT_PATH>")" --field id)
 
 glab api --method POST "projects/${TARGET_PROJECT_ID}/variables" \
-  --field key=EZ_APPSEC_VERSION \
+  --field key=SOURCEBASTION_VERSION \
   --field value="${LATEST_VERSION}" \
   --field masked=false \
   --field protected=false \
   --field variable_type=env_var 2>/dev/null || \
-glab api --method PUT "projects/${TARGET_PROJECT_ID}/variables/EZ_APPSEC_VERSION" \
+glab api --method PUT "projects/${TARGET_PROJECT_ID}/variables/SOURCEBASTION_VERSION" \
   --field value="${LATEST_VERSION}" \
   --field masked=false \
   --field protected=false 2>/dev/null || \
-echo "Could not set EZ_APPSEC_VERSION — set it manually in Settings > CI/CD > Variables"
+echo "Could not set SOURCEBASTION_VERSION — set it manually in Settings > CI/CD > Variables"
 ```
 
-### 6. Set up the group dashboard (EZ_APPSEC_DASHBOARD_PROJECT)
+### 6. Set up the group dashboard (SOURCEBASTION_DASHBOARD_PROJECT)
 
 This is required for `update:vulns` to publish scan results.
 
@@ -104,14 +104,14 @@ TARGET_NAMESPACE=$(glab api "projects/${TARGET_PROJECT_ID}" | \
   python3 -c "import json,sys; print(json.load(sys.stdin)['namespace']['full_path'])")
 ```
 
-#### 6b. Check if EZ_APPSEC_DASHBOARD_PROJECT is already configured
+#### 6b. Check if SOURCEBASTION_DASHBOARD_PROJECT is already configured
 
 Check the group variable first, then fall back to a project-level variable:
 ```bash
 GROUP_ENCODED=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1],safe=''))" "${TARGET_NAMESPACE}")
-DASH_PROJECT=$(glab api "groups/${GROUP_ENCODED}/variables/EZ_APPSEC_DASHBOARD_PROJECT" 2>/dev/null | \
+DASH_PROJECT=$(glab api "groups/${GROUP_ENCODED}/variables/SOURCEBASTION_DASHBOARD_PROJECT" 2>/dev/null | \
   python3 -c "import json,sys; print(json.load(sys.stdin).get('value',''))" 2>/dev/null || \
-glab api "projects/${TARGET_PROJECT_ID}/variables/EZ_APPSEC_DASHBOARD_PROJECT" 2>/dev/null | \
+glab api "projects/${TARGET_PROJECT_ID}/variables/SOURCEBASTION_DASHBOARD_PROJECT" 2>/dev/null | \
   python3 -c "import json,sys; print(json.load(sys.stdin).get('value',''))" 2>/dev/null || \
 echo "")
 ```
@@ -151,15 +151,15 @@ If `DASH_PROJECT` is empty, create the dashboard:
 
 - Populate the dashboard with the web app and configure Pages:
   ```bash
-  EZ_APPSEC_SRC=$(git -C "<TARGET>" rev-parse --show-toplevel 2>/dev/null || echo "")
+  SOURCEBASTION_SRC=$(git -C "<TARGET>" rev-parse --show-toplevel 2>/dev/null || echo "")
   TMPDIR=$(mktemp -d)
   git clone "${DASH_REPO_URL}" "${TMPDIR}/dash"
   cd "${TMPDIR}/dash"
   git checkout -B main
   mkdir -p public/data
   # Copy web app from local source if available, otherwise fetch from GitHub
-  if [ -n "${EZ_APPSEC_SRC}" ] && [ -f "${EZ_APPSEC_SRC}/web/index.html" ]; then
-    cp -r "${EZ_APPSEC_SRC}/web/." public/
+  if [ -n "${SOURCEBASTION_SRC}" ] && [ -f "${SOURCEBASTION_SRC}/web/index.html" ]; then
+    cp -r "${SOURCEBASTION_SRC}/web/." public/
   else
     for FILE in index.html style.css app.js; do
       curl -fsSL "https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/web/${FILE}" -o "public/${FILE}"
@@ -199,20 +199,20 @@ If `DASH_PROJECT` is empty, create the dashboard:
   DASH_PROJECT="${TARGET_NAMESPACE}/ez-appsec-dashboard"
   ```
 
-#### 6d. Set EZ_APPSEC_DASHBOARD_PROJECT as a group variable
+#### 6d. Set SOURCEBASTION_DASHBOARD_PROJECT as a group variable
 
 ```bash
 glab api --method POST "groups/${GROUP_ID}/variables" \
-  --field key="EZ_APPSEC_DASHBOARD_PROJECT" \
+  --field key="SOURCEBASTION_DASHBOARD_PROJECT" \
   --field value="${DASH_PROJECT}" \
   --field masked=false \
   --field protected=false \
   --field variable_type=env_var 2>/dev/null || \
-glab api --method PUT "groups/${GROUP_ID}/variables/EZ_APPSEC_DASHBOARD_PROJECT" \
+glab api --method PUT "groups/${GROUP_ID}/variables/SOURCEBASTION_DASHBOARD_PROJECT" \
   --field value="${DASH_PROJECT}" \
   --field masked=false \
   --field protected=false 2>/dev/null || \
-echo "Could not set group variable — set EZ_APPSEC_DASHBOARD_PROJECT manually in the group's Settings > CI/CD > Variables."
+echo "Could not set group variable — set SOURCEBASTION_DASHBOARD_PROJECT manually in the group's Settings > CI/CD > Variables."
 ```
 
 ### 7. Commit and push the target project changes
@@ -248,7 +248,7 @@ Adds the [ez-appsec](https://github.com/ez-appsec/ez-appsec) security scanning p
 
 **Pipeline behaviour:**
 - Scans run automatically on merge requests and pushes to `main`.
-- Results are published to the group dashboard at `$EZ_APPSEC_DASHBOARD_PROJECT`.
+- Results are published to the group dashboard at `$SOURCEBASTION_DASHBOARD_PROJECT`.
 - Vulnerability JSON artifacts are retained for 7 days.
 
 No API key or external service required.
@@ -269,7 +269,7 @@ To create the merge request manually, visit:
 
 Print a summary:
 - MR URL (if created)
-- `EZ_APPSEC_VERSION` set to: `<version>`
+- `SOURCEBASTION_VERSION` set to: `<version>`
 - Dashboard project: `<DASH_PROJECT>`
 - Pages URL: `https://<top-group>.gitlab.io/<rest-path>/ez-appsec-dashboard` (live after the dashboard pipeline completes)
-- Remind the user that `EZ_APPSEC_DASHBOARD_PROJECT` and `EZ_APPSEC_VERSION` can be overridden in group or project Settings > CI/CD > Variables
+- Remind the user that `SOURCEBASTION_DASHBOARD_PROJECT` and `SOURCEBASTION_VERSION` can be overridden in group or project Settings > CI/CD > Variables

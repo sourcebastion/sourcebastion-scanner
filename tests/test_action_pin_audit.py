@@ -33,7 +33,7 @@ def test_audit_discovers_active_shipped_and_generated_references():
     assert "dashboard/.github/workflows/deploy-dashboard.yml" in paths
     assert "github/dashboard/update-assets.yml" in paths
     assert "github/templates/scan.yml" in paths
-    assert "ez_appsec/org_manager.py" in paths
+    assert "sourcebastion/org_manager.py" in paths
 
 
 def test_matching_upstream_tags_pass():

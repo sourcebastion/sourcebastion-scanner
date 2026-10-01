@@ -8,7 +8,7 @@ This guide walks through adding ez-appsec to a GitLab project and setting up the
 
 - [Claude Code](https://claude.ai/code) with the ez-appsec skill installed
 - [glab CLI](https://gitlab.com/gitlab-org/cli) authenticated (`glab auth status`)
-- A GitLab group for your projects (e.g. `your-group/ez_appsec`)
+- A GitLab group for your projects (e.g. `your-group/sourcebastion`)
 
 ### Install the ez-appsec skill (one-time)
 
@@ -23,14 +23,14 @@ curl -fsSL https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/skills/ins
 The dashboard is a GitLab Pages site that aggregates scan results. Set it up once for your group before installing ez-appsec on individual projects.
 
 ```
-/ez-appsec install-dashboard your-group/ez_appsec
+/ez-appsec install-dashboard your-group/sourcebastion
 ```
 
 The skill will:
 1. Create the `ez-appsec-dashboard` project in your group (if it doesn't exist)
 2. Push dashboard web assets (`index.html`, `style.css`, `app.js`)
 3. Generate an SSH deploy key and add it to the dashboard project
-4. Set `EZ_APPSEC_DASHBOARD_PROJECT` and `EZ_APPSEC_DASHBOARD_DEPLOY_KEY` as group CI/CD variables
+4. Set `SOURCEBASTION_DASHBOARD_PROJECT` and `SOURCEBASTION_DASHBOARD_DEPLOY_KEY` as group CI/CD variables
 5. Enable GitLab Pages
 6. Trigger the first Pages pipeline
 
@@ -57,7 +57,7 @@ The skill will:
    include:
      - remote: 'https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/gitlab/scan.yml'
    ```
-3. Set `EZ_APPSEC_VERSION` as a project CI/CD variable
+3. Set `SOURCEBASTION_VERSION` as a project CI/CD variable
 4. Create a branch `ez-appsec-install`, commit, and open a merge request
 
 Merge the MR to activate scanning.
@@ -74,7 +74,7 @@ Merge the MR to activate scanning.
 
 ## Add more projects
 
-Repeat Step 2 for each project in the group. The group CI/CD variables (`EZ_APPSEC_DASHBOARD_PROJECT`, `EZ_APPSEC_DASHBOARD_DEPLOY_KEY`) are inherited automatically — no per-project configuration needed.
+Repeat Step 2 for each project in the group. The group CI/CD variables (`SOURCEBASTION_DASHBOARD_PROJECT`, `SOURCEBASTION_DASHBOARD_DEPLOY_KEY`) are inherited automatically — no per-project configuration needed.
 
 ---
 
@@ -92,9 +92,9 @@ Opens a merge request that removes the `scan.yml` include from `.gitlab-ci.yml`.
 
 | Variable | Scope | Description |
 |----------|-------|-------------|
-| `EZ_APPSEC_DASHBOARD_PROJECT` | Group | Full path of the dashboard project (e.g. `your-group/ez_appsec/ez-appsec-dashboard`) |
-| `EZ_APPSEC_DASHBOARD_DEPLOY_KEY` | Group | Base64-encoded ed25519 private key — allows scan jobs to push to the dashboard |
-| `EZ_APPSEC_VERSION` | Project | Docker image tag to use (default: `latest`) — set by `install` automatically |
+| `SOURCEBASTION_DASHBOARD_PROJECT` | Group | Full path of the dashboard project (e.g. `your-group/sourcebastion/ez-appsec-dashboard`) |
+| `SOURCEBASTION_DASHBOARD_DEPLOY_KEY` | Group | Base64-encoded ed25519 private key — allows scan jobs to push to the dashboard |
+| `SOURCEBASTION_VERSION` | Project | Docker image tag to use (default: `latest`) — set by `install` automatically |
 | `GITLAB_ACCESS_TOKEN` | Project | Access token for MR comments — set in **Settings → CI/CD → Variables** |
 | `CI_PROJECT_ID` | Auto-provided | Project ID — auto-available in CI |
 | `CI_MERGE_REQUEST_IID` | Auto-provided | Merge request IID — auto-available in MR pipelines |
@@ -140,7 +140,7 @@ This triggers `CI_PIPELINE_SOURCE=api`, which activates the `cold:scan` job.
 
 ```bash
 bash gitlab/scripts/gitlab-pipeline-test.sh \
-  --project your-group/ez_appsec/repo-name \
+  --project your-group/sourcebastion/repo-name \
   --ref master \
   --check-dashboard
 ```

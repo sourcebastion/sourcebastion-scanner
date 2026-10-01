@@ -7,15 +7,15 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from ez_appsec.cli import main
-from ez_appsec.external_scanners import (
+from sourcebastion.cli import main
+from sourcebastion.external_scanners import (
     GitleaksScanner,
     KicsScanner,
     PHPVulnScanner,
     SemgrepScanner,
 )
-from ez_appsec.incremental_contract import IncrementalContractError, validate_result_envelope
-from ez_appsec.schema import compute_finding_id
+from sourcebastion.incremental_contract import IncrementalContractError, validate_result_envelope
+from sourcebastion.schema import compute_finding_id
 
 
 SCANNER_IMAGE = "ghcr.io/ez-appsec/ez-appsec@sha256:" + "1" * 64
@@ -516,7 +516,7 @@ def test_gitleaks_contract_finding_never_contains_detected_secret(tmp_path, monk
             )
         return subprocess.CompletedProcess(command, 1, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", write_report)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", write_report)
     findings = scanner.scan(str(tmp_path))
 
     assert len(findings) == 1
@@ -569,7 +569,7 @@ def test_contract_scan_marks_execution_over_deadline_incomplete(tmp_path, monkey
     monkeypatch.setattr(GitleaksScanner, "scan_current_tree", lambda self, path: [])
     ticks = iter([0.0, 2.0])
     monkeypatch.setattr(
-        "ez_appsec.incremental_contract.time.monotonic",
+        "sourcebastion.incremental_contract.time.monotonic",
         lambda: next(ticks),
     )
 
@@ -701,7 +701,7 @@ def test_gitleaks_partial_scope_uses_current_tree_and_only_complete_planned_file
         )
         return subprocess.CompletedProcess(command, 1, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_gitleaks)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_gitleaks)
     findings = scanner.scan_paths(str(source), ["app.py"])
 
     assert len(findings) == 1
@@ -744,7 +744,7 @@ def test_semgrep_partial_scope_uses_only_complete_planned_files(tmp_path, monkey
         )
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_semgrep)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_semgrep)
     findings = scanner.scan_paths(str(source), ["app.py"])
 
     assert len(findings) == 1
@@ -810,7 +810,7 @@ def test_semgrep_partial_javascript_scope_preserves_full_scan_rule_selection(
         report_path.write_text('{"errors":[],"results":[]}', encoding="utf-8")
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_semgrep)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_semgrep)
     full_findings, full_output = scanner.scan_with_raw_output(str(source))
     Path(full_output).unlink()
     assert full_findings == []
@@ -836,7 +836,7 @@ def test_gitleaks_partial_scope_uses_repository_config(tmp_path, monkeypatch):
         report_path.write_text("[]", encoding="utf-8")
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_gitleaks)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_gitleaks)
     assert scanner.scan_paths(str(source), ["app.py"]) == []
 
 
@@ -955,7 +955,7 @@ def test_gitleaks_partial_scope_uses_repository_ignore_file(tmp_path, monkeypatc
         report_path.write_text("[]", encoding="utf-8")
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_gitleaks)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_gitleaks)
     assert scanner.scan_paths(str(source), ["app.py"]) == []
 
 
@@ -974,7 +974,7 @@ def test_semgrep_partial_scope_preserves_repository_ignore_rules(tmp_path, monke
         report_path.write_text('{"errors":[],"results":[]}', encoding="utf-8")
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_semgrep)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_semgrep)
     assert scanner.scan_paths(str(source), ["app.py"]) == []
 
 
@@ -1033,7 +1033,7 @@ def test_kics_partial_scope_scans_complete_planned_unit(tmp_path, monkeypatch):
         )
         return subprocess.CompletedProcess(command, 20, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_kics)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_kics)
     findings = scanner.scan_units(str(source), ["infra"])
 
     assert len(findings) == 1
@@ -1106,7 +1106,7 @@ def test_kics_partial_scope_rejects_unplanned_local_module_reference(
     monkeypatch.setattr(scanner, "is_installed", lambda: True)
     invoked = []
     monkeypatch.setattr(
-        "ez_appsec.external_scanners.subprocess.run",
+        "sourcebastion.external_scanners.subprocess.run",
         lambda *args, **kwargs: invoked.append(args),
     )
 
@@ -1135,7 +1135,7 @@ def test_kics_partial_scope_rejects_unparsed_terraform_module(tmp_path, monkeypa
     monkeypatch.setattr(scanner, "is_installed", lambda: True)
     invoked = []
     monkeypatch.setattr(
-        "ez_appsec.external_scanners.subprocess.run",
+        "sourcebastion.external_scanners.subprocess.run",
         lambda *args, **kwargs: invoked.append(args),
     )
 
@@ -1165,7 +1165,7 @@ def test_kics_partial_scope_rejects_unplanned_tf_json_module_reference(
     monkeypatch.setattr(scanner, "is_installed", lambda: True)
     invoked = []
     monkeypatch.setattr(
-        "ez_appsec.external_scanners.subprocess.run",
+        "sourcebastion.external_scanners.subprocess.run",
         lambda *args, **kwargs: invoked.append(args),
     )
 
@@ -1194,7 +1194,7 @@ def test_kics_partial_scope_rejects_unplanned_kustomize_resource(
     monkeypatch.setattr(scanner, "is_installed", lambda: True)
     invoked = []
     monkeypatch.setattr(
-        "ez_appsec.external_scanners.subprocess.run",
+        "sourcebastion.external_scanners.subprocess.run",
         lambda *args, **kwargs: invoked.append(args),
     )
 
@@ -1228,7 +1228,7 @@ def test_kics_partial_scope_accepts_complete_kustomize_unit(tmp_path, monkeypatc
         )
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr("ez_appsec.external_scanners.subprocess.run", run_kics)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run_kics)
     assert scanner.scan_units(str(source), ["deploy"]) == []
 
 

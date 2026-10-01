@@ -28,7 +28,7 @@ The skill will:
 1. Check `gh` auth and required scopes
 2. Show you exactly what will be created — ask for confirmation
 3. Push `.github/workflows/ez-appsec-scan.yml` to the repo
-4. Set `EZ_APPSEC_APP_ID`, `EZ_APPSEC_PRIVATE_KEY`, and `EZ_APPSEC_DASHBOARD_REPO` secrets
+4. Set `SOURCEBASTION_APP_ID`, `SOURCEBASTION_PRIVATE_KEY`, and `SOURCEBASTION_DASHBOARD_REPO` secrets
 5. Trigger the first scan
 
 The workflow runs automatically on every push to `main`/`master` and on pull requests.
@@ -66,7 +66,7 @@ Defaults to `owner/ez-appsec-dashboard` if no repo is given.
 The skill will:
 1. Create the dashboard repo (if it doesn't exist)
 2. Push the dashboard web assets (`index.html`, `app-github.js`, `style.css`)
-3. Provision `EZ_APPSEC_APP_ID` and `EZ_APPSEC_PRIVATE_KEY` secrets
+3. Provision `SOURCEBASTION_APP_ID` and `SOURCEBASTION_PRIVATE_KEY` secrets
 4. Install the `update-assets.yml` workflow
 5. Enable GitHub Pages (served from `main` branch root)
 6. Trigger the first asset update
@@ -112,11 +112,11 @@ Removes the workflow file and prunes the repo's data from the dashboard.
 
 | Secret / Variable | Where set | Description |
 |-------------------|-----------|-------------|
-| `EZ_APPSEC_APP_ID` | Repo secret | GitHub App ID — used to mint short-lived tokens |
-| `EZ_APPSEC_PRIVATE_KEY` | Repo secret | GitHub App private key (PEM) |
-| `EZ_APPSEC_DASHBOARD_REPO` | Repo variable | Dashboard repo to push results to (e.g. `owner/ez-appsec-dashboard`) |
-| `EZ_APPSEC_VERSION` | Repo variable | Docker image tag to use (default: `latest`) |
-| `EZ_APPSEC_TEAM` | Repo variable | (Optional) Group results under a team subfolder in the dashboard |
+| `SOURCEBASTION_APP_ID` | Repo secret | GitHub App ID — used to mint short-lived tokens |
+| `SOURCEBASTION_PRIVATE_KEY` | Repo secret | GitHub App private key (PEM) |
+| `SOURCEBASTION_DASHBOARD_REPO` | Repo variable | Dashboard repo to push results to (e.g. `owner/ez-appsec-dashboard`) |
+| `SOURCEBASTION_VERSION` | Repo variable | Docker image tag to use (default: `latest`) |
+| `SOURCEBASTION_TEAM` | Repo variable | (Optional) Group results under a team subfolder in the dashboard |
 | `GITHUB_TOKEN` | Auto-provided | GitHub token for PR comments — auto-available in Actions |
 | `GITHUB_EVENT_PATH` | Auto-provided | Path to event JSON — used to extract PR number |
 
@@ -142,9 +142,9 @@ The command will automatically use `GITHUB_TOKEN`, `GITHUB_REPOSITORY`, and `GIT
 
 ---
 
-## Configuration Reference (`.ez-appsec.yaml`)
+## Configuration Reference (`.sourcebastion.yaml`)
 
-Place an `.ez-appsec.yaml` file in your repository root (or pass `--config path/to/file.yaml` to any scan command).
+Place an `.sourcebastion.yaml` file in your repository root (or pass `--config path/to/file.yaml` to any scan command).
 
 ```yaml
 # Target languages (optional — scanners auto-detect if omitted)
@@ -198,7 +198,7 @@ Suppressed findings appear in scan output as a `[suppressed]` count — they are
 ### Validate your config
 
 ```bash
-ez-appsec check-config                    # validates .ez-appsec.yaml
+ez-appsec check-config                    # validates .sourcebastion.yaml
 ez-appsec check-config path/to/config.yaml  # validates a specific file
 ```
 

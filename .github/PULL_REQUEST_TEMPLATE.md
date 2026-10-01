@@ -16,7 +16,7 @@
 - [ ] Commits follow [Conventional Commits](https://www.conventionalcommits.org/) format (`<type>: <description>`)
 - [ ] Tests added or updated for new functionality
 - [ ] All tests pass: `pytest tests/`
-- [ ] Linting passes: `black ez_appsec/ tests/`
+- [ ] Linting passes: `black sourcebastion/ tests/`
 - [ ] Documentation updated as needed
 
 ## How Was This Tested?

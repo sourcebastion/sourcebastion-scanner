@@ -109,7 +109,7 @@ RUN pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && pip check && \
            /usr/bin/pip* /usr/local/bin/pip*
 
 ENV PATH="/usr/local/bin:/usr/bin:/bin:$PATH" \
-    EZ_APPSEC_THIN_IMAGE=1
+    SOURCEBASTION_THIN_IMAGE=1
 
 COPY rules/ /app/rules/
 COPY web/ /web/

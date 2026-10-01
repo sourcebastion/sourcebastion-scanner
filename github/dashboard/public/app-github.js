@@ -1,6 +1,6 @@
 /**
  * Vulnerability Dashboard Application
- * GitHub Pages version for ez-appsec GitHub integration.
+ * GitHub Pages version for SourceBastion GitHub integration.
  * Supports single-project and multi-project (organization) modes.
  * Multi-project mode activates when data/index.json is present.
  */
@@ -339,7 +339,7 @@ class GitHubDashboard {
                 {
                     tool: {
                         driver: {
-                            name: 'ez-appsec',
+                            name: 'SourceBastion',
                             informationUri: 'https://github.com/ez-appsec/ez-appsec',
                             rules: Array.from(rules.values())
                         }
@@ -424,6 +424,12 @@ class GitHubDashboard {
 
     // ── Config ─────────────────────────────────────────────────────
 
+    dashboardVersion() {
+        // One key: there are no deployments predating the rename, so the
+        // compatibility fallback this briefly carried was cost without value.
+        return this.config?.sourcebastion_version;
+    }
+
     async loadConfig() {
         try {
             const r = await fetch('data/config.json');
@@ -434,10 +440,10 @@ class GitHubDashboard {
                 Object.assign(this.slaConfig, this.config.sla);
             }
 
-            if (this.config.ez_appsec_version) {
+            if (this.dashboardVersion()) {
                 const versionLabel = document.getElementById('version-label');
                 if (versionLabel) {
-                    versionLabel.textContent = `v${this.config.ez_appsec_version}`;
+                    versionLabel.textContent = `v${this.dashboardVersion()}`;
                     versionLabel.hidden = false;
                 }
                 this.checkForUpgrade();
@@ -453,10 +459,10 @@ class GitHubDashboard {
             const release = await r.json();
             const latest  = release.tag_name || release.name || '';
 
-            if (this.isOutdated(this.config?.ez_appsec_version, latest)) {
+            if (this.isOutdated(this.dashboardVersion(), latest)) {
                 const btn   = document.getElementById('upgrade-btn');
                 btn.href    = release.html_url || 'https://github.com/ez-appsec/ez-appsec/releases';
-                btn.title   = `Upgrade from ${this.config.ez_appsec_version} to ${latest}`;
+                btn.title   = `Upgrade from ${this.dashboardVersion()} to ${latest}`;
                 btn.textContent = `Upgrade to ${latest}`;
                 btn.hidden  = false;
             }

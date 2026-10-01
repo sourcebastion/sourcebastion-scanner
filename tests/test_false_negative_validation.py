@@ -10,7 +10,7 @@ import pytest
 import tempfile
 import json
 from pathlib import Path
-from ez_appsec.external_scanners import (
+from sourcebastion.external_scanners import (
     SemgrepScanner,
     ExternalScannerManager,
     GitleaksScanner,

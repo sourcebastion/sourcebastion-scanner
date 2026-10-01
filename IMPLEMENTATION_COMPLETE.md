@@ -140,12 +140,12 @@ The ez-appsec comprehensive live testing and validation plan (9 phases, 36 tasks
 ## Files Modified/Created
 
 ### Core Scanner Files
-- `ez_appsec/external_scanners.py` - External scanner wrappers, false positive suppression
-- `ez_appsec/scanner.py` - Main scanner orchestrator (read for performance testing)
-- `ez_appsec/config.py` - Configuration (read for performance testing)
-- `ez_appsec/converters.py` - Format converters
-- `ez_appsec/reporter.py` - Report generation
-- `ez_appsec/cli.py` - CLI interface
+- `sourcebastion/external_scanners.py` - External scanner wrappers, false positive suppression
+- `sourcebastion/scanner.py` - Main scanner orchestrator (read for performance testing)
+- `sourcebastion/config.py` - Configuration (read for performance testing)
+- `sourcebastion/converters.py` - Format converters
+- `sourcebastion/reporter.py` - Report generation
+- `sourcebastion/cli.py` - CLI interface
 
 ### Test Files (10 new)
 - `tests/test_performance_basic.py` - Basic performance tests

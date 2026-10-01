@@ -16,17 +16,17 @@
 #
 # Optional overrides:
 #   GITHUB_ORG       default: ez-appsec
-#   GITLAB_GROUP     default: jfelten.work-group/ez_appsec
+#   GITLAB_GROUP     default: jfelten.work-group/sourcebastion
 #   GITHUB_DASHBOARD default: ez-appsec/ez-appsec-dashboard
-#   GITLAB_DASHBOARD default: jfelten.work-group/ez_appsec/ez-appsec-dashboard
+#   GITLAB_DASHBOARD default: jfelten.work-group/sourcebastion/ez-appsec-dashboard
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-EZ_APPSEC_SRC="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SOURCEBASTION_SRC="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # ─── Load .env from parent git root ─────────────────────────────────────────
-ENV_FILE="${EZ_APPSEC_SRC}/../.env"
+ENV_FILE="${SOURCEBASTION_SRC}/../.env"
 if [[ -f "$ENV_FILE" ]]; then
   # shellcheck disable=SC2163
   while IFS='=' read -r key value; do
@@ -37,9 +37,9 @@ fi
 
 # ─── Config ─────────────────────────────────────────────────────────────────
 GITHUB_ORG="${GITHUB_ORG:-ez-appsec}"
-GITLAB_GROUP="${GITLAB_GROUP:-jfelten.work-group/ez_appsec}"
+GITLAB_GROUP="${GITLAB_GROUP:-jfelten.work-group/sourcebastion}"
 GITHUB_DASHBOARD="${GITHUB_DASHBOARD:-ez-appsec/ez-appsec-dashboard}"
-GITLAB_DASHBOARD="${GITLAB_DASHBOARD:-jfelten.work-group/ez_appsec/ez-appsec-dashboard}"
+GITLAB_DASHBOARD="${GITLAB_DASHBOARD:-jfelten.work-group/sourcebastion/ez-appsec-dashboard}"
 
 # PAT used both to authenticate gh CLI ops and as DASHBOARD_PUSH_TOKEN
 GH_PAT="${GH_PAT:-${GITHUB_ACCESS_TOKEN:-}}"
@@ -188,7 +188,7 @@ gh_install_scanner() {
     --jq '.sha' 2>/dev/null || true)
 
   local workflow_b64
-  workflow_b64=$(b64file "${EZ_APPSEC_SRC}/.github/workflows/github-scan.yml")
+  workflow_b64=$(b64file "${SOURCEBASTION_SRC}/.github/workflows/github-scan.yml")
 
   if [[ -n "$existing_sha" ]]; then
     gh api --method PUT "repos/${target}/contents/.github/workflows/ez-appsec-scan.yml" \
@@ -210,14 +210,14 @@ gh_install_scanner() {
   printf '%s' "$GH_PAT" | gh secret set DASHBOARD_PUSH_TOKEN --repo="$target" --body -
   ok "GitHub [$name] → DASHBOARD_PUSH_TOKEN set"
 
-  # Set EZ_APPSEC_DASHBOARD_REPO variable
-  log "GitHub [$name] → setting EZ_APPSEC_DASHBOARD_REPO variable..."
-  gh api --method PUT "repos/${target}/actions/variables/EZ_APPSEC_DASHBOARD_REPO" \
-    -f name="EZ_APPSEC_DASHBOARD_REPO" \
+  # Set SOURCEBASTION_DASHBOARD_REPO variable
+  log "GitHub [$name] → setting SOURCEBASTION_DASHBOARD_REPO variable..."
+  gh api --method PUT "repos/${target}/actions/variables/SOURCEBASTION_DASHBOARD_REPO" \
+    -f name="SOURCEBASTION_DASHBOARD_REPO" \
     -f value="$GITHUB_DASHBOARD" &>/dev/null 2>/dev/null || \
-  gh variable set EZ_APPSEC_DASHBOARD_REPO \
+  gh variable set SOURCEBASTION_DASHBOARD_REPO \
     --repo="$target" --body "$GITHUB_DASHBOARD" &>/dev/null || true
-  ok "GitHub [$name] → EZ_APPSEC_DASHBOARD_REPO=$GITHUB_DASHBOARD"
+  ok "GitHub [$name] → SOURCEBASTION_DASHBOARD_REPO=$GITHUB_DASHBOARD"
 }
 
 gh_trigger_scan() {
@@ -624,14 +624,14 @@ gl_setup_deploy_key() {
   local private_key_b64
   private_key_b64=$(b64file "$private_key")
 
-  log "Setting EZ_APPSEC_DASHBOARD_DEPLOY_KEY group variable..."
-  gl_set_group_var "$group_id" "EZ_APPSEC_DASHBOARD_DEPLOY_KEY" "$private_key_b64" "true"
-  ok "GitLab → EZ_APPSEC_DASHBOARD_DEPLOY_KEY set in group $group_path (masked)"
+  log "Setting SOURCEBASTION_DASHBOARD_DEPLOY_KEY group variable..."
+  gl_set_group_var "$group_id" "SOURCEBASTION_DASHBOARD_DEPLOY_KEY" "$private_key_b64" "true"
+  ok "GitLab → SOURCEBASTION_DASHBOARD_DEPLOY_KEY set in group $group_path (masked)"
 
   # Store dashboard project path as group variable
-  log "Setting EZ_APPSEC_DASHBOARD_PROJECT group variable..."
-  gl_set_group_var "$group_id" "EZ_APPSEC_DASHBOARD_PROJECT" "$dashboard_path" "false"
-  ok "GitLab → EZ_APPSEC_DASHBOARD_PROJECT=$dashboard_path set in group $group_path"
+  log "Setting SOURCEBASTION_DASHBOARD_PROJECT group variable..."
+  gl_set_group_var "$group_id" "SOURCEBASTION_DASHBOARD_PROJECT" "$dashboard_path" "false"
+  ok "GitLab → SOURCEBASTION_DASHBOARD_PROJECT=$dashboard_path set in group $group_path"
 }
 
 gl_trigger_pipeline() {
@@ -647,7 +647,7 @@ gl_trigger_pipeline() {
   log "GitLab [$name] → triggering cold:scan pipeline on branch $branch..."
 
   # Use curl for the pipeline trigger (glab api may crash)
-  local body='{"ref":"'"$branch"'","variables":[{"key":"EZ_APPSEC_COLD_SCAN","value":"true"}]}'
+  local body='{"ref":"'"$branch"'","variables":[{"key":"SOURCEBASTION_COLD_SCAN","value":"true"}]}'
   local response
   local http_status
   # Trigger without custom variables — CI_PIPELINE_SOURCE=api satisfies cold:scan rule
@@ -793,8 +793,8 @@ main() {
       if [[ -n "$project_id" ]]; then
         GL_PROJECT_ID_MAP="$GL_PROJECT_ID_MAP $name:$project_id"
         gl_install_scanner "$project_id" "$name"
-        gl_set_project_var "$project_id" "EZ_APPSEC_VERSION" "latest"
-        ok "GitLab [$name] → EZ_APPSEC_VERSION=latest"
+        gl_set_project_var "$project_id" "SOURCEBASTION_VERSION" "latest"
+        ok "GitLab [$name] → SOURCEBASTION_VERSION=latest"
       else
         warn "GitLab [$name] → import returned no project ID — skipping"
       fi

@@ -7,8 +7,8 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock, call
 from click.testing import CliRunner
 
-from ez_appsec.cli import main
-from ez_appsec.secret_rotator import (
+from sourcebastion.cli import main
+from sourcebastion.secret_rotator import (
     DetectedSecret,
     RotationResult,
     classify_secret,
@@ -199,7 +199,7 @@ class TestBuildEnvVarNames:
 
 
 class TestAWSKeyProvider:
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_rotates_key_successfully(self, mock_run):
         list_resp = MagicMock(returncode=0, stdout=json.dumps({
             "AccessKeyMetadata": [
@@ -224,7 +224,7 @@ class TestAWSKeyProvider:
         assert "AKIANEWKEY12345678" in result["details"]
         assert mock_run.call_count == 3
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_handles_aws_cli_error(self, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stderr="Access denied", stdout="")
 
@@ -235,7 +235,7 @@ class TestAWSKeyProvider:
         assert result["revoked"] is False
         assert "AWS CLI error" in result["details"]
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_handles_timeout(self, mock_run):
         from subprocess import TimeoutExpired
         mock_run.side_effect = TimeoutExpired("aws", 30)
@@ -257,7 +257,7 @@ class TestAWSKeyProvider:
 
 
 class TestGitHubPATProvider:
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_revokes_token(self, mock_run):
         mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
 
@@ -269,7 +269,7 @@ class TestGitHubPATProvider:
         args = mock_run.call_args[0][0]
         assert args[:4] == ["gh", "api", "-X", "DELETE"]
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_handles_revoke_failure(self, mock_run):
         mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="not found")
 
@@ -347,7 +347,7 @@ class TestRotateSecrets:
         assert results[0].rotated is False
         assert "No provider" in results[0].error
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_successful_rotation_with_store(self, mock_run):
         list_resp = MagicMock(returncode=0, stdout=json.dumps({
             "AccessKeyMetadata": [
@@ -374,7 +374,7 @@ class TestRotateSecrets:
         assert results[0].new_secret_stored is True
 
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_rotated_false_when_deactivation_fails(self, mock_run):
         list_resp = MagicMock(returncode=0, stdout=json.dumps({
             "AccessKeyMetadata": [
@@ -398,7 +398,7 @@ class TestRotateSecrets:
         assert results[0].old_revoked is False
 
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_store_write_failure_reports_error(self, mock_run):
         list_resp = MagicMock(returncode=0, stdout=json.dumps({
             "AccessKeyMetadata": [
@@ -608,9 +608,9 @@ class TestBuildRotationPrTitle:
 
 
 class TestCreateRotationPr:
-    @patch("ez_appsec.secret_rotator.subprocess.run")
-    @patch("ez_appsec.secret_rotator.replace_hardcoded_secret")
-    @patch("ez_appsec.fix_pr.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.replace_hardcoded_secret")
+    @patch("sourcebastion.fix_pr.subprocess.run")
     def test_creates_github_pr(self, mock_git_run, mock_replace, mock_sub_run):
         mock_replace.return_value = True
         mock_git_run.return_value = MagicMock(returncode=0, stderr="", stdout="")
@@ -628,7 +628,7 @@ class TestCreateRotationPr:
         assert result["pr_url"] == "https://github.com/owner/repo/pull/99"
         assert result["files_modified"] == ["config.py"]
 
-    @patch("ez_appsec.secret_rotator.replace_hardcoded_secret")
+    @patch("sourcebastion.secret_rotator.replace_hardcoded_secret")
     def test_dry_run_skips_git(self, mock_replace):
         mock_replace.return_value = True
 
@@ -642,7 +642,7 @@ class TestCreateRotationPr:
         assert result["pr_url"] is None
         assert result["files_modified"] == ["config.py"]
 
-    @patch("ez_appsec.secret_rotator.replace_hardcoded_secret")
+    @patch("sourcebastion.secret_rotator.replace_hardcoded_secret")
     def test_no_modifications_returns_error(self, mock_replace):
         mock_replace.return_value = False
 
@@ -654,9 +654,9 @@ class TestCreateRotationPr:
         assert result.get("error")
         assert result["pr_url"] is None
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
-    @patch("ez_appsec.secret_rotator.replace_hardcoded_secret")
-    @patch("ez_appsec.fix_pr.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.replace_hardcoded_secret")
+    @patch("sourcebastion.fix_pr.subprocess.run")
     def test_creates_gitlab_mr(self, mock_git_run, mock_replace, mock_sub_run):
         mock_replace.return_value = True
         mock_git_run.return_value = MagicMock(returncode=0, stderr="", stdout="")
@@ -699,7 +699,7 @@ class TestSecretStores:
         with pytest.raises(ValueError, match="Unknown"):
             create_secret_store("s3")
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_github_store_write(self, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         store = GitHubActionsSecretStore("owner/repo", token="t")
@@ -715,7 +715,7 @@ class TestSecretStores:
         assert "value123" not in args  # secret piped via stdin, not in args
         assert mock_run.call_args[1]["input"] == "value123"
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_vault_store_write(self, mock_run):
         mock_run.return_value = MagicMock(returncode=0)
         store = VaultSecretStore(vault_addr="https://vault.example.com")
@@ -729,7 +729,7 @@ class TestSecretStores:
         assert "value123" not in " ".join(args)  # secret piped via stdin
         assert '"value"' in mock_run.call_args[1]["input"]
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
     def test_vault_store_no_addr(self, mock_run):
         store = VaultSecretStore(vault_addr="")
         assert store.write("x", "y") is False
@@ -739,8 +739,8 @@ class TestSecretStores:
 class TestEndToEnd:
     """Integration-style tests with real files, mocked providers/git."""
 
-    @patch("ez_appsec.secret_rotator.subprocess.run")
-    @patch("ez_appsec.fix_pr.subprocess.run")
+    @patch("sourcebastion.secret_rotator.subprocess.run")
+    @patch("sourcebastion.fix_pr.subprocess.run")
     def test_gitleaks_to_rotation_pr(self, mock_git_run, mock_sub_run, tmp_path):
         mock_git_run.return_value = MagicMock(returncode=0, stderr="", stdout="")
         mock_sub_run.return_value = MagicMock(
@@ -828,8 +828,8 @@ class TestRotateSecretsCLI:
         (repo_dir / "config.py").write_text('KEY = "AKIAIOSFODNN7EXAMPLE"\n')
 
         runner = CliRunner()
-        with patch("ez_appsec.secret_rotator.subprocess.run") as mock_run, \
-             patch("ez_appsec.fix_pr.subprocess.run") as mock_git:
+        with patch("sourcebastion.secret_rotator.subprocess.run") as mock_run, \
+             patch("sourcebastion.fix_pr.subprocess.run") as mock_git:
             list_resp = MagicMock(returncode=0, stdout=json.dumps({
                 "AccessKeyMetadata": [
                     {"AccessKeyId": "AKIAIOSFODNN7EXAMPLE", "UserName": "bot", "Status": "Active"},

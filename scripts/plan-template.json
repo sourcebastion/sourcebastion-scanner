@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Template for an ez-appsec task plan. Each plan file is a JSON array of task objects that push-plans.py reads to create GitHub issues and project items.",
+  "description": "Template for an SourceBastion task plan. Each plan file is a JSON array of task objects that push-plans.py reads to create GitHub issues and project items.",
   "type": "object",
   "required": ["plan_name", "project", "repository", "tasks"],
   "properties": {

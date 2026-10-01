@@ -68,7 +68,7 @@ JSON Schema for plan files. See the `_example` field for a complete sample.
 
 ### provision.py
 
-Idempotent provisioner — pushes the ez-appsec scan workflow and sets secrets/variables in target repos. Uses Libsodium encryption (PyNaCl) for secrets.
+Idempotent provisioner — pushes the sourcebastion scan workflow and sets secrets/variables in target repos. Uses Libsodium encryption (PyNaCl) for secrets.
 
 ```bash
 python3 provision.py \
@@ -100,12 +100,12 @@ Proxmox LXC container disk resizer. Detects storage backend (LVM/ZFS/directory) 
 
 ## Configuration
 
-All plan scripts read configuration from environment variables, with fallback defaults for the `ez-appsec` org. Set these in `~/git/.env` or export them directly:
+All plan scripts read configuration from environment variables, with fallback defaults for the `SourceBastion` org. Set these in `~/git/.env` or export them directly:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `GITHUB_ACCESS_TOKEN` | *(required)* | GitHub PAT with `repo`, `project`, `read:org` scopes |
-| `GH_PROJECT_OWNER` | `ez-appsec` | GitHub org that owns the project board |
+| `GH_PROJECT_OWNER` | `SourceBastion` | GitHub org that owns the project board |
 | `GH_PROJECT_NUMBER` | `2` | Project board number |
 | `GH_STATUS_FIELD_ID` | `PVTSSF_lADO...` | ProjectV2 Status field ID |
 | `GH_TODO_OPTION_ID` | `f75ad846` | Status option ID for "Todo" |

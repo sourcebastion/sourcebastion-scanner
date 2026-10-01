@@ -8,17 +8,17 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from click.testing import CliRunner
-from ez_appsec.cli import main, scan, gitlab_scan, github_scan, init, check, status
-from ez_appsec.external_scanners import ScannerExecutionError
+from sourcebastion.cli import main, scan, gitlab_scan, github_scan, init, check, status
+from sourcebastion.external_scanners import ScannerExecutionError
 
 
 @pytest.fixture(autouse=True)
 def stub_external_scanner_execution():
     """CLI unit tests do not depend on host-installed scanner binaries."""
     with (
-        patch("ez_appsec.external_scanners.ExternalScannerManager.scan_all", return_value=[]),
+        patch("sourcebastion.external_scanners.ExternalScannerManager.scan_all", return_value=[]),
         patch(
-            "ez_appsec.external_scanners.ExternalScannerManager.scan_all_with_raw_outputs",
+            "sourcebastion.external_scanners.ExternalScannerManager.scan_all_with_raw_outputs",
             return_value=([], {}),
         ),
     ):
@@ -87,7 +87,7 @@ def example():
     def test_scan_reports_bounded_component_failure(self, sample_file):
         runner = CliRunner()
         with patch(
-            "ez_appsec.external_scanners.ExternalScannerManager.scan_all",
+            "sourcebastion.external_scanners.ExternalScannerManager.scan_all",
             side_effect=ScannerExecutionError("semgrep", "timeout"),
         ):
             result = runner.invoke(main, ["scan", sample_file])
@@ -267,7 +267,7 @@ class TestGithubScanCommand:
         runner = CliRunner()
 
         with patch(
-            "ez_appsec.scanner.SecurityScanner.scan_to_github_format",
+            "sourcebastion.scanner.SecurityScanner.scan_to_github_format",
             return_value=report,
         ):
             result = runner.invoke(main, ['github-scan', sample_file])
@@ -336,15 +336,15 @@ class TestInitCommand:
         monkeypatch.chdir(temp_dir)
         result = runner.invoke(main, ['init'])
         assert result.exit_code == 0
-        assert os.path.exists('.ez-appsec.yaml')
-        config_text = Path('.ez-appsec.yaml').read_text(encoding='utf-8')
+        assert os.path.exists('.sourcebastion.yaml')
+        config_text = Path('.sourcebastion.yaml').read_text(encoding='utf-8')
         assert 'ai:' not in config_text
         assert 'gpt-' not in config_text
 
     def test_init_with_existing_config(self, temp_dir, monkeypatch):
         """Test init with existing configuration file"""
         # Create existing config
-        config_path = Path(temp_dir) / '.ez-appsec.yaml'
+        config_path = Path(temp_dir) / '.sourcebastion.yaml'
         config_path.write_text("# Existing config")
 
         runner = CliRunner()
@@ -356,7 +356,7 @@ class TestInitCommand:
 
 class TestWebReportCommand:
     def test_web_report_loads_project_config(self, tmp_path):
-        config_path = tmp_path / ".ez-appsec.yaml"
+        config_path = tmp_path / ".sourcebastion.yaml"
         config_path.write_text(
             """ignore:
   - file_path: tests/fixtures/**
@@ -373,7 +373,7 @@ class TestWebReportCommand:
             return {"version": "15.0.0", "vulnerabilities": [], "remediations": []}
 
         with patch(
-            "ez_appsec.scanner.SecurityScanner.scan_to_gitlab_format",
+            "sourcebastion.scanner.SecurityScanner.scan_to_gitlab_format",
             new=fake_gitlab_scan,
         ):
             result = CliRunner().invoke(
@@ -456,7 +456,7 @@ class TestErrorHandling:
 
     def test_scan_summary_shows_trend_when_v2_computed(self, tmp_path, monkeypatch):
         """UX-1: new/resolved counts computed by the scanner must reach stdout."""
-        from ez_appsec import scanner as scanner_mod
+        from sourcebastion import scanner as scanner_mod
 
         sample_file = tmp_path / "sample.py"
         sample_file.write_text("password = 'hardcoded'\n")
@@ -500,7 +500,7 @@ class TestAFailedScanLeavesEvidence:
         output = tmp_path / "scan-results" / "sourcebastion.sarif"
         output.parent.mkdir(parents=True)
 
-        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+        with patch("sourcebastion.cli.SecurityScanner") as scanner:
             scanner.return_value.scan_to_github_format.side_effect = (
                 ScannerExecutionError("kics", "timeout")
             )
@@ -515,7 +515,7 @@ class TestAFailedScanLeavesEvidence:
         output = tmp_path / "scan-results" / "sourcebastion.sarif"
         output.parent.mkdir(parents=True)
 
-        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+        with patch("sourcebastion.cli.SecurityScanner") as scanner:
             scanner.return_value.scan_to_github_format.side_effect = (
                 ScannerExecutionError("kics", "timeout")
             )
@@ -538,7 +538,7 @@ class TestAFailedScanLeavesEvidence:
         output = tmp_path / "scan-results" / "sourcebastion.sarif"
         output.parent.mkdir(parents=True)
 
-        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+        with patch("sourcebastion.cli.SecurityScanner") as scanner:
             scanner.return_value.scan_to_github_format.side_effect = (
                 ScannerExecutionError("kics", "timeout")
             )
@@ -552,11 +552,11 @@ class TestAFailedScanLeavesEvidence:
         """An unwritable directory must not turn a timeout into something else."""
         runner = CliRunner()
 
-        with patch("ez_appsec.cli.SecurityScanner") as scanner:
+        with patch("sourcebastion.cli.SecurityScanner") as scanner:
             scanner.return_value.scan_to_github_format.side_effect = (
                 ScannerExecutionError("kics", "timeout")
             )
-            with patch("ez_appsec.cli.Path.write_text", side_effect=OSError):
+            with patch("sourcebastion.cli.Path.write_text", side_effect=OSError):
                 result = runner.invoke(
                     main,
                     ["github-scan", str(tmp_path), "--output", str(tmp_path / "o.sarif")],

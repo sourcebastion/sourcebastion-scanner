@@ -1,7 +1,7 @@
 """Webhook notifications for Slack and Teams (PLAN-07).
 
 Sends notifications when scans produce new critical or high findings.
-Configurable via EZ_APPSEC_SLACK_WEBHOOK / EZ_APPSEC_TEAMS_WEBHOOK env vars.
+Configurable via SOURCEBASTION_SLACK_WEBHOOK / SOURCEBASTION_TEAMS_WEBHOOK env vars.
 """
 
 import json
@@ -254,12 +254,12 @@ def notify_on_new_findings(
     """Send notifications if there are new critical/high findings.
 
     Called at end of scan pipeline. Reads webhook URLs from parameters
-    or from EZ_APPSEC_SLACK_WEBHOOK / EZ_APPSEC_TEAMS_WEBHOOK env vars.
+    or from SOURCEBASTION_SLACK_WEBHOOK / SOURCEBASTION_TEAMS_WEBHOOK env vars.
 
     Returns dict with send results.
     """
-    slack_url = slack_webhook or os.environ.get("EZ_APPSEC_SLACK_WEBHOOK", "")
-    teams_url = teams_webhook or os.environ.get("EZ_APPSEC_TEAMS_WEBHOOK", "")
+    slack_url = slack_webhook or os.environ.get("SOURCEBASTION_SLACK_WEBHOOK", "")
+    teams_url = teams_webhook or os.environ.get("SOURCEBASTION_TEAMS_WEBHOOK", "")
 
     result: Dict[str, Any] = {
         "notified": False,
@@ -280,8 +280,8 @@ def notify_on_new_findings(
         result["reason"] = "no critical/high findings"
         return result
 
-    proj = project_name or os.environ.get("EZ_APPSEC_PROJECT_NAME", "unknown")
-    dash = dashboard_url or os.environ.get("EZ_APPSEC_DASHBOARD_URL", "")
+    proj = project_name or os.environ.get("SOURCEBASTION_PROJECT_NAME", "unknown")
+    dash = dashboard_url or os.environ.get("SOURCEBASTION_DASHBOARD_URL", "")
 
     payload = build_payload(findings, project_name=proj, dashboard_url=dash)
 

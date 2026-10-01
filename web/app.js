@@ -207,16 +207,22 @@ class VulnerabilityDashboard {
 
     // ── Config ─────────────────────────────────────────────────────────────
 
+    dashboardVersion() {
+        // One key: there are no deployments predating the rename, so the
+        // compatibility fallback this briefly carried was cost without value.
+        return this.config?.sourcebastion_version;
+    }
+
     async loadConfig() {
         try {
             const r = await fetch('data/config.json');
             if (!r.ok) return;
             this.config = await r.json();
 
-            if (this.config.ez_appsec_version) {
+            if (this.dashboardVersion()) {
                 const versionLabel = document.getElementById('version-label');
                 if (versionLabel) {
-                    versionLabel.textContent = `v${this.config.ez_appsec_version}`;
+                    versionLabel.textContent = `v${this.dashboardVersion()}`;
                     versionLabel.hidden = false;
                 }
                 this.checkForUpgrade(this.config.gitlab_url);
@@ -232,10 +238,10 @@ class VulnerabilityDashboard {
             const release = await r.json();
             const latest  = (release.tag_name || '').replace(/^v/, '');
 
-            if (this.isOutdated(this.config.ez_appsec_version, latest)) {
+            if (this.isOutdated(this.dashboardVersion(), latest)) {
                 const btn   = document.getElementById('upgrade-btn');
                 btn.href    = release.html_url || 'https://github.com/ez-appsec/ez-appsec/releases';
-                btn.title   = `Upgrade from ${this.config.ez_appsec_version} to ${latest}`;
+                btn.title   = `Upgrade from ${this.dashboardVersion()} to ${latest}`;
                 btn.textContent = `Upgrade to ${latest}`;
                 btn.hidden  = false;
             }
@@ -290,7 +296,7 @@ class VulnerabilityDashboard {
                 if (rescanBtn && projectUrl) {
                     const branch = meta.default_branch || '';
                     const refParam = branch ? `&ref=${encodeURIComponent(branch)}` : '';
-                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[EZ_APPSEC_COLD_SCAN]=true${refParam}`;
+                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[SOURCEBASTION_COLD_SCAN]=true${refParam}`;
                     rescanBtn.classList.add('rescan-btn--visible');
                 }
             }
@@ -383,7 +389,7 @@ class VulnerabilityDashboard {
                 if (projectUrl) {
                     const branch = (proj && proj.default_branch) ? proj.default_branch : '';
                     const refParam = branch ? `&ref=${encodeURIComponent(branch)}` : '';
-                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[EZ_APPSEC_COLD_SCAN]=true${refParam}`;
+                    rescanBtn.href = `${projectUrl}/-/pipelines/new?var[SOURCEBASTION_COLD_SCAN]=true${refParam}`;
                     rescanBtn.classList.add('rescan-btn--visible');
                 } else {
                     rescanBtn.classList.remove('rescan-btn--visible');

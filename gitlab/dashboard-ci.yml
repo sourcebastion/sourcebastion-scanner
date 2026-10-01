@@ -1,6 +1,6 @@
-# ez-appsec group security dashboard
-# This project is managed by ez-appsec.
-# DO NOT EDIT — update:web will overwrite this file from the ez-appsec source.
+# SourceBastion group security dashboard
+# This project is managed by SourceBastion.
+# DO NOT EDIT — update:web will overwrite this file from the SourceBastion source.
 #
 # Jobs:
 #   rescan:project  — clone and re-scan a single project
@@ -14,14 +14,14 @@ stages:
   - deploy
 
 variables:
-  EZ_APPSEC_VERSION: "latest"
-  EZ_APPSEC_IMAGE: "ghcr.io/ez-appsec/ez-appsec:$EZ_APPSEC_VERSION"
+  SOURCEBASTION_VERSION: "latest"
+  SOURCEBASTION_IMAGE: "ghcr.io/ez-appsec/ez-appsec:$SOURCEBASTION_VERSION"
 
 # ── Shared: checkout main and configure git push credentials ─────────────────
 .git-setup: &git-setup |
   git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-  git config user.email "ci@ez-appsec.ai"
-  git config user.name "ez-appsec CI"
+  git config user.email "ci@SourceBastion.ai"
+  git config user.name "SourceBastion CI"
   git fetch origin main --quiet
   git checkout -B main origin/main
 
@@ -84,7 +84,7 @@ variables:
 rescan:project:
   stage: scan
   image:
-    name: $EZ_APPSEC_IMAGE
+    name: $SOURCEBASTION_IMAGE
     entrypoint: [""]
   variables:
     RESCAN_PROJECT_PATH: ""
@@ -103,7 +103,7 @@ rescan:project:
         /tmp/target
       echo "==> Scanning..."
       mkdir -p "public/data/projects/${SLUG}"
-      ez-appsec gitlab-scan /tmp/target \
+      sourcebastion gitlab-scan /tmp/target \
         --output "public/data/projects/${SLUG}/vulnerabilities.json"
       rm -rf /tmp/target
       NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -131,7 +131,7 @@ rescan:project:
 rescan:all:
   stage: scan
   image:
-    name: $EZ_APPSEC_IMAGE
+    name: $SOURCEBASTION_IMAGE
     entrypoint: [""]
   script:
     - apk add --no-cache git python3 curl --quiet
@@ -153,7 +153,7 @@ rescan:all:
           "https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}/${PROJ_PATH}.git" \
           /tmp/target 2>/dev/null || \
         { echo "  SKIP ${PROJ_PATH}: clone failed"; ERRORS=$((ERRORS+1)); continue; }
-        ez-appsec gitlab-scan /tmp/target \
+        sourcebastion gitlab-scan /tmp/target \
           --output "public/data/projects/${SLUG}/vulnerabilities.json" || \
         { echo "  SKIP ${PROJ_PATH}: scan failed"; ERRORS=$((ERRORS+1)); rm -rf /tmp/target; continue; }
         rm -rf /tmp/target
@@ -175,7 +175,7 @@ rescan:all:
     - when: manual
 
 # ─────────────────────────────────────────────────────────────────────────────
-# update:web — pull latest web assets AND this CI file from ez-appsec source
+# update:web — pull latest web assets AND this CI file from SourceBastion source
 # ─────────────────────────────────────────────────────────────────────────────
 update:web:
   stage: deploy
@@ -196,7 +196,7 @@ update:web:
       curl -fsSL "${GH_BASE}/gitlab/dashboard-ci.yml" -o .gitlab-ci.yml
       echo "  .gitlab-ci.yml"
     - git add public/index.html public/style.css public/app.js .gitlab-ci.yml
-    - 'git diff --cached --quiet && echo "No changes." || git commit -m "chore: update web assets and CI from ez-appsec"'
+    - 'git diff --cached --quiet && echo "No changes." || git commit -m "chore: update web assets and CI from SourceBastion"'
     - git push origin main
   rules:
     - when: manual

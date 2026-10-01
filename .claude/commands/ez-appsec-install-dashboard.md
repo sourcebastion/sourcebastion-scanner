@@ -18,38 +18,38 @@ Defaults to `ez-appsec/ez-appsec-dashboard` if no repo is given.
 ```bash
 DASHBOARD_REPO="${ARGUMENTS:-ez-appsec/ez-appsec-dashboard}"
 OWNER=$(echo "$DASHBOARD_REPO" | cut -d/ -f1)
-EZ_APPSEC_REPO="ez-appsec/ez-appsec"
+SOURCEBASTION_REPO="ez-appsec/ez-appsec"
 ```
 
 Validate `owner/repo` format. If malformed, stop with a usage error.
 
 Locate the ez-appsec source root (for local asset files):
 ```bash
-EZ_APPSEC_SRC=$(git -C "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" rev-parse --show-toplevel 2>/dev/null || echo ".")
+SOURCEBASTION_SRC=$(git -C "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" rev-parse --show-toplevel 2>/dev/null || echo ".")
 ```
 
 Read App credentials — try in order:
-1. `EZ_APPSEC_APP_ID` / `EZ_APPSEC_PRIVATE_KEY_PATH` env vars
+1. `SOURCEBASTION_APP_ID` / `SOURCEBASTION_PRIVATE_KEY_PATH` env vars
 2. `~/../.env` (one level above the repo root): parse `APP_ID=` and look for `*.private-key.pem`
 3. If still missing, ask the user for the App ID and path to the PEM file
 
 ```bash
 # Try to load from .env
-ENV_FILE="$(dirname "$EZ_APPSEC_SRC")/.env"
+ENV_FILE="$(dirname "$SOURCEBASTION_SRC")/.env"
 if [ -f "$ENV_FILE" ]; then
-  APP_ID_VAL=$(grep -E '^EZ_APPSEC_APP_ID=' "$ENV_FILE" | cut -d= -f2 | tr -d '"' | xargs 2>/dev/null || echo "")
+  APP_ID_VAL=$(grep -E '^SOURCEBASTION_APP_ID=' "$ENV_FILE" | cut -d= -f2 | tr -d '"' | xargs 2>/dev/null || echo "")
   # also look for any *.private-key.pem in the parent directory
-  PEM_PATH=$(ls "$(dirname "$EZ_APPSEC_SRC")"/*.private-key.pem 2>/dev/null | head -1 || echo "")
+  PEM_PATH=$(ls "$(dirname "$SOURCEBASTION_SRC")"/*.private-key.pem 2>/dev/null | head -1 || echo "")
 fi
-APP_ID="${EZ_APPSEC_APP_ID:-$APP_ID_VAL}"
-PEM="${EZ_APPSEC_PRIVATE_KEY_PATH:-$PEM_PATH}"
+APP_ID="${SOURCEBASTION_APP_ID:-$APP_ID_VAL}"
+PEM="${SOURCEBASTION_PRIVATE_KEY_PATH:-$PEM_PATH}"
 ```
 
 If `APP_ID` is empty, use the known numeric ID for the `ez-appsec` GitHub App: `3338152`.
 
 If `PEM` is empty, stop and tell the user:
 ```
-App private key not found. Set EZ_APPSEC_PRIVATE_KEY_PATH to the path of your
+App private key not found. Set SOURCEBASTION_PRIVATE_KEY_PATH to the path of your
 ez-appsec.private-key.pem file, then retry.
 ```
 
@@ -69,10 +69,10 @@ WORKFLOW_SHA=$(gh api /repos/$DASHBOARD_REPO/contents/.github/workflows/update-a
 # Current asset version (from data/config.json if present)
 CURRENT_VERSION=$(gh api /repos/$DASHBOARD_REPO/contents/data/config.json \
   --jq '.content' 2>/dev/null | base64 --decode \
-  | python3 -c "import json,sys; print(json.load(sys.stdin).get('ez_appsec_version','none'))" 2>/dev/null || echo "none")
+  | python3 -c "import json,sys; print(json.load(sys.stdin).get('sourcebastion_version','none'))" 2>/dev/null || echo "none")
 
 # Latest ez-appsec release
-LATEST_TAG=$(gh api /repos/$EZ_APPSEC_REPO/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
+LATEST_TAG=$(gh api /repos/$SOURCEBASTION_REPO/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
 ```
 
 ### 3. Present plan and ask permission — ONCE
@@ -85,7 +85,7 @@ Repo:            $( [ "$REPO_EXISTS" = yes ] && echo "exists" || echo "will be c
 Assets:          $( [ "$CURRENT_VERSION" = none ] && echo "not installed" || echo "v$CURRENT_VERSION (will update to $LATEST_TAG)" )
 App workflow:    $( [ -n "$WORKFLOW_SHA" ] && echo "installed (will update)" || echo "not installed (will install)" )
 Pages:           $( [ "$PAGES_STATUS" = none ] && echo "not enabled (will enable)" || echo "$PAGES_STATUS" )
-App secrets:     will provision EZ_APPSEC_APP_ID + EZ_APPSEC_PRIVATE_KEY
+App secrets:     will provision SOURCEBASTION_APP_ID + SOURCEBASTION_PRIVATE_KEY
 ```
 
 Ask: "Ready to install/update the dashboard?"
@@ -100,8 +100,8 @@ DASHBOARD_REPO="<DASHBOARD_REPO>"
 OWNER="<OWNER>"
 APP_ID="<APP_ID>"
 PEM="<PEM>"
-EZ_APPSEC_REPO="ez-appsec/ez-appsec"
-EZ_APPSEC_SRC="<EZ_APPSEC_SRC>"
+SOURCEBASTION_REPO="ez-appsec/ez-appsec"
+SOURCEBASTION_SRC="<SOURCEBASTION_SRC>"
 LATEST_TAG="<LATEST_TAG>"
 WORKFLOW_SHA="<WORKFLOW_SHA>"
 ERRORS=0
@@ -120,7 +120,7 @@ fi
 # ── 2. Push initial dashboard files ──────────────────────────────────────────
 echo "Pushing dashboard assets to $DASHBOARD_REPO..."
 DASH_DIR=$(mktemp -d)
-GITHUB_ACCESS_TOKEN=$(grep GITHUB_ACCESS_TOKEN "${EZ_APPSEC_SRC}/../.env" 2>/dev/null | cut -d= -f2 || echo "")
+GITHUB_ACCESS_TOKEN=$(grep GITHUB_ACCESS_TOKEN "${SOURCEBASTION_SRC}/../.env" 2>/dev/null | cut -d= -f2 || echo "")
 TOKEN="${GITHUB_ACCESS_TOKEN:-$(gh auth token)}"
 
 git clone "https://x-access-token:${TOKEN}@github.com/${DASHBOARD_REPO}.git" "${DASH_DIR}/repo"
@@ -128,14 +128,14 @@ cd "${DASH_DIR}/repo"
 git checkout main 2>/dev/null || git checkout -b main
 
 # Copy local dashboard assets (prefer local source, fall back to downloading from release)
-ASSET_SRC="${EZ_APPSEC_SRC}/github/dashboard/public"
+ASSET_SRC="${SOURCEBASTION_SRC}/github/dashboard/public"
 if [ -f "${ASSET_SRC}/index.html" ]; then
   cp "${ASSET_SRC}/index.html" index.html
   cp "${ASSET_SRC}/app-github.js" app-github.js
   cp "${ASSET_SRC}/style.css" style.css
   echo "  ✓ Copied local assets"
 else
-  BASE="https://raw.githubusercontent.com/${EZ_APPSEC_REPO}/${LATEST_TAG}/github/dashboard/public"
+  BASE="https://raw.githubusercontent.com/${SOURCEBASTION_REPO}/${LATEST_TAG}/github/dashboard/public"
   for ASSET in index.html app-github.js style.css; do
     curl -sSfL "${BASE}/${ASSET}" -o "${ASSET}"
   done
@@ -147,7 +147,7 @@ mkdir -p data/vulnerabilities
 if [ ! -f data/index.json ]; then
   printf '{\n  "last_updated": null,\n  "projects": []\n}\n' > data/index.json
 fi
-printf '{\n  "ez_appsec_version": "%s"\n}\n' "${LATEST_TAG#v}" > data/config.json
+printf '{\n  "sourcebastion_version": "%s"\n}\n' "${LATEST_TAG#v}" > data/config.json
 
 git config user.name "ez-appsec installer"
 git config user.email "ci@ez-appsec.ai"
@@ -162,21 +162,21 @@ rm -rf "${DASH_DIR}"
 
 # ── 3. Provision App secrets ──────────────────────────────────────────────────
 echo "Provisioning App secrets on $DASHBOARD_REPO..."
-(cd "$EZ_APPSEC_SRC" && python3 scripts/provision.py \
+(cd "$SOURCEBASTION_SRC" && python3 scripts/provision.py \
   --token "$TOKEN" \
   --repos "$DASHBOARD_REPO" \
   --app-id "$APP_ID" \
   --private-key "$PEM") \
-  && echo "  ✓ EZ_APPSEC_APP_ID + EZ_APPSEC_PRIVATE_KEY provisioned" \
+  && echo "  ✓ SOURCEBASTION_APP_ID + SOURCEBASTION_PRIVATE_KEY provisioned" \
   || { echo "  ✗ Provisioning failed"; ERRORS=$((ERRORS+1)); }
 
 # ── 4. Install update-assets.yml workflow ────────────────────────────────────
 echo "Installing update-assets.yml workflow..."
-CONTENT=$(gh api "/repos/${EZ_APPSEC_REPO}/contents/github/dashboard/update-assets.yml?ref=${LATEST_TAG}" \
+CONTENT=$(gh api "/repos/${SOURCEBASTION_REPO}/contents/github/dashboard/update-assets.yml?ref=${LATEST_TAG}" \
   --jq '.content' 2>/dev/null | tr -d '\n')
 if [ -z "$CONTENT" ]; then
   # Fall back to local copy
-  CONTENT=$(base64 < "${EZ_APPSEC_SRC}/github/dashboard/update-assets.yml" | tr -d '\n')
+  CONTENT=$(base64 < "${SOURCEBASTION_SRC}/github/dashboard/update-assets.yml" | tr -d '\n')
 fi
 
 if [ -n "$WORKFLOW_SHA" ]; then

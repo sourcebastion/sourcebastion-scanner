@@ -9,7 +9,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from ez_appsec.history import append_history, make_entry
+from sourcebastion.history import append_history, make_entry
 
 PROJECTS_DIR = Path("public/data/projects")
 INDEX_FILE   = Path("public/data/index.json")

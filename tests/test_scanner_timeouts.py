@@ -4,8 +4,8 @@ import time
 
 import pytest
 
-from ez_appsec.config import Config, ScannerSettings, MAX_SCANNER_TIMEOUT_SECONDS
-from ez_appsec.external_scanners import (
+from sourcebastion.config import Config, ScannerSettings, MAX_SCANNER_TIMEOUT_SECONDS
+from sourcebastion.external_scanners import (
     DEFAULT_COMPONENT_TIMEOUTS,
     ExternalScannerManager,
     GrypeScanner,
@@ -86,7 +86,7 @@ class TestInvalidValuesAreRefused:
             ScannerSettings(timeout=value)
 
     def test_a_malformed_scanners_block_is_an_error(self, tmp_path):
-        config_file = tmp_path / ".ez-appsec.yaml"
+        config_file = tmp_path / ".sourcebastion.yaml"
         config_file.write_text("scanners: [kics]\n")
         with pytest.raises(ValueError):
             Config.from_file(str(config_file))
@@ -110,7 +110,7 @@ class TestWiring:
         assert "nosuchscanner" not in manager.scanners
 
     def test_the_config_file_round_trips(self, tmp_path):
-        config_file = tmp_path / ".ez-appsec.yaml"
+        config_file = tmp_path / ".sourcebastion.yaml"
         config_file.write_text(
             "scanners:\n  kics:\n    timeout: 800\n  grype:\n    setup_timeout: 400\n"
         )

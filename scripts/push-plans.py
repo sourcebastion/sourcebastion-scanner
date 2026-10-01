@@ -37,7 +37,7 @@ def load_env():
 
 load_env()
 
-PROJECT_OWNER = os.environ.get("GH_PROJECT_OWNER", "ez-appsec")
+PROJECT_OWNER = os.environ.get("GH_PROJECT_OWNER", "SourceBastion")
 PROJECT_NUMBER = int(os.environ.get("GH_PROJECT_NUMBER", "2"))
 STATUS_FIELD_ID = os.environ.get("GH_STATUS_FIELD_ID", "PVTSSF_lADOEEhvmM4BUnlNzhBuhsY")
 TODO_OPTION_ID = os.environ.get("GH_TODO_OPTION_ID", "f75ad846")

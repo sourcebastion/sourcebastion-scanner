@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Idempotent provisioner: push ez-appsec scan workflow + set secrets/variables in target repos.
+"""Idempotent provisioner: push sourcebastion scan workflow + set secrets/variables in target repos.
 
 Usage:
     python3 provision.py \
@@ -12,9 +12,9 @@ The provisioner:
   1. Reads github/templates/scan.yml from this repo (or the working directory)
   2. For each target repo:
      a. PUT .github/workflows/ez-appsec-scan.yml (create-or-update, idempotent)
-     b. SET secret EZ_APPSEC_APP_ID
-     c. SET secret EZ_APPSEC_PRIVATE_KEY  (Libsodium-encrypted with repo public key)
-     d. SET variable EZ_APPSEC_DASHBOARD_REPO = ez-appsec/ez-appsec-dashboard
+     b. SET secret SOURCEBASTION_APP_ID
+     c. SET secret SOURCEBASTION_PRIVATE_KEY  (Libsodium-encrypted with repo public key)
+     d. SET variable SOURCEBASTION_DASHBOARD_REPO = ez-appsec/ez-appsec-dashboard
 """
 import argparse
 import base64
@@ -161,25 +161,25 @@ def provision_repo(repo: str, install_token: str, app_id: str, private_key: str)
         WORKFLOW_DEST,
         template,
         install_token,
-        message=f'ci: {action} ez-appsec security scan workflow',
+        message=f'ci: {action} SourceBastion security scan workflow',
         sha=sha,
     )
     print(f'    ✓ {"Updated" if exists else "Created"} {WORKFLOW_DEST}')
 
     # 2. Set secrets
-    _put_secret(repo, 'EZ_APPSEC_APP_ID', app_id, install_token)
-    print(f'    ✓ Set secret EZ_APPSEC_APP_ID')
+    _put_secret(repo, 'SOURCEBASTION_APP_ID', app_id, install_token)
+    print(f'    ✓ Set secret SOURCEBASTION_APP_ID')
 
-    _put_secret(repo, 'EZ_APPSEC_PRIVATE_KEY', private_key, install_token)
-    print(f'    ✓ Set secret EZ_APPSEC_PRIVATE_KEY')
+    _put_secret(repo, 'SOURCEBASTION_PRIVATE_KEY', private_key, install_token)
+    print(f'    ✓ Set secret SOURCEBASTION_PRIVATE_KEY')
 
     # 3. Set variable
-    _put_variable(repo, 'EZ_APPSEC_DASHBOARD_REPO', DASHBOARD_REPO, install_token)
-    print(f'    ✓ Set variable EZ_APPSEC_DASHBOARD_REPO={DASHBOARD_REPO}')
+    _put_variable(repo, 'SOURCEBASTION_DASHBOARD_REPO', DASHBOARD_REPO, install_token)
+    print(f'    ✓ Set variable SOURCEBASTION_DASHBOARD_REPO={DASHBOARD_REPO}')
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Provision ez-appsec into customer repos')
+    parser = argparse.ArgumentParser(description='Provision SourceBastion into customer repos')
     parser.add_argument('--token', required=True, help='GitHub App installation token')
     parser.add_argument('--repos', required=True,
                         help='Comma-separated list of owner/repo targets')

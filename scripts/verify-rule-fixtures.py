@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify custom semgrep rule packs against their TP/TN fixtures.
 
-This script is intentionally dependency-light enough to run inside ez-appsec
+This script is intentionally dependency-light enough to run inside SourceBastion
 Docker images after they are built. It verifies every rule file under rules/*:
   - rule YAML is parseable by semgrep
   - its true-positive fixture produces at least one finding
@@ -87,7 +87,7 @@ def all_rules() -> list[tuple[str, Path]]:
 
 
 def validate_rule(rule_yaml: Path) -> list[str]:
-    empty_target = Path(tempfile.gettempdir()) / "ez_appsec_empty_target"
+    empty_target = Path(tempfile.gettempdir()) / "sourcebastion_empty_target"
     empty_target.mkdir(exist_ok=True)
     _, errors = run_semgrep(rule_yaml, empty_target)
     return errors

@@ -18,8 +18,8 @@ ez-appsec org-sync --org mycompany
 
 ez-appsec uses a two-tier config model:
 
-1. **Org-level config** — stored in a dedicated config repo (default: `<org>/.ez-appsec-config/.ez-appsec.yaml`)
-2. **Repo-level config** — each repo's own `.ez-appsec.yaml`
+1. **Org-level config** — stored in a dedicated config repo (default: `<org>/.ez-appsec-config/.sourcebastion.yaml`)
+2. **Repo-level config** — each repo's own `.sourcebastion.yaml`
 
 ### Merge rules
 
@@ -29,7 +29,7 @@ ez-appsec uses a two-tier config model:
 
 ### Example
 
-**Org config** (`mycompany/.ez-appsec-config/.ez-appsec.yaml`):
+**Org config** (`mycompany/.ez-appsec-config/.sourcebastion.yaml`):
 ```yaml
 severity: high
 languages:
@@ -41,7 +41,7 @@ policy:
     max_count: 0
 ```
 
-**Repo config** (`mycompany/api-service/.ez-appsec.yaml`):
+**Repo config** (`mycompany/api-service/.sourcebastion.yaml`):
 ```yaml
 severity: medium
 languages:
@@ -68,7 +68,7 @@ policy:                   # inherited from org
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--org` | GitHub organization name | *required* |
-| `--config-repo` | Repo containing org-level `.ez-appsec.yaml` | `<org>/.ez-appsec-config` |
+| `--config-repo` | Repo containing org-level `.sourcebastion.yaml` | `<org>/.ez-appsec-config` |
 | `--dry-run` | Preview changes without writing | `false` |
 
 ### What it does

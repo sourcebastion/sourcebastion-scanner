@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-from ez_appsec.cli import main
-from ez_appsec.cedar_adapter import evaluate_cedar, parity_result, snapshot_from_findings
-from ez_appsec.config import Config, IgnoreRule
-from ez_appsec.external_scanners import ScannerExecutionError
-from ez_appsec.policy import PolicyRule
-from ez_appsec.scanner import SecurityScanner
+from sourcebastion.cli import main
+from sourcebastion.cedar_adapter import evaluate_cedar, parity_result, snapshot_from_findings
+from sourcebastion.config import Config, IgnoreRule
+from sourcebastion.external_scanners import ScannerExecutionError
+from sourcebastion.policy import PolicyRule
+from sourcebastion.scanner import SecurityScanner
 
 
 def test_summary_is_complete_and_contains_no_raw_finding_data():
@@ -67,7 +67,7 @@ def test_shadow_records_error_without_changing_legacy_failure(monkeypatch, tmp_p
 
     scanner.use_external = True
     scanner.external = FakeExternal()
-    monkeypatch.setattr("ez_appsec.scanner.evaluate_cedar", lambda *_args, **_kwargs:
+    monkeypatch.setattr("sourcebastion.scanner.evaluate_cedar", lambda *_args, **_kwargs:
                         {"status": "error", "diagnostic_codes": ["BINARY_PIN_MISMATCH"],
                          "determining_policy_ids": [], "warning_policy_ids": []})
     result = scanner.scan(str(tmp_path))
@@ -107,7 +107,7 @@ def test_adapter_sees_post_suppression_snapshot_before_display_filter(monkeypatc
         return {"status": "passed", "determining_policy_ids": [], "warning_policy_ids": [],
                 "diagnostic_codes": []}
 
-    monkeypatch.setattr("ez_appsec.scanner.evaluate_cedar", fake_evaluate)
+    monkeypatch.setattr("sourcebastion.scanner.evaluate_cedar", fake_evaluate)
     result = scanner.scan(str(tmp_path))
     assert result["suppressed"] == 1
     assert len(observed) == 2
@@ -137,7 +137,7 @@ def test_policy_and_artifact_include_image_findings(monkeypatch, tmp_path):
         return [{"severity": "high", "category": "container_scanning", "rule_id": "image",
                  "title": "image", "description": "image", "file": "image:app", "line": 1}]
 
-    monkeypatch.setattr("ez_appsec.external_scanners.GrypeImageScanner.scan", fake_image_scan)
+    monkeypatch.setattr("sourcebastion.external_scanners.GrypeImageScanner.scan", fake_image_scan)
     observed = []
 
     def fake_evaluate(findings, **_kwargs):
@@ -145,7 +145,7 @@ def test_policy_and_artifact_include_image_findings(monkeypatch, tmp_path):
         return {"status": "failed", "determining_policy_ids": ["repository/image"],
                 "warning_policy_ids": [], "diagnostic_codes": []}
 
-    monkeypatch.setattr("ez_appsec.scanner.evaluate_cedar", fake_evaluate)
+    monkeypatch.setattr("sourcebastion.scanner.evaluate_cedar", fake_evaluate)
     result = scanner.scan(str(tmp_path), image="app:1", registry_auth="user:token")
 
     assert image_calls == [("app:1", "user:token")]
@@ -162,8 +162,8 @@ def test_policy_and_artifact_include_image_findings(monkeypatch, tmp_path):
 
 
 def test_cli_cedar_error_exits_two_but_shadow_error_keeps_legacy_exit(monkeypatch, tmp_path):
-    monkeypatch.setattr("ez_appsec.external_scanners.ExternalScannerManager.scan_all", lambda *_args: [])
-    config_path = tmp_path / ".ez-appsec.yaml"
+    monkeypatch.setattr("sourcebastion.external_scanners.ExternalScannerManager.scan_all", lambda *_args: [])
+    config_path = tmp_path / ".sourcebastion.yaml"
     runner = CliRunner()
 
     config_path.write_text("policy_mode: cedar\n", encoding="utf-8")
@@ -178,9 +178,9 @@ def test_cli_cedar_error_exits_two_but_shadow_error_keeps_legacy_exit(monkeypatc
 
 
 def test_cli_cedar_gate_can_fail_on_image_finding(monkeypatch, tmp_path):
-    monkeypatch.setattr("ez_appsec.external_scanners.ExternalScannerManager.scan_all", lambda *_args: [])
+    monkeypatch.setattr("sourcebastion.external_scanners.ExternalScannerManager.scan_all", lambda *_args: [])
     monkeypatch.setattr(
-        "ez_appsec.external_scanners.GrypeImageScanner.scan",
+        "sourcebastion.external_scanners.GrypeImageScanner.scan",
         lambda *_args, **_kwargs: [
             {"severity": "high", "category": "container_scanning", "rule_id": "image",
              "title": "image", "description": "image", "file": "image:app", "line": 1}
@@ -193,8 +193,8 @@ def test_cli_cedar_gate_can_fail_on_image_finding(monkeypatch, tmp_path):
         return {"status": "failed", "determining_policy_ids": ["repository/image"],
                 "warning_policy_ids": [], "diagnostic_codes": []}
 
-    monkeypatch.setattr("ez_appsec.scanner.evaluate_cedar", fake_evaluate)
-    config_path = tmp_path / ".ez-appsec.yaml"
+    monkeypatch.setattr("sourcebastion.scanner.evaluate_cedar", fake_evaluate)
+    config_path = tmp_path / ".sourcebastion.yaml"
     config_path.write_text("policy_mode: cedar\n", encoding="utf-8")
 
     result = CliRunner().invoke(main, [
@@ -211,7 +211,7 @@ def test_image_component_failure_never_writes_an_authoritative_pass(tmp_path, mo
     config = Config(output_file=str(tmp_path / "vulnerabilities.json"))
     scanner = SecurityScanner(config, use_external_scanners=False)
     monkeypatch.setattr(
-        "ez_appsec.external_scanners.GrypeImageScanner.scan",
+        "sourcebastion.external_scanners.GrypeImageScanner.scan",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             ScannerExecutionError("grype-image", "output_missing")
         ),

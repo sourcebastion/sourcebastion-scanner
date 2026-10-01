@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from ez_appsec.schema import Category, FindingV2, ScanRecord, Trend
-from ez_appsec.storage import ConfigurationError, JsonFileBackend, SqlBackend, get_storage_backend
+from sourcebastion.schema import Category, FindingV2, ScanRecord, Trend
+from sourcebastion.storage import ConfigurationError, JsonFileBackend, SqlBackend, get_storage_backend
 
 
 def make_finding(**overrides):
@@ -51,7 +51,7 @@ def make_scan_record(**overrides):
 class TestJsonFileBackend:
     def test_write_drops_empty_optional_noise_fields(self, tmp_path):
         """UX-3: a minimal finding must not be padded with 16 null v2 keys."""
-        from ez_appsec.schema import FindingV2, Category, Trend
+        from sourcebastion.schema import FindingV2, Category, Trend
         backend = JsonFileBackend()
         minimal = FindingV2(
             rule_id="r1", file="a.py", line=3, severity="high", message="m",
@@ -186,27 +186,27 @@ class TestJsonFileBackend:
 
 class TestGetStorageBackend:
     def test_json_backend_is_default_when_env_unset(self, monkeypatch):
-        monkeypatch.delenv("EZ_APPSEC_STORAGE_BACKEND", raising=False)
+        monkeypatch.delenv("SOURCEBASTION_STORAGE_BACKEND", raising=False)
 
         assert isinstance(get_storage_backend(), JsonFileBackend)
 
     @pytest.mark.parametrize("value", ["", "json", "jsonfile", "json-file", "JSON"])
     def test_json_backend_aliases(self, monkeypatch, value):
-        monkeypatch.setenv("EZ_APPSEC_STORAGE_BACKEND", value)
+        monkeypatch.setenv("SOURCEBASTION_STORAGE_BACKEND", value)
 
         assert isinstance(get_storage_backend(), JsonFileBackend)
 
     def test_unknown_backend_raises_clear_error(self, monkeypatch):
-        monkeypatch.setenv("EZ_APPSEC_STORAGE_BACKEND", "sqlite")
+        monkeypatch.setenv("SOURCEBASTION_STORAGE_BACKEND", "sqlite")
 
-        with pytest.raises(ValueError, match="Unsupported EZ_APPSEC_STORAGE_BACKEND: sqlite"):
+        with pytest.raises(ValueError, match="Unsupported SOURCEBASTION_STORAGE_BACKEND: sqlite"):
             get_storage_backend()
 
     def test_sql_backend_requires_storage_url(self, monkeypatch):
-        monkeypatch.setenv("EZ_APPSEC_STORAGE_BACKEND", "sql")
-        monkeypatch.delenv("EZ_APPSEC_STORAGE_URL", raising=False)
+        monkeypatch.setenv("SOURCEBASTION_STORAGE_BACKEND", "sql")
+        monkeypatch.delenv("SOURCEBASTION_STORAGE_URL", raising=False)
 
-        with pytest.raises(ConfigurationError, match="EZ_APPSEC_STORAGE_URL"):
+        with pytest.raises(ConfigurationError, match="SOURCEBASTION_STORAGE_URL"):
             get_storage_backend()
 
 

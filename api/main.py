@@ -14,7 +14,7 @@ from fastapi.security import APIKeyHeader
 from api.dashboard_client import DashboardUnavailable, get_history, get_index, get_vulnerabilities
 from api.models import HistoryEntry, Project, ScanJob, ScanRequest, Vulnerability
 from api.scanner_client import get_job, submit_scan
-from ez_appsec.schema import finding_file_path, finding_scanner_name
+from sourcebastion.schema import finding_file_path, finding_scanner_name
 
 
 def _configured_api_key() -> str:
@@ -23,9 +23,9 @@ def _configured_api_key() -> str:
     Failing at startup means misconfiguration surfaces in container logs
     immediately rather than as a 500 on the first authenticated request.
     """
-    expected = os.environ.get("EZ_APPSEC_API_KEY", "")
+    expected = os.environ.get("SOURCEBASTION_API_KEY", "")
     if not expected:
-        raise RuntimeError("EZ_APPSEC_API_KEY must be set before starting the API")
+        raise RuntimeError("SOURCEBASTION_API_KEY must be set before starting the API")
     return expected
 
 

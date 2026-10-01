@@ -29,7 +29,7 @@ assignees: ''
 
 <!-- Answer yes/no. This helps maintainers evaluate whether it fits the atomic-plan model. -->
 
-- [ ] Can this be implemented in a single new Python module (`ez_appsec/<feature>.py`) without restructuring existing code?
+- [ ] Can this be implemented in a single new Python module (`sourcebastion/<feature>.py`) without restructuring existing code?
 - [ ] Can it be tested without a running scanner or network access (i.e., mocked in unit tests)?
 - [ ] Is it independent of other unmerged plans, or does it depend on one specific plan?
 - [ ] Does it add new fields to `vulnerabilities.json` rather than changing existing ones?

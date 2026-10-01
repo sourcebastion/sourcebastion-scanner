@@ -1,4 +1,4 @@
-"""Tests for ez_appsec.jira_sync (PLAN-08: Jira Integration)."""
+"""Tests for sourcebastion.jira_sync (PLAN-08: Jira Integration)."""
 
 import json
 import os
@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ez_appsec.jira_sync import (
+from sourcebastion.jira_sync import (
     JiraClient,
     JiraConfig,
     JiraIssueMap,
@@ -87,10 +87,10 @@ def tmp_map(tmp_path):
 class TestJiraConfig:
     def test_from_env_complete(self):
         env = {
-            "EZ_APPSEC_JIRA_URL": "https://my.atlassian.net",
-            "EZ_APPSEC_JIRA_EMAIL": "bot@test.com",
-            "EZ_APPSEC_JIRA_TOKEN": "tok-123",
-            "EZ_APPSEC_JIRA_PROJECT": "SEC",
+            "SOURCEBASTION_JIRA_URL": "https://my.atlassian.net",
+            "SOURCEBASTION_JIRA_EMAIL": "bot@test.com",
+            "SOURCEBASTION_JIRA_TOKEN": "tok-123",
+            "SOURCEBASTION_JIRA_PROJECT": "SEC",
         }
         with patch.dict(os.environ, env, clear=False):
             cfg = JiraConfig.from_env()
@@ -105,10 +105,10 @@ class TestJiraConfig:
 
     def test_from_env_strips_trailing_slash(self):
         env = {
-            "EZ_APPSEC_JIRA_URL": "https://my.atlassian.net/",
-            "EZ_APPSEC_JIRA_EMAIL": "bot@test.com",
-            "EZ_APPSEC_JIRA_TOKEN": "tok-123",
-            "EZ_APPSEC_JIRA_PROJECT": "SEC",
+            "SOURCEBASTION_JIRA_URL": "https://my.atlassian.net/",
+            "SOURCEBASTION_JIRA_EMAIL": "bot@test.com",
+            "SOURCEBASTION_JIRA_TOKEN": "tok-123",
+            "SOURCEBASTION_JIRA_PROJECT": "SEC",
         }
         with patch.dict(os.environ, env, clear=False):
             cfg = JiraConfig.from_env()
@@ -116,11 +116,11 @@ class TestJiraConfig:
 
     def test_from_env_custom_issue_type(self):
         env = {
-            "EZ_APPSEC_JIRA_URL": "https://my.atlassian.net",
-            "EZ_APPSEC_JIRA_EMAIL": "bot@test.com",
-            "EZ_APPSEC_JIRA_TOKEN": "tok-123",
-            "EZ_APPSEC_JIRA_PROJECT": "SEC",
-            "EZ_APPSEC_JIRA_ISSUE_TYPE": "Task",
+            "SOURCEBASTION_JIRA_URL": "https://my.atlassian.net",
+            "SOURCEBASTION_JIRA_EMAIL": "bot@test.com",
+            "SOURCEBASTION_JIRA_TOKEN": "tok-123",
+            "SOURCEBASTION_JIRA_PROJECT": "SEC",
+            "SOURCEBASTION_JIRA_ISSUE_TYPE": "Task",
         }
         with patch.dict(os.environ, env, clear=False):
             cfg = JiraConfig.from_env()
@@ -282,7 +282,7 @@ class TestJiraClient:
         client = JiraClient(jira_config)
         assert client._auth_header.startswith("Basic ")
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_create_issue_success(self, mock_urlopen, jira_config):
         mock_resp = MagicMock()
         mock_resp.status = 201
@@ -299,7 +299,7 @@ class TestJiraClient:
         assert ok is True
         assert data["key"] == "SEC-42"
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_create_issue_with_labels_and_priority(self, mock_urlopen, jira_config):
         mock_resp = MagicMock()
         mock_resp.status = 201
@@ -323,7 +323,7 @@ class TestJiraClient:
         assert body["fields"]["labels"] == ["security"]
         assert body["fields"]["priority"]["name"] == "High"
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_create_issue_failure(self, mock_urlopen, jira_config):
         error = urllib.error.HTTPError(
             url="https://test.atlassian.net/rest/api/3/issue",
@@ -340,7 +340,7 @@ class TestJiraClient:
         )
         assert ok is False
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_transition_issue_success(self, mock_urlopen, jira_config):
         transitions_resp = MagicMock()
         transitions_resp.status = 200
@@ -362,7 +362,7 @@ class TestJiraClient:
         ok, data = client.transition_issue("SEC-1", "Done")
         assert ok is True
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_transition_not_found(self, mock_urlopen, jira_config):
         transitions_resp = MagicMock()
         transitions_resp.status = 200
@@ -379,7 +379,7 @@ class TestJiraClient:
         assert ok is False
         assert "not found" in data["error"].lower()
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_get_issue(self, mock_urlopen, jira_config):
         mock_resp = MagicMock()
         mock_resp.status = 200
@@ -393,7 +393,7 @@ class TestJiraClient:
         assert ok is True
         assert data["key"] == "SEC-1"
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_add_comment(self, mock_urlopen, jira_config):
         mock_resp = MagicMock()
         mock_resp.status = 201
@@ -406,7 +406,7 @@ class TestJiraClient:
         ok, data = client.add_comment("SEC-1", _build_resolved_comment())
         assert ok is True
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_network_error(self, mock_urlopen, jira_config):
         mock_urlopen.side_effect = urllib.error.URLError("Connection refused")
         client = JiraClient(jira_config)
@@ -459,7 +459,7 @@ class TestSyncFindings:
 
         mock_urlopen.side_effect = side_effect
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_creates_issues_for_crit_high(self, mock_urlopen, jira_config, tmp_map):
         self._mock_client(mock_urlopen, create_keys=["SEC-1", "SEC-2"])
 
@@ -471,7 +471,7 @@ class TestSyncFindings:
         assert "SEC-2" in result["created"]
         assert result["errors"] == []
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_skips_duplicates(self, mock_urlopen, jira_config, tmp_map):
         self._mock_client(mock_urlopen, create_keys=["SEC-1"])
 
@@ -485,7 +485,7 @@ class TestSyncFindings:
         assert len(result2["skipped_existing"]) == 1
         assert "SEC-1" in result2["skipped_existing"]
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_closes_resolved_findings(self, mock_urlopen, jira_config, tmp_map):
         self._mock_client(mock_urlopen, create_keys=["SEC-1"])
         sync_findings([CRITICAL_FINDING], jira_config, tmp_map)
@@ -494,7 +494,7 @@ class TestSyncFindings:
         result = sync_findings([], jira_config, tmp_map, close_resolved=True)
         assert "SEC-1" in result["closed"]
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_close_resolved_disabled(self, mock_urlopen, jira_config, tmp_map):
         self._mock_client(mock_urlopen, create_keys=["SEC-1"])
         sync_findings([CRITICAL_FINDING], jira_config, tmp_map)
@@ -503,7 +503,7 @@ class TestSyncFindings:
         result = sync_findings([], jira_config, tmp_map, close_resolved=False)
         assert result["closed"] == []
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_persists_map(self, mock_urlopen, jira_config, tmp_map):
         self._mock_client(mock_urlopen, create_keys=["SEC-1"])
         sync_findings([CRITICAL_FINDING], jira_config, tmp_map)
@@ -512,7 +512,7 @@ class TestSyncFindings:
         fp = _fingerprint(CRITICAL_FINDING)
         assert m.get(fp) == "SEC-1"
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_dashboard_url_in_description(self, mock_urlopen, jira_config, tmp_map):
         self._mock_client(mock_urlopen, create_keys=["SEC-1"])
         sync_findings(
@@ -529,7 +529,7 @@ class TestSyncFindings:
                 assert "https://dash.example.com" in desc_text
                 break
 
-    @patch("ez_appsec.jira_sync.urllib.request.urlopen")
+    @patch("sourcebastion.jira_sync.urllib.request.urlopen")
     def test_empty_findings(self, mock_urlopen, jira_config, tmp_map):
         result = sync_findings([], jira_config, tmp_map)
         assert result["created"] == []

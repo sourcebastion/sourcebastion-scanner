@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="ez-appsec",
+    name="sourcebastion-scanner",
     version="0.1.0",
     author="John Felten",
     author_email="jfelten.work@gmail.com",
@@ -33,7 +33,7 @@ setup(
         "requests>=2.28",
     ],
     package_data={
-        "ez_appsec": [
+        "sourcebastion": [
             "data/frameworks/*.json",
             "templates/*.j2",
         ],
@@ -59,8 +59,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "sourcebastion=ez_appsec.cli:main",
-            "ez-appsec=ez_appsec.cli:main",
+            "sourcebastion=sourcebastion.cli:main",
         ],
     },
 )

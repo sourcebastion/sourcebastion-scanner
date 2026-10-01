@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from ez_appsec.sbom import generate_cyclonedx, _validate_cyclonedx
+from sourcebastion.sbom import generate_cyclonedx, _validate_cyclonedx
 
 
 VALID_CYCLONEDX = {
@@ -89,13 +89,13 @@ class TestValidateCyclonedx:
 
 
 class TestGenerateCyclonedx:
-    @patch("ez_appsec.sbom._grype_installed", return_value=False)
+    @patch("sourcebastion.sbom._grype_installed", return_value=False)
     def test_grype_not_installed_raises(self, mock_installed, tmp_path):
         with pytest.raises(FileNotFoundError, match="grype is not installed"):
             generate_cyclonedx("/some/path", str(tmp_path / "sbom.cdx.json"))
 
-    @patch("ez_appsec.sbom._grype_installed", return_value=True)
-    @patch("ez_appsec.sbom.subprocess.run")
+    @patch("sourcebastion.sbom._grype_installed", return_value=True)
+    @patch("sourcebastion.sbom.subprocess.run")
     def test_generates_sbom_file(self, mock_run, mock_installed, tmp_path):
         out_path = tmp_path / "sbom.cdx.json"
 
@@ -114,8 +114,8 @@ class TestGenerateCyclonedx:
         assert data["specVersion"] == "1.4"
         assert len(data["components"]) == 2
 
-    @patch("ez_appsec.sbom._grype_installed", return_value=True)
-    @patch("ez_appsec.sbom.subprocess.run")
+    @patch("sourcebastion.sbom._grype_installed", return_value=True)
+    @patch("sourcebastion.sbom.subprocess.run")
     def test_grype_called_with_correct_args(self, mock_run, mock_installed, tmp_path):
         out_path = tmp_path / "sbom.cdx.json"
 
@@ -131,8 +131,8 @@ class TestGenerateCyclonedx:
         assert "cyclonedx-json" in call_args
         assert f"dir:/project" in call_args
 
-    @patch("ez_appsec.sbom._grype_installed", return_value=True)
-    @patch("ez_appsec.sbom.subprocess.run")
+    @patch("sourcebastion.sbom._grype_installed", return_value=True)
+    @patch("sourcebastion.sbom.subprocess.run")
     def test_no_output_file_raises(self, mock_run, mock_installed, tmp_path):
         mock_run.return_value = MagicMock(returncode=1, stderr="grype failed")
         out_path = tmp_path / "sbom.cdx.json"
@@ -140,8 +140,8 @@ class TestGenerateCyclonedx:
         with pytest.raises(RuntimeError, match="did not produce SBOM"):
             generate_cyclonedx("/project", str(out_path))
 
-    @patch("ez_appsec.sbom._grype_installed", return_value=True)
-    @patch("ez_appsec.sbom.subprocess.run")
+    @patch("sourcebastion.sbom._grype_installed", return_value=True)
+    @patch("sourcebastion.sbom.subprocess.run")
     def test_creates_parent_directories(self, mock_run, mock_installed, tmp_path):
         out_path = tmp_path / "nested" / "dir" / "sbom.cdx.json"
 
@@ -157,10 +157,10 @@ class TestGenerateCyclonedx:
 class TestCLISbomFlag:
     """Test that --sbom flag is wired into the scan command."""
 
-    @patch("ez_appsec.cli.SecurityScanner")
+    @patch("sourcebastion.cli.SecurityScanner")
     def test_scan_without_sbom_flag(self, mock_scanner_cls):
         from click.testing import CliRunner
-        from ez_appsec.cli import scan, main
+        from sourcebastion.cli import scan, main
 
         mock_scanner = MagicMock()
         mock_scanner.scan.return_value = {"issues": [], "suppressed": 0}
@@ -175,11 +175,11 @@ class TestCLISbomFlag:
         assert result.exit_code == 0
         assert "SBOM" not in result.output
 
-    @patch("ez_appsec.sbom.generate_cyclonedx")
-    @patch("ez_appsec.cli.SecurityScanner")
+    @patch("sourcebastion.sbom.generate_cyclonedx")
+    @patch("sourcebastion.cli.SecurityScanner")
     def test_scan_with_sbom_flag(self, mock_scanner_cls, mock_gen):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         mock_scanner = MagicMock()
         mock_scanner.scan.return_value = {"issues": [], "suppressed": 0}
@@ -196,11 +196,11 @@ class TestCLISbomFlag:
         assert "SBOM generated" in result.output
         mock_gen.assert_called_once()
 
-    @patch("ez_appsec.sbom.generate_cyclonedx", side_effect=RuntimeError("grype broke"))
-    @patch("ez_appsec.cli.SecurityScanner")
+    @patch("sourcebastion.sbom.generate_cyclonedx", side_effect=RuntimeError("grype broke"))
+    @patch("sourcebastion.cli.SecurityScanner")
     def test_sbom_failure_warns_but_does_not_exit(self, mock_scanner_cls, mock_gen):
         from click.testing import CliRunner
-        from ez_appsec.cli import main
+        from sourcebastion.cli import main
 
         mock_scanner = MagicMock()
         mock_scanner.scan.return_value = {"issues": [], "suppressed": 0}

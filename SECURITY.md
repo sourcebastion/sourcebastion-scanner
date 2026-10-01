@@ -31,7 +31,7 @@ We follow responsible disclosure practices. After a fix is released, you are wel
 ## Scope
 
 In scope:
-- ez-appsec CLI (`ez_appsec/` package)
+- ez-appsec CLI (`sourcebastion/` package)
 - GitHub Actions workflow template (`.github/workflows/github-scan.yml`)
 - GitLab CI template (`gitlab/scan.yml`)
 - Docker images (`ghcr.io/ez-appsec/ez-appsec`)

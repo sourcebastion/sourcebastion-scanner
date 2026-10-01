@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# gitlab-pipeline-test.sh — Trigger, wait, and verify a GitLab ez-appsec cold:scan pipeline.
+# gitlab-pipeline-test.sh — Trigger, wait, and verify a GitLab SourceBastion cold:scan pipeline.
 #
 # Usage:
 #   gitlab-pipeline-test.sh [options]
 #
 # Options:
-#   --project   <ns/project>   GitLab project path (default: your-group/ez_appsec/juice-shop)
+#   --project   <ns/project>   GitLab project path (default: your-group/sourcebastion/juice-shop)
 #   --ref       <branch>       Branch (default: master)
 #   --timeout   <seconds>      Max wait time (default: 900)
 #   --download-dir <dir>       Where to save artifacts (default: /tmp/ez-appsec-gl-test)
@@ -22,7 +22,7 @@
 set -euo pipefail
 
 # ── Defaults ─────────────────────────────────────────────────────────────────
-PROJECT="your-group/ez_appsec/juice-shop"
+PROJECT="your-group/sourcebastion/juice-shop"
 REF="master"
 TIMEOUT=900
 DOWNLOAD_DIR="/tmp/ez-appsec-gl-test"
@@ -74,12 +74,12 @@ log "Project: $PROJECT  (id=$PROJECT_ID)"
 log "Checking group CI variables..."
 NS=$(python3 -c "import sys; parts=sys.argv[1].split('/'); print('/'.join(parts[:-1]))" "$PROJECT")
 ENC_NS=$(encode_project "$NS")
-DASH_PROJECT=$(gl_api "groups/${ENC_NS}/variables/EZ_APPSEC_DASHBOARD_PROJECT" \
+DASH_PROJECT=$(gl_api "groups/${ENC_NS}/variables/SOURCEBASTION_DASHBOARD_PROJECT" \
   2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin)['value'])" 2>/dev/null || echo "")
-DEPLOY_KEY_SET=$(gl_api "groups/${ENC_NS}/variables/EZ_APPSEC_DASHBOARD_DEPLOY_KEY" \
+DEPLOY_KEY_SET=$(gl_api "groups/${ENC_NS}/variables/SOURCEBASTION_DASHBOARD_DEPLOY_KEY" \
   2>/dev/null | python3 -c "import json,sys; print('yes' if json.load(sys.stdin)['value'] else 'no')" 2>/dev/null || echo "no")
-log "  EZ_APPSEC_DASHBOARD_PROJECT=${DASH_PROJECT:-NOT SET}"
-log "  EZ_APPSEC_DASHBOARD_DEPLOY_KEY=${DEPLOY_KEY_SET}"
+log "  SOURCEBASTION_DASHBOARD_PROJECT=${DASH_PROJECT:-NOT SET}"
+log "  SOURCEBASTION_DASHBOARD_DEPLOY_KEY=${DEPLOY_KEY_SET}"
 
 # ── Step 2: trigger pipeline via API source (activates cold:scan) ─────────────
 log "Triggering pipeline on $PROJECT@$REF (source=api → cold:scan) ..."

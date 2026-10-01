@@ -7,8 +7,8 @@ import pytest
 import time
 import tempfile
 from pathlib import Path
-from ez_appsec.config import Config
-from ez_appsec.scanner import SecurityScanner
+from sourcebastion.config import Config
+from sourcebastion.scanner import SecurityScanner
 
 
 @pytest.fixture

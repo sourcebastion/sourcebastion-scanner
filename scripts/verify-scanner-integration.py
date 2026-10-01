@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Tuple
 from unittest.mock import patch
 
-from ez_appsec.external_scanners import GitleaksScanner, GrypeScanner, KicsScanner, SemgrepScanner
+from sourcebastion.external_scanners import GitleaksScanner, GrypeScanner, KicsScanner, SemgrepScanner
 
 FIXTURES_ROOT = Path("tests/fixtures/scanners")
 
@@ -79,7 +79,7 @@ def check_gitleaks(allow_missing: bool) -> str:
             return _completed(returncode=1)
         return _completed()
 
-    with patch("ez_appsec.external_scanners.subprocess.run", side_effect=fake_run):
+    with patch("sourcebastion.external_scanners.subprocess.run", side_effect=fake_run):
         findings = GitleaksScanner().scan(str(FIXTURES_ROOT / "secrets"))
     _assert_common_shape("gitleaks", findings)
     _assert(_has_any(findings, lambda f: f.get("category") in {"secret", "hardcoded-secret"} and f.get("rule_id") == "aws-access-token"),
@@ -115,7 +115,7 @@ def check_kics(allow_missing: bool) -> str:
             return _completed()
         return _completed()
 
-    with patch("ez_appsec.external_scanners.subprocess.run", side_effect=fake_run):
+    with patch("sourcebastion.external_scanners.subprocess.run", side_effect=fake_run):
         findings = KicsScanner().scan(str(FIXTURES_ROOT / "iac"))
     _assert_common_shape("kics", findings)
     _assert(_has_any(findings, lambda f: f.get("category") == "iac" and f.get("scanner") == "kics"),
@@ -141,7 +141,7 @@ def check_grype(allow_missing: bool) -> str:
             return _completed()
         return _completed()
 
-    with tempfile.TemporaryDirectory() as tmpdir, patch("ez_appsec.external_scanners.subprocess.run", side_effect=fake_run):
+    with tempfile.TemporaryDirectory() as tmpdir, patch("sourcebastion.external_scanners.subprocess.run", side_effect=fake_run):
         findings = GrypeScanner().scan(tmpdir)
     _assert_common_shape("grype", findings)
     _assert(_has_any(findings, lambda f: f.get("category") == "dependency" and "vm2" in str(f)),
@@ -169,7 +169,7 @@ def check_semgrep(allow_missing: bool) -> str:
             return _completed()
         return _completed()
 
-    with patch("ez_appsec.external_scanners.subprocess.run", side_effect=fake_run):
+    with patch("sourcebastion.external_scanners.subprocess.run", side_effect=fake_run):
         findings = SemgrepScanner(extra_rules_dirs=["rules/python"]).scan(str(FIXTURES_ROOT / "semgrep"))
     _assert_common_shape("semgrep", findings)
     _assert(_has_any(findings, lambda f: f.get("scanner") == "semgrep" and f.get("category") == "sast"),

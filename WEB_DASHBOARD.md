@@ -121,7 +121,7 @@ Downloads `index.html`, `style.css`, `app.js`, and `.gitlab-ci.yml` from the ez-
 
 ```bash
 # Find by path (replace with your group path)
-ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('your-group/ez_appsec/ez-appsec-dashboard', safe=''))")
+ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('your-group/sourcebastion/ez-appsec-dashboard', safe=''))")
 glab api "projects/${ENCODED}" --field id
 
 # Or search

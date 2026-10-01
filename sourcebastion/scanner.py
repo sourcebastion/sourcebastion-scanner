@@ -8,14 +8,14 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
-from ez_appsec.config import Config
-from ez_appsec.external_scanners import ExternalScannerManager, ScannerExecutionError
-from ez_appsec.converters import VulnerabilityConverters, GitLabVulnerabilityFormat
-from ez_appsec.policy import PolicyEngine
-from ez_appsec.cedar_adapter import evaluate_cedar, parity_result
-from ez_appsec.license_checker import check_licenses
-from ez_appsec.schema import ScanRecord, compute_finding_id, finding_from_issue, generate_scan_id
-from ez_appsec.storage import get_storage_backend
+from sourcebastion.config import Config
+from sourcebastion.external_scanners import ExternalScannerManager, ScannerExecutionError
+from sourcebastion.converters import VulnerabilityConverters, GitLabVulnerabilityFormat
+from sourcebastion.policy import PolicyEngine
+from sourcebastion.cedar_adapter import evaluate_cedar, parity_result
+from sourcebastion.license_checker import check_licenses
+from sourcebastion.schema import ScanRecord, compute_finding_id, finding_from_issue, generate_scan_id
+from sourcebastion.storage import get_storage_backend
 
 
 logger = logging.getLogger(__name__)
@@ -69,8 +69,8 @@ class JsonLogFormatter(logging.Formatter):
 
 
 def configure_logging_from_env() -> bool:
-    """Enable structured JSON logging when EZ_APPSEC_LOG_FORMAT=json is set."""
-    if os.getenv("EZ_APPSEC_LOG_FORMAT", "").lower() != "json":
+    """Enable structured JSON logging when SOURCEBASTION_LOG_FORMAT=json is set."""
+    if os.getenv("SOURCEBASTION_LOG_FORMAT", "").lower() != "json":
         return False
 
     formatter = JsonLogFormatter()
@@ -96,11 +96,11 @@ def _opentelemetry_sdk_available() -> bool:
 def _build_otel_attributes(issue: Dict[str, Any], scan_id: str) -> Dict[str, Any]:
     """Build stable OpenTelemetry span attributes for a finding."""
     attrs: Dict[str, Any] = {
-        "ez_appsec.scan_id": scan_id,
-        "ez_appsec.finding_id": issue.get("finding_id", ""),
-        "ez_appsec.rule_id": issue.get("rule_id", ""),
-        "ez_appsec.severity": issue.get("severity", ""),
-        "ez_appsec.category": issue.get("category", "unknown"),
+        "sourcebastion.scan_id": scan_id,
+        "sourcebastion.finding_id": issue.get("finding_id", ""),
+        "sourcebastion.rule_id": issue.get("rule_id", ""),
+        "sourcebastion.severity": issue.get("severity", ""),
+        "sourcebastion.category": issue.get("category", "unknown"),
         "code.filepath": issue.get("file", ""),
         "code.lineno": issue.get("line", 0),
     }
@@ -604,7 +604,7 @@ class SecurityScanner:
         if github_reports:
             merged_report = VulnerabilityConverters.merge_github_reports(github_reports)
         else:
-            from ez_appsec.converters import GitHubSarifFormat
+            from sourcebastion.converters import GitHubSarifFormat
             merged_report = GitHubSarifFormat.create_report([], "ez-appsec")
 
         run = merged_report.get("runs", [{}])[0]

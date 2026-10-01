@@ -65,7 +65,7 @@ If `update:vulns` failed:
   ```
 - Common causes:
   - `scan:pipeline` artifact expired or missing — run `/ez-appsec-pipeline-scan` first
-  - The `EZ_APPSEC_BRANCH` branch does not exist yet — run `/ez-appsec-install` to initialize it
+  - The `SOURCEBASTION_BRANCH` branch does not exist yet — run `/ez-appsec-install` to initialize it
   - Push permission denied — check that `CI_JOB_TOKEN` has write access to the branch
 
 ### 6. Report outcome

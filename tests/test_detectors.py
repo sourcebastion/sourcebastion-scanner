@@ -2,7 +2,7 @@
 
 import pytest
 from pathlib import Path
-from ez_appsec.detectors import SastDetector, SecretsDetector, DependencyDetector
+from sourcebastion.detectors import SastDetector, SecretsDetector, DependencyDetector
 
 
 def test_sast_detector_initialization():

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from ez_appsec.cedar_adapter import (
+from sourcebastion.cedar_adapter import (
     ENGINE_VERSION_V2,
     MAX_REQUEST_BYTES,
     TrustedBaseline,
@@ -156,7 +156,7 @@ def test_v2_rejects_a_binary_that_does_not_match_its_pin(tmp_path):
 def test_v2_rejects_malformed_engine_output(tmp_path, monkeypatch, payload):
     binary, pin = _pinned_engine(tmp_path)
     monkeypatch.setattr(
-        "ez_appsec.cedar_adapter.subprocess.run",
+        "sourcebastion.cedar_adapter.subprocess.run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
             [str(binary), "evaluate"], 0, stdout=payload, stderr=b""
         ),
@@ -185,7 +185,7 @@ def test_v2_accepts_a_fully_valid_engine_response(tmp_path, monkeypatch):
         "warning_policy_ids": [],
     }
     monkeypatch.setattr(
-        "ez_appsec.cedar_adapter.subprocess.run",
+        "sourcebastion.cedar_adapter.subprocess.run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
             [str(binary), "evaluate"], 0,
             stdout=json.dumps(engine_result).encode("utf-8"), stderr=b"",
@@ -229,7 +229,7 @@ def test_v2_rejects_protocol_and_exit_code_mismatches(
     }
     engine_result.update(overrides)
     monkeypatch.setattr(
-        "ez_appsec.cedar_adapter.subprocess.run",
+        "sourcebastion.cedar_adapter.subprocess.run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
             [str(binary), "evaluate"], return_code,
             stdout=json.dumps(engine_result).encode("utf-8"), stderr=b"",
@@ -263,7 +263,7 @@ def test_v2_rejects_malformed_bundles(tmp_path, monkeypatch, bundle_value, expec
         executed = True
         raise AssertionError("engine must not run for a malformed bundle")
 
-    monkeypatch.setattr("ez_appsec.cedar_adapter.subprocess.run", fail_if_run)
+    monkeypatch.setattr("sourcebastion.cedar_adapter.subprocess.run", fail_if_run)
     result = evaluate_cedar_v2(
         [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path, bundle_value)),
         binary_path=str(binary), binary_sha256=pin,
@@ -293,7 +293,7 @@ def test_v2_enforces_bundle_request_and_output_limits(tmp_path, monkeypatch):
     assert result["diagnostic_codes"] == ["RESOURCE_LIMIT"]
 
     monkeypatch.setattr(
-        "ez_appsec.cedar_adapter.subprocess.run",
+        "sourcebastion.cedar_adapter.subprocess.run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
             [str(binary), "evaluate"], 0, stdout=b"x" * (64 * 1024 + 1), stderr=b""
         ),
@@ -312,7 +312,7 @@ def test_v2_enforces_the_execution_timeout(tmp_path, monkeypatch):
     def timeout(*_args, **_kwargs):
         raise subprocess.TimeoutExpired([str(binary), "evaluate"], timeout=8)
 
-    monkeypatch.setattr("ez_appsec.cedar_adapter.subprocess.run", timeout)
+    monkeypatch.setattr("sourcebastion.cedar_adapter.subprocess.run", timeout)
     result = evaluate_cedar_v2(
         [], baseline=_baseline(), bundle_path=str(_bundle(tmp_path)),
         binary_path=str(binary), binary_sha256=pin,

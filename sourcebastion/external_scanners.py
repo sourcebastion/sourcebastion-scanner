@@ -879,8 +879,38 @@ class SemgrepScanner(ScannerWrapper):
 
             if not isinstance(data, dict) or not isinstance(data.get("results"), list):
                 self._fail("invalid_output")
-            if data.get("errors"):
+            # Semgrep's `errors` collection is not a verdict on the scan. It
+            # carries per-file problems -- a file it could not fully parse, a
+            # file that hit semgrep's own per-file timeout -- in the same list
+            # as genuinely fatal ones, and distinguishes them with `level`.
+            # Semgrep itself exits 0 for the non-fatal kind.
+            #
+            # Treating the whole collection as fatal discarded every finding in
+            # a repository because one vendored, minified or non-Python file
+            # would not parse, and surfaced to the customer as "the scan
+            # produced no report". A repository is allowed to contain a file
+            # semgrep cannot read; that is reduced coverage, not a broken scan.
+            #
+            # `level` is the discriminator rather than `type`, because `type`
+            # is sometimes a bare string and sometimes a [tag, payload] pair.
+            # An entry with no level at all is treated as fatal: unknown
+            # shapes fail closed.
+            fatal = [
+                error
+                for error in data["errors"]
+                if str(error.get("level", "error")).lower() == "error"
+            ]
+            if fatal:
                 self._fail("execution_failed")
+            degraded = len(data["errors"]) - len(fatal)
+            if degraded:
+                # Count only. These messages quote the offending source lines,
+                # and scanner logs are not a place to reproduce customer code.
+                logger.warning(
+                    "semgrep reported %d non-fatal file error(s); "
+                    "coverage for those files is incomplete",
+                    degraded,
+                )
 
             issues = []
             filtered_count = 0

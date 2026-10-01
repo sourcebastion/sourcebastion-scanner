@@ -1,5 +1,6 @@
 """Failure-contract tests for enabled external scanner components."""
 
+import json
 import os
 import shutil
 import subprocess
@@ -342,3 +343,98 @@ def test_output_conversion_failure_discards_all_outputs(tmp_path, method_name, c
     assert "raw source" not in str(raised.value)
     assert not first.exists()
     assert not second.exists()
+
+
+def _semgrep_report(tmp_path, payload):
+    """Run SemgrepScanner against a canned semgrep report."""
+    scanner = SemgrepScanner()
+
+    def write_report(command, **_kwargs):
+        report_path = Path(command[command.index("--output") + 1])
+        report_path.write_text(json.dumps(payload))
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with (
+        patch.object(scanner, "is_installed", return_value=True),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_report),
+    ):
+        return scanner.scan_with_raw_output(str(tmp_path))
+
+
+# The exact shape semgrep emits for a file it cannot fully parse, captured from
+# the pinned scanner image. Note semgrep's own exit code is 0: it does not
+# consider this a failed scan, and neither may we.
+PARTIAL_PARSING_ERROR = {
+    "level": "warn",
+    "type": ["PartialParsing", [{"path": "/src/vendor.min.js"}]],
+    "message": "Syntax error at line /src/vendor.min.js:1:",
+}
+
+
+def test_semgrep_partial_parsing_does_not_discard_the_scan(tmp_path):
+    """One unparseable file must not fail a repository's whole scan.
+
+    This was a live outage: every hosted gate on a repository containing a
+    vendored or minified file reported "the scan produced no report", because
+    a non-fatal `errors` entry was read as a fatal one.
+    """
+    issues, raw_path = _semgrep_report(
+        tmp_path,
+        {
+            "results": [],
+            "errors": [PARTIAL_PARSING_ERROR],
+        },
+    )
+    try:
+        assert issues == []
+    finally:
+        os.unlink(raw_path)
+
+
+def test_semgrep_fatal_error_still_fails(tmp_path):
+    with pytest.raises(ScannerExecutionError) as raised:
+        _semgrep_report(
+            tmp_path,
+            {
+                "results": [],
+                "errors": [{"level": "error", "type": "SemgrepFatalError", "message": "boom"}],
+            },
+        )
+    assert raised.value.code == "execution_failed"
+
+
+def test_semgrep_error_without_a_level_fails_closed(tmp_path):
+    """An entry whose shape we do not recognise is treated as fatal."""
+    with pytest.raises(ScannerExecutionError) as raised:
+        _semgrep_report(tmp_path, {"results": [], "errors": [{"message": "unknown shape"}]})
+    assert raised.value.code == "execution_failed"
+
+
+def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path):
+    """The findings from the files semgrep *could* read must survive."""
+    issues, raw_path = _semgrep_report(
+        tmp_path,
+        {
+            "results": [
+                {
+                    "check_id": "python.lang.security.audit.dangerous-exec",
+                    "path": "app.py",
+                    "start": {"line": 3},
+                    "end": {"line": 3},
+                    "extra": {
+                        "severity": "ERROR",
+                        "message": "exec with user input",
+                        # Real security metadata: a finding with none is
+                        # classified as code quality and filtered, which would
+                        # make this test pass for the wrong reason.
+                        "metadata": {"cwe": ["CWE-94"], "category": "security"},
+                    },
+                }
+            ],
+            "errors": [PARTIAL_PARSING_ERROR],
+        },
+    )
+    try:
+        assert len(issues) == 1
+    finally:
+        os.unlink(raw_path)

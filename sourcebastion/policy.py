@@ -5,7 +5,49 @@ from pydantic import BaseModel, field_validator
 
 
 VALID_SEVERITIES = {"critical", "high", "medium", "low"}
-VALID_CATEGORIES = {"secrets", "sast", "iac", "cve", "dependency_scanning"}
+#: The container category, canonically. The image scanner labels its findings
+#: `container_scanning`; the hosted gate's vocabulary and Cedar v2 both call it
+#: `container_images`. A rule may be written either way and matches either way:
+#: which component produced the label is not something a policy author should
+#: have to know.
+CONTAINER_CATEGORY = "container_images"
+_CONTAINER_ALIASES = frozenset(
+    {
+        "container_images",
+        "container_scanning",
+        "container-scanning",
+        "container",
+        "image",
+    }
+)
+VALID_CATEGORIES = {
+    "secrets",
+    "sast",
+    "iac",
+    "cve",
+    "dependency_scanning",
+    # M043: container findings join the complete snapshot that the gate
+    # evaluates, so a rule has to be able to name them. Without this, an
+    # image-only violation could only be caught by a severity-only rule, and
+    # `category: container_scanning` -- the value the findings actually carry
+    # -- was rejected outright as invalid.
+    CONTAINER_CATEGORY,
+}
+
+
+def canonical_category(value: str | None) -> str | None:
+    """Fold the container spellings onto one name, leaving others untouched.
+
+    Deliberately narrow. Normalising every category here would quietly change
+    which findings existing rules match; container is the one vocabulary that
+    is genuinely written several ways by components that must agree.
+    """
+    if value is None:
+        return None
+    lowered = value.strip().lower()
+    if lowered in _CONTAINER_ALIASES:
+        return CONTAINER_CATEGORY
+    return lowered
 VALID_ACTIONS = {"fail", "warn", "ignore"}
 
 
@@ -29,10 +71,16 @@ class PolicyRule(BaseModel):
     @field_validator("category")
     @classmethod
     def validate_category(cls, v):
-        if v is not None and v not in VALID_CATEGORIES:
+        if v is None:
+            return v
+        # Canonicalised rather than merely checked, so a rule written as
+        # `container_scanning` is stored as the one name the matcher compares.
+        canonical = canonical_category(v)
+        if canonical not in VALID_CATEGORIES:
             raise ValueError(
                 f"Invalid category '{v}', must be one of: {', '.join(sorted(VALID_CATEGORIES))}"
             )
+        return canonical
         return v
 
     @field_validator("action")
@@ -51,12 +99,9 @@ class PolicyRule(BaseModel):
             if self.severity and f.get("severity", "").lower() != self.severity:
                 continue
             if self.category:
-                finding_cat = (
-                    f.get("category")
-                    or f.get("type")
-                    or f.get("scanner")
-                    or ""
-                ).lower()
+                finding_cat = canonical_category(
+                    f.get("category") or f.get("type") or f.get("scanner") or ""
+                )
                 if finding_cat != self.category:
                     continue
             matched.append(f)

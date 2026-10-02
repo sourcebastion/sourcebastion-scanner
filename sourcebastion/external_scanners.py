@@ -783,7 +783,9 @@ class SemgrepScanner(ScannerWrapper):
                     if repository_ignore.is_symlink():
                         self._fail("invalid_output")
                     shutil.copy2(repository_ignore, scoped_root / ".semgrepignore")
-                issues, raw_output_path = self.scan_with_raw_output(str(scoped_root))
+                issues, raw_output_path = self.scan_with_raw_output(
+                    str(scoped_root), require_complete_coverage=True
+                )
                 try:
                     for finding in issues:
                         finding["file"] = _scoped_result_path(
@@ -805,7 +807,9 @@ class SemgrepScanner(ScannerWrapper):
         except Exception:
             self._fail("invalid_output")
 
-    def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
+    def scan_with_raw_output(
+        self, path: str, *, require_complete_coverage: bool = False
+    ) -> Tuple[List[Dict[str, Any]], str]:
         """Run semgrep scan and return raw output file path"""
         if not self.is_installed():
             self._fail("not_installed")
@@ -879,8 +883,48 @@ class SemgrepScanner(ScannerWrapper):
 
             if not isinstance(data, dict) or not isinstance(data.get("results"), list):
                 self._fail("invalid_output")
-            if data.get("errors"):
+            # Semgrep's `errors` collection is not a verdict on the scan. It
+            # carries per-file problems -- a file it could not fully parse, a
+            # file that hit semgrep's own per-file timeout -- in the same list
+            # as genuinely fatal ones, and distinguishes them with `level`.
+            # Semgrep itself exits 0 for the non-fatal kind.
+            #
+            # Treating the whole collection as fatal discarded every finding in
+            # a repository because one vendored, minified or non-Python file
+            # would not parse, and surfaced to the customer as "the scan
+            # produced no report". A repository is allowed to contain a file
+            # semgrep cannot read; that is reduced coverage, not a broken scan.
+            #
+            # `level` is the discriminator rather than `type`, because `type`
+            # is sometimes a bare string and sometimes a [tag, payload] pair.
+            # It is an allowlist, not a denylist: only `warn` and `info` are
+            # known to be non-fatal, so a missing, null, empty, unrecognised
+            # or non-string level fails closed. Matching on `!= "error"`
+            # instead would read a `level` semgrep adds later, or a malformed
+            # one, as safe.
+            #
+            # A scoped scan is held to a stricter rule -- see
+            # `require_complete_coverage` below.
+            errors = data.get("errors", [])
+            if not isinstance(errors, list) or any(not isinstance(error, dict) for error in errors):
+                self._fail("invalid_output")
+            for error in errors:
+                level = error.get("level")
+                if not isinstance(level, str) or level.lower() not in {"warn", "info"}:
+                    self._fail("execution_failed")
+            # Partial results replace baseline observations in every covered
+            # path. A skipped/unparsed file cannot authorize that replacement.
+            if errors and require_complete_coverage:
                 self._fail("execution_failed")
+            degraded = len(errors)
+            if degraded:
+                # Count only. These messages quote the offending source lines,
+                # and scanner logs are not a place to reproduce customer code.
+                logger.warning(
+                    "semgrep reported %d non-fatal file error(s); "
+                    "coverage for those files is incomplete",
+                    degraded,
+                )
 
             issues = []
             filtered_count = 0

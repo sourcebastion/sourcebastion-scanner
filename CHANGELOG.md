@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Testing
+
+* the standard image build scans a real vulnerable application with the built image as its final check, asserting that semgrep, gitleaks and grype each report findings. The existing integration check patches `subprocess.run` and verifies binaries with `shutil.which`, so it proves parsing and presence but never execution -- the gap through which a broken grype dependency call and a semgrep failure that discarded whole scans both reached releases. The corpus is a pinned commit of a Juice Shop fork, fetched as a git checkout because gitleaks reads commits and an exported tree silently costs that scanner's coverage entirely
+
 ### Fixes
 
 * the distribution version is derived from `VERSION` instead of a `setup.py` literal, so a released image reports the release it is. Every release through v1.7.34 shipped metadata saying `0.1.0`, which made `sourcebastion --version` useless inside a digest-pinned scanner -- the one place a human-readable handle is needed, since the image is identified by a digest. `SOURCEBASTION_VERSION` overrides it for builds that are not releases, and a missing or malformed version now fails the build rather than falling back to a placeholder. Each image build additionally asserts that the built artifact reports `VERSION`, which is the check that catches a packaging mistake every unit test passes

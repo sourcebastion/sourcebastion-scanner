@@ -334,6 +334,15 @@ jobs:
           test -s scan-results/scan.json
           test -s scan-results/sbom.cdx.json
 
+      - name: Scan a real application with the built image
+        # The final check, and the only one that runs every scanner for real
+        # against a corpus with real findings. The integration check above
+        # patches subprocess.run, so it proves parsing and not execution --
+        # which is how a broken grype path and a semgrep failure that
+        # discarded whole scans both reached a release.
+        run: |
+          scripts/smoke-scan-juice-shop.sh sourcebastion:standard-rule-test
+
   build-docker-slim:
     name: Build Slim Docker Image
     if: inputs.build_images == true

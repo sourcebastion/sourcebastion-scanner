@@ -44,7 +44,11 @@ def test_customer_workflow_dogfoods_checked_out_scanner_only_in_this_repository(
     workflow = CUSTOMER_SCAN_WORKFLOW.read_text()
 
     assert "if: github.repository == 'sourcebastion/sourcebastion-scanner'" in workflow
-    assert "run: pip install --no-deps -e ." in workflow
+    # `python3 -m pip`, because this job runs inside the scanner image, which
+    # has no unversioned `pip` console script. Asserted in this form so the
+    # bare invocation cannot come back: it exited 127 the moment a release
+    # promoted :latest.
+    assert "run: python3 -m pip install --no-deps -e ." in workflow
 
 
 def test_public_workflows_use_sourcebastion_scan_branding():

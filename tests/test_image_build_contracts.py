@@ -1,0 +1,76 @@
+"""Static checks for things that only break when an image is actually built.
+
+The image build jobs in `docker.yml` are gated on `inputs.build_images`, which
+is set only when `release.yml` calls the workflow. A pull request skips them
+entirely, so a defect in a Dockerfile or a build tag is invisible until a
+release is dispatched -- which is how a release came to fail twice in a row on
+two separate regressions that had been sitting on main.
+
+These assertions are deliberately static: they run in the ordinary test job on
+every pull request and cost nothing, so the class of mistake that reached a
+release cannot reach one again.
+"""
+
+import re
+from pathlib import Path
+
+import pytest
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+WORKFLOWS = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
+DOCKERFILES = sorted((ROOT / "images").glob("Dockerfile*"))
+
+# A docker reference's repository name may contain lowercase letters, digits and
+# separators only. An uppercase letter is rejected outright by the daemon with
+# "repository name must be lowercase", at build time and never before.
+TAG_FIELD = re.compile(r"^\s*tags:\s*(?P<value>\S.*)$", re.MULTILINE)
+INVALID_REPOSITORY = re.compile(r"[A-Z]")
+
+
+def _tag_values(text):
+    for match in TAG_FIELD.finditer(text):
+        value = match.group("value").strip()
+        # Multi-line `tags: |` blocks list registry-qualified names built from
+        # expressions; those are checked by the registry, not by hand here.
+        if value in {"|", ">", "|-", ">-"}:
+            continue
+        yield value
+
+
+@pytest.mark.parametrize("workflow", WORKFLOWS, ids=lambda p: p.name)
+def test_build_tags_are_legal_docker_references(workflow):
+    """A literal build tag must be a name the daemon will accept."""
+    for value in _tag_values(workflow.read_text(encoding="utf-8")):
+        if "${{" in value:  # resolved at run time
+            continue
+        repository = value.split(":", 1)[0]
+        assert not INVALID_REPOSITORY.search(repository), (
+            f"{workflow.name}: build tag {value!r} has an uppercase repository "
+            "name, which docker rejects as 'repository name must be lowercase'. "
+            "This is the shape the rebrand introduced by replacing a lowercase "
+            "image name with the brand's capitalisation."
+        )
+
+
+@pytest.mark.parametrize("dockerfile", DOCKERFILES, ids=lambda p: p.name)
+def test_ensurepip_stages_do_not_invoke_bare_pip(dockerfile):
+    """A stage whose pip comes from `ensurepip` has no plain `pip` on PATH.
+
+    `python3 -m ensurepip` installs `pip3` and `pip3.11`; the unversioned
+    console script came from a separate `pip install --upgrade pip`. When that
+    line was removed, every `pip ...` in these images became exit 127.
+    """
+    text = dockerfile.read_text(encoding="utf-8")
+    if "ensurepip" not in text:
+        pytest.skip("stage does not provision pip through ensurepip")
+    offenders = [
+        line.strip()
+        for line in text.splitlines()
+        if re.search(r"(?:^|&&\s*|RUN\s+)pip\s+(?:install|check)\b", line)
+    ]
+    assert not offenders, (
+        f"{dockerfile.name} calls bare `pip` but provisions pip with "
+        f"`ensurepip`, which installs no unversioned `pip`: {offenders}. "
+        "Use `python3 -m pip`."
+    )

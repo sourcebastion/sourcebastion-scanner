@@ -101,7 +101,12 @@ RUN kics version
 
 # Install SourceBastion scanner wheel and dependencies from builder
 COPY --from=builder /dist/*.whl /tmp/
-RUN pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && pip check && \
+# `python3 -m pip` rather than bare `pip`: this stage provisions pip with
+# `python3 -m ensurepip`, which installs `pip3` and `pip3.11` but no plain
+# `pip`. The console script came from a `pip install --upgrade pip` line
+# that was removed when the dependency trees were locked, so bare `pip`
+# became `not found` (exit 127) and every image build failed.
+RUN python3 -m pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && python3 -m pip check && \
     rm /tmp/*.whl && \
     find /usr/lib/python3.11/site-packages -depth -type d -name __pycache__ -exec rm -rf {} + && \
     rm -rf /usr/lib/python3.11/ensurepip

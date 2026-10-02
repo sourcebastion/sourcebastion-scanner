@@ -302,6 +302,12 @@ jobs:
           cache-from: type=gha
           platforms: linux/amd64
 
+      - name: Assert the image reports the release version
+        # Tests the artifact that ships, not the source it came from:
+        # a packaging mistake survives every unit test but not this.
+        run: |
+          scripts/assert-image-version.sh sourcebastion:standard-rule-test
+
       - name: Run rule fixture tests in standard image
         run: |
           docker run --rm --entrypoint python3 \
@@ -381,6 +387,12 @@ jobs:
           cache-from: type=gha
           platforms: linux/amd64
 
+      - name: Assert the image reports the release version
+        # Tests the artifact that ships, not the source it came from:
+        # a packaging mistake survives every unit test but not this.
+        run: |
+          scripts/assert-image-version.sh sourcebastion:slim-rule-test
+
       - name: Run rule fixture tests in slim image
         run: |
           docker run --rm --entrypoint python3 \
@@ -439,6 +451,12 @@ jobs:
           tags: sourcebastion:micro-rule-test
           cache-from: type=gha
           platforms: linux/amd64
+
+      - name: Assert the image reports the release version
+        # Tests the artifact that ships, not the source it came from:
+        # a packaging mistake survives every unit test but not this.
+        run: |
+          scripts/assert-image-version.sh sourcebastion:micro-rule-test
 
       - name: Verify micro image intentionally skips rule fixture tests
         run: |
@@ -499,6 +517,12 @@ jobs:
           cache-from: type=gha
           platforms: linux/amd64
 
+      - name: Assert the image reports the release version
+        # Tests the artifact that ships, not the source it came from:
+        # a packaging mistake survives every unit test but not this.
+        run: |
+          scripts/assert-image-version.sh sourcebastion:thin-rule-test
+
       - name: Run rule fixture tests in thin image
         run: |
           docker run --rm --entrypoint python3 \
@@ -557,6 +581,12 @@ jobs:
           tags: sourcebastion:semgrep-rule-test
           cache-from: type=gha
           platforms: linux/amd64
+
+      - name: Assert the image reports the release version
+        # Tests the artifact that ships, not the source it came from:
+        # a packaging mistake survives every unit test but not this.
+        run: |
+          scripts/assert-image-version.sh sourcebastion:semgrep-rule-test
 
       - name: Run rule fixture tests in semgrep image
         run: |

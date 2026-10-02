@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Fixes
+
+* the distribution version is derived from `VERSION` instead of a `setup.py` literal, so a released image reports the release it is. Every release through v1.7.34 shipped metadata saying `0.1.0`, which made `sourcebastion --version` useless inside a digest-pinned scanner -- the one place a human-readable handle is needed, since the image is identified by a digest. `SOURCEBASTION_VERSION` overrides it for builds that are not releases, and a missing or malformed version now fails the build rather than falling back to a placeholder. Each image build additionally asserts that the built artifact reports `VERSION`, which is the check that catches a packaging mistake every unit test passes
+
 ## [1.7.34](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.33...v1.7.34) (2026-10-01)
 
 ### Breaking changes

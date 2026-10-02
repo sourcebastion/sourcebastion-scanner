@@ -20,16 +20,13 @@
 * a component failure records `scan-failure.json` beside the SARIF path, naming the component and its diagnostic code; previously the only output was a traceback and CI uploaded nothing. No SARIF is written for a failed scan, so a zero-result document cannot reach code scanning and clear alerts nobody fixed
 * a malformed timeout override is refused when the scanner manager is built, with the variable named, rather than being remapped to a generic component failure mid-scan
 * `--version` resolves against the renamed distribution
+* a file semgrep cannot fully parse no longer discards the whole scan. Semgrep reports per-file problems (`PartialParsing`, a per-file timeout) in the same `errors` collection as fatal ones, distinguishing them by `level`, and exits 0 for the non-fatal kind; treating the collection as fatal failed every scan of a repository containing a vendored or minified file, and surfaced to the customer as "the scan produced no report". Findings from the files semgrep could read are now kept, the skipped files are logged as a count, and only recognized `warn`/`info` error levels are accepted. Partial contract scans with file errors remain incomplete so scoped replacement cannot erase baseline findings for an unparsed or skipped file
 
 ### Compatibility notes
 
 * persist container findings with the distinct `container` category instead of rewriting them as dependency findings
 * report `scan_record.finding_count` from the complete post-suppression snapshot; reports still honor the configured severity filter through `result.issues`
 * raise when Grype or license component execution fails rather than treating the failed component as an empty result
-
-### Bug fixes
-
-* a file semgrep cannot fully parse no longer discards the whole scan. Semgrep reports per-file problems (`PartialParsing`, a per-file timeout) in the same `errors` collection as fatal ones, distinguishing them by `level`, and exits 0 for the non-fatal kind; treating the collection as fatal failed every scan of a repository containing a vendored or minified file, and surfaced to the customer as "the scan produced no report". Findings from the files semgrep could read are now kept, the skipped files are logged as a count, and only recognized `warn`/`info` error levels are accepted. Partial contract scans with file errors remain incomplete so scoped replacement cannot erase baseline findings for an unparsed or skipped file
 
 ## [1.7.33](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.32...v1.7.33) (2026-09-23)
 

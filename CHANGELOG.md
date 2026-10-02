@@ -6,6 +6,8 @@
 
 ### Fixes
 
+* a policy rule can name container findings. The image scanner labels them `container_scanning` while the hosted gate and Cedar v2 call the category `container_images`, and `PolicyRule` rejected both as invalid, so an image-only violation could only be caught by a severity-only rule. Either spelling is now accepted, canonicalised, and matched against findings carrying the other (M043)
+
 * the distribution version is derived from `VERSION` instead of a `setup.py` literal, so a released image reports the release it is. Every release through v1.7.34 shipped metadata saying `0.1.0`, which made `sourcebastion --version` useless inside a digest-pinned scanner -- the one place a human-readable handle is needed, since the image is identified by a digest. `SOURCEBASTION_VERSION` overrides it for builds that are not releases, and a missing or malformed version now fails the build rather than falling back to a placeholder. Each image build additionally asserts that the built artifact reports `VERSION`, which is the check that catches a packaging mistake every unit test passes
 * the self-scan job installs the checked-out scanner with `python3 -m pip`, so it keeps working inside an image whose pip comes from `ensurepip`. Promoting `:latest` for v1.7.34 made the previous bare `pip` exit 127
 

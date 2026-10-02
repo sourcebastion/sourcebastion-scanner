@@ -1,0 +1,264 @@
+{
+  "end": "2026-10-02T23:53:50.157444322Z",
+  "files_failed_to_scan": 0,
+  "files_parsed": 1,
+  "files_scanned": 1,
+  "kics_version": "v2.1.20",
+  "lines_ignored": 0,
+  "lines_parsed": 11,
+  "lines_scanned": 11,
+  "paths": [
+    "/src",
+    "/usr/local/bin/assets/queries",
+    "/usr/local/bin/assets/libraries"
+  ],
+  "queries": [
+    {
+      "category": "Networking and Firewall",
+      "cloud_provider": "AWS",
+      "cwe": "200",
+      "description": "A sensitive port, such as port 23 or port 110, is open for the whole network in either TCP or UDP protocol",
+      "description_id": "5be78364",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "SSH (TCP:22) is allowed",
+          "expected_value": "SSH (TCP:22) should not be allowed",
+          "file_name": "../src/main.tf",
+          "issue_type": "IncorrectValue",
+          "line": 4,
+          "resource_name": "allow_all_fixture",
+          "resource_type": "aws_security_group",
+          "search_key": "aws_security_group[allow_all].ingress",
+          "search_line": 4,
+          "search_value": "TCP,22",
+          "similarity_id": "c5f6472bbb01a2c7968d19ef1b854717e41d13acee5792545df22528bd39752e"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "381c3f2a-ef6f-4eff-99f7-b169cda3422c",
+      "query_name": "Sensitive Port Is Exposed To Entire Network",
+      "query_url": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+      "risk_score": "7.7",
+      "severity": "HIGH"
+    },
+    {
+      "category": "Networking and Firewall",
+      "cloud_provider": "AWS",
+      "cwe": "668",
+      "description": "Security groups allow ingress from 0.0.0.0:0 and/or ::/0",
+      "description_id": "ce3ee5e0",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "aws_security_group[allow_all].ingress.cidr_blocks contains '0.0.0.0/0'",
+          "expected_value": "aws_security_group[allow_all].ingress.cidr_blocks should not contain '0.0.0.0/0'",
+          "file_name": "../src/main.tf",
+          "issue_type": "IncorrectValue",
+          "line": 8,
+          "resource_name": "allow_all_fixture",
+          "resource_type": "aws_security_group",
+          "search_key": "aws_security_group[allow_all].ingress.cidr_blocks",
+          "search_line": 8,
+          "search_value": "",
+          "similarity_id": "20c18309544b4f86755c39b1017dc9dec5495224192bfe9e1ecbddc6e498eb26"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "4728cd65-a20c-49da-8b31-9c08b423e4db",
+      "query_name": "Unrestricted Security Group Ingress",
+      "query_url": "https://www.terraform.io/docs/providers/aws/r/security_group.html",
+      "risk_score": "7.2",
+      "severity": "HIGH"
+    },
+    {
+      "category": "Networking and Firewall",
+      "cloud_provider": "AWS",
+      "cwe": "732",
+      "description": "'SSH' (TCP:22) should not be public in AWS Security Group",
+      "description_id": "51e59188",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "aws_security_group[allow_all].ingress 'SSH' (Port:22) is open",
+          "expected_value": "aws_security_group[allow_all].ingress 'SSH' (Port:22) should not be open",
+          "file_name": "../src/main.tf",
+          "issue_type": "IncorrectValue",
+          "line": 4,
+          "resource_name": "allow_all_fixture",
+          "resource_type": "aws_security_group",
+          "search_key": "aws_security_group[allow_all].ingress",
+          "search_line": 4,
+          "search_value": "",
+          "similarity_id": "beb9ddfdc8a8dbae2954b0dd51c282d7a27943bb45b13a27be78afa6688755c3"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "65905cec-d691-4320-b320-2000436cb696",
+      "query_name": "Security Group With Unrestricted Access To SSH",
+      "query_url": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+      "risk_score": "5.2",
+      "severity": "MEDIUM"
+    },
+    {
+      "category": "Best Practices",
+      "cloud_provider": "AWS",
+      "cwe": "710",
+      "description": "IAM Access Analyzer should be enabled and configured to continuously monitor resource permissions",
+      "description_id": "d03e85ae",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "'aws_accessanalyzer_analyzer' is undefined",
+          "expected_value": "'aws_accessanalyzer_analyzer' should be set",
+          "file_name": "../src/main.tf",
+          "issue_type": "MissingAttribute",
+          "line": 1,
+          "resource_name": "n/a",
+          "resource_type": "n/a",
+          "search_key": "resource",
+          "search_line": -1,
+          "search_value": "",
+          "similarity_id": "0a7d0464de505a54720d6002d14a22a32e6b20bb8189d444ab621d8ab838304f"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "e592a0c5-5bdb-414c-9066-5dba7cdea370",
+      "query_name": "IAM Access Analyzer Not Enabled",
+      "query_url": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/accessanalyzer_analyzer",
+      "risk_score": "3.5",
+      "severity": "LOW"
+    },
+    {
+      "category": "Best Practices",
+      "cloud_provider": "AWS",
+      "cwe": "665",
+      "description": "AWS services resource tags are an essential part of managing components. As a best practice, the field 'tags' should have additional tags defined other than 'Name'",
+      "description_id": "09db2d52",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "aws_security_group[{{allow_all}}].tags is undefined or null",
+          "expected_value": "aws_security_group[{{allow_all}}].tags should be defined and not null",
+          "file_name": "../src/main.tf",
+          "issue_type": "MissingAttribute",
+          "line": 1,
+          "resource_name": "allow_all_fixture",
+          "resource_type": "aws_security_group",
+          "search_key": "aws_security_group[{{allow_all}}]",
+          "search_line": -1,
+          "search_value": "",
+          "similarity_id": "76e8124ed826bbbb27d9adbbd8daeca0a00a33cfcea5c24dd21fcea2a26cf360"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "e38a8e0a-b88b-4902-b3fe-b0fcb17d5c10",
+      "query_name": "Resource Not Using Tags",
+      "query_url": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/resource-tagging",
+      "risk_score": "0.0",
+      "severity": "INFO"
+    },
+    {
+      "category": "Access Control",
+      "cloud_provider": "AWS",
+      "cwe": "284",
+      "description": "Security group must be used or not declared",
+      "description_id": "eff2383a",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "'aws_security_group[allow_all]' is not used",
+          "expected_value": "'aws_security_group[allow_all]' should be used",
+          "file_name": "../src/main.tf",
+          "issue_type": "IncorrectValue",
+          "line": 1,
+          "resource_name": "allow_all_fixture",
+          "resource_type": "aws_security_group",
+          "search_key": "aws_security_group[allow_all]",
+          "search_line": -1,
+          "search_value": "",
+          "similarity_id": "08f016108d5f1349f3ad46d75f0228c260d490af407881da0346d4f1a64f575e"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "4849211b-ac39-479e-ae78-5694d506cb24",
+      "query_name": "Security Group Not Used",
+      "query_url": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+      "risk_score": "0.0",
+      "severity": "INFO"
+    },
+    {
+      "category": "Best Practices",
+      "cloud_provider": "AWS",
+      "cwe": "710",
+      "description": "It's considered a best practice for all rules in AWS Security Group to have a description",
+      "description_id": "cee242dd",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "aws_security_group[allow_all].ingress.description is undefined or null",
+          "expected_value": "aws_security_group[allow_all].ingress.description should be defined and not null",
+          "file_name": "../src/main.tf",
+          "issue_type": "MissingAttribute",
+          "line": 4,
+          "resource_name": "allow_all",
+          "resource_type": "aws_security_group",
+          "search_key": "aws_security_group[allow_all].ingress",
+          "search_line": 4,
+          "search_value": "",
+          "similarity_id": "f94c42710c541fd8cbf469c4265ebbadfe830f9fdcacd329fa058bcf9feec35e"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "68eb4bf3-f9bf-463d-b5cf-e029bb446d2e",
+      "query_name": "Security Group Rule Without Description",
+      "query_url": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#description",
+      "risk_score": "0.0",
+      "severity": "INFO"
+    },
+    {
+      "category": "Best Practices",
+      "cloud_provider": "AWS",
+      "cwe": "710",
+      "description": "It's considered a best practice for AWS Security Group to have a description",
+      "description_id": "bc535d27",
+      "experimental": false,
+      "files": [
+        {
+          "actual_value": "aws_security_group[allow_all] description is undefined or null",
+          "expected_value": "aws_security_group[allow_all] description should be defined and not null",
+          "file_name": "../src/main.tf",
+          "issue_type": "MissingAttribute",
+          "line": 1,
+          "resource_name": "allow_all_fixture",
+          "resource_type": "aws_security_group",
+          "search_key": "aws_security_group[allow_all]",
+          "search_line": 1,
+          "search_value": "",
+          "similarity_id": "1b92d3c1fc37b69d7006bf8d08a0db05bd122ce2fe451e1debebb30f1130103b"
+        }
+      ],
+      "platform": "Terraform",
+      "query_id": "cb3f5ed6-0d18-40de-a93d-b3538db31e8c",
+      "query_name": "Security Group Without Description",
+      "query_url": "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#description",
+      "risk_score": "0.0",
+      "severity": "INFO"
+    }
+  ],
+  "queries_failed_to_compute_similarity_id": 0,
+  "queries_failed_to_execute": 0,
+  "queries_total": 1100,
+  "scan_id": "console",
+  "severity_counters": {
+    "CRITICAL": 0,
+    "HIGH": 2,
+    "INFO": 4,
+    "LOW": 1,
+    "MEDIUM": 1,
+    "TRACE": 0
+  },
+  "start": "2026-10-02T23:53:19.950636166Z",
+  "total_bom_resources": 0,
+  "total_counter": 8
+}

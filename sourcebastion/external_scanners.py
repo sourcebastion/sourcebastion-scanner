@@ -1094,7 +1094,11 @@ class KicsScanner(ScannerWrapper):
         finding["fix_complexity"] = "trivial"
         finding["effort_mins"] = 10
 
-        query_name = query.get("queryName") if isinstance(query, dict) else None
+        query_name = (
+            (query.get("query_name") or query.get("queryName"))
+            if isinstance(query, dict)
+            else None
+        )
         if query_name:
             finding["affected_symbol"] = query_name
 
@@ -1283,27 +1287,44 @@ class KicsScanner(ScannerWrapper):
             issues = []
             filtered_count = 0
             for query in data.get("queries", []):
-                query_name = query.get("queryName", "")
+                # KICS emits snake_case: `query_name`, `files`, and
+                # `file_name` within each occurrence. The camelCase spellings
+                # read here before -- `queryName`, `results`, `file` -- appear
+                # nowhere in its output, so the occurrence loop below never
+                # ran and no KICS finding ever reached a caller. Nothing
+                # failed; the component simply returned an empty list for
+                # every repository.
+                #
+                # Both spellings are accepted, the real one first. A document
+                # shaped differently by some future KICS should degrade to a
+                # parse failure a reader can see, not to silence.
+                query_name = query.get("query_name") or query.get("queryName") or ""
                 description = query.get("description", "")
 
                 # Skip code quality findings to reduce false positives
+                occurrences = query.get("files") or query.get("results") or []
+
                 if self._is_code_quality(query_name, description):
-                    filtered_count += len(query.get("results", []))
+                    filtered_count += len(occurrences)
                     continue
 
                 # Skip INFO severity findings (mostly informational, low security impact)
                 severity = query.get("severity", "MEDIUM")
                 if severity == "INFO":
-                    filtered_count += len(query.get("results", []))
+                    filtered_count += len(occurrences)
                     continue
 
-                for result_item in query.get("results", []):
+                for result_item in occurrences:
                     finding = {
                         "type": "Infrastructure as Code",
                         "rule_id": query_name,
                         "title": query_name,
                         "description": description,
-                        "file": result_item.get("file", "unknown"),
+                        "file": (
+                            result_item.get("file_name")
+                            or result_item.get("file")
+                            or "unknown"
+                        ),
                         "line": result_item.get("line", 1),
                         "severity": self._map_severity(severity),
                         "scanner": "kics",

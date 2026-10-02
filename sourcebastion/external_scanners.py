@@ -7,6 +7,7 @@ import tempfile
 import shutil
 import os
 import re
+import sys
 import time
 import yaml
 from contextlib import contextmanager
@@ -1498,7 +1499,15 @@ class GrypeScanner(ScannerWrapper):
             (p / "yarn.lock",         None),
             (p / "package.json",      ["npm", "install", "--ignore-scripts", "--package-lock-only"]),
             (p / "Pipfile.lock",      ["pipenv", "install", "--deploy"]),
-            (p / "requirements.txt",  ["pip", "install", "-r", str(p / "requirements.txt"), "--target", str(p / ".grype-deps")]),
+            # `sys.executable -m pip`, not bare `pip`. The images provision pip
+            # with `python3 -m ensurepip`, which installs no unversioned `pip`
+            # console script, so bare `pip` raised FileNotFoundError here and
+            # surfaced as `grype scanner failed (not_installed)` -- naming the
+            # wrong tool, since grype was present and working. Every other
+            # entry in this list is a genuinely external binary, where a bare
+            # name is right; pip is the one that belongs to the interpreter
+            # already running us.
+            (p / "requirements.txt",  [sys.executable, "-m", "pip", "install", "-r", str(p / "requirements.txt"), "--target", str(p / ".grype-deps")]),
             (p / "go.sum",            ["go", "mod", "download"]),
             (p / "Gemfile.lock",      ["bundle", "install"]),
         ]

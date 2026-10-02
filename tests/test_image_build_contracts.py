@@ -74,3 +74,36 @@ def test_ensurepip_stages_do_not_invoke_bare_pip(dockerfile):
         f"`ensurepip`, which installs no unversioned `pip`: {offenders}. "
         "Use `python3 -m pip`."
     )
+
+
+# The Dockerfile guard above was not enough on its own: a third `pip` call site
+# lived in Python, as an argv list, and reached a release after the Dockerfile
+# sites were fixed. A subprocess argv is the same mistake in a different file
+# type, so it gets the same check.
+SOURCE_DIRS = ("sourcebastion", "scripts")
+
+
+def _python_files():
+    for directory in SOURCE_DIRS:
+        yield from sorted((ROOT / directory).rglob("*.py"))
+
+
+@pytest.mark.parametrize("source", list(_python_files()), ids=lambda p: p.name)
+def test_subprocess_argv_does_not_invoke_bare_pip(source):
+    """`pip` as argv[0] is not portable; the images have no such binary.
+
+    Unlike npm, go or bundle, pip belongs to the interpreter already running,
+    so it is invoked as `sys.executable -m pip`. Bare `pip` raised
+    FileNotFoundError inside the scanner images and was reported against
+    whichever scanner happened to need it.
+    """
+    text = source.read_text(encoding="utf-8")
+    offenders = [
+        line.strip()
+        for line in text.splitlines()
+        if re.search(r"""\[\s*["']pip["']\s*,""", line)
+    ]
+    assert not offenders, (
+        f"{source.name} invokes bare `pip` as argv[0]: {offenders}. "
+        "Use [sys.executable, '-m', 'pip', ...]."
+    )

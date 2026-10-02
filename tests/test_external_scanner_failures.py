@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -460,3 +461,28 @@ def test_semgrep_malformed_errors_collection_fails_closed(tmp_path, errors):
     with pytest.raises(ScannerExecutionError) as raised:
         _semgrep_report(tmp_path, {"results": [], "errors": errors})
     assert raised.value.code == "invalid_output"
+
+
+def test_grype_dependency_install_uses_the_running_interpreter(tmp_path):
+    """requirements.txt materialisation must not depend on a `pip` binary.
+
+    The scanner images provision pip through `python3 -m ensurepip`, which
+    installs no unversioned `pip`. Bare `pip` here raised FileNotFoundError,
+    which `_install_dependencies` maps to `not_installed` -- reported against
+    grype, which was present and working the whole time.
+    """
+    from sourcebastion.external_scanners import GrypeScanner
+
+    (tmp_path / "requirements.txt").write_text("six==1.17.0\n")
+    scanner = GrypeScanner()
+    seen = {}
+
+    def record(cmd, **kwargs):
+        seen["cmd"] = cmd
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    with patch("sourcebastion.external_scanners.subprocess.run", side_effect=record):
+        scanner._install_dependencies(str(tmp_path))
+
+    assert seen["cmd"][:3] == [sys.executable, "-m", "pip"], seen["cmd"]
+    assert "pip" != seen["cmd"][0]

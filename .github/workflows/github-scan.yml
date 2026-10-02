@@ -85,7 +85,11 @@ jobs:
 
       - name: Use checked-out scanner when dogfooding
         if: github.repository == 'sourcebastion/sourcebastion-scanner'
-        run: pip install --no-deps -e .
+        # `python3 -m pip`, not bare `pip`: this job runs *inside* the
+        # scanner image, which provisions pip with `python3 -m ensurepip` and
+        # so has no unversioned `pip`. Promoting :latest for v1.7.34 made this
+        # step exit 127.
+        run: python3 -m pip install --no-deps -e .
 
       - name: Run SourceBastion Scan
         id: scan

@@ -107,3 +107,63 @@ def test_subprocess_argv_does_not_invoke_bare_pip(source):
         f"{source.name} invokes bare `pip` as argv[0]: {offenders}. "
         "Use [sys.executable, '-m', 'pip', ...]."
     )
+
+
+# The third file type. A workflow job that sets `container:` to the scanner
+# image runs its steps *inside* that image, so it inherits the image's lack of
+# an unversioned `pip` -- and a release that promotes `:latest` breaks such a
+# step without anything in this repository changing. That is how the Security
+# Scan job started exiting 127 the moment v1.7.34 published.
+def _invokes_bare_pip(line: str) -> bool:
+    """Whether a shell line runs `pip` as the command itself.
+
+    Tokenised rather than matched with a regex: `python -m pip` and
+    `/opt/venv/bin/pip` are both correct -- they name an interpreter or an
+    explicit path instead of relying on a console script the image may not
+    have -- and distinguishing those from a bare `pip` with lookarounds was
+    fiddly enough to get wrong twice.
+    """
+    tokens = line.replace("&&", " ").replace("|", " ").split()
+    for index, token in enumerate(tokens):
+        if token != "pip":
+            continue  # a path like /opt/venv/bin/pip is explicit, so fine
+        if index and tokens[index - 1] == "-m":
+            continue  # python -m pip
+        if index + 1 < len(tokens) and tokens[index + 1] in {"install", "check"}:
+            return True
+    return False
+
+
+def _jobs_running_in_the_scanner_image():
+    for workflow in WORKFLOWS:
+        document = yaml.safe_load(workflow.read_text(encoding="utf-8")) or {}
+        for name, job in (document.get("jobs") or {}).items():
+            if not isinstance(job, dict):
+                continue
+            container = job.get("container")
+            image = container.get("image") if isinstance(container, dict) else container
+            if isinstance(image, str) and "sourcebastion-scanner" in image:
+                yield workflow.name, name, job
+
+
+def test_steps_inside_the_scanner_image_do_not_invoke_bare_pip():
+    """A step running in the scanner image must not assume a `pip` binary."""
+    offenders = []
+    for workflow_name, job_name, job in _jobs_running_in_the_scanner_image():
+        for step in job.get("steps") or []:
+            script = step.get("run") if isinstance(step, dict) else None
+            if isinstance(script, str):
+                offenders += [
+                    f"{workflow_name}:{job_name}: {line.strip()}"
+                    for line in script.splitlines()
+                    if _invokes_bare_pip(line)
+                ]
+    assert not offenders, (
+        "these steps run inside the scanner image, which has no unversioned "
+        f"`pip`: {offenders}. Use `python3 -m pip`."
+    )
+
+
+def test_the_guard_actually_finds_jobs_to_check():
+    """Guard against the check above silently covering nothing."""
+    assert list(_jobs_running_in_the_scanner_image())

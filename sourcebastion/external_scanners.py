@@ -783,7 +783,9 @@ class SemgrepScanner(ScannerWrapper):
                     if repository_ignore.is_symlink():
                         self._fail("invalid_output")
                     shutil.copy2(repository_ignore, scoped_root / ".semgrepignore")
-                issues, raw_output_path = self.scan_with_raw_output(str(scoped_root))
+                issues, raw_output_path = self.scan_with_raw_output(
+                    str(scoped_root), require_complete_coverage=True
+                )
                 try:
                     for finding in issues:
                         finding["file"] = _scoped_result_path(
@@ -805,7 +807,9 @@ class SemgrepScanner(ScannerWrapper):
         except Exception:
             self._fail("invalid_output")
 
-    def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
+    def scan_with_raw_output(
+        self, path: str, *, require_complete_coverage: bool = False
+    ) -> Tuple[List[Dict[str, Any]], str]:
         """Run semgrep scan and return raw output file path"""
         if not self.is_installed():
             self._fail("not_installed")
@@ -895,14 +899,18 @@ class SemgrepScanner(ScannerWrapper):
             # is sometimes a bare string and sometimes a [tag, payload] pair.
             # An entry with no level at all is treated as fatal: unknown
             # shapes fail closed.
-            fatal = [
-                error
-                for error in data["errors"]
-                if str(error.get("level", "error")).lower() == "error"
-            ]
-            if fatal:
+            errors = data.get("errors", [])
+            if not isinstance(errors, list) or any(not isinstance(error, dict) for error in errors):
+                self._fail("invalid_output")
+            for error in errors:
+                level = error.get("level")
+                if not isinstance(level, str) or level.lower() not in {"warn", "info"}:
+                    self._fail("execution_failed")
+            # Partial results replace baseline observations in every covered
+            # path. A skipped/unparsed file cannot authorize that replacement.
+            if errors and require_complete_coverage:
                 self._fail("execution_failed")
-            degraded = len(data["errors"]) - len(fatal)
+            degraded = len(errors)
             if degraded:
                 # Count only. These messages quote the offending source lines,
                 # and scanner logs are not a place to reproduce customer code.

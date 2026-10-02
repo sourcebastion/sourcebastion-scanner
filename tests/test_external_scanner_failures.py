@@ -438,3 +438,25 @@ def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path):
         assert len(issues) == 1
     finally:
         os.unlink(raw_path)
+
+
+@pytest.mark.parametrize("level", [None, "", "fatal", "unknown", 0, []])
+def test_semgrep_unrecognized_error_level_fails_closed(tmp_path, level):
+    with pytest.raises(ScannerExecutionError):
+        _semgrep_report(tmp_path, {"results": [], "errors": [{"level": level}]})
+
+
+@pytest.mark.parametrize("level", ["warn", "info"])
+def test_semgrep_recognized_nonfatal_levels_preserve_full_scan(tmp_path, level):
+    issues, raw_path = _semgrep_report(tmp_path, {"results": [], "errors": [{"level": level}]})
+    try:
+        assert issues == []
+    finally:
+        os.unlink(raw_path)
+
+
+@pytest.mark.parametrize("errors", [None, {}, "", [None], ["not-an-error"]])
+def test_semgrep_malformed_errors_collection_fails_closed(tmp_path, errors):
+    with pytest.raises(ScannerExecutionError) as raised:
+        _semgrep_report(tmp_path, {"results": [], "errors": errors})
+    assert raised.value.code == "invalid_output"

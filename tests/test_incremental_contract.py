@@ -5,6 +5,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from click.testing import CliRunner
 
 from sourcebastion.cli import main
@@ -1459,3 +1461,35 @@ def test_result_validator_rejects_duplicate_findings_from_external_envelope(
         assert str(exc) == "result_envelope_invalid"
     else:
         raise AssertionError("duplicate external finding was accepted")
+
+
+
+@pytest.mark.parametrize("error_type", ["PartialParsing", "Timeout"])
+def test_semgrep_partial_parse_warning_does_not_claim_complete_coverage(tmp_path, monkeypatch, error_type):
+    source, head_sha = _source_tree(tmp_path)
+    plan = _partial_sast_plan(head_sha)
+    plan["scanner"]["enabled_components"] = ["semgrep"]
+    plan["components"] = plan["components"][1:]
+    _redigest(plan)
+    output_paths = []
+
+    def report(command, **kwargs):
+        output = Path(command[command.index("--output") + 1])
+        output_paths.append(output)
+        output.write_text(json.dumps({
+            "results": [],
+            "errors": [{"level": "warn", "type": [error_type, [{"path": "app.py"}]]}],
+        }))
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(SemgrepScanner, "is_installed", lambda self: True)
+    monkeypatch.setattr("sourcebastion.incremental_contract._observed_head", lambda path: head_sha)
+    monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", report)
+    from sourcebastion.incremental_contract import execute_scan_plan
+    envelope = execute_scan_plan(str(source), plan, scanner_image=SCANNER_IMAGE)
+    validate_result_envelope(envelope, plan)
+    component = envelope["components"][0]
+    assert component["status"] == "failed"
+    assert component["diagnostic_code"] == "execution_failed"
+    assert component["findings"] == []
+    assert output_paths and all(not path.exists() for path in output_paths)

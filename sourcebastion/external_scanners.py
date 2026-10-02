@@ -897,8 +897,14 @@ class SemgrepScanner(ScannerWrapper):
             #
             # `level` is the discriminator rather than `type`, because `type`
             # is sometimes a bare string and sometimes a [tag, payload] pair.
-            # An entry with no level at all is treated as fatal: unknown
-            # shapes fail closed.
+            # It is an allowlist, not a denylist: only `warn` and `info` are
+            # known to be non-fatal, so a missing, null, empty, unrecognised
+            # or non-string level fails closed. Matching on `!= "error"`
+            # instead would read a `level` semgrep adds later, or a malformed
+            # one, as safe.
+            #
+            # A scoped scan is held to a stricter rule -- see
+            # `require_complete_coverage` below.
             errors = data.get("errors", [])
             if not isinstance(errors, list) or any(not isinstance(error, dict) for error in errors):
                 self._fail("invalid_output")

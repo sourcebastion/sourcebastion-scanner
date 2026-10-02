@@ -167,3 +167,47 @@ def test_steps_inside_the_scanner_image_do_not_invoke_bare_pip():
 def test_the_guard_actually_finds_jobs_to_check():
     """Guard against the check above silently covering nothing."""
     assert list(_jobs_running_in_the_scanner_image())
+
+
+# --- the real-execution smoke scan -------------------------------------------
+
+SMOKE_SCRIPT = ROOT / "scripts" / "smoke-scan-juice-shop.sh"
+
+
+def test_the_standard_image_build_scans_a_real_application():
+    """The release path must exercise the scanners for real, not in effigy.
+
+    `verify-scanner-integration.py` checks each binary with `shutil.which` and
+    then patches `subprocess.run`, so it proves the parsers work on fixture
+    JSON and nothing about whether the scanners run. Two regressions reached
+    releases through that gap: grype failing in the `pip` call it makes to
+    materialise dependencies, and semgrep discarding an entire scan over one
+    unparseable file. Both would have been caught by actually scanning
+    something.
+    """
+    document = yaml.safe_load((ROOT / ".github" / "workflows" / "docker.yml").read_text(encoding="utf-8"))
+    steps = document["jobs"]["build-docker-standard"]["steps"]
+    scripts = "\n".join(step.get("run", "") for step in steps if isinstance(step, dict))
+    assert "smoke-scan-juice-shop.sh" in scripts, (
+        "the standard image build no longer runs the real-execution smoke scan"
+    )
+
+
+def test_the_smoke_scan_pins_its_corpus():
+    """A release must not fail because an upstream repository changed today."""
+    text = SMOKE_SCRIPT.read_text(encoding="utf-8")
+    pin = re.search(r'corpus_sha="([0-9a-f]{40})"', text)
+    assert pin, "the smoke corpus must be pinned to a full commit sha"
+
+
+def test_the_smoke_scan_asserts_each_scanner_separately():
+    """A total-count assertion would pass with one scanner doing all the work.
+
+    grype alone produced every finding on the fixture corpus while gitleaks,
+    semgrep and kics produced none, so a bare `findings > 0` check is not
+    evidence that the scanners work.
+    """
+    text = SMOKE_SCRIPT.read_text(encoding="utf-8")
+    expected = re.search(r'expected_scanners="([^"]+)"', text)
+    assert expected, "the smoke scan must name the scanners it requires"
+    assert set(expected.group(1).split()) >= {"semgrep", "gitleaks", "grype"}

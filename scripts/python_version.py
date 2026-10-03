@@ -18,13 +18,22 @@ def exact_version(value):
     return value
 
 
+def requested_version(value):
+    value = value.strip()
+    if not re.fullmatch(r"3\.[0-9]+(?:\.[0-9]+)?", value):
+        raise ValueError("Python version must be stable 3.MINOR or 3.MINOR.PATCH")
+    return value
+
+
 def current(requested=""):
     version = exact_version((ROOT / "PYTHON_VERSION").read_text().strip())
     dockerfile = (ROOT / "images/Dockerfile").read_text()
     if not re.search(r"^ARG PYTHON_VERSION=" + re.escape(version) + r"$", dockerfile, re.MULTILINE):
         raise ValueError("Dockerfile default and PYTHON_VERSION disagree")
-    if requested and exact_version(requested) != version:
-        raise ValueError("requested Python version must match the reviewed source pin")
+    if requested.strip():
+        requested = requested_version(requested)
+        if requested != version and not version.startswith(requested + "."):
+            raise ValueError("requested Python version must match the reviewed source pin")
     return version
 
 
@@ -43,15 +52,21 @@ def artifact_tools():
 
 
 def update(requested):
+    requested = requested.strip()
+    if requested != "latest":
+        requested = requested_version(requested)
     with urlopen(OFFICIAL_VERSIONS, timeout=60) as response:
         candidates = stable_candidates(json.load(response))
     previous = tuple(map(int, current().split(".")))
-    if requested != "latest":
+    is_exact = requested != "latest" and requested.count(".") == 2
+    if is_exact:
         candidates = [exact_version(requested)]
-    else:
+    elif requested == "latest":
         candidates = [v for v in candidates if tuple(map(int, v.split("."))) >= previous]
+    else:
+        candidates = [v for v in candidates if v.startswith(requested + ".")]
     if not candidates:
-        raise ValueError("no stable Python candidate is available without downgrading")
+        raise ValueError(f"no stable Python candidate is available for {requested}")
     artifacts = artifact_tools()
     lock = artifacts.validate_lock(json.loads((ROOT / ".github/semgrep-artifacts.json").read_text()))
     artifacts.verify(lock)
@@ -63,7 +78,7 @@ def update(requested):
             try:
                 artifacts.generate_dependencies(lock, staged)
             except ValueError as exc:
-                if requested != "latest":
+                if is_exact:
                     raise
                 failures.append(f"{version}: {exc}")
                 continue

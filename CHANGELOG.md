@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Changed
+
+* a merged version bump now requests its own release. `release.yml` had always accepted a `repository_dispatch` of type `scanner-release` from `sourcebastion-bot[bot]`, but nothing sent it -- the initiator was semantic-release, removed in the same commit that introduced the gate -- so every release ran through the owner path, whose input was named `break_glass_reason`. The new `Release dispatch` workflow supplies the missing initiator, and that input is now `release_reason`: dispatching by hand is the documented fallback, not an incident. Nothing about what is checked changes, including the second approval on the `release` environment
+
 ## [1.7.36](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.35...v1.7.36) (2026-10-03)
 
 ### Fixes

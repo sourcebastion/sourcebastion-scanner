@@ -13,8 +13,8 @@ on:
         description: Existing VERSION value, prefixed with v (for example v1.7.31)
         required: true
         type: string
-      break_glass_reason:
-        description: Why the owner is bypassing bot initiation
+      release_reason:
+        description: Why this release is being dispatched by hand, recorded in the run log
         required: true
         type: string
 
@@ -57,7 +57,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REQUESTED_VERSION: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.version || inputs.version }}
-          BREAK_GLASS_REASON: ${{ inputs.break_glass_reason }}
+          RELEASE_REASON: ${{ inputs.release_reason }}
         run: |
           set -euo pipefail
           case "$GITHUB_EVENT_NAME" in
@@ -69,14 +69,17 @@ jobs:
               ;;
             workflow_dispatch)
               if [ "$GITHUB_ACTOR" != "jfelten" ]; then
-                echo "break-glass releases are restricted to owner jfelten" >&2
+                echo "a manual release is restricted to owner jfelten" >&2
                 exit 1
               fi
-              if [ "${#BREAK_GLASS_REASON}" -lt 12 ]; then
-                echo "break-glass releases require a meaningful audit reason" >&2
+              if [ "${#RELEASE_REASON}" -lt 12 ]; then
+                echo "a manual release requires a meaningful audit reason" >&2
                 exit 1
               fi
-              echo "::warning::owner break-glass release path selected"
+              # A notice, not a warning. CONTRIBUTING documents maintainer
+              # dispatch as *the* release process, so flagging it as an
+              # exception made every ordinary release look like an incident.
+              echo "::notice::manual release dispatched by ${GITHUB_ACTOR}: ${RELEASE_REASON}"
               ;;
             *)
               echo "unsupported release event $GITHUB_EVENT_NAME" >&2

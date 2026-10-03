@@ -42,25 +42,25 @@ def validation_script() -> str:
     return next(step["run"] for step in steps if step.get("id") == "release_metadata")
 
 
-def test_release_supports_bot_dispatch_and_audited_owner_break_glass():
+def test_release_supports_bot_dispatch_and_audited_manual_release():
     workflow = load_workflow()
     assert set(workflow["on"]) == {"repository_dispatch", "workflow_dispatch"}
     assert workflow["on"]["repository_dispatch"]["types"] == ["scanner-release"]
     manual_inputs = workflow["on"]["workflow_dispatch"]["inputs"]
     assert manual_inputs["version"]["required"] == "true"
-    assert manual_inputs["break_glass_reason"]["required"] == "true"
+    assert manual_inputs["release_reason"]["required"] == "true"
     assert workflow["jobs"]["prepare-release"]["environment"] == "release"
 
     steps = workflow["jobs"]["prepare-release"]["steps"]
     validate = next(step for step in steps if step.get("id") == "release_metadata")
     assert "github.event.client_payload.version" in validate["env"]["REQUESTED_VERSION"]
-    assert validate["env"]["BREAK_GLASS_REASON"] == "${{ inputs.break_glass_reason }}"
+    assert validate["env"]["RELEASE_REASON"] == "${{ inputs.release_reason }}"
     assert (
         'if [ "$GITHUB_ACTOR" != "sourcebastion-bot[bot]" ]; then'
         in validate["run"]
     )
     assert 'if [ "$GITHUB_ACTOR" != "jfelten" ]; then' in validate["run"]
-    assert "${#BREAK_GLASS_REASON}" in validate["run"]
+    assert "${#RELEASE_REASON}" in validate["run"]
     create = next(step for step in steps if step["name"].startswith("Create the draft"))
     assert create["if"] == "steps.release_metadata.outputs.release_exists != 'true'"
     assert create["env"]["VERSION"] == (
@@ -76,7 +76,7 @@ def run_validation(
     create_tag: bool = False,
     event_name: str = "repository_dispatch",
     actor: str = "sourcebastion-bot[bot]",
-    break_glass_reason: str = "",
+    release_reason: str = "",
 ) -> ValidationResult:
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     subprocess.run(["git", "config", "user.name", "Release Test"], cwd=tmp_path, check=True)
@@ -115,7 +115,7 @@ def run_validation(
             "GITHUB_OUTPUT": str(output),
             "GITHUB_ACTOR": actor,
             "GITHUB_EVENT_NAME": event_name,
-            "BREAK_GLASS_REASON": break_glass_reason,
+            "RELEASE_REASON": release_reason,
             "GITHUB_REF": "refs/heads/main",
             "GITHUB_SHA": release_sha,
             "PATH": f"{fake_bin}:{env['PATH']}",
@@ -156,23 +156,23 @@ def test_release_validation_rejects_untrusted_dispatchers(
     assert error in result.stderr
 
 
-def test_owner_break_glass_requires_a_meaningful_reason(tmp_path: Path):
+def test_manual_release_requires_a_meaningful_reason(tmp_path: Path):
     rejected = run_validation(
         tmp_path,
         event_name="workflow_dispatch",
         actor="jfelten",
-        break_glass_reason="too short",
+        release_reason="too short",
     )
     assert rejected.returncode != 0
     assert "meaningful audit reason" in rejected.stderr
 
 
-def test_owner_break_glass_with_reason_passes_validation(tmp_path: Path):
+def test_manual_release_with_reason_passes_validation(tmp_path: Path):
     result = run_validation(
         tmp_path,
         event_name="workflow_dispatch",
         actor="jfelten",
-        break_glass_reason="bot unavailable during release",
+        release_reason="dispatching by hand while the initiator is down",
     )
     assert result.returncode == 0, result.stderr
 
@@ -340,3 +340,79 @@ def test_container_runner_maps_host_identity_and_checkout(tmp_path: Path):
 def test_retired_semantic_release_runtime_is_absent():
     for path in (".releaserc.json", "package.json", "package-lock.json"):
         assert not (ROOT / path).exists()
+
+
+# --- the initiator -----------------------------------------------------------
+
+DISPATCH_WORKFLOW = ROOT / ".github" / "workflows" / "release-dispatch.yml"
+
+
+def _dispatch_workflow():
+    return yaml.load(DISPATCH_WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+
+def test_something_actually_sends_the_bot_dispatch():
+    """`release.yml` accepted a dispatch nobody sent.
+
+    The `repository_dispatch` path required `sourcebastion-bot[bot]`, but the
+    initiator was semantic-release, removed in the same commit that added the
+    gate. So the documented process -- maintainer dispatch -- ran through an
+    input named `break_glass_reason`, and the automated path was unreachable.
+    """
+    workflow = _dispatch_workflow()
+    steps = workflow["jobs"]["dispatch"]["steps"]
+    script = "\n".join(step.get("run", "") for step in steps)
+    assert "event_type=scanner-release" in script, (
+        "the initiator must send the event type release.yml listens for"
+    )
+    assert "client_payload[version]" in script, (
+        "release.yml reads the version from client_payload"
+    )
+
+
+def test_the_initiator_triggers_on_a_version_bump_reaching_main():
+    workflow = _dispatch_workflow()
+    push = workflow["on"]["push"]
+    assert push["branches"] == ["main"]
+    assert push["paths"] == ["VERSION"], (
+        "a release is declared by a VERSION change; a broader trigger would "
+        "request a release on unrelated pushes"
+    )
+
+
+def test_the_initiator_token_is_scoped_to_this_repository():
+    """Same constraint as every other App token here.
+
+    `create-github-app-token` scopes to the current repository only when both
+    `owner` and `repositories` are omitted; `owner` with an empty
+    `repositories` scopes to every repository the app is installed on.
+    """
+    steps = _dispatch_workflow()["jobs"]["dispatch"]["steps"]
+    minted = [
+        step for step in steps
+        if str(step.get("uses", "")).startswith("actions/create-github-app-token@")
+    ]
+    assert minted, "the dispatch must be sent as the bot, or release.yml rejects it"
+    for step in minted:
+        inputs = step.get("with", {})
+        assert "owner" not in inputs, inputs
+        assert "repositories" not in inputs, inputs
+
+
+def test_the_initiator_skips_an_already_published_version():
+    """A re-merge must not request a release of an immutable tag.
+
+    `release.yml` would refuse it, which is correct but shows up as a failed
+    run on an ordinary push.
+    """
+    script = "\n".join(
+        step.get("run", "") for step in _dispatch_workflow()["jobs"]["dispatch"]["steps"]
+    )
+    assert "isDraft" in script and "already published" in script
+
+
+def test_the_manual_path_survives_alongside_the_initiator():
+    """The owner path is the fallback for when the initiator cannot run."""
+    workflow = yaml.load(WORKFLOW_PATH.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    assert set(workflow["on"]) == {"repository_dispatch", "workflow_dispatch"}
+    assert "release_reason" in workflow["on"]["workflow_dispatch"]["inputs"]

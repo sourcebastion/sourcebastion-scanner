@@ -191,8 +191,11 @@ but they do not publish or increment a release automatically.
 
 ### How It Works
 
-1. Dispatch **Prepare reviewed release** with the new scanner version and release notes.
-   Its `python_version` input defaults to the newest compatible stable Python.
+1. Dispatch **Prepare reviewed release** on `main`; no inputs are required.
+   It selects the next scanner patch from `VERSION` and generates notes from
+   merged changes since the last published release. Version and notes can be overridden.
+   Its `python_version` input defaults to `3.14`, selecting the newest compatible
+   stable patch in that minor. An exact patch or `latest` can also be requested.
    It refreshes `PYTHON_VERSION`, the Docker build default and verified dependency
    locks, then opens a PR updating `VERSION` and `CHANGELOG.md`.
 2. The normal CI and independent review must pass before merge.
@@ -200,6 +203,8 @@ but they do not publish or increment a release automatically.
    `VERSION` change on `main` and asks `Release` to run, as `sourcebastion-bot[bot]`.
    A maintainer can still dispatch `Release` by hand from `main` with the exact
    `vMAJOR.MINOR.PATCH` value and a recorded reason, for when the initiator cannot run.
+   Its Python input accepts a minor such as `3.14` or the exact reviewed patch.
+   Publication always uses the exact `PYTHON_VERSION` pin and its verified locks.
 4. A second release authority approves the protected `release` environment.
 5. The workflow builds and scans the complete AMD64/ARM64 image by digest, promotes public tags only
    after every gate passes, then publishes the draft GitHub release.

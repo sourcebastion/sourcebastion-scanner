@@ -27,8 +27,15 @@ import subprocess
 def execute(command):
     subprocess.call(command, shell=True)
 PY
-# Construct an intentionally fake token without checking a token into this repo.
-printf '%s%s\n' 'GITHUB_TOKEN="ghp_' 'abcdefghijklmnopqrstuvwxyz1234567890"' > "$work/source/token.py"
+# Construct a fake token; alphabet sequences are in Gitleaks' global allowlist.
+python3 - "$work/source/token.py" <<'PY'
+import hashlib
+from pathlib import Path
+import sys
+
+token = 'ghp_' + hashlib.sha256(b'sourcebastion-offline-test-fixture').hexdigest()[:36]
+Path(sys.argv[1]).write_text(f'GITHUB_TOKEN="{token}"\n')
+PY
 git -C "$work/source" init -q
 git -C "$work/source" add .
 git -C "$work/source" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm fixture

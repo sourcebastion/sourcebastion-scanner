@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   prepare:
-    if: github.ref == refs/heads/main
+    if: github.ref == 'refs/heads/main'
     environment: scanner-maintenance
     runs-on: ubuntu-latest
     timeout-minutes: 45

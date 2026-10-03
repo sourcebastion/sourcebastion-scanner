@@ -53,6 +53,6 @@ USER sourcebastion
 ENV HOME=/home/sourcebastion
 WORKDIR /scan
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD sourcebastion --version || exit 1
+    CMD ["sourcebastion", "--version"]
 ENTRYPOINT ["sourcebastion"]
 CMD ["--help"]

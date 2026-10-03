@@ -50,8 +50,12 @@ The fastest way to add SourceBastion Scan to any repository is through the Claud
 **Step 1 — Install the skill** (one-time, works in every project):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sourcebastion/sourcebastion-scanner/main/skills/install.sh | bash
+git clone https://github.com/sourcebastion/sourcebastion-skills.git
+cd sourcebastion-skills && ./install.sh --global
 ```
+
+The skills live in `sourcebastion/sourcebastion-skills`, which is private, so
+`curl | bash` cannot fetch them anonymously -- clone and run the installer.
 
 **Step 2 — Add SourceBastion Scan to a repository:**
 

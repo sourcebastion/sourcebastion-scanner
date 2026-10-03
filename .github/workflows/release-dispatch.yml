@@ -34,6 +34,13 @@ jobs:
   dispatch:
     name: Request a release for the merged version
     runs-on: ubuntu-latest
+    # The bot credentials are environment secrets, not repository secrets.
+    # Without this the `app-id` input resolves to an empty string and the
+    # token step fails with "must be set to a non-empty string" -- which is
+    # how the first dispatch of this workflow failed. `scanner-maintenance`
+    # has a branch policy and no required reviewers, so it gates where this
+    # can run from without adding an approval step.
+    environment: scanner-maintenance
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

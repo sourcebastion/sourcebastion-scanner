@@ -2,7 +2,10 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -144,3 +147,44 @@ def test_release_preparation_inserts_reviewed_notes_and_rejects_reused_version(t
     assert text.index("[1.7.37]") < text.index("[1.7.36]")
     with pytest.raises(ValueError, match="must increase"):
         release.prepare("1.7.37", "Attempted duplicate release.")
+
+
+@pytest.mark.parametrize("requested", ["auto", "", " auto "])
+def test_next_patch_comes_from_declared_version_without_changing_files(tmp_path, monkeypatch, requested):
+    monkeypatch.setattr(release, "ROOT", tmp_path)
+    (tmp_path / "VERSION").write_text("1.7.36\n")
+    assert release.resolve_version(requested) == "1.7.37"
+    assert (tmp_path / "VERSION").read_text() == "1.7.36\n"
+    assert release.resolve_version("1.8.0") == "1.8.0"
+
+
+def test_automatic_release_cli_uses_generated_notes_and_exact_next_patch(tmp_path):
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    script = scripts / "prepare_release.py"
+    script.write_text((ROOT / "scripts/prepare_release.py").read_text())
+    (tmp_path / "VERSION").write_text("1.7.36\n")
+    (tmp_path / "CHANGELOG.md").write_text("## [1.7.36]\n\nPrevious release.\n")
+    notes = tmp_path / "notes.md"
+    notes.write_text("## What's Changed\n* Accept Python minor versions (#83).\n")
+    env = {key: value for key, value in os.environ.items()
+           if key not in {"RELEASE_VERSION", "RELEASE_NOTES"}}
+    subprocess.run([sys.executable, str(script), "--notes-file", str(notes)], env=env, check=True)
+    assert (tmp_path / "VERSION").read_text() == "1.7.37\n"
+    changelog = (tmp_path / "CHANGELOG.md").read_text()
+    assert "### What's Changed\n* Accept Python minor versions (#83)." in changelog
+    assert changelog.index("[1.7.37]") < changelog.index("[1.7.36]")
+
+
+def test_manual_notes_work_without_generated_file(tmp_path):
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    script = scripts / "prepare_release.py"
+    script.write_text((ROOT / "scripts/prepare_release.py").read_text())
+    (tmp_path / "VERSION").write_text("1.7.36\n")
+    (tmp_path / "CHANGELOG.md").write_text("## [1.7.36]\n\nPrevious release.\n")
+    env = dict(os.environ, RELEASE_VERSION="1.8.0", RELEASE_NOTES="Reviewed custom release notes.")
+    subprocess.run([sys.executable, str(script), "--notes-file", str(tmp_path / "missing")],
+                   env=env, check=True)
+    assert (tmp_path / "VERSION").read_text() == "1.8.0\n"
+    assert "Reviewed custom release notes." in (tmp_path / "CHANGELOG.md").read_text()

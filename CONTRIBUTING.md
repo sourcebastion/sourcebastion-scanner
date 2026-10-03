@@ -191,7 +191,9 @@ but they do not publish or increment a release automatically.
 
 ### How It Works
 
-1. Dispatch **Prepare reviewed release** with the new scanner version and release notes.
+1. Dispatch **Prepare reviewed release** on `main`; no inputs are required.
+   It selects the next scanner patch from `VERSION` and generates notes from
+   merged changes since the last published release. Version and notes can be overridden.
    Its `python_version` input defaults to `3.14`, selecting the newest compatible
    stable patch in that minor. An exact patch or `latest` can also be requested.
    It refreshes `PYTHON_VERSION`, the Docker build default and verified dependency

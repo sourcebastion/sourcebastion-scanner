@@ -198,6 +198,42 @@ The legacy `ghcr.io/ez-appsec/ez-appsec` images remain available for existing
 immutable pins while consumers migrate; new integrations should use the
 SourceBastion namespace.
 
+### External advisories for hosted and offline scans
+
+Grype advisories are separate from the scanner image. Refresh them in a trusted
+process that has network access but no checkout or provider credentials:
+
+```bash
+scan_image='ghcr.io/sourcebastion/sourcebastion-scanner@sha256:<digest>'
+db_root="${XDG_DATA_HOME:-$HOME/.local/share}/sourcebastion/grype-db"
+mkdir -p -m 700 "$db_root"
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  -v "$db_root:/db" --entrypoint python "$scan_image" \
+  -m sourcebastion.grype_database /db
+
+database="$(readlink -f "$db_root/current")"
+output="$(mktemp -d)"
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  -e SOURCEBASTION_SCAN_OFFLINE=1 -e GRYPE_DB_AUTO_UPDATE=false \
+  -e GRYPE_DB_CACHE_DIR=/advisories --network none \
+  -v "$PWD:/workspace:ro" -v "$database:/advisories:ro" \
+  -v "$output:/out" -w /workspace "$scan_image" \
+  scan . --output /out/vulnerabilities.json
+```
+
+The updater validates database integrity and freshness before atomically
+switching `current`. Existing scans keep their resolved generation. Failed
+refreshes preserve the previous snapshot; snapshots older than seven days are
+removed. Refresh every twelve hours. Missing, invalid, or over-five-day-old
+databases fail the scan, and offline scans never download advisories or run
+dependency installers. They catalog pinned requirements and lockfiles directly;
+lockfiles provide transitive dependency information.
+
+The same updater runs in a Kubernetes maintenance Job against a shared advisory
+volume. Scan pods mount that volume read-only and retain their egress deny policy.
+PR and release gates run real offline scans on both native architectures, including
+Python-only requirements and missing/stale database rejection.
+
 ---
 
 ## No-LLM scan boundary

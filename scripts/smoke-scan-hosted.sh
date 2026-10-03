@@ -13,8 +13,9 @@ mkdir -m 700 "$work/source" "$work/database" "$work/output"
 
 # Advisory preparation never receives a checkout or any provider credentials.
 docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
-  -e GRYPE_DB_CACHE_DIR=/database -e GRYPE_CHECK_FOR_APP_UPDATE=false \
-  -v "$work/database:/database" --entrypoint grype "$image" db update
+  -v "$work/database:/database" --entrypoint python "$image" \
+  -m sourcebastion.grype_database /database
+database="$(readlink -f "$work/database/current")"
 
 cp "$root/tests/fixtures/scanners/deps/"*.json "$work/source/"
 cp "$root/tests/fixtures/scanners/iac/main.tf.fixture" "$work/source/main.tf"
@@ -36,7 +37,7 @@ docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
   -e SOURCEBASTION_SCAN_OFFLINE=1 -e GRYPE_DB_AUTO_UPDATE=false \
   -e GRYPE_CHECK_FOR_APP_UPDATE=false -e GRYPE_DB_CACHE_DIR=/advisories \
   --network none -v "$work/source:/workspace:ro" \
-  -v "$work/database:/advisories:ro" -v "$work/output:/out" \
+  -v "$database:/advisories:ro" -v "$work/output:/out" \
   -w /workspace "$image" scan . --severity all --output /out/vulnerabilities.json
 
 python3 - "$work/output/vulnerabilities.json" <<'PY'
@@ -58,3 +59,42 @@ print(f'Offline hosted scan reported findings from all four components: {dict(co
 PY
 test ! -e "$work/source/.grype-deps"
 test ! -e "$work/source/node_modules"
+
+# A Python-only checkout must also work: an npm lockfile must not short-circuit
+# the wrapper and hide a forbidden pip install into the read-only checkout.
+mkdir -m 700 "$work/python"
+printf 'requests==2.19.1\n' > "$work/python/requirements.txt"
+docker run --rm -i --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  -e SOURCEBASTION_SCAN_OFFLINE=1 -e GRYPE_DB_AUTO_UPDATE=false \
+  -e GRYPE_DB_CACHE_DIR=/advisories --network none \
+  -v "$work/python:/workspace:ro" -v "$database:/advisories:ro" \
+  --entrypoint python "$image" - <<'PY'
+from sourcebastion.external_scanners import GrypeScanner
+
+findings = GrypeScanner().scan('/workspace')
+assert any('requests' in str(finding.get('title', '')) for finding in findings), (
+    'Python-only manifest scan lost dependency vulnerabilities'
+)
+print('Python-only read-only checkout reported dependency vulnerabilities')
+PY
+test ! -e "$work/python/.grype-deps"
+
+for max_age in 120h 1ns; do
+  cache=/advisories
+  if [[ "$max_age" == 120h ]]; then cache=/missing-database; fi
+  docker run --rm -i --user "$(id -u):$(id -g)" -e HOME=/tmp \
+    -e SOURCEBASTION_SCAN_OFFLINE=1 -e GRYPE_DB_AUTO_UPDATE=false \
+    -e "GRYPE_DB_CACHE_DIR=$cache" -e "GRYPE_DB_MAX_ALLOWED_BUILT_AGE=$max_age" \
+    --network none -v "$work/source:/workspace:ro" \
+    -v "$database:/advisories:ro" --entrypoint python "$image" - <<'PY'
+from sourcebastion.external_scanners import GrypeScanner, ScannerExecutionError
+
+try:
+    GrypeScanner().scan('/workspace')
+except ScannerExecutionError as exc:
+    assert exc.scanner == 'grype' and exc.code == 'execution_failed'
+    print('Missing/stale advisory data refused without a clean report')
+else:
+    raise SystemExit('Invalid advisory database silently passed')
+PY
+done

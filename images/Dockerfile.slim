@@ -76,6 +76,13 @@ RUN pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && pip check && r
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
+RUN groupadd --system sourcebastion && useradd --system --create-home --gid sourcebastion sourcebastion && \
+    mkdir -p /scan /home/sourcebastion/.cache && \
+    chown -R sourcebastion:sourcebastion /home/sourcebastion /scan
+
+USER sourcebastion
+ENV HOME=/home/sourcebastion
+
 WORKDIR /scan
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s \

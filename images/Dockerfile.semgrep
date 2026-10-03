@@ -23,5 +23,12 @@ RUN python3 /opt/sourcebastion/scanner_artifacts.py install --libc musl \
 COPY --from=builder /dist/*.whl /tmp/
 RUN pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && pip check && rm /tmp/*.whl
 
+RUN addgroup -S sourcebastion && adduser -S -G sourcebastion sourcebastion && \
+    mkdir -p /scan /home/sourcebastion/.cache && \
+    chown -R sourcebastion:sourcebastion /home/sourcebastion /scan
+
+USER sourcebastion
+ENV HOME=/home/sourcebastion
+
 WORKDIR /scan
 ENTRYPOINT ["semgrep"]

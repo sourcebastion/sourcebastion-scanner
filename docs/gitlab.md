@@ -13,8 +13,12 @@ This guide walks through adding ez-appsec to a GitLab project and setting up the
 ### Install the ez-appsec skill (one-time)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ez-appsec/ez-appsec/main/skills/install.sh | bash
+git clone https://github.com/sourcebastion/sourcebastion-skills.git
+cd sourcebastion-skills && ./install.sh --global
 ```
+
+The skills live in `sourcebastion/sourcebastion-skills`, which is private, so
+`curl | bash` cannot fetch them anonymously -- clone and run the installer.
 
 ---
 

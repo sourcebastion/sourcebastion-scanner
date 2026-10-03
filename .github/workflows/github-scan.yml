@@ -184,7 +184,7 @@ jobs:
         # A trusted post-scan job performs the upload. The scan job stays
         # read-only when it executes pull-request source.
         if: ${{ false }}
-        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
         with:
           sarif_file: ${{ env.SOURCEBASTION_SARIF }}
         continue-on-error: true
@@ -485,6 +485,6 @@ jobs:
           path: scan-results
 
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4
         with:
           sarif_file: scan-results/ez-appsec.sarif

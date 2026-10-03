@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Removed
+
+* the assistant skills for Claude Code, Copilot and Cursor moved to the private `sourcebastion/sourcebastion-skills` repository with their history. Nothing in this repository referenced them -- no workflow, test or module -- so they rode along in every scanner pull request and release while belonging to neither the scanner nor its image. The install instructions in the README and the provider guides now clone that repository; the previous `curl | bash` commands pointed at `ez-appsec/ez-appsec`, an organization that no longer exists
+
 ## [1.7.35](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.34...v1.7.35) (2026-10-03)
 
 ### Changed

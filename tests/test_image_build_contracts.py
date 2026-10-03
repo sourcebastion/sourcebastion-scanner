@@ -1,15 +1,4 @@
-"""Static checks for things that only break when an image is actually built.
-
-The image build jobs in `docker.yml` are gated on `inputs.build_images`, which
-is set only when `release.yml` calls the workflow. A pull request skips them
-entirely, so a defect in a Dockerfile or a build tag is invisible until a
-release is dispatched -- which is how a release came to fail twice in a row on
-two separate regressions that had been sitting on main.
-
-These assertions are deliberately static: they run in the ordinary test job on
-every pull request and cost nothing, so the class of mistake that reached a
-release cannot reach one again.
-"""
+"""Fast source guards complement real image build and runtime checks in PR CI."""
 
 import re
 from pathlib import Path
@@ -238,3 +227,11 @@ def test_the_iac_check_requires_a_finding_rather_than_a_clean_run():
     text = (ROOT / "scripts" / "smoke-scan-iac.sh").read_text(encoding="utf-8")
     assert "if not findings:" in text
     assert "sys.exit(" in text
+
+
+def test_every_image_build_checks_the_default_runtime_identity():
+    document = yaml.safe_load((ROOT / ".github" / "workflows" / "docker.yml").read_text(encoding="utf-8"))
+    for variant in ["standard", "slim", "micro", "thin", "semgrep"]:
+        steps = document["jobs"][f"build-docker-{variant}"]["steps"]
+        scripts = "\n".join(step.get("run", "") for step in steps if isinstance(step, dict))
+        assert f"assert-image-runtime.sh sourcebastion:{variant}-rule-test {variant}" in scripts

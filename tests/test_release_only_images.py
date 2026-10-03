@@ -1,4 +1,4 @@
-"""Expensive image validation is required for release, never for a PR."""
+"""Image validation is required for pull requests and release publication."""
 
 from pathlib import Path
 
@@ -12,17 +12,23 @@ def workflow(name):
     return yaml.load((ROOT / '.github/workflows' / name).read_text(), Loader=yaml.BaseLoader)
 
 
-def test_pr_checks_stay_enabled_but_image_jobs_require_release_opt_in():
+def test_pr_and_release_checks_include_every_image_variant():
     validation = workflow('docker.yml')
     assert 'pull_request' in validation['on']
-    assert validation['on']['workflow_dispatch'] is None or not validation['on']['workflow_dispatch']
+    assert validation['on']['workflow_dispatch']['inputs']['build_images'] == {
+        'description': 'Build and exercise all images without publishing',
+        'type': 'boolean', 'default': 'false',
+    }
     assert validation['on']['workflow_call']['inputs']['build_images'] == {
         'description': 'Validate image builds and runtime before release publication',
         'type': 'boolean', 'default': 'false',
     }
     image_jobs = {name: job for name, job in validation['jobs'].items() if name.startswith('build-docker-')}
     assert len(image_jobs) == 5
-    assert all(job['if'] == 'inputs.build_images == true' for job in image_jobs.values())
+    assert all(
+        job['if'] == "github.event_name == 'pull_request' || inputs.build_images == true"
+        for job in image_jobs.values()
+    )
     for name in ['lint-python', 'lint-docker', 'lint-rule-fixtures', 'test-unit', 'test-security']:
         assert 'build_images' not in validation['jobs'][name].get('if', '')
 

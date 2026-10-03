@@ -52,5 +52,12 @@ RUN curl -sSfL "https://github.com/anchore/grype/releases/download/v0.119.0/gryp
     rm /tmp/grype.tar.gz && \
     chmod +x /usr/local/bin/grype
 
+RUN addgroup -S sourcebastion && adduser -S -G sourcebastion sourcebastion && \
+    mkdir -p /scan /home/sourcebastion/.cache && \
+    chown -R sourcebastion:sourcebastion /home/sourcebastion /scan
+
+USER sourcebastion
+ENV HOME=/home/sourcebastion
+
 WORKDIR /scan
 ENTRYPOINT ["sourcebastion"]

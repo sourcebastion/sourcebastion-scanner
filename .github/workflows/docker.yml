@@ -1,5 +1,5 @@
 # Docker validation workflow.
-# PRs run source checks only. Release callers also validate every image variant.
+# PRs, releases, and explicit manual runs build and validate every image variant.
 # release.yml is the sole scanner image publisher.
 
 name: Docker Validation
@@ -9,6 +9,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      build_images:
+        description: Build and exercise all images without publishing
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       build_images:
@@ -251,7 +256,7 @@ jobs:
 
   build-docker-standard:
     name: Build Standard Docker Image
-    if: inputs.build_images == true
+    if: github.event_name == 'pull_request' || inputs.build_images == true
     timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
@@ -307,6 +312,7 @@ jobs:
         # a packaging mistake survives every unit test but not this.
         run: |
           scripts/assert-image-version.sh sourcebastion:standard-rule-test
+          scripts/assert-image-runtime.sh sourcebastion:standard-rule-test standard
 
       - name: Run rule fixture tests in standard image
         run: |
@@ -352,7 +358,7 @@ jobs:
 
   build-docker-slim:
     name: Build Slim Docker Image
-    if: inputs.build_images == true
+    if: github.event_name == 'pull_request' || inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -408,6 +414,7 @@ jobs:
         # a packaging mistake survives every unit test but not this.
         run: |
           scripts/assert-image-version.sh sourcebastion:slim-rule-test
+          scripts/assert-image-runtime.sh sourcebastion:slim-rule-test slim
 
       - name: Run rule fixture tests in slim image
         run: |
@@ -417,7 +424,7 @@ jobs:
 
   build-docker-micro:
     name: Build Micro Docker Image
-    if: inputs.build_images == true
+    if: github.event_name == 'pull_request' || inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -473,6 +480,7 @@ jobs:
         # a packaging mistake survives every unit test but not this.
         run: |
           scripts/assert-image-version.sh sourcebastion:micro-rule-test
+          scripts/assert-image-runtime.sh sourcebastion:micro-rule-test micro
 
       - name: Verify micro image intentionally skips rule fixture tests
         run: |
@@ -482,7 +490,7 @@ jobs:
 
   build-docker-thin:
     name: Build Thin Docker Image
-    if: inputs.build_images == true
+    if: github.event_name == 'pull_request' || inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -538,6 +546,7 @@ jobs:
         # a packaging mistake survives every unit test but not this.
         run: |
           scripts/assert-image-version.sh sourcebastion:thin-rule-test
+          scripts/assert-image-runtime.sh sourcebastion:thin-rule-test thin
 
       - name: Run rule fixture tests in thin image
         run: |
@@ -547,7 +556,7 @@ jobs:
 
   build-docker-semgrep:
     name: Build Semgrep Docker Image
-    if: inputs.build_images == true
+    if: github.event_name == 'pull_request' || inputs.build_images == true
     runs-on: ubuntu-latest
     needs: [lint-python, test-unit]
     outputs:
@@ -603,6 +612,7 @@ jobs:
         # a packaging mistake survives every unit test but not this.
         run: |
           scripts/assert-image-version.sh sourcebastion:semgrep-rule-test
+          scripts/assert-image-runtime.sh sourcebastion:semgrep-rule-test semgrep
 
       - name: Run rule fixture tests in semgrep image
         run: |

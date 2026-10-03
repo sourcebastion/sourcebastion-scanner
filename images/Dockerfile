@@ -101,11 +101,7 @@ RUN kics version
 
 # Install SourceBastion scanner wheel and dependencies from builder
 COPY --from=builder /dist/*.whl /tmp/
-# `python3 -m pip` rather than bare `pip`: this stage provisions pip with
-# `python3 -m ensurepip`, which installs `pip3` and `pip3.11` but no plain
-# `pip`. The console script came from a `pip install --upgrade pip` line
-# that was removed when the dependency trees were locked, so bare `pip`
-# became `not found` (exit 127) and every image build failed.
+# ensurepip provides versioned scripts; invoke pip through the interpreter.
 RUN python3 -m pip install --no-cache-dir --no-index --no-deps /tmp/*.whl && python3 -m pip check && \
     rm /tmp/*.whl && \
     find /usr/lib/python3.11/site-packages -depth -type d -name __pycache__ -exec rm -rf {} + && \
@@ -117,12 +113,12 @@ ENV PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
 COPY rules/ /app/rules/
 
 # Create non-root user for runtime
-RUN addgroup -S ezappsec && adduser -S -G ezappsec ezappsec && \
-    mkdir -p /scan /home/ezappsec/.cache && \
-    chown -R ezappsec:ezappsec /web /app/rules /home/ezappsec /scan
+RUN addgroup -S sourcebastion && adduser -S -G sourcebastion sourcebastion && \
+    mkdir -p /scan /home/sourcebastion/.cache && \
+    chown -R sourcebastion:sourcebastion /app/rules /home/sourcebastion /scan
 
-USER ezappsec
-ENV HOME=/home/ezappsec
+USER sourcebastion
+ENV HOME=/home/sourcebastion
 
 WORKDIR /scan
 

@@ -80,3 +80,31 @@ def test_the_cli_resolves_its_version_from_the_installed_distribution():
     """
     cli = (ROOT / "sourcebastion" / "cli.py").read_text(encoding="utf-8")
     assert 'click.version_option(package_name="sourcebastion-scanner")' in cli
+
+
+def test_the_distribution_packages_only_the_scanner():
+    """A bare `find_packages()` shipped more than the scanner.
+
+    It swept in `api` -- the separate FastAPI deployable, which has an
+    `__init__.py` -- and `tests`. So every scanner image installed that
+    service's code and claimed the generic top-level name `api` in its import
+    namespace, where it can shadow or be shadowed. `tests` stayed out of the
+    image only because `.dockerignore` excludes it, which would not protect a
+    wheel built anywhere else.
+
+    The API image does not need `api` packaged: it copies `/app/api` and runs
+    `uvicorn api.main:app` from `WORKDIR /app`, resolving it from the
+    filesystem.
+    """
+    import sys
+
+    sys.path.insert(0, str(ROOT))
+    from setuptools import find_packages
+
+    packaged = set(find_packages(include=["sourcebastion", "sourcebastion.*"]))
+    assert packaged == {"sourcebastion", "sourcebastion.data"}, packaged
+
+    text = SETUP.read_text(encoding="utf-8")
+    assert "find_packages(include=" in text, (
+        "setup.py must narrow find_packages; a bare call packages api and tests"
+    )

@@ -9,6 +9,23 @@ updates:
       vscode-extension:
         patterns:
           - "*"
+    # Two dependencies here are not free to move on their own, and proposing
+    # them produces a pull request that cannot be merged -- which is most of
+    # the cost of keeping on top of this group.
+    ignore:
+      # `@types/vscode` declares which VS Code API exists. It must not exceed
+      # `engines.vscode` in vscode-extension/package.json, or the extension
+      # compiles against APIs its minimum supported VS Code does not have and
+      # fails at run time -- which `tsc` cannot catch, so CI stays green.
+      # That is why it is pinned exactly rather than with a caret. Raise it
+      # together with `engines.vscode`, as a deliberate support decision.
+      - dependency-name: "@types/vscode"
+      # `typescript-eslint` caps the TypeScript it supports (currently
+      # `>=4.8.4 <6.1.0`), so a TypeScript major on its own yields a lockfile
+      # npm refuses to install. A major has to be taken with a
+      # `typescript-eslint` that accepts it.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"

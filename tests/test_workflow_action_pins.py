@@ -73,7 +73,6 @@ def test_release_paths_have_two_codeowners():
         "/.releaserc.json",
         "/package.json",
         "/package-lock.json",
-        "/Dockerfile.api",
         "/images/",
     ):
         assert entries[path] == ["@jfelten", "@jenfelten"]

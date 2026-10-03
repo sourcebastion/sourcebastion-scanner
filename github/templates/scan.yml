@@ -107,11 +107,14 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
-      - name: Generate dashboard vulnerabilities.json
-        id: web-report
+      - name: Generate the findings report
+        id: findings-report
+        # `gitlab-scan` writes the same document `web-report` did -- both
+        # called `scan_to_gitlab_format` -- so this is a rename, not a
+        # behaviour change. The findings summary below reads the file.
         run: |
           mkdir -p "${SOURCEBASTION_OUTPUT_DIR}"
-          sourcebastion web-report . --output "${SOURCEBASTION_OUTPUT_DIR}"
+          sourcebastion gitlab-scan . --output "${SOURCEBASTION_OUTPUT_DIR}/vulnerabilities.json"
 
       - name: Upload vulnerabilities.json as artifact
         if: always()
@@ -196,127 +199,6 @@ jobs:
           print("\n".join(lines))
           PYEOF
           fi
-
-      - name: Mint App token for dashboard push
-        id: mint-token
-        if: steps.web-report.outcome == 'success' && github.event_name != 'pull_request' && vars.SOURCEBASTION_DASHBOARD_REPO != ''
-        env:
-          _APP_ID: ${{ secrets.SOURCEBASTION_APP_ID }}
-          _PRIVATE_KEY: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
-        run: |
-          python3 - <<'PYEOF'
-          import os, sys, time, json, urllib.request, urllib.error
-          try:
-              import jwt
-          except ImportError:
-              import subprocess
-              subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'PyJWT[crypto]', '-q'],
-                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-              import jwt
-
-          app_id = os.environ.get('_APP_ID', '').strip()
-          pem = os.environ.get('_PRIVATE_KEY', '').strip()
-
-          if not app_id or not pem:
-              print('App credentials not configured — skipping token mint')
-              raise SystemExit(0)
-
-          now = int(time.time())
-          app_jwt = jwt.encode(
-              {'iat': now - 60, 'exp': now + 600, 'iss': str(app_id)},
-              pem, algorithm='RS256'
-          )
-
-          def gh(method, path, jwt_token):
-              req = urllib.request.Request(
-                  f'https://api.github.com{path}',
-                  method=method,
-                  headers={
-                      'Authorization': f'Bearer {jwt_token}',
-                      'Accept': 'application/vnd.github+json',
-                      'User-Agent': 'sourcebastion-scan/1.0',
-                  }
-              )
-              try:
-                  with urllib.request.urlopen(req) as r:
-                      return json.load(r)
-              except urllib.error.HTTPError as e:
-                  print(f'GitHub API error {e.code}: {e.read().decode()}', file=sys.stderr)
-                  raise
-
-          installs = gh('GET', '/app/installations', app_jwt)
-          if not installs:
-              print('No app installations found — skipping token mint')
-              raise SystemExit(0)
-
-          install_id = installs[0]['id']
-          token_data = gh('POST', f'/app/installations/{install_id}/access_tokens', app_jwt)
-          token = token_data['token']
-
-          # Mask token in Actions logs, then write to GITHUB_ENV for downstream steps
-          print(f'::add-mask::{token}')
-          with open(os.environ['GITHUB_ENV'], 'a') as f:
-              f.write(f'_PUSH_TOKEN={token}\n')
-          print('App token minted successfully')
-          PYEOF
-        continue-on-error: true
-
-      - name: Push scan results to dashboard (update:vulns)
-        if: steps.web-report.outcome == 'success' && github.event_name != 'pull_request'
-        env:
-          SOURCEBASTION_DASHBOARD_REPO: ${{ vars.SOURCEBASTION_DASHBOARD_REPO || 'ez-appsec/ez-appsec-dashboard' }}
-        run: |
-          if [ -z "${_PUSH_TOKEN}" ]; then
-            echo "No push token available — skipping dashboard update."
-            exit 0
-          fi
-          VULN_FILE="${SOURCEBASTION_OUTPUT_DIR}/vulnerabilities.json"
-          if [ ! -f "${VULN_FILE}" ]; then
-            echo "vulnerabilities.json not found — skipping dashboard update."
-            exit 0
-          fi
-
-          # Derive destination path: data/vulnerabilities/[TEAM/]REPO_NAME.json
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          TEAM="${{ vars.SOURCEBASTION_TEAM }}"
-          VULN_REL="vulnerabilities/${TEAM:+${TEAM}/}${REPO_NAME}.json"
-          SCAN_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-
-          # Inject metadata into vulnerabilities.json so aggregate-index.py can read it
-          export META_NAME="${{ github.event.repository.name }}" \
-                 META_PATH="${{ github.repository }}" \
-                 META_URL="https://github.com/${{ github.repository }}" \
-                 META_DATE="${SCAN_DATE}"
-          python3 - "${VULN_FILE}" > /tmp/vulns-with-meta.json <<'PYEOF'
-          import json, sys, os
-          data = json.load(open(sys.argv[1]))
-          if isinstance(data, dict):
-              data.setdefault("project_name", os.environ["META_NAME"])
-              data.setdefault("project_path", os.environ["META_PATH"])
-              data.setdefault("github_url",   os.environ["META_URL"])
-              data.setdefault("scan_date",    os.environ["META_DATE"])
-          print(json.dumps(data, indent=2))
-          PYEOF
-
-          DASH_DIR=$(mktemp -d)
-          git clone "https://x-access-token:${_PUSH_TOKEN}@github.com/${SOURCEBASTION_DASHBOARD_REPO}.git" "${DASH_DIR}/dashboard"
-          mkdir -p "${DASH_DIR}/dashboard/data/$(dirname ${VULN_REL})"
-          cp /tmp/vulns-with-meta.json "${DASH_DIR}/dashboard/data/${VULN_REL}"
-
-          # Regenerate index.json by fetching and running the aggregation script
-          curl -sSfL "https://raw.githubusercontent.com/sourcebastion/sourcebastion-scanner/main/github/dashboard/aggregate-index.py" \
-            -o /tmp/aggregate-index.py
-          python3 /tmp/aggregate-index.py "${DASH_DIR}/dashboard/data"
-
-          cd "${DASH_DIR}/dashboard"
-          git config user.name "SourceBastion Scan"
-          git config user.email "sourcebastionbot@users.noreply.github.com"
-          git add data/
-          git diff --staged --quiet && echo "No changes." || \
-            git commit -m "chore: update scan results for ${{ github.repository }}"
-          git push origin main
-          rm -rf "${DASH_DIR}"
-          echo "Dashboard updated: https://github.com/${SOURCEBASTION_DASHBOARD_REPO}"
 
       - name: Comment on PR with findings
         if: github.event_name == 'pull_request' && steps.scan.outcome == 'success'

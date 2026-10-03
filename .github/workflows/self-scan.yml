@@ -195,8 +195,8 @@ jobs:
           VULNS_FILE: ${{ env.OUTPUT_DIR }}/vulnerabilities.json
 
       - name: Generate vulnerabilities.json
-        id: web-report
-        run: sourcebastion web-report . --output "${OUTPUT_DIR}"
+        id: findings-report
+        run: sourcebastion gitlab-scan . --output "${OUTPUT_DIR}/vulnerabilities.json"
         continue-on-error: true
 
       # -----------------------------------------------------------------------
@@ -222,75 +222,6 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Push to dashboard (main branch only)
-      # -----------------------------------------------------------------------
-      - name: Check dashboard app credentials
-        id: dashboard-creds
-        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && vars.SOURCEBASTION_DASHBOARD_REPO != ''
-        env:
-          SOURCEBASTION_APP_ID: ${{ secrets.SOURCEBASTION_APP_ID }}
-          SOURCEBASTION_PRIVATE_KEY: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
-        run: |
-          if [ -n "${SOURCEBASTION_APP_ID}" ] && [ -n "${SOURCEBASTION_PRIVATE_KEY}" ]; then
-            echo "enabled=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "enabled=false" >> "${GITHUB_OUTPUT}"
-            echo "Dashboard app credentials are not configured — skipping dashboard token mint."
-          fi
-
-      - name: Mint App token for dashboard push
-        id: dash-token
-        if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.dashboard-creds.outputs.enabled == 'true'
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
-        with:
-          app-id: ${{ secrets.SOURCEBASTION_APP_ID }}
-          private-key: ${{ secrets.SOURCEBASTION_PRIVATE_KEY }}
-          # A real GitHub organization login, not branding: the dashboard
-          # repository lives at ez-appsec/ez-appsec-dashboard and there is no
-          # sourcebastion/ez-appsec-dashboard. Do not rename this with the
-          # product; a token minted for the wrong owner cannot push.
-          owner: ez-appsec
-          repositories: ez-appsec-dashboard
-
-      - name: Push to dashboard
-        if: steps.web-report.outcome == 'success' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-        env:
-          _PUSH_TOKEN: ${{ steps.dash-token.outputs.token }}
-          SOURCEBASTION_DASHBOARD_REPO: ${{ vars.SOURCEBASTION_DASHBOARD_REPO || 'ez-appsec/ez-appsec-dashboard' }}
-        run: |
-          if [ -z "${_PUSH_TOKEN}" ]; then
-            echo "No push token available — skipping dashboard update."
-            exit 0
-          fi
-          if [ ! -f "${VULNS_FILE}" ]; then
-            echo "vulnerabilities.json not found — skipping."
-            exit 0
-          fi
-          SLUG=$(echo "${{ github.repository }}" | tr '/._[:upper:]' '---_[:lower:]')
-          DASH_DIR=$(mktemp -d)
-          git clone "https://x-access-token:${_PUSH_TOKEN}@github.com/${SOURCEBASTION_DASHBOARD_REPO}.git" \
-            "${DASH_DIR}/dashboard"
-          mkdir -p "${DASH_DIR}/dashboard/data/projects/${SLUG}"
-          cp "${VULNS_FILE}" "${DASH_DIR}/dashboard/data/projects/${SLUG}/vulnerabilities.json"
-          cat > "${DASH_DIR}/dashboard/data/projects/${SLUG}/meta.json" << METAEOF
-          {
-            "project_name": "${{ github.event.repository.name }}",
-            "project_path": "${{ github.repository }}",
-            "github_url": "https://github.com/${{ github.repository }}",
-            "default_branch": "${{ github.event.repository.default_branch }}",
-            "last_updated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-          METAEOF
-          cd "${DASH_DIR}/dashboard"
-          git config user.name "SourceBastion Scan"
-          git config user.email "sourcebastionbot@users.noreply.github.com"
-          git add data/projects/
-          git diff --staged --quiet && echo "No changes." || \
-            git commit -m "chore: update scan results for ${{ github.repository }}"
-          git push origin main
-          rm -rf "${DASH_DIR}"
-
-      # -----------------------------------------------------------------------
-      # PR comment
       # -----------------------------------------------------------------------
       - name: Comment on PR
         # PR write-back is handled by pr-scan-writeback.yml, which never

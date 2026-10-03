@@ -373,7 +373,7 @@ ez-appsec scan --help
 ez-appsec status
 
 # Generate test report
-ez-appsec web-report . --output web/data
+sourcebastion gitlab-scan . --output scan-results/vulnerabilities.json
 ```
 
 ---

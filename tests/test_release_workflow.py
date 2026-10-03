@@ -252,6 +252,7 @@ def test_digest_scan_and_all_variants_gate_public_tag_promotion():
         "prepare-release",
         *BUILD_JOBS,
         "release-scan",
+        "hosted-scan",
     }
     promote_script = next(
         step["run"] for step in promotion["steps"] if "Promote tested digests" in step["name"]

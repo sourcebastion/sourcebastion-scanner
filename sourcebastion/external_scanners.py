@@ -755,7 +755,7 @@ class SemgrepScanner(ScannerWrapper):
         """Check if semgrep is installed"""
         try:
             subprocess.run(
-                ["semgrep", "--version"],
+                ["semgrep", "--version", "--metrics=off", "--disable-version-check"],
                 capture_output=True,
                 check=True,
                 timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
@@ -857,6 +857,9 @@ class SemgrepScanner(ScannerWrapper):
                 config_flags.append(f"--config={ruby_rules}")
 
             if not config_flags:
+                if os.environ.get("SOURCEBASTION_SCAN_OFFLINE") == "1":
+                    logger.error("Offline Semgrep scans require local rule packs")
+                    self._fail("execution_failed")
                 config_flags = ["--config=p/security-audit"]
 
             for rules_dir in self.extra_rules_dirs:
@@ -865,7 +868,10 @@ class SemgrepScanner(ScannerWrapper):
                     logger.info(f"Using custom rule pack from {rules_dir}")
 
             result = subprocess.run(
-                ["semgrep"] + config_flags + ["--json", "--output", raw_output_path, path],
+                ["semgrep"] + config_flags + [
+                    "--metrics=off", "--disable-version-check",
+                    "--json", "--output", raw_output_path, path,
+                ],
                 capture_output=True,
                 text=True,
                 timeout=self._budget("scan"),
@@ -1514,6 +1520,10 @@ class GrypeScanner(ScannerWrapper):
 
     def _install_dependencies(self, path: str) -> None:
         """Install project dependencies so grype/syft can enumerate packages."""
+        if os.environ.get("SOURCEBASTION_SCAN_OFFLINE") == "1":
+            # Directory catalogers read pinned manifests/lockfiles directly.
+            # A hosted checkout is immutable and must never execute installers.
+            return
         p = Path(path)
         installers = [
             (p / "package-lock.json", None),
@@ -1566,12 +1576,26 @@ class GrypeScanner(ScannerWrapper):
         completed = False
 
         try:
+            offline = os.environ.get("SOURCEBASTION_SCAN_OFFLINE") == "1"
+            grype_env = dict(os.environ)
+            if offline:
+                grype_env.update(
+                    GRYPE_DB_AUTO_UPDATE="false",
+                    GRYPE_CHECK_FOR_APP_UPDATE="false",
+                    GRYPE_DB_VALIDATE_AGE="true",
+                    GRYPE_DB_VALIDATE_BY_HASH_ON_START="true",
+                )
+                grype_env.setdefault("GRYPE_DB_MAX_ALLOWED_BUILT_AGE", "120h")
             db_check = subprocess.run(
                 ["grype", "db", "status"],
                 capture_output=True,
                 timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
+                env=grype_env,
             )
             if db_check.returncode != 0:
+                if offline:
+                    logger.error("Offline Grype database is missing, invalid, or stale; refresh the external database")
+                    self._fail("execution_failed")
                 logger.info("grype database missing, updating...")
                 db_update = subprocess.run(
                     ["grype", "db", "update"],
@@ -1579,6 +1603,7 @@ class GrypeScanner(ScannerWrapper):
                     # Setup, not analysis: this cost tracks network throughput
                     # and database size, not the repository being scanned.
                     timeout=self._budget("setup"),
+                    env=grype_env,
                 )
                 if db_update.returncode != 0:
                     self._fail("execution_failed")
@@ -1590,6 +1615,7 @@ class GrypeScanner(ScannerWrapper):
                 capture_output=True,
                 text=True,
                 timeout=self._budget("scan"),
+                env=grype_env,
             )
 
             # Exit 1 is a complete report when fail-on-severity is configured.

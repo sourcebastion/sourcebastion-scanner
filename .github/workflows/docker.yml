@@ -344,6 +344,9 @@ jobs:
         run: |
           scripts/smoke-scan-iac.sh sourcebastion:standard-rule-test
 
+      - name: Scan through the offline hosted-worker boundary
+        run: bash scripts/smoke-scan-hosted.sh sourcebastion:standard-rule-test
+
 
   build-docker-standard:
     name: Build Standard Docker Image

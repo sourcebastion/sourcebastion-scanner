@@ -177,14 +177,8 @@ Linear scaling validated. CI/CD compatible: GitHub Actions (2-core, 7GB), GitLab
 ## Docker Images
 
 ```bash
-# Standard (all scanners)
+# Complete scanner; Docker selects AMD64 or ARM64 automatically
 docker pull ghcr.io/sourcebastion/sourcebastion-scanner:latest
-
-# Slim (~300 MB, no semgrep)
-docker pull ghcr.io/sourcebastion/sourcebastion-scanner:slim
-
-# Micro (secrets + CVEs only)
-docker pull ghcr.io/sourcebastion/sourcebastion-scanner:micro
 
 # Run a scan
 docker run --rm -v "$(pwd):/scan" \

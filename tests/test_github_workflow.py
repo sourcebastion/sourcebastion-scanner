@@ -84,7 +84,9 @@ def test_pull_request_build_never_publishes_images():
         step for job in parsed['jobs'].values() for step in job['steps']
         if step.get('uses', '').startswith('docker/build-push-action@')
     ]
-    assert len(build_steps) == 8
+    assert not build_steps
+    assert any(step.get('uses') == './.github/actions/build-with-retry'
+               for job in parsed['jobs'].values() for step in job['steps'])
     assert all(step['with']['push'] == 'false' for step in build_steps)
     retry = yaml.load(
         (DOCKER_WORKFLOW.parent.parent / 'actions/build-with-retry/action.yml').read_text(),
@@ -96,11 +98,11 @@ def test_pull_request_build_never_publishes_images():
     assert "docker/login-action" not in workflow
 
 
-def test_dependabot_runs_targeted_checks_instead_of_full_docker_regression():
-    """Dependabot keeps targeted checks; full image validation runs at release."""
+def test_dependabot_cannot_skip_native_image_validation():
+    """Dependency updates need the same image checks as source changes."""
     workflow = DOCKER_WORKFLOW.read_text()
 
-    assert workflow.count("if: github.actor != 'dependabot[bot]'") == 5
+    assert "if: github.actor != 'dependabot[bot]'" not in workflow
 
 
 def test_sarif_format_validation():

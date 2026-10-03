@@ -94,12 +94,9 @@ def test_docker_quality_actions_receive_supported_inputs():
     ]
     assert [step["with"]["dockerfile"] for step in hadolint_steps] == [
         "images/Dockerfile",
-        "images/Dockerfile.slim",
-        "images/Dockerfile.micro",
-        "images/Dockerfile.semgrep",
     ]
     assert all(
-        step["with"]["failure-threshold"] == "error" for step in hadolint_steps
+        step["with"]["failure-threshold"] == "warning" for step in hadolint_steps
     )
     assert all("continue-on-error" not in step for step in hadolint_steps)
 

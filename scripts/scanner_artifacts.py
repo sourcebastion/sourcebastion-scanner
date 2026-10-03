@@ -28,12 +28,21 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / '.github/semgrep-artifacts.json'
 PINS = ROOT / '.github/scanner-versions.json'
 DEPENDENCIES = ROOT / '.github/python-locks'
-PYTHON = '3.11'
+def configure_python(version):
+    global PYTHON_FULL, PYTHON, ABI
+    if not re.fullmatch(r'3\.[0-9]+\.[0-9]+', version):
+        raise ValueError('PYTHON_VERSION must be an exact stable Python 3 version')
+    PYTHON_FULL = version
+    PYTHON = '.'.join(version.split('.')[:2])
+    ABI = 'cp' + PYTHON.replace('.', '')
+
+
+configure_python((ROOT / 'PYTHON_VERSION').read_text().strip())
 GROUPS = ('build', 'runtime', 'semgrep')
 
 
 def lock_name(group, target):
-    return f'{group}-cp311-{target}.txt'
+    return f'{group}-{ABI}-{target}.txt'
 
 
 def pip_platforms(target):
@@ -79,7 +88,7 @@ def dependency_text(text, group, target, lock):
 def validate_dependencies(directory, lock):
     metadata = json.loads((directory / 'manifest.json').read_text())
     expected = {lock_name(group, target) for group in GROUPS for target in TARGETS}
-    if (metadata.get('schema_version') != 1 or metadata.get('python') != PYTHON
+    if (metadata.get('schema_version') != 1 or metadata.get('python') != PYTHON_FULL
             or metadata.get('semgrep_version') != lock['version']
             or set(metadata.get('files', {})) != expected):
         raise ValueError('dependency manifest does not match Python/Semgrep/targets')
@@ -103,8 +112,8 @@ def verify_dependencies(directory, lock):
                 subprocess.run([
                     sys.executable, '-m', 'pip', '--isolated', 'download',
                     '--index-url', 'https://pypi.org/simple', '--require-hashes',
-                    '--only-binary=:all:', '--no-deps', '--python-version', PYTHON,
-                    '--implementation', 'cp', '--abi', 'cp311', '--abi', 'abi3', '--abi', 'none',
+                    '--only-binary=:all:', '--no-deps', '--python-version', PYTHON_FULL,
+                    '--implementation', 'cp', '--abi', ABI, '--abi', 'abi3', '--abi', 'none',
                     *pip_platforms(target), '--dest', str(wheels),
                     '-r', str(directory / lock_name(group, target)),
                 ], check=True, timeout=600)
@@ -132,10 +141,10 @@ def verify_closure(wheels, group, target, lock):
             raise ValueError('duplicate wheel for dependency: ' + name)
         metadata[name] = item
     marker_env = {
-        'implementation_name': 'cpython', 'implementation_version': '3.11.0',
+        'implementation_name': 'cpython', 'implementation_version': PYTHON_FULL,
         'os_name': 'posix', 'platform_machine': 'aarch64' if target.endswith('aarch64') else 'x86_64',
         'platform_python_implementation': 'CPython', 'platform_release': '', 'platform_system': 'Linux',
-        'platform_version': '', 'python_full_version': '3.11.0', 'python_version': PYTHON,
+        'platform_version': '', 'python_full_version': PYTHON_FULL, 'python_version': PYTHON,
         'sys_platform': 'linux', 'extra': '',
     }
     source = ROOT / 'scripts' / ('python-build.in' if group == 'build' else 'python-runtime.in')
@@ -166,7 +175,7 @@ def verify_closure(wheels, group, target, lock):
 def generate_dependencies(lock, directory):
     """Resolve target markers without running candidate code; verify before publication."""
     directory.mkdir(parents=True, exist_ok=True)
-    metadata = {'schema_version': 1, 'python': PYTHON, 'semgrep_version': lock['version'], 'files': {}}
+    metadata = {'schema_version': 1, 'python': PYTHON_FULL, 'semgrep_version': lock['version'], 'files': {}}
     with tempfile.TemporaryDirectory(prefix='sourcebastion-resolve-') as temporary:
         for group in GROUPS:
             for target in TARGETS:
@@ -183,7 +192,7 @@ def generate_dependencies(lock, directory):
                 env = {k: v for k, v in os.environ.items() if not k.startswith(('UV_', 'PIP_'))}
                 command = [
                     sys.executable, '-m', 'uv', '--no-config', '--no-cache', 'pip', 'compile',
-                    str(input_file), '--python-version', PYTHON, '--python-platform', uv_platform,
+                    str(input_file), '--python-version', PYTHON_FULL, '--python-platform', uv_platform,
                     '--no-python-downloads', '--generate-hashes', '--no-header', '--no-annotate',
                     '--only-binary=:all:', '--default-index', 'https://pypi.org/simple',
                 ]
@@ -316,8 +325,8 @@ def verify(lock):
 def install(lock, libc, directory=DEPENDENCIES, group='semgrep'):
     """Install the complete reviewed, wheel-only Python environment."""
     validate_lock(lock)
-    if platform.python_implementation() != 'CPython' or sys.version_info[:2] != (3, 11):
-        raise ValueError('dependency locks require CPython 3.11')
+    if platform.python_implementation() != 'CPython' or tuple(sys.version_info[:3]) != tuple(map(int, PYTHON_FULL.split('.'))):
+        raise ValueError('dependency locks require CPython ' + PYTHON_FULL)
     arch = {'amd64': 'x86_64', 'arm64': 'aarch64'}.get(platform.machine(), platform.machine())
     target = ('musllinux_1_2_' if libc == 'musl' else 'manylinux_2_34_') + arch
     if target not in lock['artifacts']:

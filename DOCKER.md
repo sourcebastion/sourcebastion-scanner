@@ -1,54 +1,48 @@
-docker-compose.yml
+# Scanner image
 
-# Build instructions
-Build the image (from project root):
+SourceBastion ships one complete scanner image for Linux AMD64 and ARM64.
+Docker selects the matching architecture from the same tag. Gitleaks, Grype,
+KICS, Semgrep and the custom rules are included; pip and npm support project
+dependency discovery.
+
+The Dockerfile uses the smallest previous variant, micro, as its template:
+Alpine and a copied virtual environment. Build tools, wheel archives, download
+utilities and the source checkout stay in temporary stages. The final image
+runs as `sourcebastion` with writable `/scan` and `/home/sourcebastion/.cache`.
+CI reports the uncompressed image size for both architectures.
+
 ```bash
-docker build -t ez-appsec:latest .
-docker build -t ez-appsec:slim --target builder .  # For lighter debugging
+docker pull ghcr.io/sourcebastion/sourcebastion-scanner:latest
+scripts/run-scanner-container.sh ghcr.io/sourcebastion/sourcebastion-scanner:latest scan .
 ```
 
-# Run security scan on local directory
+The runner script maps the host UID/GID so reports and generated dependency
+files can be written into a host checkout. Running the container directly
+uses its default `sourcebastion` user; bind mounts must allow that user to write.
+
+## Local build
+
 ```bash
-docker run --rm -v $(pwd):/scan ez-appsec scan .
-docker run --rm -v $(pwd):/scan ez-appsec status
+images/build-docker.sh
+# Equivalent native build, with the reviewed version as a build input:
+docker build -f images/Dockerfile --build-arg PYTHON_VERSION="$(cat PYTHON_VERSION)" -t sourcebastion:local .
 ```
 
-# Run container interactively
-```bash
-docker run --rm -it -v $(pwd):/scan ez-appsec /bin/bash
-```
+`PYTHON_VERSION` pins an exact patch release. Builder and runtime use the same
+Python base, and runtime CI verifies that the interpreter matches the pin.
+The locks require this exact version; changing the build argument alone fails.
 
-# Check scanner versions
-```bash
-docker run --rm ez-appsec:latest gitleaks version
-docker run --rm ez-appsec:latest semgrep --version
-docker run --rm ez-appsec:latest kics version
-docker run --rm ez-appsec:latest grype version
-```
+## Release preparation
 
-# Run individual scanners directly
-```bash
-# Gitleaks secrets scan
-docker run --rm -v $(pwd):/scan ez-appsec:latest gitleaks detect --source /scan
+Dispatch **Prepare reviewed release** with the next scanner version, release
+notes, and `python_version=latest` (the default), or an exact Python version.
+It selects the newest compatible stable Python available in the official
+Alpine image metadata, verifies the Semgrep publisher and every target wheel,
+refreshes the dependency locks, and opens a release PR. It never merges or
+publishes. Both native image builds and the normal release approval remain
+required. The release build accepts `python_version` as an input and requires
+it to match the reviewed source pin.
 
-# Semgrep SAST scan
-docker run --rm -v $(pwd):/scan ez-appsec:latest semgrep --config=p/security-audit /scan
-
-# KICS IaC scan
-docker run --rm -v $(pwd):/scan ez-appsec:latest kics scan -p /scan
-
-# Grype vulnerability scan
-docker run --rm -v $(pwd):/scan ez-appsec:latest grype dir:/scan
-```
-
-# Push to Docker Hub
-```bash
-docker tag ez-appsec:latest <username>/ez-appsec:latest
-docker push <username>/ez-appsec:latest
-```
-
-# Expected image sizes
-- alpine:latest: ~7MB
-- Python + dependencies: ~150MB
-- All scanners: ~300-400MB total
-- Final image: ~400-500MB (optimized)
+The previous `slim`, `micro`, `thin` and `semgrep` tags are retired. Existing
+historical images remain available; new releases publish the complete scanner
+as `vVERSION`, the full source SHA, and `latest`.

@@ -112,7 +112,7 @@ def test_only_transient_http_errors_are_retried(monkeypatch, code, attempts):
 
 
 def test_installer_checks_lock_before_pip(lock, tmp_path, monkeypatch):
-    monkeypatch.setattr(artifacts.sys, 'version_info', (3, 11))
+    monkeypatch.setattr(artifacts.sys, 'version_info', tuple(map(int, artifacts.PYTHON_FULL.split('.'))))
     monkeypatch.setattr(artifacts.platform, 'machine', lambda: 'x86_64')
     monkeypatch.setattr(artifacts, 'validate_dependencies',
                         lambda *a: (_ for _ in ()).throw(ValueError('dependency lock digest mismatch')))
@@ -220,7 +220,7 @@ def test_weekly_updates_use_scoped_existing_app_not_actions_identity():
 
 
 def test_release_images_install_locked_wheel():
-    for name in ('Dockerfile', 'Dockerfile.slim', 'Dockerfile.thin', 'Dockerfile.semgrep'):
+    for name in ('Dockerfile',):
         content = (ROOT / 'images' / name).read_text()
         assert 'scanner_artifacts.py install --libc' in content
         assert 'pip install --no-cache-dir semgrep' not in content

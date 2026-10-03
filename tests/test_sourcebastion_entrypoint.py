@@ -22,7 +22,7 @@ def test_sourcebastion_console_script_is_declared():
 
 
 def test_published_images_use_public_command():
-    for name in ("Dockerfile", "Dockerfile.slim", "Dockerfile.thin", "Dockerfile.micro"):
+    for name in ("Dockerfile",):
         dockerfile = (ROOT / "images" / name).read_text(encoding="utf-8")
         assert 'ENTRYPOINT ["sourcebastion"]' in dockerfile
 

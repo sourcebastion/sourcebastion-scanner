@@ -2,19 +2,24 @@
 
 ## GitHub scanner image validation
 
-Pull requests run Python/Dockerfile lint, unit tests, rule fixtures, security
-checks, and builds of all five scanner image variants for amd64 and arm64.
-Container checks verify the release version, the default `sourcebastion` user,
-and writable scan and cache directories. The standard image also exercises
-Python dependency discovery and scans Juice Shop and an IaC fixture for real.
+Pull requests run source checks plus native AMD64 and ARM64 scanner image
+builds. Both architectures must pass version, default-user, dependency-runtime,
+rule-fixture, Juice Shop and IaC smoke checks. Docker build warnings fail CI.
+Each architecture reports its uncompressed image size. The required
+`Build Standard Docker Image` check succeeds only if both native jobs pass.
 
-After release approval, `release.yml` calls `docker.yml` with `build_images:
-true`. All five image variants and their container checks must pass before
-release image publication proceeds. Standard-image validation retries failed
-builds twice with 15/30-second backoff; exhausted failures remain blocking.
-Manual Docker Validation dispatch can also build all images with
-`build_images=true`, without publishing; its default remains source checks only.
-The separate API image workflow is unchanged.
+One complete image replaces the previous five variants, using micro's Alpine
+and virtual-environment layout. Only runtime files reach the final stage.
+`PYTHON_VERSION` is passed to Docker as a build input and used by both builder
+and runtime. The dependency manifest binds the locks to the exact interpreter.
+
+Before each release, dispatch `Prepare reviewed release`. Its Python input
+selects the newest compatible stable version by default, refreshes verified
+architecture locks, and opens a reviewable version/changelog PR. It never
+publishes. After that PR merges and release approval is granted, `release.yml`
+validates both architectures and publishes one multi-architecture manifest
+with SBOM and build provenance. Standard-image builds retain bounded retries.
+Manual Docker Validation can run both architectures without publishing.
 
 Published scanner release notes begin with the matching version's reviewed
 `CHANGELOG.md` section, followed by GitHub's generated PR summary and the

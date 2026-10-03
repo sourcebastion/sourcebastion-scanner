@@ -15,13 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "release.yml"
 DOCKER_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "docker.yml"
 CONTAINER_RUNNER_PATH = ROOT / "scripts" / "run-scanner-container.sh"
-BUILD_JOBS = (
-    "build-docker-standard",
-    "build-docker-slim",
-    "build-docker-micro",
-    "build-docker-thin",
-    "build-docker-semgrep",
-)
+BUILD_JOBS = ("build-docker-standard",)
 
 
 @dataclass(frozen=True)
@@ -262,7 +256,7 @@ def test_digest_scan_and_all_variants_gate_public_tag_promotion():
     promote_script = next(
         step["run"] for step in promotion["steps"] if "Promote tested digests" in step["name"]
     )
-    for tag in (":v${VERSION}", ":latest", ":slim", ":micro", ":thin", ":semgrep"):
+    for tag in (":v${VERSION}", ":latest"):
         assert tag in promote_script
     assert "^sha256:[0-9a-f]{64}$" in promote_script
     assert "promote-images" in jobs["update-github-release"]["needs"]
@@ -272,7 +266,7 @@ def test_pr_ci_exercises_the_release_scanner_runtime():
     workflow = yaml.load(
         DOCKER_WORKFLOW_PATH.read_text(encoding="utf-8"), Loader=yaml.BaseLoader
     )
-    steps = workflow["jobs"]["build-docker-standard"]["steps"]
+    steps = workflow["jobs"]["build-scanner"]["steps"]
     smoke = next(step for step in steps if step["name"] == "Exercise release scanner runtime")
     command = smoke["run"]
 

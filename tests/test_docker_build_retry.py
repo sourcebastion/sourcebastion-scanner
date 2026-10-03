@@ -38,18 +38,17 @@ def test_retry_attempts_preserve_inputs_and_fail_on_exhaustion():
 
 def test_standard_build_uses_retries_without_bypassing_tests():
     workflow = read_yaml('.github/workflows/docker.yml')
-    job = workflow['jobs']['build-docker-standard']
+    job = workflow['jobs']['build-scanner']
     assert job['timeout-minutes'] == '60'
     steps = job['steps']
     builds = [step for step in steps if step.get('uses') == './.github/actions/build-with-retry']
-    assert len(builds) == 2
+    assert len(builds) == 1
     assert builds[0]['id'] == 'build'
-    assert builds[0]['with']['platforms'] == 'linux/amd64,linux/arm64'
-    assert builds[0]['with']['cache-to'] == 'type=gha,mode=max'
-    assert builds[1]['with']['load'] == 'true'
-    assert builds[1]['with']['platforms'] == 'linux/amd64'
+    assert builds[0]['with']['platforms'] == 'linux/${{ matrix.arch }}'
+    assert builds[0]['with']['cache-to'] == 'type=gha,scope=scanner-${{ matrix.arch }},mode=max'
+    assert builds[0]['with']['load'] == 'true'
+    assert 'PYTHON_VERSION=' in builds[0]['with']['build-args']
     assert all('continue-on-error' not in step for step in steps)
-    assert job['outputs']['image-digest'] == '${{ steps.build.outputs.digest }}'
     test_steps = [step for step in steps if step.get('run') and 'docker run' in step['run']]
     assert len(test_steps) >= 2
     assert all('if' not in step for step in test_steps)

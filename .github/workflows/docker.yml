@@ -1,5 +1,5 @@
 # Docker validation workflow.
-# PRs, releases, and explicit manual runs build and validate every image variant.
+# PRs and releases build and exercise the complete scanner on AMD64 and ARM64.
 # release.yml is the sole scanner image publisher.
 
 name: Docker Validation
@@ -11,18 +11,17 @@ on:
   workflow_dispatch:
     inputs:
       build_images:
-        description: Build and exercise all images without publishing
+        description: Build and exercise both architectures without publishing
         type: boolean
         default: false
   workflow_call:
     inputs:
       build_images:
-        description: Validate image builds and runtime before release publication
+        description: Validate both architectures before release publication
         type: boolean
         default: false
 
 env:
-  PYTHON_VERSION: '3.11'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -38,7 +37,6 @@ jobs:
     name: Lint Python Code
     # Dependabot branches get ecosystem-targeted checks. The weekly integration
     # PR runs this full workflow once after their lockfiles are consolidated.
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -49,7 +47,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: PYTHON_VERSION
 
       - name: Install linting tools
         run: |
@@ -60,6 +58,9 @@ jobs:
           echo "🔍 Linting Python code with flake8..."
           flake8 sourcebastion tests --count --select=E9,F63,F7,F82 --show-source --statistics
           echo "✓ flake8 passed"
+
+      - name: Validate GitHub workflow syntax and expressions
+        run: bash scripts/check-workflows.sh
 
       - name: Check black formatting
         run: |
@@ -81,7 +82,6 @@ jobs:
 
   lint-docker:
     name: Lint Dockerfiles
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -93,29 +93,10 @@ jobs:
         uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
         with:
           dockerfile: images/Dockerfile
-          failure-threshold: error
-
-      - name: Run hadolint (slim)
-        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: images/Dockerfile.slim
-          failure-threshold: error
-
-      - name: Run hadolint (micro)
-        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: images/Dockerfile.micro
-          failure-threshold: error
-
-      - name: Run hadolint (semgrep)
-        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: images/Dockerfile.semgrep
-          failure-threshold: error
+          failure-threshold: warning
 
   lint-rule-fixtures:
     name: Lint Rule Fixtures
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -132,7 +113,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: PYTHON_VERSION
 
       - name: Install semgrep and pytest
         run: |
@@ -176,7 +157,6 @@ jobs:
 
   test-unit:
     name: Unit Tests
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -187,7 +167,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: PYTHON_VERSION
+
+      - name: Install locked packaging tools
+        run: python scripts/scanner_artifacts.py install --libc glibc --group build
 
       - name: Install dependencies
         run: |
@@ -220,7 +203,6 @@ jobs:
 
   test-security:
     name: Security Tests
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -231,7 +213,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: PYTHON_VERSION
 
       - name: Install security tools
         run: pip install --no-cache-dir bandit safety
@@ -254,15 +236,20 @@ jobs:
   # BUILD STAGE
   # ============================================
 
-  build-docker-standard:
-    name: Build Standard Docker Image
+  build-scanner:
+    name: Build scanner (${{ matrix.arch }})
     if: github.event_name == 'pull_request' || inputs.build_images == true
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     needs: [lint-python, test-unit]
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
-      image-digest: ${{ steps.build.outputs.digest }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -272,47 +259,48 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=long,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Read reviewed Python version
+        id: python
+        run: echo "version=$(python3 scripts/python_version.py current)" >> "$GITHUB_OUTPUT"
 
-      - name: Build standard image with retries
+      - name: Run Docker build checks (warnings are errors)
+        env:
+          SOURCEBASTION_PYTHON_VERSION: ${{ steps.python.outputs.version }}
+        run: |
+          docker buildx build --check --build-arg "PYTHON_VERSION=$SOURCEBASTION_PYTHON_VERSION" -f images/Dockerfile .
+
+      - name: Build scanner image with retries
         id: build
-        uses: ./.github/actions/build-with-retry
-        with:
-          context: .
-          file: ./images/Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build local standard image for rule fixture tests
         uses: ./.github/actions/build-with-retry
         with:
           context: .
           file: ./images/Dockerfile
           load: true
           tags: sourcebastion:standard-rule-test
-          cache-from: type=gha
-          platforms: linux/amd64
+          build-args: PYTHON_VERSION=${{ steps.python.outputs.version }}
+          cache-from: type=gha,scope=scanner-${{ matrix.arch }}
+          cache-to: type=gha,scope=scanner-${{ matrix.arch }},mode=max
+          platforms: linux/${{ matrix.arch }}
+
+      - name: Record image size
+        env:
+          IMAGE_ARCH: ${{ matrix.arch }}
+        run: |
+          docker image inspect sourcebastion:standard-rule-test --format '{{json .}}' > image-inspect.json
+          python3 scripts/report_image_size.py image-inspect.json "$IMAGE_ARCH" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload image size evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: scanner-image-${{ matrix.arch }}
+          path: image-inspect.json
 
       - name: Assert the image reports the release version
         # Tests the artifact that ships, not the source it came from:
         # a packaging mistake survives every unit test but not this.
         run: |
           scripts/assert-image-version.sh sourcebastion:standard-rule-test
-          scripts/assert-image-runtime.sh sourcebastion:standard-rule-test standard
+          scripts/assert-image-runtime.sh sourcebastion:standard-rule-test
 
       - name: Run rule fixture tests in standard image
         run: |
@@ -356,266 +344,14 @@ jobs:
         run: |
           scripts/smoke-scan-iac.sh sourcebastion:standard-rule-test
 
-  build-docker-slim:
-    name: Build Slim Docker Image
-    if: github.event_name == 'pull_request' || inputs.build_images == true
+
+  build-docker-standard:
+    name: Build Standard Docker Image
+    if: always() && (github.event_name == 'pull_request' || inputs.build_images == true)
+    needs: build-scanner
     runs-on: ubuntu-latest
-    needs: [lint-python, test-unit]
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch,suffix=-slim
-            type=ref,event=pr,suffix=-slim
-            type=semver,pattern={{version}},suffix=-slim
-            type=semver,pattern={{major}}.{{minor}},suffix=-slim
-            type=sha,prefix=,suffix=-slim
-            type=raw,value=slim,enable={{is_default_branch}}
-
-      - name: Build and push slim image
-        id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.slim
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build local slim image for rule fixture tests
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.slim
-          push: false
-          load: true
-          tags: sourcebastion:slim-rule-test
-          cache-from: type=gha
-          platforms: linux/amd64
-
-      - name: Assert the image reports the release version
-        # Tests the artifact that ships, not the source it came from:
-        # a packaging mistake survives every unit test but not this.
-        run: |
-          scripts/assert-image-version.sh sourcebastion:slim-rule-test
-          scripts/assert-image-runtime.sh sourcebastion:slim-rule-test slim
-
-      - name: Run rule fixture tests in slim image
-        run: |
-          docker run --rm --entrypoint python3 \
-            -v "$PWD:/workspace:ro" -w /workspace \
-            sourcebastion:slim-rule-test scripts/verify-rule-fixtures.py
-
-  build-docker-micro:
-    name: Build Micro Docker Image
-    if: github.event_name == 'pull_request' || inputs.build_images == true
-    runs-on: ubuntu-latest
-    needs: [lint-python, test-unit]
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch,suffix=-micro
-            type=ref,event=pr,suffix=-micro
-            type=semver,pattern={{version}},suffix=-micro
-            type=semver,pattern={{major}}.{{minor}},suffix=-micro
-            type=sha,prefix=,suffix=-micro
-            type=raw,value=micro,enable={{is_default_branch}}
-
-      - name: Build and push micro image
-        id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.micro
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build local micro image for rule fixture tests
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.micro
-          push: false
-          load: true
-          tags: sourcebastion:micro-rule-test
-          cache-from: type=gha
-          platforms: linux/amd64
-
-      - name: Assert the image reports the release version
-        # Tests the artifact that ships, not the source it came from:
-        # a packaging mistake survives every unit test but not this.
-        run: |
-          scripts/assert-image-version.sh sourcebastion:micro-rule-test
-          scripts/assert-image-runtime.sh sourcebastion:micro-rule-test micro
-
-      - name: Verify micro image intentionally skips rule fixture tests
-        run: |
-          docker run --rm --entrypoint python3 \
-            -v "$PWD:/workspace:ro" -w /workspace \
-            sourcebastion:micro-rule-test scripts/verify-rule-fixtures.py --allow-missing-semgrep
-
-  build-docker-thin:
-    name: Build Thin Docker Image
-    if: github.event_name == 'pull_request' || inputs.build_images == true
-    runs-on: ubuntu-latest
-    needs: [lint-python, test-unit]
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch,suffix=-thin
-            type=ref,event=pr,suffix=-thin
-            type=semver,pattern={{version}},suffix=-thin
-            type=semver,pattern={{major}}.{{minor}},suffix=-thin
-            type=sha,prefix=,suffix=-thin
-            type=raw,value=thin,enable={{is_default_branch}}
-
-      - name: Build and push thin image
-        id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.thin
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build local thin image for rule fixture tests
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.thin
-          push: false
-          load: true
-          tags: sourcebastion:thin-rule-test
-          cache-from: type=gha
-          platforms: linux/amd64
-
-      - name: Assert the image reports the release version
-        # Tests the artifact that ships, not the source it came from:
-        # a packaging mistake survives every unit test but not this.
-        run: |
-          scripts/assert-image-version.sh sourcebastion:thin-rule-test
-          scripts/assert-image-runtime.sh sourcebastion:thin-rule-test thin
-
-      - name: Run rule fixture tests in thin image
-        run: |
-          docker run --rm --entrypoint python3 \
-            -v "$PWD:/workspace:ro" -w /workspace \
-            sourcebastion:thin-rule-test scripts/verify-rule-fixtures.py
-
-  build-docker-semgrep:
-    name: Build Semgrep Docker Image
-    if: github.event_name == 'pull_request' || inputs.build_images == true
-    runs-on: ubuntu-latest
-    needs: [lint-python, test-unit]
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch,suffix=-semgrep
-            type=ref,event=pr,suffix=-semgrep
-            type=semver,pattern={{version}},suffix=-semgrep
-            type=semver,pattern={{major}}.{{minor}},suffix=-semgrep
-            type=sha,prefix=,suffix=-semgrep
-            type=raw,value=semgrep,enable={{is_default_branch}}
-
-      - name: Build and push semgrep image
-        id: build
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.semgrep
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-
-      - name: Build local semgrep image for rule fixture tests
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
-        with:
-          context: .
-          file: ./images/Dockerfile.semgrep
-          push: false
-          load: true
-          tags: sourcebastion:semgrep-rule-test
-          cache-from: type=gha
-          platforms: linux/amd64
-
-      - name: Assert the image reports the release version
-        # Tests the artifact that ships, not the source it came from:
-        # a packaging mistake survives every unit test but not this.
-        run: |
-          scripts/assert-image-version.sh sourcebastion:semgrep-rule-test
-          scripts/assert-image-runtime.sh sourcebastion:semgrep-rule-test semgrep
-
-      - name: Run rule fixture tests in semgrep image
-        run: |
-          docker run --rm --entrypoint python3 \
-            -v "$PWD:/workspace:ro" -w /workspace \
-            sourcebastion:semgrep-rule-test scripts/verify-rule-fixtures.py
+      - name: Require both native image builds and scanner checks
+        env:
+          BUILD_RESULT: ${{ needs.build-scanner.result }}
+        run: test "$BUILD_RESULT" = success

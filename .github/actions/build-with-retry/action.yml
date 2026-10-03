@@ -13,6 +13,9 @@ inputs:
   labels:
     default: ''
     description: Image labels
+  build-args:
+    default: ''
+    description: Reviewed Docker build arguments
   platforms:
     required: true
     description: Target platforms
@@ -44,6 +47,7 @@ runs:
         tags: ${{ inputs.tags }}
         labels: ${{ inputs.labels }}
         platforms: ${{ inputs.platforms }}
+        build-args: ${{ inputs.build-args }}
         cache-from: ${{ inputs.cache-from }}
         cache-to: ${{ inputs.cache-to }}
     - name: Back off before second attempt
@@ -65,6 +69,7 @@ runs:
         tags: ${{ inputs.tags }}
         labels: ${{ inputs.labels }}
         platforms: ${{ inputs.platforms }}
+        build-args: ${{ inputs.build-args }}
         cache-from: ${{ inputs.cache-from }}
         cache-to: ${{ inputs.cache-to }}
     - name: Back off before final attempt
@@ -85,5 +90,6 @@ runs:
         tags: ${{ inputs.tags }}
         labels: ${{ inputs.labels }}
         platforms: ${{ inputs.platforms }}
+        build-args: ${{ inputs.build-args }}
         cache-from: ${{ inputs.cache-from }}
         cache-to: ${{ inputs.cache-to }}

@@ -69,12 +69,12 @@ def test_changed_lock_file_fails_before_install(lock, tmp_path):
 def test_python_mismatch_is_not_silently_resolved(lock, monkeypatch):
     monkeypatch.setattr(artifacts.sys, 'version_info', (3, 12))
     monkeypatch.setattr(artifacts.subprocess, 'run', lambda *a, **k: pytest.fail('must not install'))
-    with pytest.raises(ValueError, match='CPython 3.11'):
+    with pytest.raises(ValueError, match='CPython ' + artifacts.PYTHON_FULL):
         artifacts.install(lock, 'glibc')
 
 
 def test_installer_enforces_hashes_wheels_and_closure(lock, monkeypatch):
-    monkeypatch.setattr(artifacts.sys, 'version_info', (3, 11))
+    monkeypatch.setattr(artifacts.sys, 'version_info', tuple(map(int, artifacts.PYTHON_FULL.split('.'))))
     monkeypatch.setattr(artifacts.platform, 'machine', lambda: 'x86_64')
     calls = []
     monkeypatch.setattr(artifacts.subprocess, 'run', lambda command, **kw: calls.append(command))
@@ -134,7 +134,7 @@ def test_real_pip_rejects_tampered_wheel_without_installing(tmp_path):
 
 
 def test_all_scanner_images_disable_unlocked_python_downloads():
-    for name in ('Dockerfile', 'Dockerfile.thin', 'Dockerfile.slim', 'Dockerfile.semgrep', 'Dockerfile.micro'):
+    for name in ('Dockerfile',):
         text = (ROOT / 'images' / name).read_text()
         assert '--group build' in text
         assert 'build --no-isolation' in text
@@ -148,7 +148,7 @@ def test_all_scanner_images_disable_unlocked_python_downloads():
         # assertion here and fail only at release, because image builds are
         # deliberately release-only.
         explicit = '--dependencies' in text and 'python-locks' in text
-        whole_context = 'COPY . .' in text
+        whole_context = 'COPY . .' in text or 'COPY . /app' in text
         assert explicit or whole_context, name
 
 
@@ -180,7 +180,7 @@ def test_closure_checks_target_markers_and_extras(lock, tmp_path, monkeypatch):
     wheels = tmp_path / 'wheels'
     wheels.mkdir()
     make_metadata_wheel(wheels, 'root', requires=[
-        'child>=1; python_version < "3.12" and platform_machine == "aarch64"',
+        'child>=1; python_version >= "3.14" and platform_machine == "aarch64"',
         'cli>=1; extra == "cli"',
         'windows-only; sys_platform == "win32"',
     ])

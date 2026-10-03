@@ -175,7 +175,7 @@ def test_the_standard_image_build_scans_a_real_application():
     something.
     """
     document = yaml.safe_load((ROOT / ".github" / "workflows" / "docker.yml").read_text(encoding="utf-8"))
-    steps = document["jobs"]["build-docker-standard"]["steps"]
+    steps = document["jobs"]["build-scanner"]["steps"]
     scripts = "\n".join(step.get("run", "") for step in steps if isinstance(step, dict))
     assert "smoke-scan-juice-shop.sh" in scripts, (
         "the standard image build no longer runs the real-execution smoke scan"
@@ -211,7 +211,7 @@ def test_the_standard_image_build_runs_the_iac_component_for_real():
     without anything noticing.
     """
     document = yaml.safe_load((ROOT / ".github" / "workflows" / "docker.yml").read_text(encoding="utf-8"))
-    steps = document["jobs"]["build-docker-standard"]["steps"]
+    steps = document["jobs"]["build-scanner"]["steps"]
     scripts = "\n".join(step.get("run", "") for step in steps if isinstance(step, dict))
     assert "smoke-scan-iac.sh" in scripts, (
         "the standard image build no longer runs the IaC component for real"
@@ -229,9 +229,10 @@ def test_the_iac_check_requires_a_finding_rather_than_a_clean_run():
     assert "sys.exit(" in text
 
 
-def test_every_image_build_checks_the_default_runtime_identity():
+def test_native_builds_check_the_default_runtime_identity():
     document = yaml.safe_load((ROOT / ".github" / "workflows" / "docker.yml").read_text(encoding="utf-8"))
-    for variant in ["standard", "slim", "micro", "thin", "semgrep"]:
-        steps = document["jobs"][f"build-docker-{variant}"]["steps"]
-        scripts = "\n".join(step.get("run", "") for step in steps if isinstance(step, dict))
-        assert f"assert-image-runtime.sh sourcebastion:{variant}-rule-test {variant}" in scripts
+    steps = document["jobs"]["build-scanner"]["steps"]
+    scripts = "\n".join(step.get("run", "") for step in steps if isinstance(step, dict))
+    assert "assert-image-runtime.sh sourcebastion:standard-rule-test" in scripts
+    assert "docker buildx build --check" in scripts
+    assert "# check=error=true" in (ROOT / "images/Dockerfile").read_text()

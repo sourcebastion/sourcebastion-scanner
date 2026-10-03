@@ -444,7 +444,9 @@ class KicsConverter:
         queries = kics_data.get("queries", [])
 
         for query in queries:
-            query_name = query.get("queryName", "unknown")
+            # KICS emits `query_name`; `queryName` is not a key it writes, so
+            # every converted finding was titled "unknown".
+            query_name = query.get("query_name") or query.get("queryName") or "unknown"
             severity = KicsConverter._map_severity(query.get("severity", "medium"))
 
             files = query.get("files", [])
@@ -790,7 +792,7 @@ class GitHubKicsConverter:
         queries = kics_data.get("queries", [])
 
         for query in queries:
-            query_name = query.get('queryName', 'unknown')
+            query_name = query.get("query_name") or query.get("queryName") or "unknown"
             severity = query.get("severity", "medium")
             level = GitHubSarifFormat.map_severity_to_level(severity)
 

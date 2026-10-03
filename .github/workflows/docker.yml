@@ -343,6 +343,13 @@ jobs:
         run: |
           scripts/smoke-scan-juice-shop.sh sourcebastion:standard-rule-test
 
+      - name: Run the IaC component for real
+        # The Juice Shop corpus has no infrastructure code, so it cannot
+        # exercise KICS. This is the check that would have caught KICS
+        # discarding every finding for every repository.
+        run: |
+          scripts/smoke-scan-iac.sh sourcebastion:standard-rule-test
+
   build-docker-slim:
     name: Build Slim Docker Image
     if: inputs.build_images == true

@@ -211,3 +211,30 @@ def test_the_smoke_scan_asserts_each_scanner_separately():
     expected = re.search(r'expected_scanners="([^"]+)"', text)
     assert expected, "the smoke scan must name the scanners it requires"
     assert set(expected.group(1).split()) >= {"semgrep", "gitleaks", "grype"}
+
+
+def test_the_standard_image_build_runs_the_iac_component_for_real():
+    """IaC needs its own real-execution check; the smoke corpus cannot cover it.
+
+    Juice Shop carries no infrastructure code, so `kics` is deliberately absent
+    from the smoke scan's required scanners -- which is exactly how KICS came
+    to discard every finding for every repository across several releases
+    without anything noticing.
+    """
+    document = yaml.safe_load((ROOT / ".github" / "workflows" / "docker.yml").read_text(encoding="utf-8"))
+    steps = document["jobs"]["build-docker-standard"]["steps"]
+    scripts = "\n".join(step.get("run", "") for step in steps if isinstance(step, dict))
+    assert "smoke-scan-iac.sh" in scripts, (
+        "the standard image build no longer runs the IaC component for real"
+    )
+
+
+def test_the_iac_check_requires_a_finding_rather_than_a_clean_run():
+    """Exit zero on an empty result would assert nothing.
+
+    The fixture contains an unrestricted security group, so zero findings means
+    the wrapper is discarding output -- the check must fail, not pass quietly.
+    """
+    text = (ROOT / "scripts" / "smoke-scan-iac.sh").read_text(encoding="utf-8")
+    assert "if not findings:" in text
+    assert "sys.exit(" in text

@@ -466,7 +466,7 @@ jobs:
           RELEASE_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker-standard.outputs.image_digest }}
         run: |
           scripts/run-scanner-container.sh "$RELEASE_IMAGE" \
-            web-report . --output scan-results
+            gitlab-scan . --output scan-results/vulnerabilities.json
 
       - name: Count findings
         id: count

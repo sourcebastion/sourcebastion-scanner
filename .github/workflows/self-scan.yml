@@ -195,8 +195,8 @@ jobs:
           VULNS_FILE: ${{ env.OUTPUT_DIR }}/vulnerabilities.json
 
       - name: Generate vulnerabilities.json
-        id: web-report
-        run: sourcebastion web-report . --output "${OUTPUT_DIR}"
+        id: findings-report
+        run: sourcebastion gitlab-scan . --output "${OUTPUT_DIR}/vulnerabilities.json"
         continue-on-error: true
 
       # -----------------------------------------------------------------------

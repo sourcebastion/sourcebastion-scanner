@@ -463,7 +463,13 @@ class TestGetFindings:
             assert resp.status_code == 502
 
     def test_findings_accept_dashboard_fixture_shape(self, client):
-        fixture = json.loads(Path("web/data/vulnerabilities.json").read_text())
+        # Kept as a test fixture when the dashboard was retired. The API's
+        # response models are documented as matching the dashboard's
+        # vulnerabilities.json schema, and this is the only thing pinning
+        # that, so the sample moved here rather than going with the front end.
+        fixture = json.loads(
+            Path("tests/fixtures/api/vulnerabilities.json").read_text()
+        )
         with patch("api.main.get_vulnerabilities", return_value=fixture):
             resp = client.get("/projects/juice-shop/findings", headers=AUTH)
         assert resp.status_code == 200

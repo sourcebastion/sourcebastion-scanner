@@ -47,6 +47,54 @@ def test_release_input_cannot_override_the_reviewed_source(reviewed):
         versions.current()
 
 
+@pytest.mark.parametrize("requested", ["", " ", "3.14", " 3.14 ", "3.14.8"])
+def test_release_resolves_minor_to_exact_reviewed_patch(reviewed, requested):
+    assert versions.current(requested) == "3.14.8"
+
+
+@pytest.mark.parametrize("requested", ["3.1", "3.13", "3.14.9", "3.15"])
+def test_release_rejects_other_minor_or_patch(reviewed, requested):
+    with pytest.raises(ValueError, match="reviewed source"):
+        versions.current(requested)
+
+
+@pytest.mark.parametrize("requested", ["3", "latest", "3.14rc1", "3.14.*"])
+def test_release_rejects_unreviewed_floating_or_preview_input(reviewed, requested):
+    with pytest.raises(ValueError, match="3.MINOR"):
+        versions.current(requested)
+
+
+def test_minor_update_stays_in_requested_minor_and_verifies_before_writing(reviewed, monkeypatch):
+    metadata = {v: {"version": v, "variants": ["alpine3.23"]}
+                for v in ["3.15.0", "3.14.10", "3.14.9", "3.14.8", "3.13.16"]}
+    monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(json.dumps(metadata).encode()))
+    state = []
+    verified = []
+
+    def generate(lock, target):
+        assert verified
+        assert versions.current() == "3.14.8"
+        if state[-1] == "3.14.10":
+            raise ValueError("no compatible wheel")
+        (target / "new.txt").write_text("verified wheels")
+        (target / "manifest.json").write_text("{}")
+
+    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
+        validate_lock=lambda lock: lock, verify=lambda lock: verified.append(True),
+        configure_python=state.append, generate_dependencies=generate))
+    assert versions.update(" 3.14 ") == "3.14.9"
+    assert state == ["3.14.10", "3.14.9"]
+    assert versions.current("3.14") == "3.14.9"
+
+
+def test_unavailable_minor_preserves_reviewed_files(reviewed, monkeypatch):
+    monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(b"{}"))
+    with pytest.raises(ValueError, match="no stable Python candidate"):
+        versions.update("3.16")
+    assert versions.current() == "3.14.8"
+    assert (reviewed / ".github/python-locks/old.txt").read_text() == "reviewed"
+
+
 def test_latest_uses_newest_compatible_version_and_replaces_old_locks(reviewed, monkeypatch):
     metadata = {v: {"version": v, "variants": ["alpine3.23"]} for v in ["3.15.0", "3.14.9"]}
     monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(json.dumps(metadata).encode()))

@@ -8,8 +8,8 @@ on:
         required: true
         type: string
       python_version:
-        description: Exact Python version or latest compatible stable
-        default: latest
+        description: Python minor, exact patch, or latest compatible stable
+        default: '3.14'
         required: true
         type: string
       release_notes:

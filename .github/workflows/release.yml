@@ -14,7 +14,8 @@ on:
         required: true
         type: string
       python_version:
-        description: Reviewed PYTHON_VERSION value (empty uses the source pin)
+        description: Python minor or exact reviewed version (empty uses the source pin)
+        default: '3.14'
         required: false
         type: string
       release_reason:

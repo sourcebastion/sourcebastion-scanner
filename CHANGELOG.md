@@ -1,5 +1,8 @@
 ## Unreleased
 
+### Fixes
+
+* the published distribution contains only the scanner. A bare `find_packages()` also packaged `api` -- the separate FastAPI deployable, which has an `__init__.py` -- and `tests`, so every scanner image installed that service's code and claimed the generic top-level name `api` in its import namespace. `tests` was kept out of the image only by `.dockerignore`, which would not protect a wheel built elsewhere
 ### Removed
 
 * the optional REST API moved to the dashboard archive with the dashboard it served. `api/main.py` exposed the dashboard's `/index`, `/vulnerabilities` and `/history` through `dashboard_client`, and `api/models.py` described the dashboard's own JSON schema. Its `/scan` orchestration half went with it; the archive keeps both. `Dockerfile.api`, the API workflow and its tests go too

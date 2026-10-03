@@ -61,7 +61,14 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/sourcebastion/sourcebastion-scanner",
-    packages=find_packages(),
+    # Only the scanner. A bare `find_packages()` also swept in `api`, the
+    # separate FastAPI deployable, because it has an `__init__.py` -- so every
+    # scanner image shipped that service's code and, worse, claimed the
+    # generic top-level name `api` in the image's import namespace. The API
+    # image does not need it packaged: it copies `/app/api` and runs
+    # `uvicorn api.main:app` from `WORKDIR /app`, resolving it from the
+    # filesystem.
+    packages=find_packages(include=["sourcebastion", "sourcebastion.*"]),
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9",

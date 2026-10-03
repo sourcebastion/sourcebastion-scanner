@@ -416,3 +416,19 @@ def test_the_manual_path_survives_alongside_the_initiator():
     workflow = yaml.load(WORKFLOW_PATH.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
     assert set(workflow["on"]) == {"repository_dispatch", "workflow_dispatch"}
     assert "release_reason" in workflow["on"]["workflow_dispatch"]["inputs"]
+
+
+def test_the_initiator_can_reach_the_bot_credentials():
+    """The bot secrets are environment secrets, not repository secrets.
+
+    Without the environment declared, `app-id` resolves to an empty string
+    and the token step fails with "must be set to a non-empty string". That
+    is how this workflow failed on its first dispatch, and nothing in the
+    repository would have caught it: the workflow only runs on a VERSION
+    change or a manual dispatch.
+    """
+    job = _dispatch_workflow()["jobs"]["dispatch"]
+    assert job.get("environment") == "scanner-maintenance", (
+        "the dispatch job must declare the environment holding "
+        "SOURCEBASTION_BOT_APP_ID and SOURCEBASTION_BOT_PRIVATE_KEY"
+    )

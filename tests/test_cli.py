@@ -354,8 +354,15 @@ class TestInitCommand:
         assert 'already exists' in result.output
 
 
-class TestWebReportCommand:
-    def test_web_report_loads_project_config(self, tmp_path):
+class TestGitlabScanConfig:
+    def test_gitlab_scan_loads_project_config(self, tmp_path):
+        """Ported from `web-report`, which was removed with the dashboard.
+
+        The invariant is that the command reads `.sourcebastion.yaml` and
+        applies its ignore rules, not which command does it. `gitlab-scan`
+        produces the same document -- both called `scan_to_gitlab_format` --
+        and had no coverage of this.
+        """
         config_path = tmp_path / ".sourcebastion.yaml"
         config_path.write_text(
             """ignore:
@@ -379,10 +386,10 @@ class TestWebReportCommand:
             result = CliRunner().invoke(
                 main,
                 [
-                    "web-report",
+                    "gitlab-scan",
                     str(tmp_path),
                     "--output",
-                    str(output_dir),
+                    str(output_dir / "vulnerabilities.json"),
                     "--config",
                     str(config_path),
                 ],

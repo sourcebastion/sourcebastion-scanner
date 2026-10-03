@@ -630,49 +630,6 @@ def serve_metrics(host, port, storage_path, project, storage_backend):
         sys.exit(1)
 
 
-@main.command()
-@click.argument("path", type=click.Path(exists=True), default=".")
-@click.option("--output", type=click.Path(), help="Directory to write vulnerabilities.json into", default="./web/data")
-@click.option("--config", "config_file", type=click.Path(), default=".sourcebastion.yaml", help="Path to config file")
-def web_report(path, output, config_file):
-    """Generate web dashboard for vulnerability reporting
-
-    Generates a JSON report compatible with the web vulnerability dashboard
-    and optionally creates the dashboard files.
-
-    PATH: Directory to scan (default: current directory)
-    """
-    try:
-        import json
-        from pathlib import Path as PathlibPath
-
-        config = Config.from_file(config_file)
-        scanner = SecurityScanner(config)
-
-        # Generate GitLab format report
-        gitlab_report = scanner.scan_to_gitlab_format(path)
-
-        # Create output directory
-        output_dir = PathlibPath(output)
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Save vulnerabilities to web data directory
-        report_file = output_dir / "vulnerabilities.json"
-        with open(report_file, 'w') as f:
-            json.dump(gitlab_report, f, indent=2)
-
-        click.echo(f"\n✓ Web report generated")
-        click.echo(f"  Vulnerabilities: {len(gitlab_report['vulnerabilities'])}")
-        click.echo(f"  Report saved: {report_file}")
-        click.echo(f"\n📊 To view the dashboard:")
-        click.echo(f"  cd web && python -m http.server 8000")
-        click.echo(f"  Then open http://localhost:8000")
-
-    except Exception as e:
-        click.echo(f"✗ Error: {str(e)}", err=True)
-        sys.exit(1)
-
-
 @main.command("github-scan")
 @click.argument("path", type=click.Path(exists=True), default=".")
 @click.option("--ai-prompt", help="Deprecated compatibility option; ignored")

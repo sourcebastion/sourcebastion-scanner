@@ -1,5 +1,8 @@
 ## Unreleased
 
+### Fixes
+
+* the published distribution contains only the scanner. A bare `find_packages()` also packaged `api` -- the separate FastAPI deployable, which has an `__init__.py` -- and `tests`, so every scanner image installed that service's code and claimed the generic top-level name `api` in its import namespace. `tests` was kept out of the image only by `.dockerignore`, which would not protect a wheel built elsewhere
 ### Removed
 
 * the assistant skills for Claude Code, Copilot and Cursor moved to the private `sourcebastion/sourcebastion-skills` repository with their history. Nothing in this repository referenced them -- no workflow, test or module -- so they rode along in every scanner pull request and release while belonging to neither the scanner nor its image. The install instructions in the README and the provider guides now clone that repository; the previous `curl | bash` commands pointed at `ez-appsec/ez-appsec`, an organization that no longer exists

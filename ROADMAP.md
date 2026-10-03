@@ -357,6 +357,11 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 
 #### PLAN-13: VS Code Extension
 
+> Delivered, then extracted. The extension now lives in the private
+> `sourcebastion/sourcebastion-vscode` repository. The description below is
+> the original plan and refers to paths that were in this repository at the
+> time.
+
 **Problem:** The Claude Code skill works only inside Claude Code. Most developers use VS Code and want inline security feedback without switching tools.
 
 **Scope:**

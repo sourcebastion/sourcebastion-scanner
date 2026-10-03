@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Changed
+
+* the VS Code extension moved to its own private repository, `sourcebastion/sourcebastion-vscode`, with its history. It reached the scanner only by running a published image, so it had no reason to be rebuilt on scanner changes or to sit in scanner pull requests. `vscode-extension/`, its workflow, its dependabot entry and `docs/vscode.md` are gone from here; the manifest assertions in `tests/test_public_repository_policy.py` moved with it rather than being dropped
+
 ### Testing
 
 * the standard image build scans a real vulnerable application with the built image as its final check, asserting that semgrep, gitleaks and grype each report findings. The existing integration check patches `subprocess.run` and verifies binaries with `shutil.which`, so it proves parsing and presence but never execution -- the gap through which a broken grype dependency call and a semgrep failure that discarded whole scans both reached releases. The corpus is a pinned commit of a Juice Shop fork, fetched as a git checkout because gitleaks reads commits and an exported tree silently costs that scanner's coverage entirely

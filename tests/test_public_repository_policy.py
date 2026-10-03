@@ -64,21 +64,6 @@ def test_security_policy_uses_the_enabled_private_reporting_route():
     assert "best-effort basis" in policy
 
 
-def test_vscode_extension_uses_public_brand_and_maintained_image():
-    manifest = json.loads(
-        (ROOT / "vscode-extension" / "package.json").read_text(encoding="utf-8")
-    )
-
-    assert manifest["name"] == "ez-appsec"  # Stable extension identifier.
-    assert manifest["displayName"] == "SourceBastion Scan"
-    assert manifest["contributes"]["configuration"]["title"] == "SourceBastion Scan"
-    assert (
-        manifest["contributes"]["configuration"]["properties"]
-        ["ez-appsec.dockerImage"]["default"]
-        == "ghcr.io/sourcebastion/sourcebastion-scanner:latest"
-    )
-
-
 def test_pull_request_workflows_use_read_only_tokens_and_safe_checkouts():
     for path, workflow in _pull_request_workflows():
         assert "write" not in _permission_values(workflow.get("permissions", {})), path

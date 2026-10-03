@@ -1,5 +1,7 @@
 ## Unreleased
 
+## [1.7.35](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.34...v1.7.35) (2026-10-03)
+
 ### Changed
 
 * the VS Code extension moved to its own private repository, `sourcebastion/sourcebastion-vscode`, with its history. It reached the scanner only by running a published image, so it had no reason to be rebuilt on scanner changes or to sit in scanner pull requests. `vscode-extension/`, its workflow, its dependabot entry and `docs/vscode.md` are gone from here; the manifest assertions in `tests/test_public_repository_policy.py` moved with it rather than being dropped

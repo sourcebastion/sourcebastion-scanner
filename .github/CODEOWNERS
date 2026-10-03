@@ -5,5 +5,4 @@
 /.releaserc.json @jfelten @jenfelten
 /package.json @jfelten @jenfelten
 /package-lock.json @jfelten @jenfelten
-/Dockerfile.api @jfelten @jenfelten
 /images/ @jfelten @jenfelten

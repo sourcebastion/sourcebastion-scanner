@@ -2,6 +2,8 @@
 
 ### Removed
 
+* the optional REST API moved to the dashboard archive with the dashboard it served. `api/main.py` exposed the dashboard's `/index`, `/vulnerabilities` and `/history` through `dashboard_client`, and `api/models.py` described the dashboard's own JSON schema. Its `/scan` orchestration half went with it; the archive keeps both. `Dockerfile.api`, the API workflow and its tests go too
+
 * the public vulnerability dashboard. Supporting it was judged not worth the overhead and it overlapped with the commercial product, so the front end, its four duplicate copies, the GitHub Pages and aggregation workflows, the `update-web` command and the guides are archived in the private `sourcebastion/sourcebastion-dashboard` repository. The scanner image no longer bakes in `/web`. `web-report` stays: the shipped GitHub and GitLab templates invoke it, so removing it would break pipelines already running in customer repositories
 * the assistant skills, which nothing in this repository referenced, moved to the private `sourcebastion/sourcebastion-skills` repository with their history
 

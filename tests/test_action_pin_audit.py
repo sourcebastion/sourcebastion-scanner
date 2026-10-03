@@ -30,8 +30,6 @@ class FakeAPI:
 def test_audit_discovers_active_shipped_and_generated_references():
     paths = {pin.path.relative_to(ROOT).as_posix() for pin in MODULE.discover_pins()}
     assert any(path.startswith(".github/workflows/") for path in paths)
-    assert "dashboard/.github/workflows/deploy-dashboard.yml" in paths
-    assert "github/dashboard/update-assets.yml" in paths
     assert "github/templates/scan.yml" in paths
     assert "sourcebastion/org_manager.py" in paths
 

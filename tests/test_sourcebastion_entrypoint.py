@@ -27,15 +27,32 @@ def test_published_images_use_public_command():
         assert 'ENTRYPOINT ["sourcebastion"]' in dockerfile
 
 
-def test_dashboard_update_token_targets_the_checked_out_repository():
+def test_app_tokens_are_scoped_to_the_checked_out_repository():
+    """An App token must not be minted for a hardcoded owner.
+
+    This replaces a guard that asserted the same property of
+    `dashboard-update.yml`, which went with the retired dashboard. The lesson
+    outlives its subject: `create-github-app-token` scopes a token to the
+    current repository only when both `owner` and `repositories` are omitted,
+    and setting `owner` with an empty `repositories` scopes it to *every*
+    repository that owner has installed.
+    """
     import yaml
-    workflow = yaml.safe_load((ROOT / ".github/workflows/dashboard-update.yml").read_text())
-    steps = workflow["jobs"]["aggregate"]["steps"]
-    mint = next(step for step in steps if step.get("id") == "token")["with"]
-    checkout = next(step for step in steps if step.get("uses", "").startswith("actions/checkout@"))
-    assert "repository" not in checkout["with"]
-    assert mint["owner"] == "${{ github.repository_owner }}"
-    assert mint["repositories"] == "${{ github.event.repository.name }}"
+
+    workflow = yaml.safe_load(
+        (ROOT / ".github/workflows/scanner-artifact-update.yml").read_text()
+    )
+    minted = [
+        step
+        for job in workflow["jobs"].values()
+        for step in job.get("steps", [])
+        if str(step.get("uses", "")).startswith("actions/create-github-app-token@")
+    ]
+    assert minted, "no App token step found; this guard has lost its subject"
+    for step in minted:
+        inputs = step.get("with", {})
+        assert "owner" not in inputs, inputs
+        assert "repositories" not in inputs, inputs
 
 
 def test_cli_examples_use_the_installed_command():

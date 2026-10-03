@@ -116,9 +116,6 @@ ENV PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
 # Copy custom SAST rule packs
 COPY rules/ /app/rules/
 
-# Copy website files
-COPY web/ /web/
-
 # Create non-root user for runtime
 RUN addgroup -S ezappsec && adduser -S -G ezappsec ezappsec && \
     mkdir -p /scan /home/ezappsec/.cache && \

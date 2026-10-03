@@ -1,5 +1,10 @@
 ## Unreleased
 
+### Removed
+
+* the public vulnerability dashboard. Supporting it was judged not worth the overhead and it overlapped with the commercial product, so the front end, its four duplicate copies, the GitHub Pages and aggregation workflows, the `update-web` command and the guides are archived in the private `sourcebastion/sourcebastion-dashboard` repository. The scanner image no longer bakes in `/web`. `web-report` stays: the shipped GitHub and GitLab templates invoke it, so removing it would break pipelines already running in customer repositories
+* the assistant skills, which nothing in this repository referenced, moved to the private `sourcebastion/sourcebastion-skills` repository with their history
+
 ## [1.7.35](https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.7.34...v1.7.35) (2026-10-03)
 
 ### Changed

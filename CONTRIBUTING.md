@@ -193,7 +193,10 @@ but they do not publish or increment a release automatically.
 
 1. A release pull request updates `VERSION` and `CHANGELOG.md` together.
 2. The normal CI and independent review must pass before merge.
-3. A maintainer dispatches `Release` from `main` with the exact `vMAJOR.MINOR.PATCH` value.
+3. Merging that pull request is the request to release: `Release dispatch` sees
+   `VERSION` change on `main` and asks `Release` to run, as `sourcebastion-bot[bot]`.
+   A maintainer can still dispatch `Release` by hand from `main` with the exact
+   `vMAJOR.MINOR.PATCH` value and a recorded reason, for when the initiator cannot run.
 4. A second release authority approves the protected `release` environment.
 5. The workflow builds and scans every image by digest, promotes public tags only
    after every gate passes, then publishes the draft GitHub release.

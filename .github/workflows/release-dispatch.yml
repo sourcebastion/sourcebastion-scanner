@@ -1,0 +1,87 @@
+# Initiate a release once its reviewed version bump reaches main.
+#
+# `release.yml` has always accepted `repository_dispatch` of type
+# `scanner-release` from `sourcebastion-bot[bot]`, but nothing sent it: the
+# automated path was semantic-release, which was removed in the same commit
+# that introduced the gate (`fix(release): harden scanner publication`, #17).
+# Every release since has gone through the owner path, whose input was named
+# `break_glass_reason` -- so the routine process described in CONTRIBUTING
+# looked like an emergency.
+#
+# This supplies the missing initiator. It changes who presses the button, not
+# what is checked: `release.yml` still validates the version against VERSION,
+# still refuses anything already published, and the `release` environment still
+# requires a second approver. The owner path remains for when this cannot run.
+name: Release dispatch
+
+on:
+  push:
+    branches: [main]
+    # A release is declared by a change to VERSION. Nothing else here does
+    # that, and the release pull request is reviewed before it lands.
+    paths:
+      - VERSION
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Request a release for the merged version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Read the declared version
+        id: version
+        run: |
+          set -euo pipefail
+          version="v$(tr -d '[:space:]' < VERSION)"
+          if [[ ! "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::VERSION must be MAJOR.MINOR.PATCH, got '${version#v}'"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Mint the bot token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          # `owner` and `repositories` deliberately unset: omitting both scopes
+          # the token to this repository alone, while setting `owner` with an
+          # empty `repositories` would scope it to every repository the app is
+          # installed on.
+          app-id: ${{ secrets.SOURCEBASTION_BOT_APP_ID }}
+          private-key: ${{ secrets.SOURCEBASTION_BOT_PRIVATE_KEY }}
+
+      - name: Request the release
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -uo pipefail
+          # Already published means the bump was not a new release -- a
+          # re-merge, or a revert that restored an old number. Release tags are
+          # immutable, so `release.yml` would refuse it; skipping here keeps a
+          # routine push from producing a red run.
+          if gh release view "$VERSION" --json isDraft >/dev/null 2>&1; then
+            if [ "$(gh release view "$VERSION" --json isDraft --jq .isDraft)" = "false" ]; then
+              echo "::notice::${VERSION} is already published; nothing to request"
+              exit 0
+            fi
+            echo "::notice::${VERSION} has a draft release; resuming it"
+          fi
+          # The dispatch is what makes the run's actor sourcebastion-bot[bot],
+          # which is the identity release.yml requires on this path.
+          gh api "repos/${GITHUB_REPOSITORY}/dispatches" \
+            -f event_type=scanner-release \
+            -F "client_payload[version]=${VERSION}"
+          echo "::notice::requested a release of ${VERSION}"

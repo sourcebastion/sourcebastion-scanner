@@ -2,16 +2,18 @@
 
 ## GitHub scanner image validation
 
-Pull requests run Python/Dockerfile lint, unit tests, rule fixtures, and
-security checks without building the five scanner image variants. Image
-packaging and container-runtime regressions are therefore detected at release
-validation rather than on every PR.
+Pull requests run Python/Dockerfile lint, unit tests, rule fixtures, security
+checks, and builds of all five scanner image variants for amd64 and arm64.
+Container checks verify the release version, the default `sourcebastion` user,
+and writable scan and cache directories. The standard image also exercises
+Python dependency discovery and scans Juice Shop and an IaC fixture for real.
 
 After release approval, `release.yml` calls `docker.yml` with `build_images:
 true`. All five image variants and their container checks must pass before
 release image publication proceeds. Standard-image validation retries failed
 builds twice with 15/30-second backoff; exhausted failures remain blocking.
-The regular manual Docker Validation dispatch runs source checks only.
+Manual Docker Validation dispatch can also build all images with
+`build_images=true`, without publishing; its default remains source checks only.
 The separate API image workflow is unchanged.
 
 Published scanner release notes begin with the matching version's reviewed

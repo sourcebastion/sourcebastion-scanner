@@ -11,6 +11,7 @@ import sys
 import time
 import yaml
 from contextlib import contextmanager
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Dict, Any, Iterator, Optional, Tuple
 from abc import ABC, abstractmethod
@@ -1844,13 +1845,22 @@ class GrypeImageScanner:
 class ExternalScannerManager:
     """Manages all external scanners"""
 
-    def __init__(self, enabled_scanners: Optional[List[str]] = None, scanner_settings: Optional[dict] = None):
+    def __init__(self, enabled_scanners: Optional[List[str]] = None, scanner_settings: Optional[dict] = None,
+                 max_workers: Optional[int] = None):
         """
         Initialize scanner manager
 
         Args:
             enabled_scanners: List of scanner names to enable (None = all)
         """
+        if max_workers is None:
+            raw = os.environ.get("SOURCEBASTION_SCANNER_WORKERS", "1")
+            if not raw.isdigit():
+                raise ValueError("SOURCEBASTION_SCANNER_WORKERS must be between 1 and 3")
+            max_workers = int(raw)
+        if isinstance(max_workers, bool) or not isinstance(max_workers, int) or not 1 <= max_workers <= 3:
+            raise ValueError("scanner workers must be between 1 and 3")
+        self.max_workers = max_workers
         self.scanners = {
             "gitleaks": GitleaksScanner(),
             "semgrep": SemgrepScanner(),
@@ -1886,6 +1896,9 @@ class ExternalScannerManager:
     
     def scan_all(self, path: str) -> List[Dict[str, Any]]:
         """Run all enabled scanners, failing if any component is incomplete."""
+        if self.max_workers > 1:
+            issues, _ = self._scan_parallel(path, raw=False)
+            return issues
         all_issues = []
         
         for name, scanner in self.scanners.items():
@@ -1904,6 +1917,8 @@ class ExternalScannerManager:
     
     def scan_all_with_raw_outputs(self, path: str) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
         """Run enabled scanners and return outputs only after all complete."""
+        if self.max_workers > 1:
+            return self._scan_parallel(path, raw=True)
         all_issues = []
         raw_outputs = {}
         
@@ -1932,3 +1947,50 @@ class ExternalScannerManager:
                 logger.info(f"{name} found {len(issues)} issues")
         
         return all_issues, raw_outputs
+
+    def _scan_parallel(self, path: str, *, raw: bool) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
+        """Bound concurrent tools and retain configured-order aggregation."""
+        enabled = [(name, scanner) for name, scanner in self.scanners.items() if scanner.enabled]
+        if not enabled:
+            return [], {}
+        created_outputs = []
+
+        def run(name, scanner):
+            logger.info("Running %s scan...", name)
+            try:
+                result = scanner.scan_with_raw_output(path) if raw else (scanner.scan(path), None)
+                issues, raw_path = result
+                if raw_path:
+                    created_outputs.append(raw_path)
+                logger.info("%s found %s issues", name, len(issues))
+                return issues, raw_path
+            except ScannerExecutionError:
+                raise
+            except Exception:
+                raise ScannerExecutionError(name, "execution_failed") from None
+
+        pool = ThreadPoolExecutor(max_workers=min(self.max_workers, len(enabled)))
+        futures = []
+        completed = []
+        success = False
+        try:
+            for name, scanner in enabled:
+                futures.append(pool.submit(run, name, scanner))
+            # Completion order must not change findings or raw-output ordering.
+            for future in as_completed(futures):
+                future.result()
+            completed = [future.result() for future in futures]
+            success = True
+        finally:
+            # Wait for already-running tools (each keeps its component timeout)
+            # before deleting outputs; queued work is cancelled on any failure.
+            pool.shutdown(wait=True, cancel_futures=not success)
+            if raw and not success:
+                for raw_path in created_outputs:
+                    try:
+                        os.unlink(raw_path)
+                    except OSError:
+                        pass
+        issues = [finding for findings, _ in completed for finding in findings]
+        outputs = {name: raw_path for (name, _), (_, raw_path) in zip(enabled, completed) if raw_path}
+        return issues, outputs

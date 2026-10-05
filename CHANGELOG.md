@@ -4,6 +4,18 @@
 
 * a merged version bump now requests its own release. `release.yml` had always accepted a `repository_dispatch` of type `scanner-release` from `sourcebastion-bot[bot]`, but nothing sent it -- the initiator was semantic-release, removed in the same commit that introduced the gate -- so every release ran through the owner path, whose input was named `break_glass_reason`. The new `Release dispatch` workflow supplies the missing initiator, and that input is now `release_reason`: dispatching by hand is the documented fallback, not an incident. Nothing about what is checked changes, including the second approval on the `release` environment
 
+## [1.7.38] - 2026-10-05
+
+### Changed
+
+- Add opt-in parallel scanner components with `SOURCEBASTION_SCANNER_WORKERS=1..3` (default 1) for ordinary and contract scans. Preserve component order, existing tool timeouts, shared plan deadlines, finding scope/ownership and aggregate limits; failed raw-output runs clean up outputs from late-finishing tools.
+- Update verified Semgrep wheels to 1.179.0 for AMD64/ARM64 glibc and musl, with matching dependency locks. Retain the reviewed Python 3.14.8 runtime and KICS pin.
+
+### Validation
+
+- Native AMD64/ARM64 hosted image proofs exercise serial and three-component parallel scans against the same read-only source and advisory generation, requiring all four external scanners and equivalent finding identities.
+- The isolated public Juice Shop prototype on an eight-core/12-GiB dev worker took 64 seconds serial and 45 seconds parallel, with equivalent 116 findings. These are example measurements, not guaranteed latency.
+
 ## [1.7.37] - 2026-10-03
 
 new consolidated docker images, updated python version

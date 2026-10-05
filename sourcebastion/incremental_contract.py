@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack
+
 import hashlib
 import hmac
 import json
@@ -546,119 +549,150 @@ def execute_scan_plan(
     total_findings = 0
     finding_metadata_bytes = 0
     cancelled = False
-    for component in plan["components"]:
-        name = component["name"]
-        mode = component["mode"]
-        if cancelled:
-            findings = []
-            status = "failed"
-            diagnostic_code = "cancelled"
-        elif mode == "reuse":
-            findings = []
-            status = "not_run"
-            diagnostic_code = "component_unchanged"
-        elif (
-            mode == "partial"
-            and name in _PARTIAL_COMPONENTS
-            and not component["covered_paths"]
-            and not component["iac_units"]
-        ):
-            findings = []
-            status = "complete"
-            diagnostic_code = None
-        elif mode == "partial" and name not in _PARTIAL_COMPONENTS:
-            findings = []
-            status = "not_run"
-            diagnostic_code = "unsupported_mode"
+
+    def runnable(component):
+        if component["mode"] == "reuse":
+            return False
+        if component["mode"] != "partial":
+            return True
+        return component["name"] in _PARTIAL_COMPONENTS and bool(
+            component["covered_paths"] or component["iac_units"]
+        )
+
+    def run_component(component):
+        name, mode = component["name"], component["mode"]
+        scanner = manager.scanners[COMPONENT_NAMES[name]]
+        scanner.set_execution_deadline(
+            started_monotonic + plan["limits"]["max_execution_seconds"]
+        )
+        if mode == "partial" and name == "kics":
+            findings = scanner.scan_units(source_path, component["iac_units"])
+        elif mode == "partial":
+            findings = scanner.scan_paths(source_path, component["covered_paths"])
+        elif name == "gitleaks":
+            findings = scanner.scan_current_tree(source_path)
         else:
-            scanner = manager.scanners[COMPONENT_NAMES[name]]
-            scanner.set_execution_deadline(
-                started_monotonic + plan["limits"]["max_execution_seconds"]
-            )
-            try:
-                if mode == "partial" and name == "kics":
-                    findings = scanner.scan_units(source_path, component["iac_units"])
-                elif mode == "partial":
-                    findings = scanner.scan_paths(source_path, component["covered_paths"])
-                elif name == "gitleaks":
-                    findings = scanner.scan_current_tree(source_path)
-                else:
-                    findings = scanner.scan(source_path)
-                if (
-                    time.monotonic() - started_monotonic
-                    > plan["limits"]["max_execution_seconds"]
-                ):
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "execution_limit_exceeded"
-                    cancelled = True
-                elif not isinstance(findings, list):
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "invalid_output"
-                elif (finding_sizes := _finding_sizes(findings)) is None:
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "metadata_limit_exceeded"
-                elif any(
-                    finding.get("scanner") not in _FINDING_SCANNERS[name]
-                    for finding in findings
-                ):
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "finding_ownership_mismatch"
-                elif mode == "partial" and any(
-                    not _finding_in_component_scope(finding, component)
-                    for finding in findings
-                ):
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "finding_scope_mismatch"
-                elif _duplicate_findings(findings):
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "duplicate_finding"
-                elif total_findings + len(findings) > plan["limits"]["max_findings"]:
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "findings_limit_exceeded"
-                elif (
-                    finding_metadata_bytes + sum(finding_sizes)
-                    > MAX_FINDINGS_METADATA_BYTES
-                ):
-                    findings = []
-                    status = "failed"
-                    diagnostic_code = "metadata_limit_exceeded"
-                else:
-                    total_findings += len(findings)
-                    finding_metadata_bytes += sum(finding_sizes)
-                    status = "complete"
-                    diagnostic_code = None
-            except KeyboardInterrupt:
-                cancelled = True
+            findings = scanner.scan(source_path)
+        return findings, time.monotonic()
+
+    # Tools run concurrently; findings validation and aggregate limits retain
+    # plan order. All tools share the same bounded plan deadline.
+    with ExitStack() as stack:
+        pool = None
+        futures = {}
+        if manager.max_workers > 1:
+            pool = stack.enter_context(ThreadPoolExecutor(max_workers=manager.max_workers))
+            for component in plan["components"]:
+                if runnable(component):
+                    futures[component["name"]] = pool.submit(run_component, component)
+        for component in plan["components"]:
+            name = component["name"]
+            mode = component["mode"]
+            if cancelled:
                 findings = []
                 status = "failed"
                 diagnostic_code = "cancelled"
-            except ScannerExecutionError as exc:
+            elif mode == "reuse":
                 findings = []
-                status = "failed"
-                diagnostic_code = exc.code
-            except Exception:
+                status = "not_run"
+                diagnostic_code = "component_unchanged"
+            elif (
+                mode == "partial"
+                and name in _PARTIAL_COMPONENTS
+                and not component["covered_paths"]
+                and not component["iac_units"]
+            ):
                 findings = []
-                status = "failed"
-                diagnostic_code = "execution_failed"
-        component_results.append(
-            {
-                "name": name,
-                "status": status,
-                "compatibility_key": component["compatibility_key"],
-                "covered_paths": component["covered_paths"],
-                "deleted_paths": component["deleted_paths"],
-                "iac_units": component["iac_units"],
-                "findings": findings,
-                "diagnostic_code": diagnostic_code,
-            }
-        )
+                status = "complete"
+                diagnostic_code = None
+            elif mode == "partial" and name not in _PARTIAL_COMPONENTS:
+                findings = []
+                status = "not_run"
+                diagnostic_code = "unsupported_mode"
+            else:
+                try:
+                    if pool is None:
+                        findings, finished_monotonic = run_component(component)
+                    else:
+                        findings, finished_monotonic = futures[name].result()
+                    if (
+                        finished_monotonic - started_monotonic
+                        > plan["limits"]["max_execution_seconds"]
+                    ):
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "execution_limit_exceeded"
+                        cancelled = True
+                    elif not isinstance(findings, list):
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "invalid_output"
+                    elif (finding_sizes := _finding_sizes(findings)) is None:
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "metadata_limit_exceeded"
+                    elif any(
+                        finding.get("scanner") not in _FINDING_SCANNERS[name]
+                        for finding in findings
+                    ):
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "finding_ownership_mismatch"
+                    elif mode == "partial" and any(
+                        not _finding_in_component_scope(finding, component)
+                        for finding in findings
+                    ):
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "finding_scope_mismatch"
+                    elif _duplicate_findings(findings):
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "duplicate_finding"
+                    elif total_findings + len(findings) > plan["limits"]["max_findings"]:
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "findings_limit_exceeded"
+                    elif (
+                        finding_metadata_bytes + sum(finding_sizes)
+                        > MAX_FINDINGS_METADATA_BYTES
+                    ):
+                        findings = []
+                        status = "failed"
+                        diagnostic_code = "metadata_limit_exceeded"
+                    else:
+                        total_findings += len(findings)
+                        finding_metadata_bytes += sum(finding_sizes)
+                        status = "complete"
+                        diagnostic_code = None
+                except KeyboardInterrupt:
+                    cancelled = True
+                    findings = []
+                    status = "failed"
+                    diagnostic_code = "cancelled"
+                except ScannerExecutionError as exc:
+                    findings = []
+                    status = "failed"
+                    diagnostic_code = exc.code
+                except Exception:
+                    findings = []
+                    status = "failed"
+                    diagnostic_code = "execution_failed"
+            if cancelled:
+                for future in futures.values():
+                    future.cancel()
+            component_results.append(
+                {
+                    "name": name,
+                    "status": status,
+                    "compatibility_key": component["compatibility_key"],
+                    "covered_paths": component["covered_paths"],
+                    "deleted_paths": component["deleted_paths"],
+                    "iac_units": component["iac_units"],
+                    "findings": findings,
+                    "diagnostic_code": diagnostic_code,
+                }
+            )
 
     body = {
         "schema_version": RESULT_VERSION,

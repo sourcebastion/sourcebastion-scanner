@@ -40,14 +40,19 @@ git -C "$work/source" init -q
 git -C "$work/source" add .
 git -C "$work/source" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm fixture
 
+# Exercise both execution modes with the same immutable inputs and advisory generation.
+for scanner_workers in 1 3; do
+mkdir -m 700 "$work/output/$scanner_workers"
+echo "Hosted scanner component workers: $scanner_workers"
 docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  -e "SOURCEBASTION_SCANNER_WORKERS=$scanner_workers" \
   -e SOURCEBASTION_SCAN_OFFLINE=1 -e GRYPE_DB_AUTO_UPDATE=false \
   -e GRYPE_CHECK_FOR_APP_UPDATE=false -e GRYPE_DB_CACHE_DIR=/advisories \
   --network none -v "$work/source:/workspace:ro" \
-  -v "$database:/advisories:ro" -v "$work/output:/out" \
+  -v "$database:/advisories:ro" -v "$work/output/$scanner_workers:/out" \
   -w /workspace "$image" scan . --severity all --output /out/vulnerabilities.json
 
-python3 - "$work/output/vulnerabilities.json" <<'PY'
+python3 - "$work/output/$scanner_workers/vulnerabilities.json" <<'PY'
 import collections
 import json
 import sys
@@ -63,6 +68,18 @@ for package in ('requests', 'vm2'):
         f'{package} vulnerabilities missing from read-only manifest scan'
     )
 print(f'Offline hosted scan reported findings from all four components: {dict(counts)}')
+PY
+done
+
+python3 - "$work/output/1/vulnerabilities.json" "$work/output/3/vulnerabilities.json" <<'PY'
+from collections import Counter
+import json
+import sys
+
+reports = [json.load(open(path))['vulnerabilities'] for path in sys.argv[1:]]
+identities = [Counter(finding['finding_id'] for finding in report) for report in reports]
+assert identities[0] == identities[1], 'parallel execution changed hosted finding identities'
+print('Serial and parallel hosted scans preserve the complete finding identity multiset')
 PY
 test ! -e "$work/source/.grype-deps"
 test ! -e "$work/source/node_modules"

@@ -1493,3 +1493,74 @@ def test_semgrep_partial_parse_warning_does_not_claim_complete_coverage(tmp_path
     assert component["diagnostic_code"] == "execution_failed"
     assert component["findings"] == []
     assert output_paths and all(not path.exists() for path in output_paths)
+
+
+@pytest.mark.parametrize("failed", [False, True])
+def test_parallel_plan_overlaps_tools_and_preserves_failure_and_plan_order(tmp_path, monkeypatch, failed):
+    import threading
+    from sourcebastion.external_scanners import SemgrepScanner, KicsScanner, GrypeScanner, ScannerExecutionError
+    from sourcebastion.incremental_contract import execute_scan_plan
+
+    source, head_sha = _source_tree(tmp_path)
+    plan = _full_plan(head_sha)
+    names = ["grype", "kics", "semgrep"]
+    plan["scanner"]["enabled_components"] = names
+    template = plan["components"][0]
+    plan["components"] = [{**template, "name": name} for name in names]
+    _redigest(plan)
+    barrier = threading.Barrier(3, timeout=3)
+    deadlines = []
+    lock = threading.Lock()
+
+    def scan(name):
+        def run(self, path):
+            with lock:
+                deadlines.append(self._execution_deadline)
+            barrier.wait()
+            if failed and name == "kics":
+                raise ScannerExecutionError(name, "timeout")
+            return []
+        return run
+
+    monkeypatch.setenv("SOURCEBASTION_SCANNER_WORKERS", "3")
+    for cls, name in [(SemgrepScanner, "semgrep"), (KicsScanner, "kics"), (GrypeScanner, "grype")]:
+        monkeypatch.setattr(cls, "scan", scan(name))
+    envelope = execute_scan_plan(str(source), plan, scanner_image=SCANNER_IMAGE)
+    assert len(deadlines) == 3 and len(set(deadlines)) == 1
+    assert [item["name"] for item in envelope["components"]] == names
+    assert [item["status"] for item in envelope["components"]] == (
+        ["complete", "failed", "complete"] if failed else ["complete"] * 3
+    )
+    if failed:
+        assert envelope["components"][1]["diagnostic_code"] == "timeout"
+
+
+@pytest.mark.parametrize("out_of_scope", [False, True])
+def test_parallel_partial_plan_keeps_scope_validation(tmp_path, monkeypatch, out_of_scope):
+    import threading
+    from sourcebastion.external_scanners import SemgrepScanner
+    from sourcebastion.incremental_contract import execute_scan_plan
+
+    source, head_sha = _source_tree(tmp_path)
+    plan = _partial_sast_plan(head_sha)
+    barrier = threading.Barrier(2, timeout=3)
+
+    def scan_paths(self, path, paths):
+        assert paths == ["app.py"]
+        barrier.wait()
+        return [{"scanner": self.name, "rule_id": "synthetic-rule", "line": 1,
+                 "file": "outside.py" if out_of_scope else "app.py"}]
+
+    monkeypatch.setenv("SOURCEBASTION_SCANNER_WORKERS", "3")
+    monkeypatch.setattr(GitleaksScanner, "scan_paths", scan_paths)
+    monkeypatch.setattr(SemgrepScanner, "scan_paths", scan_paths)
+    envelope = execute_scan_plan(str(source), plan, scanner_image=SCANNER_IMAGE)
+    assert [item["name"] for item in envelope["components"]] == ["gitleaks", "semgrep"]
+    for item in envelope["components"]:
+        if out_of_scope:
+            assert item["status"] == "failed"
+            assert item["diagnostic_code"] == "finding_scope_mismatch"
+            assert item["findings"] == []
+        else:
+            assert item["status"] == "complete"
+            assert item["findings"][0]["file"] == "app.py"

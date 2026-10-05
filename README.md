@@ -198,6 +198,20 @@ The legacy `ghcr.io/ez-appsec/ez-appsec` images remain available for existing
 immutable pins while consumers migrate; new integrations should use the
 SourceBastion namespace.
 
+### Parallel scanner components
+
+Set `SOURCEBASTION_SCANNER_WORKERS=3` to run up to three enabled scanner tools
+at once within a single scan. Values from 1 to 3 are accepted; the default is
+1. For Docker, pass `-e SOURCEBASTION_SCANNER_WORKERS=3` to the scanner container.
+This applies to both `scan` and `contract-scan`, including partial component
+execution. It does not change the number of repository jobs running at once.
+
+Findings keep their configured or plan order. Component timeouts and the scan
+plan deadline still apply, and any failed component prevents a complete scan.
+Already-running tools finish within their existing timeouts before failed raw
+outputs are removed. Parallel tools share CPU and memory, so measure throughput
+and memory on the intended worker before enabling this setting.
+
 ### External advisories for hosted and offline scans
 
 Grype advisories are separate from the scanner image. Refresh them in a trusted

@@ -10,8 +10,10 @@ S01 [#89](https://github.com/sourcebastion/sourcebastion-scanner/issues/89).
 The production adapter must return a versioned envelope with independent
 `inventory_status`, `sbom_status` and `matching_status`. Each status is one of
 `complete`, `partial`, `failed`, `not-run`. An empty vulnerability list proves
-none of the other statuses. Overall coverage can be complete only when discovery,
-each selected parser, graph construction and all relevant budgets complete.
+none of the other statuses. Coverage has separate discovery, parsing, enumeration,
+version selection, graph and environment fidelity axes. Parsing all selected
+inputs does not establish a complete resolved graph. A flat requirements file
+can have complete declared-pin enumeration and an explicitly unknown graph.
 
 Each discovered input has a repository-relative path, content SHA256, format and
 parser/registry version, root identity, disposition (`parsed`, `declaration-only`,
@@ -57,6 +59,27 @@ implementation, OS, architecture and selected extras/groups. Without a supplied
 target, inventory retains conditional declarations and reports activation as
 unknown. Running the evaluator on Linux/Python 3.13 does not select a customer's
 target environment or satisfy native scanner-image Python 3.14 acceptance.
+
+Corpus v2 root policy: roots are **analysis scopes**, not asserted project
+identities. Independently selected inputs in a directory share that directory's
+scope; explicit include/constraint targets inherit the referring scope. Paired
+manifest/lock files share a scope. First-party applications require manifest/root
+evidence and are recorded separately. This policy deliberately separates `a/`
+and `b/` dependency inputs and hidden/build directories, without claiming each
+directory is a project. Files reused through multiple roots must retain multiple
+occurrences. A future explicit configuration may group inputs differently; that
+configuration participates in cache identity and must be tested independently.
+
+Generic requirement filenames do not establish runtime/development/build scope
+or direct/transitive application relationships: both remain unknown unless
+format fields or reviewed configuration prove them. An exact pin is retained as
+a declared selection. A Go `require vX` is a declared minimum under MVS, and
+cannot become a resolved selection without the required module graph. Python
+compatibility declarations (including lock-level `requires-python`) are retained
+separately from PEP 508 markers, with unknown activation when no target is given.
+Occurrence `requires_python` is package-level metadata, not a copied root policy.
+Root applicability and package compatibility are independently located in
+`environment_records`; uv's root restriction does not become package metadata.
 
 The S01 evaluator only accepts its synthetic built-in corpus. It uses user,
 network, mount and PID namespaces, a read-only/noexec source mount, a scrubbed

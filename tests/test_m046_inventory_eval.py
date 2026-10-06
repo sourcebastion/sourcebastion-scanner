@@ -4,12 +4,16 @@ import copy
 import json
 import os
 from pathlib import Path
+import signal
+import subprocess
 import sys
 import time
 
 import pytest
 
 from evaluation.m046.corpus import CORPUS
+from evaluation.m046.oracle import DIMENSIONS
+from evaluation.m046.performance_corpus import generate
 from evaluation.m046.run import compare, execute, identity, materialize, normalize, projection, snapshot, validate_case
 from evaluation.m046.summarize import summarize
 
@@ -49,7 +53,7 @@ def test_materializer_refuses_path_escape(tmp_path, path):
 
 
 def test_materializer_refuses_arbitrary_symlink_target(tmp_path):
-    fixture = copy.deepcopy(CORPUS[-2])
+    fixture = copy.deepcopy(next(fixture for fixture in CORPUS if fixture["id"] == "symlink-escape"))
     fixture["symlinks"] = {"requirements.txt": "/etc/passwd"}
     with pytest.raises(ValueError, match="unapproved synthetic symlink"):
         materialize(fixture, tmp_path / "source")
@@ -86,7 +90,7 @@ def test_projection_refuses_unsupported_semantics_and_prose(tmp_path, content):
 
 def test_projection_does_not_follow_escape_or_cycle(tmp_path):
     root = tmp_path / "source"
-    materialize(CORPUS[-2], root)
+    materialize(next(fixture for fixture in CORPUS if fixture["id"] == "symlink-escape"), root)
     before = snapshot(root)
     assert projection(root) == []
     assert snapshot(root) == before
@@ -141,6 +145,54 @@ def test_non_object_json_output_is_rejected():
         normalize([], "syft")
 
 
+def test_application_components_have_same_role_in_metadata_and_top_level():
+    component = {"bom-ref": "fixture", "purl": "pkg:npm/fixture@1.0.0", "type": "application"}
+    for document in ({"metadata": {"component": component}}, {"components": [component]}):
+        result = normalize(document, "cdxgen")
+        assert result["packages"] == []
+        assert result["application_identities"] == ["npm:fixture@1.0.0"]
+
+
+def test_flat_stock_output_cannot_pass_full_contract_even_for_empty_negative_case():
+    expected = next(fixture["expected"] for fixture in CORPUS if fixture["id"] == "python-constraint-only")
+    result = compare(expected, normalize({"components": []}, "cdxgen"))
+    assert result["missing_packages"] == []
+    assert not result["full_contract_agreement"]
+    assert all(record["status"] == "unreported" for record in result["semantic_dimensions"].values())
+
+
+@pytest.mark.parametrize("lost_semantics", ["root", "scope", "marker", "extras", "selection", "locator"])
+def test_semantic_comparison_detects_identity_preserving_occurrence_loss(lost_semantics):
+    expected = next(fixture["expected"] for fixture in CORPUS if fixture["id"] == "python-identical-multiple-roots")
+    observed = {
+        "packages": expected["packages"],
+        "edges": expected["edges"],
+        "application_identities": [],
+        "semantic_dimensions": {dimension: copy.deepcopy(expected[dimension]) for dimension in DIMENSIONS},
+    }
+    assert compare(expected, observed)["full_contract_agreement"]
+    observed["semantic_dimensions"]["occurrences"][1][lost_semantics] = "changed"
+    result = compare(expected, observed)
+    assert result["missing_packages"] == []
+    assert not result["full_contract_agreement"]
+    assert not result["semantic_dimensions"]["occurrences"]["agreement"]
+
+
+def test_semantic_comparison_preserves_duplicate_occurrence_count_and_input_reason():
+    expected = next(fixture["expected"] for fixture in CORPUS if fixture["id"] == "python-identical-multiple-roots")
+    observed = {
+        "packages": expected["packages"],
+        "edges": expected["edges"],
+        "application_identities": [],
+        "semantic_dimensions": {dimension: copy.deepcopy(expected[dimension]) for dimension in DIMENSIONS},
+    }
+    observed["semantic_dimensions"]["occurrences"].pop()
+    observed["semantic_dimensions"]["inputs"][1]["reason"] = "silently-skipped"
+    result = compare(expected, observed)
+    assert not result["semantic_dimensions"]["occurrences"]["agreement"]
+    assert not result["semantic_dimensions"]["inputs"]["agreement"]
+
+
 def test_summary_does_not_count_a_partial_failed_repeat_as_agreement():
     record = {
         "fixture": "sample",
@@ -164,6 +216,30 @@ def test_summary_does_not_count_a_partial_failed_repeat_as_agreement():
     assert result["exact_package_edge_agreements"] == 0
     assert result["fixtures"]["sample"]["repeat_equal"] is None
     assert result["coverage_assessment"] == "pending"
+
+
+def test_summary_scores_every_valid_repeat_against_oracle():
+    good = {
+        "fixture": "sample",
+        "expected": {"packages": []},
+        "observed": {"packages": [], "edges": []},
+        "comparison": {"missing_packages": [], "extra_packages": [], "missing_edges": [], "extra_edges": []},
+        "metrics": {"exit_code": 0, "timed_out": False, "wall_seconds": 1, "max_child_rss_kib": 100},
+        "source_unchanged": True,
+    }
+    different = copy.deepcopy(good)
+    different["observed"]["packages"] = ["pypi:unexpected@1.0.0"]
+    different["comparison"]["extra_packages"] = ["pypi:unexpected@1.0.0"]
+    report = {
+        "records": [good, different],
+        "engine": "sample",
+        "binary_sha256": "binary",
+        "corpus_sha256": "corpus",
+        "architecture": "test",
+    }
+    result = summarize(report)
+    assert result["fixtures"]["sample"]["repeat_equal"] is False
+    assert result["exact_package_edge_agreements"] == 0
 
 
 @pytest.mark.integration
@@ -225,3 +301,111 @@ time.sleep(60)
     while child.exists() and time.monotonic() < deadline:
         time.sleep(0.05)
     assert not child.exists(), "descendant survived namespace teardown"
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    "termination,blocked", [(signal.SIGTERM, False), (signal.SIGKILL, False), (signal.SIGKILL, True)]
+)
+def test_native_supervisor_death_stops_session_escaping_descendant(tmp_path, termination, blocked):
+    tracer = os.environ.get("M046_STRACE")
+    if not tracer:
+        pytest.skip("opt-in native namespace proof requires M046_STRACE")
+    source, scratch = tmp_path / "source", tmp_path / "run"
+    source.mkdir()
+    scratch.mkdir()
+    child_pid_file = scratch / "child-host-pid"
+    child_code = f"""import os, time
+from pathlib import Path
+if os.fork() == 0:
+    os.setsid()
+    status = Path("/proc/self/status").read_text()
+    host_pid = next(line.split()[1] for line in status.splitlines() if line.startswith("NSpid:"))
+    Path({str(child_pid_file)!r}).write_text(host_pid)
+time.sleep(60)
+"""
+    supervisor_code = f"""from pathlib import Path
+import sys
+import signal
+from evaluation.m046.run import execute
+if {blocked!r}:
+    signal.pthread_sigmask(signal.SIG_BLOCK, {{signal.SIGTERM, signal.SIGINT, signal.SIGHUP}})
+execute(Path({str(source)!r}), Path({str(scratch)!r}), Path({tracer!r}), [sys.executable, "-c", {child_code!r}], 60)
+"""
+    supervisor = subprocess.Popen([sys.executable, "-c", supervisor_code])
+    try:
+        deadline = time.monotonic() + 10
+        while (
+            (not child_pid_file.exists() or not child_pid_file.read_text().isdigit())
+            and time.monotonic() < deadline
+            and supervisor.poll() is None
+        ):
+            time.sleep(0.05)
+        assert child_pid_file.exists(), (scratch / "stderr.log").read_text()
+        child = Path("/proc") / child_pid_file.read_text()
+        assert child.exists()
+        supervisor.send_signal(termination)
+        assert supervisor.wait(timeout=5) == -termination
+        deadline = time.monotonic() + 3
+        while child.exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert not child.exists(), "descendant survived evaluator cancellation"
+    finally:
+        if supervisor.poll() is None:
+            supervisor.kill()
+            supervisor.wait(timeout=5)
+        # Even a failing proof must clean up its controlled probe.
+        if child_pid_file.exists():
+            child_pid = int(child_pid_file.read_text())
+            try:
+                os.kill(child_pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+
+@pytest.mark.integration
+def test_guard_refuses_to_launch_when_supervisor_already_disappeared(tmp_path):
+    marker = tmp_path / "unexpected-launch"
+    script = Path(__file__).resolve().parents[1] / "evaluation/m046/run.py"
+    child = subprocess.run(
+        [sys.executable, str(script), "_guard", "0", sys.executable, "-c", f"open({str(marker)!r}, 'w').close()"],
+        start_new_session=True,
+        timeout=5,
+    )
+    assert child.returncode == -signal.SIGKILL
+    assert not marker.exists()
+
+
+def test_performance_counts_and_digests_are_independent_and_deterministic(tmp_path):
+    spec = {"id": "test-pins", "kind": "pins", "count": 1001, "roots": 10}
+    first = generate(spec, tmp_path / "one")
+    second = generate(spec, tmp_path / "two")
+    assert first == second
+    assert first["expected"]["identities"] == 1001
+    assert first["expected"]["occurrences"] == 1001
+    assert first["expected"]["source_files"] == 10
+    assert first["expected"]["traversal_entries"] == 20
+    assert not (tmp_path / "one" / "one.oracle.json").exists()
+
+
+@pytest.mark.parametrize("count", [2 * 1024 * 1024, 2 * 1024 * 1024 + 1])
+def test_performance_file_boundary_is_exact(tmp_path, count):
+    result = generate({"id": "bytes", "kind": "bytes", "count": count}, tmp_path / "source")
+    assert (tmp_path / "source/requirements.txt").stat().st_size == count
+    assert result["expected"]["max_file_bytes"] == count
+
+
+def test_performance_graph_has_requested_distinct_root_aware_edges(tmp_path):
+    spec = {"id": "edges", "kind": "edges", "count": 501, "roots": 2}
+    manifest = generate(spec, tmp_path / "source")
+    edges = set()
+    for path in (tmp_path / "source").rglob("package-lock.json"):
+        data = json.loads(path.read_text())
+        for parent, package in data["packages"].items():
+            if not parent:
+                continue
+            for child in package.get("dependencies", {}):
+                assert "node_modules/" + child in data["packages"]
+                edges.add((path.parent.name, parent, child))
+    assert len(edges) == manifest["expected"]["edges"] == 501
+    assert manifest["expected"]["identities"] == 202

@@ -34,12 +34,15 @@ def summarize(report):
             "raw_sha256": [run.get("raw_sha256") for run in runs],
             "trace_sha256": [run.get("trace_sha256") for run in runs],
         }
-        row["exact_package_edge_agreement"] = (
-            row["all_outputs_valid"]
-            and comparison is not None
+        row["exact_package_edge_agreement"] = row["all_outputs_valid"] and all(
+            run.get("comparison") is not None
             and not any(
-                comparison[key] for key in ("missing_packages", "extra_packages", "missing_edges", "extra_edges")
+                run["comparison"][key] for key in ("missing_packages", "extra_packages", "missing_edges", "extra_edges")
             )
+            for run in runs
+        )
+        row["full_contract_agreement"] = row["all_outputs_valid"] and all(
+            run.get("comparison", {}).get("full_contract_agreement") is True for run in runs
         )
         rows[name] = row
     metrics = [run["metrics"] for run in records]
@@ -48,6 +51,8 @@ def summarize(report):
         "binary_sha256": report["binary_sha256"],
         "runner_sha256": report.get("runner_sha256"),
         "corpus_sha256": report["corpus_sha256"],
+        "oracle_sha256": report.get("oracle_sha256"),
+        "corpus_data_sha256": report.get("corpus_data_sha256"),
         "entrypoint_sha256": report.get("entrypoint_sha256"),
         "entrypoint_tree_sha256": report.get("entrypoint_tree_sha256"),
         "prepared_tree_unchanged": report.get("prepared_tree_unchanged"),
@@ -55,6 +60,7 @@ def summarize(report):
         "runs": len(records),
         "fixtures": rows,
         "exact_package_edge_agreements": sum(row["exact_package_edge_agreement"] for row in rows.values()),
+        "full_contract_agreements": sum(row["full_contract_agreement"] for row in rows.values()),
         "valid_output_runs": sum("observed" in run and run["metrics"]["exit_code"] == 0 for run in records),
         "median_traced_wall_seconds": statistics.median(metric["wall_seconds"] for metric in metrics),
         "max_traced_wall_seconds": max(metric["wall_seconds"] for metric in metrics),
@@ -102,7 +108,15 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     documents = [json.loads(path.read_text()) for path in args.reports]
-    if len({document["corpus_sha256"] for document in documents}) != 1:
+    if (
+        len(
+            {
+                (document["corpus_sha256"], document.get("oracle_sha256"), document.get("corpus_data_sha256"))
+                for document in documents
+            }
+        )
+        != 1
+    ):
         raise ValueError("cannot compare different corpus revisions")
     if len({document["engine"] for document in documents}) != len(documents):
         raise ValueError("duplicate engine reports")

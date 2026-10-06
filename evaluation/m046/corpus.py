@@ -397,4 +397,126 @@ CORPUS = [
     ),
 ]
 
-VERSION = "m046-corpus-v1"
+for fixture in CORPUS:
+    if fixture["id"] in {"python-pylock", "python-pylock-variant"}:
+        fixture["expected"]["disposition"] = "unsupported"
+        fixture["expected"]["note"] = "Enumeration fragment: missing source records; not a complete reproducible lock."
+    elif fixture["id"].startswith("node-npm-"):
+        fixture["expected"]["note"] = "Enumeration fragment without paired manifest/root metadata."
+    elif fixture["id"] in {"go-module", "go-indirect"}:
+        fixture["expected"]["packages"] = []
+        fixture["expected"]["disposition"] = "declaration-only"
+        fixture["expected"]["declarations"] = ["golang:golang.org/x/text:>=v0.18.0"]
+        fixture["expected"]["note"] = "go.mod require records a minimum; the transitive MVS graph is unavailable."
+
+
+CORPUS += [
+    case("python-product-build-input", "python", {"scripts/python-build.in": "pip==26.0.1\n"}, ["pypi:pip@26.0.1"]),
+    case(
+        "python-product-hidden-lock",
+        "python",
+        {".github/python-locks/build.txt": "pip==26.0.1 --hash=sha256:" + "b" * 64 + "\n"},
+        ["pypi:pip@26.0.1"],
+        note="Product filename/version regression; synthetic integrity hash.",
+    ),
+    case("python-pip-extension", "python", {"dependencies.pip": "flask==3.0.3\n"}, ["pypi:flask@3.0.3"]),
+    case(
+        "python-long-options",
+        "python",
+        {
+            "requirements.txt": "--requirement=locks/base.pip\n--constraint constraints.txt\n",
+            "locks/base.pip": "requests>=2.31,<3\n",
+            "constraints.txt": "requests==2.32.3\n",
+        },
+        ["pypi:requests@2.32.3"],
+        note="Constraint refines declaration; does not independently install packages.",
+    ),
+    case(
+        "python-conflicting-constraint",
+        "python",
+        {"requirements.txt": "requests==2.32.3\n--constraint=constraints.txt\n", "constraints.txt": "requests<2.32\n"},
+        disposition="malformed",
+        note="Contradictory declaration/constraint cannot be matched as a selected package.",
+    ),
+    case(
+        "python-marker-alternatives",
+        "python",
+        {"requirements.txt": 'requests==2.31.0; python_version < "3.12"\nrequests==2.32.3; python_version >= "3.12"\n'},
+        ["pypi:requests@2.31.0", "pypi:requests@2.32.3"],
+        note="No target environment supplied; retain both mutually exclusive occurrences with unknown activation.",
+    ),
+    case(
+        "python-identical-multiple-roots",
+        "python",
+        {"a/requirements.txt": "requests==2.32.3\n", "b/requirements.txt": "requests==2.32.3\n"},
+        ["pypi:requests@2.32.3"],
+        note="One identity, two independently evidenced root occurrences.",
+    ),
+    case(
+        "python-pylock-complete",
+        "python",
+        {
+            "pylock.toml": 'lock-version="1.0"\ncreated-by="fixture"\n[[packages]]\nname="requests"\nversion="2.32.3"\n'
+            'dependencies=[{name="urllib3",version="2.2.2"}]\n'
+            'wheels=[{name="requests-2.32.3-py3-none-any.whl",url="https://packages.invalid/requests.whl",hashes={sha256="'
+            + "a" * 64
+            + '"}}]\n'
+            '[[packages]]\nname="urllib3"\nversion="2.2.2"\n'
+            'wheels=[{name="urllib3-2.2.2-py3-none-any.whl",url="https://packages.invalid/urllib3.whl",hashes={sha256="'
+            + "b" * 64
+            + '"}}]\n'
+        },
+        ["pypi:requests@2.32.3", "pypi:urllib3@2.2.2"],
+        edges=[["pypi:requests@2.32.3", "pypi:urllib3@2.2.2"]],
+        note="Complete structural sources/hashes, synthetic URLs; no fetch or wheel integrity claim.",
+    ),
+    case(
+        "python-pylock-variant-complete",
+        "python",
+        {
+            "pylock.dev.toml": 'lock-version="1.0"\ncreated-by="fixture"\n[[packages]]\nname="pytest"\nversion="8.3.3"\n'
+            'wheels=[{name="pytest-8.3.3-py3-none-any.whl",url="https://packages.invalid/pytest.whl",hashes={sha256="'
+            + "c" * 64
+            + '"}}]\n'
+        },
+        ["pypi:pytest@8.3.3"],
+        note="Filename variant with complete structural source; synthetic hash/URL.",
+    ),
+    case(
+        "node-npm-complete",
+        "node",
+        {
+            "package.json": json.dumps({"name": "fixture", "version": "1.0.0", "dependencies": {"debug": "^4.3.7"}}),
+            "package-lock.json": json.dumps(
+                {
+                    "name": "fixture",
+                    "version": "1.0.0",
+                    "lockfileVersion": 3,
+                    "requires": True,
+                    "packages": {
+                        "": {"name": "fixture", "version": "1.0.0", "dependencies": {"debug": "^4.3.7"}},
+                        "node_modules/debug": {
+                            "version": "4.3.7",
+                            "resolved": "https://packages.invalid/debug.tgz",
+                            "dependencies": {"ms": "^2.1.3"},
+                        },
+                        "node_modules/ms": {"version": "2.1.3", "resolved": "https://packages.invalid/ms.tgz"},
+                    },
+                }
+            ),
+        },
+        ["npm:debug@4.3.7", "npm:ms@2.1.3"],
+        edges=[["npm:debug@4.3.7", "npm:ms@2.1.3"]],
+        note="Paired manifest/lock with first-party root. Synthetic registry sources, never resolved online.",
+    ),
+]
+
+if __package__:
+    from .oracle import enrich
+else:
+    from oracle import enrich
+
+for fixture in CORPUS:
+    enrich(fixture)
+
+VERSION = "m046-corpus-v2"

@@ -5,6 +5,7 @@ read-only fixture. Network and PID namespaces are required, never optional.
 """
 
 import argparse
+import ctypes
 import hashlib
 import json
 import os
@@ -19,8 +20,10 @@ from urllib.parse import unquote
 
 if __package__:
     from .corpus import CORPUS, VERSION
+    from .oracle import DIMENSIONS
 else:
     from corpus import CORPUS, VERSION
+    from oracle import DIMENSIONS
 
 
 MAX_FILE = 2 * 1024 * 1024
@@ -55,6 +58,20 @@ def validate_case(fixture):
     for parent, child in expected["edges"]:
         if parent not in identities or child not in identities:
             raise ValueError("edge endpoint absent from oracle")
+    if set(paths) != {record["path"] for record in expected["inputs"]}:
+        raise ValueError("per-input oracle does not cover fixture paths")
+    if identities != {record["package"] for record in expected["occurrences"]}:
+        raise ValueError("occurrences do not cover expected identities")
+    for record in expected["occurrences"]:
+        if record["path"] not in fixture["files"] or record["root"] not in expected["roots"]:
+            raise ValueError("occurrence source/root absent from oracle")
+    for record in expected["relationships"]:
+        for endpoint in (record["parent"], record["child"]):
+            if not any(
+                occurrence["package"] == endpoint and occurrence["root"] == record["root"]
+                for occurrence in expected["occurrences"]
+            ):
+                raise ValueError("relationship has no occurrence in its root")
 
 
 def materialize(fixture, destination):
@@ -156,6 +173,7 @@ def normalize(document, kind):
     if not isinstance(document, dict):
         raise ValueError("inventory output must be a JSON object")
     packages = set()
+    applications = set()
     edges = set()
     refs = {}
     locations = {}
@@ -172,14 +190,23 @@ def normalize(document, kind):
                 edges.add((refs[edge["child"]], refs[edge["parent"]]))
     else:
 
-        def collect(components):
+        def collect(components, metadata_root=False):
             for package in components:
                 key = identity(package.get("purl"))
                 if key:
-                    packages.add(key)
-                    refs[package.get("bom-ref", package.get("purl"))] = key
+                    # Explicit component role/structure, independent of oracle
+                    # membership. Application components are never external
+                    # libraries merely because an exporter moves their record.
+                    if metadata_root or package.get("type") == "application":
+                        applications.add(key)
+                    else:
+                        packages.add(key)
+                        refs[package.get("bom-ref", package.get("purl"))] = key
                 collect(package.get("components", []))
 
+        component = document.get("metadata", {}).get("component")
+        if component:
+            collect([component], metadata_root=True)
         collect(document.get("components", []))
         for dependency in document.get("dependencies", []):
             parent = refs.get(dependency["ref"])
@@ -191,6 +218,10 @@ def normalize(document, kind):
         "packages": sorted(packages),
         "edges": [list(edge) for edge in sorted(edges)],
         "locations": {key: sorted(paths) for key, paths in sorted(locations.items())},
+        "application_identities": sorted(applications),
+        # Exporter JSON does not imply source roots/scopes/input outcomes. The
+        # substantive adapter must emit the independently compared dimensions.
+        "semantic_dimensions": {dimension: None for dimension in DIMENSIONS},
         "coverage": "unassessed",
     }
 
@@ -198,7 +229,7 @@ def normalize(document, kind):
 def compare(expected, observed):
     packages = set(observed["packages"])
     edges = set(map(tuple, observed["edges"]))
-    return {
+    result = {
         "missing_packages": sorted(set(expected["packages"]) - packages),
         "extra_packages": sorted(packages - set(expected["packages"])),
         "missing_edges": sorted(set(map(tuple, expected["edges"])) - edges),
@@ -206,6 +237,52 @@ def compare(expected, observed):
         "coverage": "unassessed",  # Never infer coverage from empty inventory or exit 0.
         "declarations": "unassessed",
     }
+    expected_applications = {record["identity"] for record in expected.get("applications", [])}
+    observed_applications = set(observed.get("application_identities", []))
+    result["missing_applications"] = sorted(expected_applications - observed_applications)
+    result["extra_applications"] = sorted(observed_applications - expected_applications)
+    result["semantic_dimensions"] = {}
+    for dimension in DIMENSIONS:
+        wanted = expected.get(dimension)
+        actual = observed.get("semantic_dimensions", {}).get(dimension)
+        if wanted is None or actual is None:
+            result["semantic_dimensions"][dimension] = {"status": "unreported", "agreement": False}
+            continue
+        if dimension == "fidelity":
+            result["semantic_dimensions"][dimension] = {
+                "status": "compared",
+                "agreement": wanted == actual,
+                "expected": wanted,
+                "observed": actual,
+            }
+        else:
+            # Preserve multiplicity. Identity sets cannot detect lost duplicate
+            # occurrences, multiple roots or overlapping environment records.
+            from collections import Counter
+
+            canonical = lambda values: Counter(
+                json.dumps(value, sort_keys=True, separators=(",", ":")) for value in values
+            )
+            missing = list((canonical(wanted) - canonical(actual)).elements())
+            extra = list((canonical(actual) - canonical(wanted)).elements())
+            result["semantic_dimensions"][dimension] = {
+                "status": "compared",
+                "agreement": not missing and not extra,
+                "missing": [json.loads(value) for value in sorted(missing)],
+                "extra": [json.loads(value) for value in sorted(extra)],
+            }
+    result["full_contract_agreement"] = not any(
+        result[key]
+        for key in (
+            "missing_packages",
+            "extra_packages",
+            "missing_edges",
+            "extra_edges",
+            "missing_applications",
+            "extra_applications",
+        )
+    ) and all(record["agreement"] for record in result["semantic_dimensions"].values())
+    return result
 
 
 def sandbox(source, scratch, tracer, command):
@@ -255,6 +332,10 @@ def sandbox(source, scratch, tracer, command):
 def execute(source, scratch, tracer, command, timeout):
     script = str(Path(__file__).resolve())
     invocation = [
+        sys.executable,
+        script,
+        "_guard",
+        str(os.getpid()),
         "unshare",
         "-Urnmpf",
         "--kill-child=KILL",
@@ -297,6 +378,40 @@ def execute(source, scratch, tracer, command, timeout):
     }
 
 
+def guard(supervisor_pid, invocation):
+    """Kill the dedicated job group on supervisor death, including SIGKILL.
+
+    This guardian stays outside the new user/PID namespaces, so credential
+    transitions in unshare cannot clear its parent-death signal. No candidate
+    starts until the signal and race-closing parent check are both installed.
+    """
+    if os.getpid() != os.getpgrp() or os.getpid() != os.getsid(0):
+        raise RuntimeError("guardian requires a dedicated session")
+
+    def cancel(_signum, _frame):
+        os.killpg(os.getpgrp(), signal.SIGKILL)
+
+    signal.signal(signal.SIGTERM, cancel)
+    signal.signal(signal.SIGINT, cancel)
+    signal.signal(signal.SIGHUP, cancel)
+    # Masks survive exec. A worker's blocked signals must not leave the
+    # kernel's parent-death SIGTERM pending forever.
+    signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGTERM, signal.SIGINT, signal.SIGHUP})
+    libc = ctypes.CDLL(None, use_errno=True)
+    # Linux PR_SET_PDEATHSIG. Failure is fatal; containment is never optional.
+    if libc.prctl(1, int(signal.SIGTERM), 0, 0, 0) != 0:
+        raise OSError(ctypes.get_errno(), "PR_SET_PDEATHSIG")
+    if os.getppid() != supervisor_pid:
+        cancel(None, None)
+    child = subprocess.Popen(invocation)
+    status = child.wait()
+    # Reproduce child signal termination rather than obscuring it as exit 137.
+    if status < 0:
+        signal.signal(-status, signal.SIG_DFL)
+        os.kill(os.getpid(), -status)
+    raise SystemExit(status)
+
+
 def run(args):
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
@@ -311,6 +426,8 @@ def run(args):
     if prepared_tree and tree_digest(prepared_tree) != args.entrypoint_tree_sha256:
         raise ValueError("prepared entrypoint tree SHA256 mismatch")
     corpus_hash = digest(Path(__file__).with_name("corpus.py"))
+    oracle_hash = digest(Path(__file__).with_name("oracle.py"))
+    corpus_data_hash = hashlib.sha256(json.dumps(CORPUS, sort_keys=True).encode()).hexdigest()
     runner_hash = digest(Path(__file__))
     records = []
     selected = [fixture for fixture in CORPUS if not args.fixture or fixture["id"] in args.fixture]
@@ -414,6 +531,8 @@ def run(args):
                     {
                         "corpus": VERSION,
                         "corpus_sha256": corpus_hash,
+                        "oracle_sha256": oracle_hash,
+                        "corpus_data_sha256": corpus_data_hash,
                         "runner_sha256": runner_hash,
                         "engine": args.engine,
                         "binary_sha256": args.sha256,
@@ -443,6 +562,9 @@ def run(args):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "_guard":
+        guard(int(sys.argv[2]), sys.argv[3:])
+        return
     if len(sys.argv) > 1 and sys.argv[1] == "_sandbox":
         sandbox(*(Path(value) for value in sys.argv[2:5]), sys.argv[5:])
         return

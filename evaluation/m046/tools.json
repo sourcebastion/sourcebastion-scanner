@@ -31,10 +31,16 @@
       "source_commit": "c421bee3c558c457b7b3c891d3200d1f910d93c4",
       "go_version": "1.27.1",
       "go_amd64_archive_sha256": "63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445",
-      "build_flags": ["-p", "2", "-tags=http2legacy", "-trimpath"],
+      "build_flags": [
+        "-p",
+        "2",
+        "-tags=http2legacy",
+        "-trimpath"
+      ],
       "amd64_binary_sha256": "7854542d5b19c853f8c207f97d90261590bda5295593b9da126b89edfbfff00c",
       "amd64_binary_bytes": 69608556,
-      "arm64_native_acceptance": "pending"
+      "arm64_native_acceptance": "pending",
+      "go_arm64_archive_sha256": "3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec"
     }
   },
   "diagnostics": {

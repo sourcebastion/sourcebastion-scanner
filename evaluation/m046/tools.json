@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "status": "evaluation-pins-only",
+  "tools": {
+    "syft": {
+      "version": "1.54.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/anchore/syft/tree/v1.54.0",
+      "amd64_asset": "https://github.com/anchore/syft/releases/download/v1.54.0/syft_1.54.0_linux_amd64.tar.gz",
+      "amd64_archive_sha256": "54a87372498168b2d033e876fd41fa4e8035b872699e525a57046e1f2f09c860",
+      "amd64_binary_sha256": "d46a9a61a6ae3d367f0a03748c5e9c59253e586c4388ab26ddcacebc2efa0d92",
+      "arm64_archive_sha256": "ee6d4566373a05b344bc6b5f1706f14419bf9338ba39ff686e247deefe9b8818"
+    },
+    "cdxgen": {
+      "version": "13.3.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/cdxgen/cdxgen/tree/v13.3.0",
+      "amd64_asset": "https://github.com/cdxgen/cdxgen/releases/download/v13.3.0/cdxgen-linux-amd64",
+      "amd64_binary_sha256": "1a1decfa0236284e12797f120d8638608af76a91baa4b17a244948182ca47952",
+      "amd64_binary_bytes": 175887723,
+      "prepared_node_version": "24.21.0",
+      "prepared_node_sha256": "6af9d37c09a8fca824c5e21b24addbd2b6336145b410fe4a283a9a1fefc337a5",
+      "prepared_entrypoint_sha256": "b484eeaf6c1ed5e98f876b8aafdef89f1800d0c7f229fddcfd42395d5bd9e1d8",
+      "prepared_tree_sha256": "07cf4657a616fa4a913f73563d35abe3bdf818991fb2be805bde14bb8d951e8c",
+      "arm64_binary_sha256": "493aac45295aa22a3cba7fbabe336ee6dffa87e860ba032e471147dc533d429b"
+    },
+    "scalibr": {
+      "version": "0.5.3",
+      "license": "Apache-2.0",
+      "source": "https://github.com/google/osv-scalibr/tree/v0.5.3",
+      "source_commit": "c421bee3c558c457b7b3c891d3200d1f910d93c4",
+      "go_version": "1.27.1",
+      "go_amd64_archive_sha256": "63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445",
+      "build_flags": ["-p", "2", "-tags=http2legacy", "-trimpath"],
+      "amd64_binary_sha256": "7854542d5b19c853f8c207f97d90261590bda5295593b9da126b89edfbfff00c",
+      "amd64_binary_bytes": 69608556,
+      "arm64_native_acceptance": "pending"
+    }
+  },
+  "diagnostics": {
+    "strace_version": "6.13+ds-1 Debian trixie amd64",
+    "strace_binary_sha256": "69f88291a4e47f258b8e32b089c919a247509f063ef3d6afe5389939051102b3"
+  }
+}

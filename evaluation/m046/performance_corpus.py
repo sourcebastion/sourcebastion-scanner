@@ -33,7 +33,7 @@ def hash_records(records):
 def generate(spec, destination):
     destination.mkdir(parents=True, exist_ok=False)
     file_hashes = {}
-    packages, relationships, occurrences = set(), [], []
+    packages, relationships, application_edges, occurrences = set(), [], [], []
 
     def write(path, text):
         target = destination / path
@@ -76,7 +76,8 @@ def generate(spec, destination):
         # evidenced edges so every source stays below the 2 MiB file budget.
         roots = spec["roots"]
         for root in range(roots):
-            graph_count = count // roots + (1 if root < count % roots else 0)
+            # The proposed graph budget includes root->dependency edges.
+            graph_count = count // roots + (1 if root < count % roots else 0) - 1
             name = f"m046-root-{root:03d}"
             nodes = {f"node_modules/{name}-p{i:03d}": {"version": "1.0.0", "dependencies": {}} for i in range(101)}
             root_packages = [f"npm:{name}-p{i:03d}@1.0.0" for i in range(101)]
@@ -88,6 +89,7 @@ def generate(spec, destination):
                 nodes[f"node_modules/{name}-p{parent:03d}"]["dependencies"][f"{name}-p{child:03d}"] = "1.0.0"
                 relationships.append((name, root_packages[parent], root_packages[child]))
             nodes[""] = {"name": name, "version": "1.0.0", "dependencies": {f"{name}-p000": "1.0.0"}}
+            application_edges.append((name, f"npm:{name}@1.0.0", root_packages[0]))
             write(
                 f"{name}/package.json",
                 json.dumps({"name": name, "version": "1.0.0", "dependencies": {f"{name}-p000": "1.0.0"}}),
@@ -107,10 +109,13 @@ def generate(spec, destination):
         "expected": {
             "identities": len(packages),
             "occurrences": len(occurrences),
-            "edges": len(relationships),
+            "edges": len(relationships) + len(application_edges),
+            "dependency_edges": len(relationships),
+            "application_edges": len(application_edges),
             "identities_sha256": hash_records(packages),
             "occurrences_sha256": hash_records(occurrences),
             "root_aware_edges_sha256": hash_records(relationships),
+            "all_edges_sha256": hash_records(relationships + application_edges),
             "source_files": len(file_hashes),
             "traversal_entries": sum(1 for _ in destination.rglob("*")),
             "max_file_bytes": max(record["bytes"] for record in file_hashes.values()),

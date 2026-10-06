@@ -56,14 +56,22 @@ jobs:
         run: |
           python -m evaluation.m046.native --manifest "$RUNNER_TEMP/m046-tools/manifest.json" \
             --strace /usr/bin/strace --output "$RUNNER_TEMP/m046-evidence" --repeat 2
+      - name: Package raw evidence without following adversarial links
+        if: always()
+        run: |
+          python -m evaluation.m046.pack_evidence \
+            --root "host=$RUNNER_TEMP/m046-host" \
+            --root "tool-manifest=$RUNNER_TEMP/m046-tools/manifest.json" \
+            --root "prepared-manifest=$RUNNER_TEMP/m046-tools/prepared-manifest.json" \
+            --root "evidence=$RUNNER_TEMP/m046-evidence" \
+            --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
+            --output "$RUNNER_TEMP/m046-native.tar.gz"
       - name: Retain raw native evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: m046-native-${{ matrix.arch }}
           path: |
-            ${{ runner.temp }}/m046-host
-            ${{ runner.temp }}/m046-tools/manifest.json
-            ${{ runner.temp }}/m046-tools/prepared-manifest.json
-            ${{ runner.temp }}/m046-evidence
+            ${{ runner.temp }}/m046-native.tar.gz
+            ${{ runner.temp }}/m046-native.tar.gz.sha256
           retention-days: 7

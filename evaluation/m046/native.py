@@ -3,10 +3,9 @@
 import argparse
 import json
 from pathlib import Path
-import subprocess
 import sys
 
-from .run import digest
+from .run import digest, run_contained
 
 
 def main():
@@ -43,11 +42,10 @@ def main():
         if engine == "cdxgen":
             for flag in ("entrypoint", "entrypoint_sha256", "entrypoint_tree_sha256"):
                 command += ["--" + flag.replace("_", "-"), tool[flag]]
-        subprocess.run(command, check=True)
+        run_contained(command)
         reports.append(str(output / "report.json"))
-    subprocess.run(
+    run_contained(
         [sys.executable, "-m", "evaluation.m046.summarize", *reports, "--output", str(args.output / "comparison")],
-        check=True,
     )
     (args.output / "SHA256SUMS").write_text(
         "".join(

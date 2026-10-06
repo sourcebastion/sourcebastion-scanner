@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "milestone": "M046",
+  "slice": "S01",
+  "reviewer": "/root/m046_independent_review",
+  "review_method": "user-authorized independent agent; read-only source review and native process probes",
+  "date": "2026-10-06",
+  "reviewed_foundation": "accepted",
+  "s01_acceptance": "pending",
+  "engine_selection": "not-accepted",
+  "budgets": "not-frozen",
+  "source_sha256": {
+    "evaluation/m046/corpus.py": "38b945c52283c5533d3850a5f4cd15469d5d3d72cf8bfc5e3f644e898e71bfde",
+    "evaluation/m046/oracle.py": "be958fe98f274e2478fd75bd65cd7cb997740e04be730d7993fa0fe26a792f59",
+    "evaluation/m046/run.py": "a6402e9dfdbc7a68935e18327a50f5b968edb14d6ac730b50a9526b172aa575b",
+    "evaluation/m046/native.py": "909f0a3146b11894c65d7605efa522cb4be25b979368b32d4e77fc0592a52942",
+    "evaluation/m046/prepare.py": "7124bcc5bc3374341c476f83bb8b1ced283e084cf50566d1fd51251a017b8a04",
+    "evaluation/m046/performance_corpus.py": "e4f4c222c1342ce954b5189430d14e5a947e6eafff3ff35d00db4f970958aa59",
+    "evaluation/m046/pack_evidence.py": "13386b3ebdfa3f5b3540478a63de320a8f17279a288c7fdc12d3363c01384570",
+    "evaluation/m046/cgroup_metrics.py": "48abe4d3dda0db3567329f41afc73abc89831ffc23fde5d0f80a15d6e89d4919",
+    ".github/workflows/m046-evaluation.yml": "cd5e7134ac6cba0cdf7b2fa3b6082c403fe267806bcce6a37f8cd2ef9cb1e293"
+  },
+  "independent_test_evidence": {
+    "focused_native_tests_passed": 53,
+    "proofs": [
+      "supervisor SIGTERM and SIGKILL",
+      "inherited blocked cancellation signals",
+      "startup parent disappearance",
+      "session-escaping descendants",
+      "top-level native orchestrator death",
+      "semantic multiplicity and repeat comparison"
+    ]
+  },
+  "resolved_findings": [
+    "evaluator and orchestrator orphan processes",
+    "repeat scorer ignores later valid mismatch",
+    "per-input/root/scope/marker/extras/selection comparison missing",
+    "exporter application root role discrepancy",
+    "incomplete positive fixtures and product filename regressions",
+    "ambient Go build overrides and module mutation",
+    "stress graph excludes application-root edges",
+    "artifact upload follows synthetic symlink cycle",
+    "special/dangling evidence roots",
+    "evidence checksum/read substitution race"
+  ],
+  "remaining_gates": [
+    "substantive extended-Syft and adapter semantic agreement",
+    "exact-head raw native artifact retention",
+    "untraced aggregate cgroup performance and overflow proofs",
+    "actual per-architecture image-layer deltas",
+    "reviewed architecture decision and frozen budgets",
+    "S02 through S07 release/dev/human/rollback acceptance"
+  ],
+  "separate_pending_review": [],
+  "reviewed_evidence_packaging": "accepted",
+  "cgroup_support": "read-only counters reviewed; no measurement acceptance"
+}

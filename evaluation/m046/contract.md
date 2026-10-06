@@ -114,6 +114,12 @@ parallelism. Inventory must not create another unbounded subprocess pool.
 | Added compressed image content | 250 MiB per architecture | Packaging decision requires measured image delta |
 | Raw evidence retention | 7 days in CI, digest-indexed | Preserve public summary/pins in source |
 
+The graph edge ceiling includes both evidenced library dependency edges and
+first-party root-to-dependency edges. Stress oracles report each class and their
+sum; a boundary case must not hide root edges outside its budget count. Include,
+constraint and source-provenance relationships have their own traversal/include
+controls and are not represented as library dependency edges.
+
 Current evaluator enforcement: CPU affinity, wall/process-tree limit, 2 MiB
 synthetic input validation, 64 MiB kernel per-file limit and file descriptor/core
 limits. Memory is measured as maximum child RSS, **not aggregate resident memory**.

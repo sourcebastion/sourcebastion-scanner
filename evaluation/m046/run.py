@@ -412,6 +412,25 @@ def guard(supervisor_pid, invocation):
     raise SystemExit(status)
 
 
+def run_contained(command):
+    """Contain orchestrator children as well as each isolated candidate job."""
+    process = subprocess.Popen(
+        [sys.executable, str(Path(__file__).resolve()), "_guard", str(os.getpid()), *command],
+        start_new_session=True,
+    )
+    try:
+        status = process.wait()
+    except BaseException:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+        raise
+    if status:
+        raise subprocess.CalledProcessError(status, command)
+
+
 def run(args):
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)

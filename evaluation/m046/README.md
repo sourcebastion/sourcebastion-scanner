@@ -82,6 +82,11 @@ asset/source/module preparation; `native.py` runs every candidate sequentially i
 the offline synthetic evaluator. Derived binary/runtime/module-tree identities and
 raw evidence are retained for seven days. An infrastructure error fails the job;
 no online fallback or emulated native acceptance is permitted.
+The archive contains regular files only. Synthetic cyclic/escaping links are
+stored in `SYMLINKS.json` as data, so artifact upload never follows them. Each
+member is digest-indexed; the archive and its digest are uploaded together. The
+combined evaluation archive has a separate 1 GiB raw-file ceiling; this does not
+claim enforcement of the proposed 256 MiB production job diagnostic ceiling.
 
 `performance_corpus.py` generates package, traversal, include-depth/fanout/cycle,
 file-size and graph boundary inputs. Each source has an independent sidecar oracle

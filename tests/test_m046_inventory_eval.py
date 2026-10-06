@@ -1,19 +1,24 @@
 """Independent checks for evaluator boundaries, semantics and measurement."""
 
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
 import signal
 import subprocess
 import sys
+import tarfile
 import time
 
 import pytest
 
 from evaluation.m046.corpus import CORPUS
+from evaluation.m046.cgroup_metrics import counters, mount_relative
 from evaluation.m046.oracle import DIMENSIONS
+from evaluation.m046.pack_evidence import pack
 from evaluation.m046.performance_corpus import generate
+from evaluation.m046.prepare import assert_module_files_unchanged, build_environment
 from evaluation.m046.run import compare, execute, identity, materialize, normalize, projection, snapshot, validate_case
 from evaluation.m046.summarize import summarize
 
@@ -407,5 +412,224 @@ def test_performance_graph_has_requested_distinct_root_aware_edges(tmp_path):
             for child in package.get("dependencies", {}):
                 assert "node_modules/" + child in data["packages"]
                 edges.add((path.parent.name, parent, child))
-    assert len(edges) == manifest["expected"]["edges"] == 501
+    assert len(edges) == manifest["expected"]["dependency_edges"] == 499
+    assert manifest["expected"]["edges"] == 501
+    assert manifest["expected"]["application_edges"] == 2
     assert manifest["expected"]["identities"] == 202
+
+
+def test_go_build_environment_rejects_ambient_code_and_checksum_overrides(tmp_path, monkeypatch):
+    for name in ("GOFLAGS", "GOWORK", "GOENV", "GONOSUMDB", "GOPRIVATE", "GOPROXY", "GOARCH"):
+        monkeypatch.setenv(name, "attacker-override")
+    env = build_environment(tmp_path, "arm64")
+    assert "attacker-override" not in env.values()
+    assert env["GOFLAGS"] == "-mod=readonly"
+    assert env["GOWORK"] == env["GOENV"] == "off"
+    assert env["GOSUMDB"] == "sum.golang.org"
+    assert env["GOARCH"] == "arm64"
+    assert env["GONOSUMDB"] == env["GOPRIVATE"] == ""
+
+
+def test_module_preparation_cannot_change_pinned_manifest_bytes(tmp_path):
+    from evaluation.m046.run import digest
+
+    (tmp_path / "go.mod").write_text("module example.test/fixture\n")
+    (tmp_path / "go.sum").write_text("synthetic checksum\n")
+    expected = {name: digest(tmp_path / name) for name in ("go.mod", "go.sum")}
+    assert_module_files_unchanged(tmp_path, expected)
+    (tmp_path / "go.mod").write_text("module example.test/changed\n")
+    with pytest.raises(ValueError, match="module files changed"):
+        assert_module_files_unchanged(tmp_path, expected)
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("termination", [signal.SIGTERM, signal.SIGKILL])
+def test_native_orchestrator_death_stops_nested_evaluator_and_candidate(tmp_path, termination):
+    tracer = os.environ.get("M046_STRACE")
+    if not tracer:
+        pytest.skip("opt-in native namespace proof requires M046_STRACE")
+    from evaluation.m046.run import digest
+
+    child_pid_file = tmp_path / "candidate-host-pid"
+    shim = tmp_path / "synthetic-candidate"
+    shim.write_text(f"""#!{sys.executable}
+import os, time
+from pathlib import Path
+if os.fork() == 0:
+    os.setsid()
+    status = Path("/proc/self/status").read_text()
+    host_pid = next(line.split()[1] for line in status.splitlines() if line.startswith("NSpid:"))
+    Path({str(child_pid_file)!r}).write_text(host_pid)
+time.sleep(60)
+""")
+    shim.chmod(0o755)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"tools": {"syft": {"binary": str(shim), "sha256": digest(shim)}}}))
+    supervisor = subprocess.Popen(
+        [
+            sys.executable,
+            "-m",
+            "evaluation.m046.native",
+            "--manifest",
+            str(manifest),
+            "--strace",
+            tracer,
+            "--output",
+            str(tmp_path / "evidence"),
+            "--repeat",
+            "1",
+        ]
+    )
+    try:
+        deadline = time.monotonic() + 10
+        while (
+            (not child_pid_file.exists() or not child_pid_file.read_text().isdigit())
+            and time.monotonic() < deadline
+            and supervisor.poll() is None
+        ):
+            time.sleep(0.05)
+        assert child_pid_file.exists(), "nested candidate did not start"
+        child = Path("/proc") / child_pid_file.read_text()
+        assert child.exists()
+        supervisor.send_signal(termination)
+        assert supervisor.wait(timeout=5) == -termination
+        deadline = time.monotonic() + 3
+        while child.exists() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert not child.exists(), "candidate survived top-level orchestration cancellation"
+    finally:
+        if supervisor.poll() is None:
+            supervisor.kill()
+            supervisor.wait(timeout=5)
+        if child_pid_file.exists() and child_pid_file.read_text().isdigit():
+            try:
+                os.kill(int(child_pid_file.read_text()), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+
+def test_cgroup_namespace_mount_root_is_resolved_without_path_escape():
+    assert mount_relative("/lxc/113/docker/job", "/lxc/113", "/sys/fs/cgroup") == Path("/sys/fs/cgroup/docker/job")
+    for membership in ("/../../docker/job", "/other/job", "relative/job"):
+        with pytest.raises(ValueError):
+            mount_relative(membership, "/lxc/113", "/sys/fs/cgroup")
+
+
+def test_cgroup_cpu_and_memory_are_kernel_aggregate_counters(tmp_path):
+    (tmp_path / "cpu.stat").write_text("usage_usec 1234567\nuser_usec 1000000\nsystem_usec 234567\n")
+    (tmp_path / "memory.peak").write_text("20971520\n")
+    (tmp_path / "memory.events").write_text("low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\n")
+    observed = counters({"version": 2, "unified": tmp_path})
+    assert observed["cpu_seconds"] == 1.234567
+    assert observed["peak_charged_memory_bytes"] == 20 * 1024 * 1024
+    (tmp_path / "memory.peak").unlink()
+    with pytest.raises(FileNotFoundError):
+        counters({"version": 2, "unified": tmp_path})
+
+
+def test_evidence_archive_preserves_cycle_escape_as_data_and_never_reads_target(tmp_path):
+    root = tmp_path / "raw"
+    root.mkdir()
+    (root / "output.json").write_text('{"packages":[]}\n')
+    (root / "a").symlink_to("b")
+    (root / "b").symlink_to("a")
+    (root / "outside").symlink_to("../outside-secret")
+    (tmp_path / "outside-secret").write_text("must-not-archive\n")
+    archive = tmp_path / "evidence.tar.gz"
+    result = pack({"raw": root}, archive)
+    assert result["regular_files"] == 1
+    assert result["links_as_data"] == 3
+    with tarfile.open(archive) as handle:
+        assert all(member.isfile() for member in handle.getmembers())
+        links = json.load(handle.extractfile("SYMLINKS.json"))
+        assert links == {"raw/a": "b", "raw/b": "a", "raw/outside": "../outside-secret"}
+        assert "outside-secret" not in handle.getnames()
+        for line in handle.extractfile("SHA256SUMS").read().decode().splitlines():
+            expected, name = line.split("  ", 1)
+            assert hashlib.sha256(handle.extractfile(name).read()).hexdigest() == expected
+    other = tmp_path / "repeat.tar.gz"
+    assert pack({"raw": root}, other)["archive_sha256"] == result["archive_sha256"]
+
+
+def test_evidence_archive_refuses_resource_overflow_and_special_files(tmp_path):
+    root = tmp_path / "raw"
+    root.mkdir()
+    (root / "large").write_text("12345")
+    with pytest.raises(ValueError, match="byte budget"):
+        pack({"raw": root}, tmp_path / "too-large.tar.gz", max_bytes=4)
+    (root / "large").unlink()
+    os.mkfifo(root / "fifo")
+    with pytest.raises(ValueError, match="non-regular"):
+        pack({"raw": root}, tmp_path / "fifo.tar.gz")
+
+
+@pytest.mark.parametrize("kind", ["fifo", "symlink", "dangling-symlink"])
+def test_evidence_archive_refuses_special_or_symlink_roots(tmp_path, kind):
+    root = tmp_path / "root"
+    if kind == "fifo":
+        os.mkfifo(root)
+    else:
+        target = tmp_path / "target"
+        if kind == "symlink":
+            target.write_text("controlled fixture")
+        root.symlink_to(target)
+    with pytest.raises(ValueError, match="evidence root"):
+        pack({"raw": root}, tmp_path / "evidence.tar.gz")
+
+
+def test_missing_partial_evidence_is_explicit_in_archive_manifest(tmp_path):
+    file = tmp_path / "present"
+    file.write_text("controlled fixture")
+    archive = tmp_path / "evidence.tar.gz"
+    pack({"present": file, "missing": tmp_path / "absent"}, archive)
+    with tarfile.open(archive) as handle:
+        manifest = json.load(handle.extractfile("ARCHIVE.json"))
+    assert manifest["missing_roots"] == ["missing"]
+
+
+def test_evidence_swap_before_descriptor_open_never_follows_new_link(tmp_path, monkeypatch):
+    root = tmp_path / "raw"
+    root.mkdir()
+    file = root / "result.json"
+    file.write_text("INSIDE")
+    outside = tmp_path / "outside"
+    outside.write_text("PUBLIC")
+    real_open = os.open
+
+    def swap(name, flags, *args, **kwargs):
+        if name == "result.json":
+            file.unlink()
+            file.symlink_to(outside)
+        return real_open(name, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", swap)
+    archive = tmp_path / "evidence.tar.gz"
+    with pytest.raises(OSError):
+        pack({"raw": root}, archive)
+    assert not archive.exists()
+
+
+def test_evidence_swap_during_snapshot_refuses_changed_binding(tmp_path, monkeypatch):
+    root = tmp_path / "raw"
+    root.mkdir()
+    file = root / "result.json"
+    file.write_text("INSIDE")
+    outside = tmp_path / "outside"
+    outside.write_text("PUBLIC")
+    real_read = os.read
+    swapped = False
+
+    def swap(descriptor, size):
+        nonlocal swapped
+        content = real_read(descriptor, size)
+        if not swapped:
+            swapped = True
+            file.unlink()
+            file.symlink_to(outside)
+        return content
+
+    monkeypatch.setattr(os, "read", swap)
+    archive = tmp_path / "evidence.tar.gz"
+    with pytest.raises(ValueError, match="changed"):
+        pack({"raw": root}, archive)
+    assert not archive.exists()

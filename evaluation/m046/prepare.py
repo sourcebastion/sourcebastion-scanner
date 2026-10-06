@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import os
 from pathlib import Path
 import platform
 import subprocess
@@ -18,6 +17,38 @@ def download(url, destination, sha256):
             output.write(chunk)
     if digest(destination) != sha256:
         raise ValueError(f"download SHA256 mismatch: {destination.name}")
+
+
+def build_environment(destination, architecture):
+    return {
+        "PATH": "/usr/bin:/bin",
+        "LANG": "C.UTF-8",
+        "TZ": "UTC",
+        "HOME": str(destination / "build-home"),
+        "GOTOOLCHAIN": "local",
+        "GOWORK": "off",
+        "GOFLAGS": "-mod=readonly",
+        "GOENV": "off",
+        "GOCACHE": str(destination / "go-cache"),
+        "GOPATH": str(destination / "go-modules"),
+        "GOSUMDB": "sum.golang.org",
+        "GONOSUMDB": "",
+        "GOPRIVATE": "",
+        "GONOPROXY": "",
+        "GOPROXY": "https://proxy.golang.org",
+        "GOOS": "linux",
+        "GOARCH": architecture,
+        "CGO_ENABLED": "1",
+        "CC": "gcc",
+        "CXX": "g++",
+        "GOAMD64": "v1",
+        "GOARM64": "v8.0",
+    }
+
+
+def assert_module_files_unchanged(source, hashes):
+    if {name: digest(source / name) for name in hashes} != hashes:
+        raise ValueError("SCALIBR module files changed during preparation")
 
 
 def prepare(destination):
@@ -103,14 +134,11 @@ def prepare(destination):
     if actual != scalibr["source_commit"]:
         raise ValueError("SCALIBR source commit mismatch")
     go = destination / "go/bin/go"
-    env = {
-        **os.environ,
-        "GOTOOLCHAIN": "local",
-        "GOCACHE": str(destination / "go-cache"),
-        "GOPATH": str(destination / "go-modules"),
-        "GOSUMDB": "sum.golang.org",
-    }
+    module_hashes = {name: digest(source / name) for name in ("go.mod", "go.sum")}
+    env = build_environment(destination, architecture)
+    Path(env["HOME"]).mkdir()
     subprocess.run([str(go), "mod", "download"], cwd=source, env=env, check=True, timeout=1200)
+    assert_module_files_unchanged(source, module_hashes)
     # Dependencies must already exist. Building never silently downloads a new
     # toolchain or resolves modules outside the commit's verified go.sum.
     subprocess.run([str(go), "mod", "verify"], cwd=source, env={**env, "GOPROXY": "off"}, check=True, timeout=120)
@@ -122,6 +150,10 @@ def prepare(destination):
         check=True,
         timeout=1800,
     )
+    assert_module_files_unchanged(source, module_hashes)
+    subprocess.run(
+        ["git", "-C", str(source), "diff", "--exit-code", scalibr["source_commit"]], check=True, capture_output=True
+    )
     manifest["tools"]["scalibr"] = {
         "binary": str(scalibr_binary),
         "sha256": digest(scalibr_binary),
@@ -131,6 +163,8 @@ def prepare(destination):
         "go_mod_sha256": digest(source / "go.mod"),
         "go_sum_sha256": digest(source / "go.sum"),
         "build_flags": scalibr["build_flags"],
+        "build_environment": env,
+        "committed_module_hashes": module_hashes,
     }
     (destination / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     return manifest

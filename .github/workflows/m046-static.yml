@@ -1,0 +1,76 @@
+name: M046 Static Frontend Evaluation
+
+on:
+  pull_request:
+    paths:
+      - evaluation/m046/**
+      - tests/test_m046_static_*.py
+      - tests/test_m046_inventory_eval.py
+      - PYTHON_VERSION
+      - .github/workflows/m046-static.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Static pip contract (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: PYTHON_VERSION
+      - name: Prepare pinned trusted evaluation dependencies
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r evaluation/m046/requirements-static.txt
+          python -m pip install pytest==8.3.5
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y strace
+          mkdir -p "$RUNNER_TEMP/m046-static-host"
+          uname -a > "$RUNNER_TEMP/m046-static-host/uname.txt"
+          strace --version > "$RUNNER_TEMP/m046-static-host/strace.txt"
+          if test -f /proc/sys/kernel/apparmor_restrict_unprivileged_userns; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
+          unshare -Urnmpf --kill-child=KILL true
+      - name: Verify grammar, bindings and shared budget regressions
+        run: |
+          python -m pytest tests/test_m046_static_inputs.py tests/test_m046_static_inventory.py tests/test_m046_static_cli.py \
+            -q --junitxml="$RUNNER_TEMP/m046-static-host/tests.xml"
+      - name: Evaluate the fixed synthetic corpus offline
+        run: |
+          python -m evaluation.m046.static_native --strace /usr/bin/strace \
+            --output "$RUNNER_TEMP/m046-static-evidence"
+      - name: Package exact source and raw trace evidence
+        if: always()
+        run: |
+          python -m evaluation.m046.pack_evidence \
+            --root "host=$RUNNER_TEMP/m046-static-host" \
+            --root "evidence=$RUNNER_TEMP/m046-static-evidence" \
+            --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
+            --root "input-tests=$GITHUB_WORKSPACE/tests/test_m046_static_inputs.py" \
+            --root "inventory-tests=$GITHUB_WORKSPACE/tests/test_m046_static_inventory.py" \
+            --root "cli-tests=$GITHUB_WORKSPACE/tests/test_m046_static_cli.py" \
+            --output "$RUNNER_TEMP/m046-static.tar.gz"
+      - name: Retain native frontend evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: m046-static-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-static.tar.gz
+            ${{ runner.temp }}/m046-static.tar.gz.sha256
+          retention-days: 7

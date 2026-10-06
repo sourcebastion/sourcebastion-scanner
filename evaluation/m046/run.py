@@ -301,6 +301,7 @@ def sandbox(source, scratch, tracer, command):
         "LANG": "C.UTF-8",
         "TZ": "UTC",
         "NO_COLOR": "1",
+        "HOME": str(scratch / "temp"),
         "XDG_CACHE_HOME": str(scratch / "cache"),
         "TMPDIR": str(scratch / "temp"),
         "SYFT_CHECK_FOR_APP_UPDATE": "false",

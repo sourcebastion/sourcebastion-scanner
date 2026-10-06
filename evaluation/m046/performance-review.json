@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "milestone": "M046",
+  "slice": "S01",
+  "reviewer": "/root/m046_independent_review",
+  "review_method": "user-authorized independent source/native artifact/test review",
+  "reviewed_prototype": "accepted for controlled synthetic evaluation",
+  "targeted_native_proofs": "accepted:8 targeted nativeAMD64 cases only",
+  "source_sha256": {
+    "evaluation/m046/benchmark.py": "9e56d80ba7141e7cd980dbe9b6062da94d885186a3ee821aaeae872124464399",
+    "evaluation/m046/container_job.py": "8f6a310ea9e6f7547d885d6a9845e25ceb6146467504364638dc70bbf111b8e9",
+    "evaluation/m046/cgroup_metrics.py": "0f1d2e9dbd9fb31cf0c02a60a2c587405bd1a424948e30b5697f9d9f39c890dc",
+    "evaluation/m046/docker_proofs.py": "7615d4bc7a8285a00e36d06bd1ff2eb770182871c49ca560c78c3e4c386e2594",
+    "evaluation/m046/performance_corpus.py": "e4f4c222c1342ce954b5189430d14e5a947e6eafff3ff35d00db4f970958aa59",
+    "tests/test_m046_benchmark.py": "17a804e6467fb09b05301e9bbbd4ca1839c912184e7edaab8ab5fb5c5f99ad5c",
+    "tests/test_performance.py": "e774442531eda23d85d0ad72715fe300dca1be6089ad2af95414c0d93b2d4c3a",
+    ".github/workflows/m046-evaluation.yml": "0ec48c0e240f14ce6a5de9124f2330ee35b84241f188618e0fc02f8d16511cc1",
+    "evaluation/m046/prepare.py": "695772bf267dae6180060735142b6043ec3f57ab025cdc2d2271569134382828"
+  },
+  "artifact_sha256": "da408982d951deb868a37a0206e3b89c74f5eb97fe892643daf59547686e7c34",
+  "independent_focused_tests_passed": 73,
+  "full_regression": {
+    "passed": 1271,
+    "skipped": 97,
+    "warnings": 2,
+    "failures": 0,
+    "seconds": 19.72
+  },
+  "remaining_gates": [
+    "current-head nativeAMD64/ARM64 CI raw artifacts",
+    "candidate performance fidelity and aggregateRSS measurement decision",
+    "substantive extended-Syft/adapter comparison",
+    "production image layer deltas",
+    "reviewed architecture/frozen budgets",
+    "S02-S07 platform/release/dev/human/rollback"
+  ],
+  "engine_selection": "not-accepted",
+  "budgets": "not-frozen",
+  "s01_acceptance": "pending",
+  "artifact_snapshot_note": "Immutable raw archive includes original support preparation and17-test snapshot. Current selected-engine preparation and additional3 tests are separately reviewed; benchmark/controller/cgroup/probe runtime source hashes remain identical.",
+  "selected_preparation_review": "accepted: independent AST equivalence and20 tests",
+  "independent_test_runs": {
+    "unchanged_foundation_native": 53,
+    "current_benchmark_setup": 20
+  }
+}

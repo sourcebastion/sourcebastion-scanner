@@ -103,6 +103,12 @@ The committed initial 50-case raw archive and `measurements.json` describe corpu
 v1 and its captured runner. They are historical diagnostic evidence, not current
 v2 comparison/acceptance. Never mix reports from different corpus/oracle digests.
 
+`benchmark.py` and `container_job.py` provide a separate untraced Docker/cgroup
+measurement harness, with real native capability, watchdog, output-boundary and
+overflow probes in `docker_proofs.py`. See [performance.md](performance.md) for
+reproduction, exact measurement scope and remaining acceptance. Native CI runs
+these proofs on both architectures and retains the benchmark tests with sources.
+
 ## Safety and evidence limitations
 
 Use this only on the built-in synthetic corpus. Namespace isolation does not hide

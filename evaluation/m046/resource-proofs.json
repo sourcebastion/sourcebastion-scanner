@@ -1,0 +1,517 @@
+{
+  "status": "native-harness-proofs; no inventory/performance acceptance",
+  "harness_sha256": "9e56d80ba7141e7cd980dbe9b6062da94d885186a3ee821aaeae872124464399",
+  "controller_sha256": "8f6a310ea9e6f7547d885d6a9845e25ceb6146467504364638dc70bbf111b8e9",
+  "cgroup_reader_sha256": "0f1d2e9dbd9fb31cf0c02a60a2c587405bd1a424948e30b5697f9d9f39c890dc",
+  "performance_corpus_sha256": "e4f4c222c1342ce954b5189430d14e5a947e6eafff3ff35d00db4f970958aa59",
+  "probe_python_sha256": "18e5076d335579021f66100894222c763322c2a84c8eb78ad572e099b37de56f",
+  "python_optimization": 0,
+  "invocation": [
+    "docker_proofs",
+    "--output",
+    "/var/tmp/m046-eval-29993db-20261006/native-proofs-release-source"
+  ],
+  "results": {
+    "boundaries_umask000": {
+      "exit_code": 0,
+      "reason": null,
+      "wall_seconds": 0.3551299950340763,
+      "python_version": "3.14.8 (main, Oct  6 2026, 04:40:14) [GCC 12.2.0]",
+      "drained_candidate_pids": [],
+      "captured_raw_sha256": "d7e000046e1d898478c99dd97bff558e5ac71f2a049a4f9598b9da446f02f914",
+      "captured_raw_bytes": 1822,
+      "aggregate_cpu_seconds": 0.34318999999999994,
+      "measured_job_wall_seconds": 0.4197469839709811,
+      "peak_charged_memory_bytes": 24707072,
+      "cgroup_version": 2,
+      "memory_counters": {
+        "cpu_seconds": 0.736721,
+        "peak_charged_memory_bytes": 24707072,
+        "oom_kills": 0
+      },
+      "initial_counters": {
+        "cpu_seconds": 0.393531,
+        "peak_charged_memory_bytes": 13660160,
+        "oom_kills": 0
+      },
+      "enforced_cgroup": {
+        "limits": {
+          "cpu_quota": 200000,
+          "cpu_period": 100000,
+          "memory_bytes": 2147483648,
+          "memory_swap_bytes": 0,
+          "pids": 256,
+          "cpu_slots": [
+            25,
+            29
+          ]
+        },
+        "membership": "0::/system.slice/docker-33903e0ee13a62021c5dc375103feba3c4c3da491ec73805ed14604e3d40c849.scope\n",
+        "paths": {
+          "version": "2",
+          "unified": "/sys/fs/cgroup/system.slice/docker-33903e0ee13a62021c5dc375103feba3c4c3da491ec73805ed14604e3d40c849.scope"
+        }
+      },
+      "image_id": "sha256:dd1e0b1e72800356b5da11110e4a2ef0ad8791659f3a75d2fa2dde67af411595",
+      "native_architecture": "amd64",
+      "driver_reason": null,
+      "container_id": "33903e0ee13a62021c5dc375103feba3c4c3da491ec73805ed14604e3d40c849",
+      "runtime_image": "python:3.14.8-bookworm@sha256:201c5349baecb1f46283454aa2ca2226301e60795cac68627a5a4b0cc9daed1b",
+      "cpu_slots": [
+        25,
+        29
+      ],
+      "command": [
+        "/candidate/binary",
+        "/source/probe.py"
+      ],
+      "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",
+      "budget_limits": {
+        "aggregate_cpu_seconds": 120,
+        "wall_seconds": 150,
+        "charged_memory_bytes": 2147483648
+      },
+      "budget_status": "within-measured-bounds",
+      "exceeded_budgets": [],
+      "source_unchanged": true,
+      "raw_sha256": "d7e000046e1d898478c99dd97bff558e5ac71f2a049a4f9598b9da446f02f914",
+      "measurement_scope": "candidate/container controller cgroup; excludes trusted source generation and host snapshot/hash costs",
+      "inventory_output_status": "retained-unparsed; correctness requires separate bounded evaluation",
+      "resource_sample_valid": true
+    },
+    "session_escape": {
+      "exit_code": 0,
+      "reason": "descendant-work-after-leader-exit",
+      "wall_seconds": 0.6508035709848627,
+      "python_version": "3.14.8 (main, Oct  6 2026, 04:40:14) [GCC 12.2.0]",
+      "drained_candidate_pids": [
+        9
+      ],
+      "captured_raw_sha256": "fa7b28e29378871d1031e25ae8f4a22174b9f0122aa87198428fe9c1ac1b2a3c",
+      "captured_raw_bytes": 1671,
+      "aggregate_cpu_seconds": 0.636714,
+      "measured_job_wall_seconds": 0.7234040159964934,
+      "peak_charged_memory_bytes": 34881536,
+      "cgroup_version": 2,
+      "memory_counters": {
+        "cpu_seconds": 1.01024,
+        "peak_charged_memory_bytes": 34881536,
+        "oom_kills": 0
+      },
+      "initial_counters": {
+        "cpu_seconds": 0.373526,
+        "peak_charged_memory_bytes": 13496320,
+        "oom_kills": 0
+      },
+      "enforced_cgroup": {
+        "limits": {
+          "cpu_quota": 200000,
+          "cpu_period": 100000,
+          "memory_bytes": 2147483648,
+          "memory_swap_bytes": 0,
+          "pids": 256,
+          "cpu_slots": [
+            25,
+            29
+          ]
+        },
+        "membership": "0::/system.slice/docker-5217f748f71284281abe6e9d91b7911df7f630e07b5631c09b1bf4a6c3c043fe.scope\n",
+        "paths": {
+          "version": "2",
+          "unified": "/sys/fs/cgroup/system.slice/docker-5217f748f71284281abe6e9d91b7911df7f630e07b5631c09b1bf4a6c3c043fe.scope"
+        }
+      },
+      "image_id": "sha256:dd1e0b1e72800356b5da11110e4a2ef0ad8791659f3a75d2fa2dde67af411595",
+      "native_architecture": "amd64",
+      "driver_reason": null,
+      "container_id": "5217f748f71284281abe6e9d91b7911df7f630e07b5631c09b1bf4a6c3c043fe",
+      "runtime_image": "python:3.14.8-bookworm@sha256:201c5349baecb1f46283454aa2ca2226301e60795cac68627a5a4b0cc9daed1b",
+      "cpu_slots": [
+        25,
+        29
+      ],
+      "command": [
+        "/candidate/binary",
+        "/source/probe.py"
+      ],
+      "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",
+      "budget_limits": {
+        "aggregate_cpu_seconds": 120,
+        "wall_seconds": 150,
+        "charged_memory_bytes": 2147483648
+      },
+      "budget_status": "within-measured-bounds",
+      "exceeded_budgets": [],
+      "source_unchanged": true,
+      "raw_sha256": "fa7b28e29378871d1031e25ae8f4a22174b9f0122aa87198428fe9c1ac1b2a3c",
+      "measurement_scope": "candidate/container controller cgroup; excludes trusted source generation and host snapshot/hash costs",
+      "inventory_output_status": "retained-unparsed; correctness requires separate bounded evaluation",
+      "resource_sample_valid": false
+    },
+    "watchdog_cap_kill": {
+      "exit_code": -9,
+      "reason": "wall-budget-exceeded",
+      "wall_seconds": 1.033455058990512,
+      "python_version": "3.14.8 (main, Oct  6 2026, 04:40:14) [GCC 12.2.0]",
+      "drained_candidate_pids": [
+        9
+      ],
+      "captured_raw_sha256": "905fbb2bf0d3a2d16f5b718a227a3ef88ca3ddfc306b49277582b7996562eab5",
+      "captured_raw_bytes": 1671,
+      "aggregate_cpu_seconds": 0.602124,
+      "measured_job_wall_seconds": 1.1469776930171065,
+      "peak_charged_memory_bytes": 35024896,
+      "cgroup_version": 2,
+      "memory_counters": {
+        "cpu_seconds": 0.98881,
+        "peak_charged_memory_bytes": 35024896,
+        "oom_kills": 0
+      },
+      "initial_counters": {
+        "cpu_seconds": 0.386686,
+        "peak_charged_memory_bytes": 13787136,
+        "oom_kills": 0
+      },
+      "enforced_cgroup": {
+        "limits": {
+          "cpu_quota": 200000,
+          "cpu_period": 100000,
+          "memory_bytes": 2147483648,
+          "memory_swap_bytes": 0,
+          "pids": 256,
+          "cpu_slots": [
+            25,
+            29
+          ]
+        },
+        "membership": "0::/system.slice/docker-2bef64f35dae794008db33a53641d6a09a9f7511a9839cd3c170ec26aa15f563.scope\n",
+        "paths": {
+          "version": "2",
+          "unified": "/sys/fs/cgroup/system.slice/docker-2bef64f35dae794008db33a53641d6a09a9f7511a9839cd3c170ec26aa15f563.scope"
+        }
+      },
+      "image_id": "sha256:dd1e0b1e72800356b5da11110e4a2ef0ad8791659f3a75d2fa2dde67af411595",
+      "native_architecture": "amd64",
+      "driver_reason": null,
+      "container_id": "2bef64f35dae794008db33a53641d6a09a9f7511a9839cd3c170ec26aa15f563",
+      "runtime_image": "python:3.14.8-bookworm@sha256:201c5349baecb1f46283454aa2ca2226301e60795cac68627a5a4b0cc9daed1b",
+      "cpu_slots": [
+        25,
+        29
+      ],
+      "command": [
+        "/candidate/binary",
+        "/source/probe.py"
+      ],
+      "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",
+      "budget_limits": {
+        "aggregate_cpu_seconds": 120,
+        "wall_seconds": 1,
+        "charged_memory_bytes": 2147483648
+      },
+      "budget_status": "exceeded",
+      "exceeded_budgets": [
+        "wall"
+      ],
+      "source_unchanged": true,
+      "raw_sha256": "905fbb2bf0d3a2d16f5b718a227a3ef88ca3ddfc306b49277582b7996562eab5",
+      "measurement_scope": "candidate/container controller cgroup; excludes trusted source generation and host snapshot/hash costs",
+      "inventory_output_status": "retained-unparsed; correctness requires separate bounded evaluation",
+      "resource_sample_valid": false
+    },
+    "raw_symlink_refused": {
+      "exit_code": 0,
+      "reason": null,
+      "wall_seconds": 0.288714975991752,
+      "python_version": "3.14.8 (main, Oct  6 2026, 04:40:14) [GCC 12.2.0]",
+      "drained_candidate_pids": [],
+      "capture_error": "[Errno 40] Too many levels of symbolic links: 'raw.json'",
+      "aggregate_cpu_seconds": 0.281279,
+      "measured_job_wall_seconds": 0.39947479602415115,
+      "peak_charged_memory_bytes": 24584192,
+      "cgroup_version": 2,
+      "memory_counters": {
+        "cpu_seconds": 0.701782,
+        "peak_charged_memory_bytes": 24584192,
+        "oom_kills": 0
+      },
+      "initial_counters": {
+        "cpu_seconds": 0.420503,
+        "peak_charged_memory_bytes": 13541376,
+        "oom_kills": 0
+      },
+      "enforced_cgroup": {
+        "limits": {
+          "cpu_quota": 200000,
+          "cpu_period": 100000,
+          "memory_bytes": 2147483648,
+          "memory_swap_bytes": 0,
+          "pids": 256,
+          "cpu_slots": [
+            25,
+            29
+          ]
+        },
+        "membership": "0::/system.slice/docker-31186fcc0d87f08aa339390a507d9a8f535aaef1511665ad73be2cdc1bbadeac.scope\n",
+        "paths": {
+          "version": "2",
+          "unified": "/sys/fs/cgroup/system.slice/docker-31186fcc0d87f08aa339390a507d9a8f535aaef1511665ad73be2cdc1bbadeac.scope"
+        }
+      },
+      "image_id": "sha256:dd1e0b1e72800356b5da11110e4a2ef0ad8791659f3a75d2fa2dde67af411595",
+      "native_architecture": "amd64",
+      "driver_reason": null,
+      "container_id": "31186fcc0d87f08aa339390a507d9a8f535aaef1511665ad73be2cdc1bbadeac",
+      "runtime_image": "python:3.14.8-bookworm@sha256:201c5349baecb1f46283454aa2ca2226301e60795cac68627a5a4b0cc9daed1b",
+      "cpu_slots": [
+        25,
+        29
+      ],
+      "command": [
+        "/candidate/binary",
+        "/source/probe.py"
+      ],
+      "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",
+      "budget_limits": {
+        "aggregate_cpu_seconds": 120,
+        "wall_seconds": 150,
+        "charged_memory_bytes": 2147483648
+      },
+      "budget_status": "within-measured-bounds",
+      "exceeded_budgets": [],
+      "source_unchanged": true,
+      "measurement_scope": "candidate/container controller cgroup; excludes trusted source generation and host snapshot/hash costs",
+      "inventory_output_status": "retained-unparsed; correctness requires separate bounded evaluation",
+      "resource_sample_valid": false
+    },
+    "aggregate_cpu_watchdog": {
+      "aggregate_cpu_seconds": 0.311413,
+      "measured_job_wall_seconds": 0.31867243599845096,
+      "peak_charged_memory_bytes": 24637440,
+      "cgroup_version": 2,
+      "memory_counters": {
+        "cpu_seconds": 0.743193,
+        "peak_charged_memory_bytes": 24637440,
+        "oom_kills": 0
+      },
+      "initial_counters": {
+        "cpu_seconds": 0.43178,
+        "peak_charged_memory_bytes": 13598720,
+        "oom_kills": 0
+      },
+      "enforced_cgroup": {
+        "limits": {
+          "cpu_quota": 200000,
+          "cpu_period": 100000,
+          "memory_bytes": 2147483648,
+          "memory_swap_bytes": 0,
+          "pids": 256,
+          "cpu_slots": [
+            25,
+            29
+          ]
+        },
+        "membership": "0::/system.slice/docker-754dd8939f2e841f75a028fa39655b7a3cc6ae7aee4d56e492218632cfc6a60f.scope\n",
+        "paths": {
+          "version": "2",
+          "unified": "/sys/fs/cgroup/system.slice/docker-754dd8939f2e841f75a028fa39655b7a3cc6ae7aee4d56e492218632cfc6a60f.scope"
+        }
+      },
+      "image_id": "sha256:dd1e0b1e72800356b5da11110e4a2ef0ad8791659f3a75d2fa2dde67af411595",
+      "native_architecture": "amd64",
+      "driver_reason": "cpu-budget-exceeded",
+      "container_id": "754dd8939f2e841f75a028fa39655b7a3cc6ae7aee4d56e492218632cfc6a60f",
+      "runtime_image": "python:3.14.8-bookworm@sha256:201c5349baecb1f46283454aa2ca2226301e60795cac68627a5a4b0cc9daed1b",
+      "cpu_slots": [
+        25,
+        29
+      ],
+      "command": [
+        "/candidate/binary",
+        "/source/probe.py"
+      ],
+      "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",
+      "budget_limits": {
+        "aggregate_cpu_seconds": 0.25,
+        "wall_seconds": 150,
+        "charged_memory_bytes": 2147483648
+      },
+      "budget_status": "exceeded",
+      "exceeded_budgets": [
+        "cpu"
+      ],
+      "source_unchanged": true,
+      "measurement_scope": "candidate/container controller cgroup; excludes trusted source generation and host snapshot/hash costs",
+      "inventory_output_status": "retained-unparsed; correctness requires separate bounded evaluation",
+      "resource_sample_valid": false
+    },
+    "kernel_memory_overflow": {
+      "exit_code": -9,
+      "reason": null,
+      "wall_seconds": 1.96332199301105,
+      "python_version": "3.14.8 (main, Oct  6 2026, 04:40:14) [GCC 12.2.0]",
+      "drained_candidate_pids": [],
+      "captured_raw_sha256": "2d799850cb1645a2083218de96491e9d758e8a465619d80332862dd5c965f7fc",
+      "captured_raw_bytes": 1647,
+      "aggregate_cpu_seconds": 1.9761409999999997,
+      "measured_job_wall_seconds": 2.141571539978031,
+      "peak_charged_memory_bytes": 2147483648,
+      "cgroup_version": 2,
+      "memory_counters": {
+        "cpu_seconds": 2.361242,
+        "peak_charged_memory_bytes": 2147483648,
+        "oom_kills": 1
+      },
+      "initial_counters": {
+        "cpu_seconds": 0.385101,
+        "peak_charged_memory_bytes": 13713408,
+        "oom_kills": 0
+      },
+      "enforced_cgroup": {
+        "limits": {
+          "cpu_quota": 200000,
+          "cpu_period": 100000,
+          "memory_bytes": 2147483648,
+          "memory_swap_bytes": 0,
+          "pids": 256,
+          "cpu_slots": [
+            25,
+            29
+          ]
+        },
+        "membership": "0::/system.slice/docker-8e33b411dfa6b9d3b68f74800189a5fdd8214578ad499e3ee6e918888afb112b.scope\n",
+        "paths": {
+          "version": "2",
+          "unified": "/sys/fs/cgroup/system.slice/docker-8e33b411dfa6b9d3b68f74800189a5fdd8214578ad499e3ee6e918888afb112b.scope"
+        }
+      },
+      "image_id": "sha256:dd1e0b1e72800356b5da11110e4a2ef0ad8791659f3a75d2fa2dde67af411595",
+      "native_architecture": "amd64",
+      "driver_reason": null,
+      "container_id": "8e33b411dfa6b9d3b68f74800189a5fdd8214578ad499e3ee6e918888afb112b",
+      "runtime_image": "python:3.14.8-bookworm@sha256:201c5349baecb1f46283454aa2ca2226301e60795cac68627a5a4b0cc9daed1b",
+      "cpu_slots": [
+        25,
+        29
+      ],
+      "command": [
+        "/candidate/binary",
+        "/source/probe.py"
+      ],
+      "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",
+      "budget_limits": {
+        "aggregate_cpu_seconds": 120,
+        "wall_seconds": 150,
+        "charged_memory_bytes": 2147483648
+      },
+      "budget_status": "exceeded",
+      "exceeded_budgets": [
+        "memory"
+      ],
+      "source_unchanged": true,
+      "raw_sha256": "2d799850cb1645a2083218de96491e9d758e8a465619d80332862dd5c965f7fc",
+      "measurement_scope": "candidate/container controller cgroup; excludes trusted source generation and host snapshot/hash costs",
+      "inventory_output_status": "retained-unparsed; correctness requires separate bounded evaluation",
+      "resource_sample_valid": false
+    },
+    "candidate_tmpfs_overflow": {
+      "exit_code": 0,
+      "reason": null,
+      "wall_seconds": 0.5560279620112851,
+      "python_version": "3.14.8 (main, Oct  6 2026, 04:40:14) [GCC 12.2.0]",
+      "drained_candidate_pids": [],
+      "captured_raw_sha256": "e37007061b8356aaf69922b3b756396ac3770b9ddd91c58bbdf5b09eda0cf48a",
+      "captured_raw_bytes": 70,
+      "aggregate_cpu_seconds": 0.5589299999999999,
+      "measured_job_wall_seconds": 0.6382063789642416,
+      "peak_charged_memory_bytes": 294694912,
+      "cgroup_version": 2,
+      "memory_counters": {
+        "cpu_seconds": 0.930805,
+        "peak_charged_memory_bytes": 294694912,
+        "oom_kills": 0
+      },
+      "initial_counters": {
+        "cpu_seconds": 0.371875,
+        "peak_charged_memory_bytes": 13950976,
+        "oom_kills": 0
+      },
+      "enforced_cgroup": {
+        "limits": {
+          "cpu_quota": 200000,
+          "cpu_period": 100000,
+          "memory_bytes": 2147483648,
+          "memory_swap_bytes": 0,
+          "pids": 256,
+          "cpu_slots": [
+            25,
+            29
+          ]
+        },
+        "membership": "0::/system.slice/docker-29110c4e91ba78d7313664049e5f71158f99b036d70a8d4cbd9fb981a3c983bc.scope\n",
+        "paths": {
+          "version": "2",
+          "unified": "/sys/fs/cgroup/system.slice/docker-29110c4e91ba78d7313664049e5f71158f99b036d70a8d4cbd9fb981a3c983bc.scope"
+        }
+      },
+      "image_id": "sha256:dd1e0b1e72800356b5da11110e4a2ef0ad8791659f3a75d2fa2dde67af411595",
+      "native_architecture": "amd64",
+      "driver_reason": null,
+      "container_id": "29110c4e91ba78d7313664049e5f71158f99b036d70a8d4cbd9fb981a3c983bc",
+      "runtime_image": "python:3.14.8-bookworm@sha256:201c5349baecb1f46283454aa2ca2226301e60795cac68627a5a4b0cc9daed1b",
+      "cpu_slots": [
+        25,
+        29
+      ],
+      "command": [
+        "/candidate/binary",
+        "/source/probe.py"
+      ],
+      "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",
+      "budget_limits": {
+        "aggregate_cpu_seconds": 120,
+        "wall_seconds": 150,
+        "charged_memory_bytes": 2147483648
+      },
+      "budget_status": "within-measured-bounds",
+      "exceeded_budgets": [],
+      "source_unchanged": true,
+      "raw_sha256": "e37007061b8356aaf69922b3b756396ac3770b9ddd91c58bbdf5b09eda0cf48a",
+      "measurement_scope": "candidate/container controller cgroup; excludes trusted source generation and host snapshot/hash costs",
+      "inventory_output_status": "retained-unparsed; correctness requires separate bounded evaluation",
+      "resource_sample_valid": true
+    },
+    "driver_sigkill": {
+      "container_id": "aea79fd02bceaaedb6dd9138332af17a06b7a7d1afe463661e7a0adc6eea8240",
+      "final_state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-10-06T18:45:16.852832502Z",
+        "FinishedAt": "2026-10-06T18:45:22.539831147Z"
+      },
+      "controller_result": {
+        "exit_code": -9,
+        "reason": "host-heartbeat-expired",
+        "wall_seconds": 5.084647074982058,
+        "python_version": "3.14.8 (main, Oct  6 2026, 04:40:14) [GCC 12.2.0]",
+        "drained_candidate_pids": [
+          9
+        ],
+        "captured_raw_sha256": "d303ca157d14de8df92c2ba14f10cc0b928937765596e2b971107fa66f06cd33",
+        "captured_raw_bytes": 1671
+      },
+      "automatic_process_cleanup": true,
+      "docker_object_cleanup": "explicit after stopped-state proof"
+    }
+  },
+  "archive_sha256": "da408982d951deb868a37a0206e3b89c74f5eb97fe892643daf59547686e7c34",
+  "architecture": "amd64",
+  "host_scope": "shared4CPU8GiBlab; not dev8CPU12GiB acceptance or uncontended performance"
+}

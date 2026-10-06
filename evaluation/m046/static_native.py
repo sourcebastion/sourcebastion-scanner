@@ -38,6 +38,12 @@ NETWORK_SYSCALLS = {
     "setsockopt",
     "getsockopt",
 }
+SUPPORTED_MANIFESTS = {
+    "python-pyproject",
+    "python-pyproject-optional",
+    "python-setup-cfg",
+    "python-static-setup",
+}
 
 
 def trace_admission(trace, interpreter):
@@ -134,11 +140,13 @@ def run(output, strace):
             raise ValueError("static-native-invocation-invalid")
         if source_identity() != source_before:
             raise ValueError("static-native-controller-source-changed")
-        if supported(fixture) and not differences["full_contract_agreement"]:
+        admitted = supported(fixture) or fixture["id"] in SUPPORTED_MANIFESTS
+        if admitted and not differences["full_contract_agreement"]:
             raise ValueError("static-native-supported-oracle-mismatch")
         record = {
             "fixture": fixture["id"],
             "supported_pip_contract": supported(fixture),
+            "supported_static_contract": admitted,
             "resource_acceptance": "not-assessed",
             "result": result,
             "raw_sha256": hashlib.sha256(content).hexdigest(),
@@ -156,6 +164,7 @@ def run(output, strace):
         "controller_source_before": source_before,
         "controller_source_after": source_identity(),
         "supported_pip_cases": sum(record["supported_pip_contract"] for record in records),
+        "supported_static_cases": sum(record["supported_static_contract"] for record in records),
         "total_cases": len(records),
         "records": records,
     }

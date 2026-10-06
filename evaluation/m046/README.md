@@ -4,8 +4,9 @@ This first implementation is an executable **review candidate** for the oracle
 and evaluator. It is not a production engine selection or milestone acceptance.
 No production scan modules, image dependencies or runtime settings are changed.
 
-The separate [static pip frontend prototype](static-prototype.md) explores
-bounded general input discovery and typed include/constraint semantics. It is
+The separate [static Python frontend prototype](static-prototype.md) explores
+bounded general input discovery, typed include/constraint semantics and static
+manifest declarations. It is
 under review, not an engine selection or a production integration.
 
 `corpus.py` contains 60 handwritten cases with expected exact package identities,

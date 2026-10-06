@@ -46,7 +46,7 @@ def failed(reason):
         "packages": [],
         "edges": [],
         "application_identities": [],
-        "coverage": "prototype-pip-only",
+        "coverage": "prototype-static-python",
         "refusal_codes": [reason],
     }
 

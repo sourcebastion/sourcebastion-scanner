@@ -1,17 +1,49 @@
 # Static inventory frontend experiment
 
-This is an engine-neutral, pip-text-only evaluation frontend for M046 S01.
+This is an engine-neutral static Python evaluation frontend for M046 S01.
 It is not connected to the production scanner and does not select cdxgen,
 SCALIBR or extended Syft. The substantive extended-Syft comparison, typed
-manifest/lock adapters and reviewed architecture remain required.
+lock/graph adapters and reviewed architecture remain required.
 
 The registry considers recursively discovered `.in`, `.txt` and `.pip` files,
 including hidden paths. Conventional requirements/constraints names, exact
 local includes and explicitly mapped paths can contain bare declarations;
-ambiguous bare custom files and prose remain ignored. Other known manifests
-and locks are reported as unsupported, with separate inventory, export and
+ambiguous bare custom files and prose remain ignored. PEP 621 `pyproject.toml`,
+literal `setup.cfg` and a conservative `setup.py` AST subset have typed adapters.
+Other known manifests and locks are reported as unsupported, with separate inventory, export and
 matching states. An explicit mapping is data, not permission to execute or
 fetch anything. No repository code, package manager or metadata API is called.
+
+The manifest adapters retain indexed field locators, runtime/build/test/optional
+scopes, normalized extras, markers, root Python compatibility and explicitly
+declared first-party name/version identities. Static strings, lists and literal
+constants in a single unconditional standard `setup()` call are admitted without
+importing or executing the module. Relative imports, callable/import rebinding,
+computed values and executable statements are refused. CFG extras retain the
+original key spelling, including normalized legacy dash/case option aliases;
+one-line semicolons separate requirements, while dangling
+multiline requirements retain marker semicolons. CFG defaults, interpolation,
+`file:`/`attr:` references, dynamic inventory metadata and dependency groups are
+explicitly outside this subset. Mandatory PEP621 name/version, known dynamic
+fields and explicit build-system requires are checked; first-party versions use
+PEP440 version parsing, rather than requirement parsing. Recognized Poetry, PDM,
+uv, Setuptools, Hatch, Rye and Pixi tool sections admit only the small explicit
+metadata-only key registry. Dependency/resolver controls and unknown keys in
+those tools report unsupported rather than disappearing behind complete coverage.
+Unrelated tool configuration (such as Black) is outside this inventory registry.
+The adapter inventories declarations; it is not a full descriptive metadata
+validator or an effective installation resolver. Pins
+from different manifest files or runtime/build/optional scopes are never silently
+combined into an asserted installation. Root activation and transitive graph
+fidelity remain unknown where the source does not establish them.
+
+Repeated declarations retain distinct locators but share context selection work,
+avoiding quadratic repetition for a large same-package list. Manifest parse
+admission shares the remaining 100000-record budget and source
+deadline. AST token count (100000) and nesting (32) are bounded before AST
+allocation. Semantic expansion shares the global dimension/work ceilings. Known
+source changes during discovery or reads fail the whole inventory, discarding
+previous selections rather than retaining a partial result from a changed epoch.
 
 The grammar retains original byte hashes, logical source line locators,
 PEP 508 markers, normalized extras, hashes and original version declarations.
@@ -82,7 +114,7 @@ socket calls. The fixed scrubbed HOME points to controller scratch; the initial
 local diagnostic without this value observed failed Python-startup NSS socket
 attempts and is not accepted. These namespaces still expose host reads; they
 are not the production boundary. Whole trace review remains an independent
-gate. The 24 pip-text
+gate. The 24 pip-text and four static-manifest
 fixtures match the independent rich oracle locally; other formats do not
 claim supported semantic agreement. Native/process/network/write audits,
 overflow/performance distributions, SBOM validation, frozen-advisory matching,

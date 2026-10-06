@@ -14,9 +14,12 @@ from packaging.version import Version
 
 from .static_inputs import InputRefusal, Source, relative_path
 from .static_markers import context_key, disjoint
+from .static_manifests import parse as parse_manifest
+from .static_manifest_records import render as render_manifest
 from .static_requirements import Document, parse
 
-VERSION = "m046-static-inventory-prototype-v1"
+VERSION = "m046-static-inventory-prototype-v2"
+MANIFEST_FORMATS = {"pep621", "setup-cfg", "setup-python-static"}
 MAX_OCCURRENCES = 100000
 MAX_INCLUDE_DEPTH = 64
 MAX_INCLUDE_TARGETS = 4096
@@ -90,7 +93,7 @@ def evaluate(source, *, mapping=None):
             "packages": [],
             "edges": [],
             "application_identities": [],
-            "coverage": "prototype-pip-only",
+            "coverage": "prototype-static-python",
             "refusal_codes": [refusal.reason],
             "semantic_dimensions": {
                 "inputs": [],
@@ -119,6 +122,7 @@ def _evaluate(source, *, mapping=None):
     mapping = mapping_config(mapping)
     source.check()
     inputs, documents, refs = {}, {}, []
+    manifests = {}
     roots_for = defaultdict(set)
     outcomes = defaultdict(list)
     refusal_codes = []
@@ -166,6 +170,8 @@ def _evaluate(source, *, mapping=None):
                 inputs[path]["format"] = "unrecognized"
             return document
         except InputRefusal as refusal:
+            if refusal.reason.startswith("changed-") or refusal.reason in {"input-deadline-exceeded", "closed-source"}:
+                raise
             refusal_codes.append(refusal.reason)
             disposition = "budget-exceeded" if "budget" in refusal.reason or "deadline" in refusal.reason else "unsafe"
             inputs[path] = {**base, "disposition": disposition, "reason": refusal.reason}
@@ -190,10 +196,42 @@ def _evaluate(source, *, mapping=None):
                 load(entry.path)
             elif fmt == "unrecognized":
                 inputs[entry.path] = {**base, "disposition": "ignored", "reason": "unrecognized-input"}
+            elif fmt in MANIFEST_FORMATS:
+                try:
+                    data = source.read(entry.path)
+                except InputRefusal as refusal:
+                    if refusal.reason.startswith("changed-") or refusal.reason in {
+                        "input-deadline-exceeded",
+                        "closed-source",
+                    }:
+                        raise
+                    disposition = "budget-exceeded" if "budget" in refusal.reason else "unsafe"
+                    inputs[entry.path] = {**base, "disposition": disposition, "reason": refusal.reason}
+                    refusal_codes.append(refusal.reason)
+                    continue
+                document = parse_manifest(
+                    entry.path,
+                    data.content,
+                    fmt,
+                    deadline=source.deadline,
+                    max_records=MAX_OCCURRENCES - parsed_records,
+                )
+                parsed_records += len(document.declarations)
+                manifests[entry.path] = document
+                if document.disposition in {"unsupported", "malformed", "budget-exceeded"}:
+                    refusal_codes.append(document.reason)
+                inputs[entry.path] = {
+                    **base,
+                    "sha256": data.sha256,
+                    "disposition": document.disposition,
+                    "reason": document.reason,
+                }
             else:
                 # Unknown-to-this-adapter formats are never reported as parsed.
                 inputs[entry.path] = {**base, "disposition": "unsupported", "reason": "parser-not-implemented"}
     except InputRefusal as refusal:
+        if refusal.reason.startswith("changed-") or refusal.reason in {"input-deadline-exceeded", "closed-source"}:
+            raise
         discovery = "partial"
         refusal_codes.append(refusal.reason)
 
@@ -238,6 +276,7 @@ def _evaluate(source, *, mapping=None):
     seen_scopes = set()
     claimed_scopes = set()
     occurrences, declarations, all_roots = [], [], set()
+    applications, environments = [], []
     unresolved = False
 
     def context(seed):
@@ -502,6 +541,26 @@ def _evaluate(source, *, mapping=None):
                         "root": root,
                     },
                 )
+    for path, document in sorted(manifests.items()):
+        if path in incoming or path in claimed_scopes:
+            # An explicit pip include owns this input, including refused
+            # parent resolution. Never promote it through another adapter.
+            continue
+        if document.disposition != "parsed":
+            continue
+        root = posixpath.dirname(path) or "."
+        rendered = render_manifest(document, root, step)
+        status, reason = rendered["status"]
+        inputs[path].update(disposition=status, reason=reason)
+        roots_for[path].add(root)
+        all_roots.add(root)
+        extend(occurrences, rendered["occurrences"])
+        extend(declarations, rendered["declarations"])
+        extend(applications, rendered["applications"])
+        extend(environments, rendered["environment"])
+        unresolved = unresolved or rendered["unresolved"]
+        if status in {"unsupported", "malformed", "budget-exceeded"}:
+            refusal_codes.append(reason)
     rank = {
         "ignored": 0,
         "parsed": 1,
@@ -527,7 +586,7 @@ def _evaluate(source, *, mapping=None):
             else:
                 status, reason = max(options, key=lambda pair: rank[pair[0]])
                 record.update(disposition=status, reason=reason)
-        elif record["disposition"] == "parsed" and not documents[path].requirements:
+        elif path in documents and record["disposition"] == "parsed" and not documents[path].requirements:
             record.update(disposition="declaration-only", reason="no-required-package")
     partial = discovery != "complete" or any(
         record["disposition"] in {"unsupported", "malformed", "unsafe", "budget-exceeded"} for record in inputs.values()
@@ -539,8 +598,8 @@ def _evaluate(source, *, mapping=None):
         "declaration_records": declarations,
         "references": refs,
         "roots": sorted(all_roots),
-        "applications": [],
-        "environment_records": [],
+        "applications": applications,
+        "environment_records": environments,
         "fidelity": {
             "discovery": discovery,
             "parsing": "partial" if partial else "complete",
@@ -552,7 +611,10 @@ def _evaluate(source, *, mapping=None):
                 if any(record["disposition"] == "unsupported" for record in inputs.values())
                 else (
                     "conditional-unknown"
-                    if any(r["activation"] == "unknown" for r in occurrences) or any(r["marker"] for r in declarations)
+                    if any(r["activation"] == "unknown" for r in occurrences)
+                    or any(r["marker"] for r in declarations)
+                    or any(r["scope"].startswith("optional:") for r in declarations)
+                    or environments
                     else "unconditional"
                 )
             ),
@@ -566,9 +628,9 @@ def _evaluate(source, *, mapping=None):
         "matching_status": "not-run",
         "packages": sorted({record["package"] for record in occurrences}),
         "edges": [],
-        "application_identities": [],
+        "application_identities": sorted({record["identity"] for record in applications}),
         "semantic_dimensions": dimensions,
-        "coverage": "prototype-pip-only",
+        "coverage": "prototype-static-python",
         "refusal_codes": sorted(set(refusal_codes)),
         "budgets": {
             "status": "proposed-not-frozen",

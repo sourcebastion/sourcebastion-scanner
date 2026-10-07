@@ -176,7 +176,7 @@ jobs:
         run: |
           pip install --no-cache-dir -r requirements.txt
           pip install --no-cache-dir -e .
-          pip install --no-cache-dir pytest pytest-cov pytest-xdist psutil jsonschema==4.26.0 referencing==0.37.0 attrs==26.1.0 rpds-py==2026.6.3 jsonschema-specifications==2025.9.1
+          pip install --no-cache-dir pytest pytest-cov pytest-xdist psutil jsonschema==4.26.0 referencing==0.37.0 attrs==26.1.0 rpds-py==2026.6.3 jsonschema-specifications==2025.9.1 typing-extensions==4.16.0
 
       - name: Install trusted host Node for inventory selector tests
         run: |
@@ -384,14 +384,14 @@ jobs:
         id: inventory_cyclonedx_validation
         run: |
           python3 -m venv "$RUNNER_TEMP/cyclonedx-validator"
-          "$RUNNER_TEMP/cyclonedx-validator/bin/pip" download --only-binary=:all: \
+          "$RUNNER_TEMP/cyclonedx-validator/bin/pip" download --no-deps --only-binary=:all: \
             --dest "$RUNNER_TEMP/cyclonedx-validator/wheels" \
             jsonschema==4.26.0 referencing==0.37.0 attrs==26.1.0 rpds-py==2026.6.3 \
-            jsonschema-specifications==2025.9.1 > cyclonedx-validator-download.log
+            jsonschema-specifications==2025.9.1 typing-extensions==4.16.0 > cyclonedx-validator-download.log
           "$RUNNER_TEMP/cyclonedx-validator/bin/pip" install --no-index \
             --find-links "$RUNNER_TEMP/cyclonedx-validator/wheels" \
             jsonschema==4.26.0 referencing==0.37.0 attrs==26.1.0 rpds-py==2026.6.3 \
-            jsonschema-specifications==2025.9.1 > cyclonedx-validator-install.log
+            jsonschema-specifications==2025.9.1 typing-extensions==4.16.0 > cyclonedx-validator-install.log
           timeout 150s "$RUNNER_TEMP/cyclonedx-validator/bin/python" \
             scripts/validate-inventory-cyclonedx.py inventory-cyclonedx-native.json > inventory-cyclonedx-validation.json
 

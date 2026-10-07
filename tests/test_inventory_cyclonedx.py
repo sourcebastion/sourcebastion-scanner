@@ -220,6 +220,24 @@ def test_host_gate_binds_untampered_canonical_facts():
     host_binding_gate(retained_case())
 
 
+@pytest.mark.parametrize("changed", [None, "typing-extensions", "jsonschema"])
+def test_host_validator_refuses_changed_direct_or_transitive_tool_version(monkeypatch, changed):
+    path = Path(__file__).resolve().parents[1] / "scripts/validate-inventory-cyclonedx.py"
+    spec = importlib.util.spec_from_file_location("trusted_cyclonedx_version_gate", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    versions = dict(module.VALIDATOR_VERSIONS)
+    assert versions["typing-extensions"] == "4.16.0" and len(versions) == 6
+    if changed is not None:
+        versions[changed] = "0.0.0"
+    monkeypatch.setattr(module.importlib.metadata, "version", versions.__getitem__)
+    if changed is None:
+        assert module.validator_versions() == versions
+    else:
+        with pytest.raises(RuntimeError, match="unreviewed-cyclonedx-validator-version"):
+            module.validator_versions()
+
+
 @pytest.mark.parametrize(
     "tamper", ["source", "occurrence", "line", "context", "identity", "coverage", "stages", "scope-loss", "loss-count"]
 )

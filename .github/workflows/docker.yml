@@ -485,6 +485,24 @@ jobs:
           path: inventory-matching-native.json
           if-no-files-found: error
 
+      - name: Exercise installed inactive direct pipeline offline
+        id: inventory_direct_pipeline
+        run: |
+          docker run --rm --init --no-healthcheck --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
+            -v "$PWD:/repo:ro" -w /repo \
+            sourcebastion:standard-rule-test -I scripts/verify-inventory-direct-pipeline.py > inventory-direct-pipeline-native.json
+
+      - name: Upload native direct pipeline evidence
+        if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_direct_pipeline.outcome)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-direct-pipeline-${{ matrix.arch }}
+          path: inventory-direct-pipeline-native.json
+          if-no-files-found: error
+
       - name: Build pinned restricted provider outside customer scanning
         id: inventory_provider_preparation
         run: python3 scripts/build-inventory-provider.py --output "$RUNNER_TEMP/inventory-provider"

@@ -371,6 +371,23 @@ jobs:
           path: inventory-composition-native.json
           if-no-files-found: error
 
+      - name: Exercise installed Python metadata observations offline
+        id: inventory_metadata
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=16m --entrypoint python3 \
+            -v "$PWD:/workspace:ro" -w /workspace \
+            sourcebastion:standard-rule-test scripts/verify-inventory-metadata.py > inventory-metadata-native.json
+
+      - name: Upload native Python metadata evidence
+        if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_metadata.outcome)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-metadata-${{ matrix.arch }}
+          path: inventory-metadata-native.json
+          if-no-files-found: error
+
       - name: Exercise installed canonical CycloneDX export offline
         id: inventory_cyclonedx
         run: |

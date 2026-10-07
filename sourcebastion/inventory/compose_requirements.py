@@ -507,6 +507,7 @@ def _compose(
             applicability=[],
             relationships=[],
             dependency_selectors=[],
+            losses=[],
             graph="unknown",
             root_contexts=defaultdict(set),
             adapted_inputs=set(),
@@ -541,6 +542,9 @@ def _compose(
             from .compose_go import extend as extend_go
 
             extend_go(extra, go_runtime)
+            from .compose_metadata import extend as extend_metadata
+
+            extend_metadata(extra)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(
@@ -580,7 +584,7 @@ def _compose(
             installed_environments=(),
             relationships=tuple(extra.relationships),
             applications=tuple(extra.applications),
-            losses=(),
+            losses=tuple(extra.losses),
             applicability=tuple(extra.applicability),
             dependency_selectors=tuple(extra.dependency_selectors),
             analysis_scopes=tuple(scopes),

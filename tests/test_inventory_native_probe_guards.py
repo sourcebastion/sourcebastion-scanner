@@ -15,6 +15,7 @@ import pytest
         "verify-inventory-foundation.py",
         "verify-inventory-composition.py",
         "verify-go-source.py",
+        "verify-inventory-metadata.py",
         "verify-inventory-cyclonedx.py",
         "validate-inventory-cyclonedx.py",
         "verify-inventory-matching.py",

@@ -13,6 +13,7 @@ import json
 import posixpath
 import re
 
+from .budget import PipelineBudget
 from .inputs import InputRefusal, Source
 from .registry import DiscoveryConfig, REGISTRY_SHA256, VERSION, format_for
 from .requirements import Document, parse
@@ -67,7 +68,7 @@ def _disposition(reason):
     return "failed"
 
 
-def discover(source, *, config=None):
+def discover(source, *, config=None, budget=None):
     """Use a controller-held Source; caller retains it for later adapters.
 
     Only parsed-input hashes are digested here, not the whole repository.
@@ -78,6 +79,10 @@ def discover(source, *, config=None):
     config = config or DiscoveryConfig()
     if not isinstance(config, DiscoveryConfig):
         raise TypeError("validated DiscoveryConfig required")
+    if budget is not None:
+        if type(budget) is not PipelineBudget:
+            raise TypeError("controller-pipeline-budget-required")
+        budget.bind(source, config)
     records, documents, references, refusals = {}, {}, set(), set()
     contexts = set()
     parsed_records = 0
@@ -162,7 +167,10 @@ def discover(source, *, config=None):
                     return
                 for ref in doc.references:
                     checks += 1
-                    source.check()
+                    if budget is not None:
+                        budget.step()
+                    else:
+                        source.check()
                     if checks > config.semantic_checks:
                         raise InputRefusal("reference-check-budget-exceeded")
                     target_role = "constraint" if role == "constraint" or ref.kind == "constraint" else "requirement"

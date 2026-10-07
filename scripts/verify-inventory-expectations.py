@@ -220,6 +220,7 @@ def verify(binary, preparation):
     if sys.flags.optimize:
         raise RuntimeError("optimized-probe-runtime-refused")
     from sourcebastion.inventory import contract
+    from sourcebastion.inventory.budget import PipelineBudget
     from sourcebastion.inventory.compose_source import compose_source
     from sourcebastion.inventory.contract import Environment, Inventory, InventoryLimits, Producer, canonical_bytes
     from sourcebastion.inventory.inputs import Source
@@ -274,8 +275,11 @@ def verify(binary, preparation):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(content)
             with Source(root) as source:
-                value = compose_source(source, source_sha256=source_sha256, producer=producer, config=config, go_runtime=go_runtime)
+                budget = PipelineBudget(source, config=config, deadline=source.deadline)
+                value = compose_source(source, source_sha256=source_sha256, producer=producer, config=config, go_runtime=go_runtime, budget=budget)
+                after_composition = budget.consumed
                 encoded = canonical_bytes(value)
+                budget.guard()
                 actual = Inventory.model_validate_json(encoded)
                 assert set(json.loads(encoded)) == set(COLLECTIONS) | {
                     "schema_version",
@@ -293,9 +297,23 @@ def verify(binary, preparation):
                 assert actual.limits == InventoryLimits()
                 compare(case, json.loads(encoded))
                 source.validate()
-                repeated = compose_source(source, source_sha256=source_sha256, producer=producer, config=config, go_runtime=go_runtime)
+                budget.guard()
+                repeated = compose_source(source, source_sha256=source_sha256, producer=producer, config=config, go_runtime=go_runtime, budget=budget)
                 assert canonical_bytes(repeated) == encoded
-            records.append({"case": case["case"], "inventory_sha256": sha(encoded)})
+                source.validate()
+                budget.guard()
+                assert 0 <= after_composition <= budget.consumed <= budget.maximum == config.semantic_checks
+                assert budget.refusal_reason is None
+            records.append({
+                "case": case["case"], "inventory_sha256": sha(encoded),
+                "cooperative_budget": {
+                    "maximum": budget.maximum,
+                    "after_composition": after_composition,
+                    "after_repeat": budget.consumed,
+                    "config_sha256": config.sha256,
+                    "deadline_policy": "one-per-case-Source-deadline-shared-across-both-compositions-and-validation",
+                },
+            })
     assert modules(installed) == modules(checkout) == source_modules
     assert EXPECTATIONS.read_bytes() == raw and CORPUS.read_bytes() == corpus_raw
     go_unchanged()
@@ -309,6 +327,7 @@ def verify(binary, preparation):
                 "architecture": platform.machine(),
                 "source_modules": source_modules,
                 "go_runtime": go_receipt,
+                "cooperative_budget_scope": "Existing reference/adapter semantic sites share one ledger per fixture Source across repeats. Serialization/schema validation are deadline-guarded but not wholly semantic-charged; no whole-job/kernel-resource or test-preparation accounting claim.",
                 "cases": records,
                 "scope": f"{len(records)} reviewed source cases, full record/coverage comparison and repeatability; no full64 corpus, controller custody, real matching, shared kernel resources or S03/M046 acceptance.",
             },

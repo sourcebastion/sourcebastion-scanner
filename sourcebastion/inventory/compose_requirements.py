@@ -16,6 +16,7 @@ from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 from pydantic import ValidationError
 
+from .budget import PipelineBudget
 from .contract import (
     AnalysisScope,
     ContentHash,
@@ -137,6 +138,7 @@ def _compose(
     limits=None,
     manifest_inputs=False,
     go_runtime=None,
+    budget=None,
 ):
     """Consume a controller Source once; publish only after final epoch checks.
 
@@ -153,6 +155,10 @@ def _compose(
     config = config if config is not None else DiscoveryConfig()
     if not isinstance(config, DiscoveryConfig):
         raise TypeError("validated DiscoveryConfig required")
+    if budget is not None:
+        if type(budget) is not PipelineBudget:
+            raise TypeError("controller-pipeline-budget-required")
+        budget.bind(source, config)
     if producer.registry_sha256 != REGISTRY_SHA256 or producer.config_sha256 != config.sha256:
         raise ValueError("producer-discovery-config-mismatch")
     expected_limits = _source_limits(source, config)
@@ -170,7 +176,7 @@ def _compose(
         if getattr(limits, key) != getattr(expected_limits, key):
             raise ValueError("source-discovery-limit-mismatch")
 
-    result = discover(source, config=config)
+    result = discover(source, config=config, budget=budget)
     inputs = {}
     global_refusals = set(result.refusal_codes)
     for row in result.inputs:
@@ -196,7 +202,10 @@ def _compose(
     def step(count=1):
         nonlocal checks
         checks += count
-        source.check()
+        if budget is not None:
+            budget.step(count)
+        else:
+            source.check()
         if checks > limits.semantic_checks:
             raise InputRefusal("composition-check-budget-exceeded")
 
@@ -622,8 +631,14 @@ def _compose(
         return build_failed("canonical-composition-refused")
 
 
-def compose_requirements(source, *, source_sha256, producer, environment=None, config=None, limits=None):
+def compose_requirements(source, *, source_sha256, producer, environment=None, config=None, limits=None, budget=None):
     """Compose pip inputs only, retaining other formats as unsupported."""
     return _compose(
-        source, source_sha256=source_sha256, producer=producer, environment=environment, config=config, limits=limits
+        source,
+        source_sha256=source_sha256,
+        producer=producer,
+        environment=environment,
+        config=config,
+        limits=limits,
+        budget=budget,
     )

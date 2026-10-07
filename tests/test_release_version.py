@@ -102,7 +102,7 @@ def test_the_distribution_packages_only_the_scanner():
     from setuptools import find_packages
 
     packaged = set(find_packages(include=["sourcebastion", "sourcebastion.*"]))
-    assert packaged == {"sourcebastion", "sourcebastion.data"}, packaged
+    assert packaged == {"sourcebastion", "sourcebastion.data", "sourcebastion.inventory"}, packaged
 
     text = SETUP.read_text(encoding="utf-8")
     assert "find_packages(include=" in text, (

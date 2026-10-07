@@ -1,0 +1,4843 @@
+[
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "requests==2.32.3\n"
+    },
+    "id": "python-requirements",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.in",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "requirements.in",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.in": "requests==2.32.3\n"
+    },
+    "id": "python-input",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "deploy.in",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==3.0.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:flask@3.0.3",
+          "path": "deploy.in",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:flask@3.0.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "deploy.in": "flask==3.0.3\n"
+    },
+    "id": "python-custom-input",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "dependencies-prod.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "80f8850e2610137981bd9b8edb994f31b458e1bd7289517f08ccf6f2e8d59cd7"
+        }
+      ],
+      "note": "Synthetic hash exercises syntax, not download integrity.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "dependencies-prod.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "dependencies-prod.txt": "requests==2.32.3 \\\n    --hash=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+    },
+    "id": "python-custom-hashed-lock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": ".deps/requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            ".deps"
+          ],
+          "sha256": "aaffcb0f96ad04e7a604f49f76bc861f5bcd9afc1ea763c825e3f07788185d9c"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.2.2",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:urllib3@2.2.2",
+          "path": ".deps/requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".deps",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:urllib3@2.2.2"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        ".deps"
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      ".deps/requirements.txt": "urllib3==2.2.2\n"
+    },
+    "id": "python-hidden",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "5ee0d37af3c623ad9c06f0e55a912a2719b5155ed1c6a1da5065b66ef5ec1f59"
+        },
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "locks/base.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        }
+      ],
+      "note": "Include is provenance, not a package dependency edge.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "locks/base.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [
+        {
+          "kind": "include",
+          "locator": "line:1",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "locks/base.txt"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "locks/base.txt": "requests==2.32.3\n",
+      "requirements.txt": "-r locks/base.txt\n"
+    },
+    "id": "python-include",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:urllib3",
+          "path": "constraints.txt",
+          "range": "==2.2.2",
+          "root": ".",
+          "scope": "constraint"
+        }
+      ],
+      "declarations": [],
+      "disposition": "declaration-only",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "declaration-only",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "no-required-package",
+          "roots": [
+            "."
+          ],
+          "sha256": "dd08b85f6c0466bf7cb4185de7da91a603e6f6e2af958fdcd977b42029a83932"
+        },
+        {
+          "disposition": "declaration-only",
+          "format": "pip-requirements",
+          "path": "constraints.txt",
+          "reason": "constraint-only",
+          "roots": [
+            "."
+          ],
+          "sha256": "aaffcb0f96ad04e7a604f49f76bc861f5bcd9afc1ea763c825e3f07788185d9c"
+        }
+      ],
+      "note": "A constraint does not install a dependency.",
+      "occurrences": [],
+      "packages": [],
+      "references": [
+        {
+          "kind": "constraint",
+          "locator": "line:1",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "constraints.txt"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "constraints.txt": "urllib3==2.2.2\n",
+      "requirements.txt": "-c constraints.txt\n"
+    },
+    "id": "python-constraint-only",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:requests",
+          "path": "requirements.txt",
+          "range": "",
+          "root": ".",
+          "scope": "unknown"
+        },
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:requests",
+          "path": "constraints.txt",
+          "range": "==2.32.3",
+          "root": ".",
+          "scope": "constraint"
+        }
+      ],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "b8cceb535d5fd0c168e534c7cdb0583bbedac6754b293802abf443ac5362b70e"
+        },
+        {
+          "disposition": "declaration-only",
+          "format": "pip-requirements",
+          "path": "constraints.txt",
+          "reason": "constraint-only",
+          "roots": [
+            "."
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        }
+      ],
+      "note": "Exact constraint intersects the required package; activation remains declared.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "constrained"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [
+        {
+          "kind": "constraint",
+          "locator": "line:2",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "constraints.txt"
+        },
+        {
+          "kind": "version-evidence",
+          "locator": "line:1",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "constraints.txt"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "constraints.txt": "requests==2.32.3\n",
+      "requirements.txt": "requests\n-c constraints.txt\n"
+    },
+    "id": "python-constraint-resolves",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "conditional-unknown",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "8734ae47827dc95bc2e76744bb95c8675584512ef5e1a6a11c73311a2540f17f"
+        }
+      ],
+      "note": "Inventory includes conditional declaration, not a claim it is installed.",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": "python_version < \"3.12\"",
+          "package": "pypi:requests@2.32.3",
+          "path": "requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "requests==2.32.3; python_version < \"3.12\"\n"
+    },
+    "id": "python-marker",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "fde7ce0c52a2666e5be07afbddfa2e0a0853d86553be0f478308fb9e145577ee"
+        }
+      ],
+      "note": "No guessed PySocks edge: extras require further metadata.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [
+            "socks"
+          ],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "requests[socks]==2.32.3\n"
+    },
+    "id": "python-extras",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:requests",
+          "path": "requirements.txt",
+          "range": ">=2.31,<3",
+          "root": ".",
+          "scope": "unknown"
+        }
+      ],
+      "declarations": [
+        "pypi:requests:>=2.31,<3"
+      ],
+      "disposition": "declaration-only",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "declaration-only",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "no-selected-version",
+          "roots": [
+            "."
+          ],
+          "sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+        }
+      ],
+      "note": "Do not match a range as an installed version.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "requests>=2.31,<3\n"
+    },
+    "id": "python-range",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "091d1415f7d163c9ff9fbb2a8f2c6a56928fadd55e6b0c809a0980639045702f"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==4.12.2",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:typing-extensions@4.12.2",
+          "path": "requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:typing-extensions@4.12.2"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "Typing_Extensions==4.12.2\n"
+    },
+    "id": "python-normalization",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "a/requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "a"
+          ],
+          "sha256": "1d277ef3981a3e49b02912a0f03fe1ab563539d7e4e1b5c1e6404a57b19d883f"
+        },
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "b/requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "b"
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        }
+      ],
+      "note": "Keep distinct roots and versions.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.31.0",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.31.0",
+          "path": "a/requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": "a",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "b/requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": "b",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.31.0",
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "a",
+        "b"
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "a/requirements.txt": "requests==2.31.0\n",
+      "b/requirements.txt": "requests==2.32.3\n"
+    },
+    "id": "python-conflicting-roots",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [
+        {
+          "identity": "pypi:fixture@1.0.0",
+          "path": "pyproject.toml",
+          "root": "."
+        }
+      ],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pep621",
+          "path": "pyproject.toml",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "project.dependencies[0]",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "pyproject.toml",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "runtime",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pyproject.toml": "[project]\nname=\"fixture\"\nversion=\"1.0.0\"\ndependencies=[\"requests==2.32.3\"]\n"
+    },
+    "id": "python-pyproject",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [
+        {
+          "identity": "pypi:fixture@1.0.0",
+          "path": "pyproject.toml",
+          "root": "."
+        }
+      ],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "conditional-unknown",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pep621",
+          "path": "pyproject.toml",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2"
+        }
+      ],
+      "note": "Optional scope must survive inventory.",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": "==8.3.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "project.optional-dependencies.test[0]",
+          "marker": null,
+          "package": "pypi:pytest@8.3.3",
+          "path": "pyproject.toml",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "optional:test",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:pytest@8.3.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pyproject.toml": "[project]\nname=\"fixture\"\nversion=\"1.0.0\"\n[project.optional-dependencies]\ntest=[\"pytest==8.3.3\"]\n"
+    },
+    "id": "python-pyproject-optional",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "setup-cfg",
+          "path": "setup.cfg",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "1e95ac6fa87362e92a2a0fd8ad9a39acb6b60f8bf4bbd7cfdbbbac215a484734"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "options.install_requires[0]",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "setup.cfg",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "runtime",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "setup.cfg": "[metadata]\nname=fixture\n[options]\ninstall_requires=\n    requests==2.32.3\n"
+    },
+    "id": "python-setup-cfg",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "setup-python-static",
+          "path": "setup.py",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "c602c643f9c785edc005e47d2ff707ba050b3344e08d65b941f105eeb4cce3e5"
+        }
+      ],
+      "note": "Static AST only; execution is forbidden.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "setup.install_requires[0]",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "setup.py",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "runtime",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "setup.py": "from setuptools import setup\nsetup(name=\"fixture\", install_requires=[\"requests==2.32.3\"])\n"
+    },
+    "id": "python-static-setup",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsupported",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsupported",
+          "format": "setup-python-static",
+          "path": "setup.py",
+          "reason": "dynamic-metadata",
+          "roots": [
+            "."
+          ],
+          "sha256": "5d071eae94b79e2e2038431790b1a24427a35d5374b8be3df9f537191dbe57ae"
+        }
+      ],
+      "note": "Must report dynamic metadata without executing it.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "setup.py": "from pathlib import Path\nPath(\"EXECUTED\").write_text(\"unsafe\")\nfrom setuptools import setup\nsetup(name=\"fixture\", install_requires=compute_dependencies())\n"
+    },
+    "id": "python-dynamic-setup",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsupported",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unknown",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsupported",
+          "format": "pipfile-lock",
+          "path": "Pipfile.lock",
+          "reason": "missing-lock-metadata",
+          "roots": [
+            "."
+          ],
+          "sha256": "1b95d73db28ba2f4c7b12b26c09b55adfc71d33f16026f6d6515eb977b438924"
+        }
+      ],
+      "note": "Enumeration fragment: missing required Pipfile hash/requires/sources metadata; no complete lock claim.",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "/default/requests",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "Pipfile.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": "==8.3.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "/develop/pytest",
+          "marker": null,
+          "package": "pypi:pytest@8.3.3",
+          "path": "Pipfile.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "development",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3",
+        "pypi:pytest@8.3.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "Pipfile.lock": "{\"_meta\": {\"pipfile-spec\": 6}, \"default\": {\"requests\": {\"version\": \"==2.32.3\"}}, \"develop\": {\"pytest\": {\"version\": \"==8.3.3\"}}}"
+    },
+    "id": "python-pipfile",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pipfile-lock",
+          "path": "Pipfile.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "ecade002b96f8e0ecd5f22f8b53544232ac83362436a18970337e657032cdd5f"
+        }
+      ],
+      "note": "Complete structural metadata with synthetic hashes, not Pipfile freshness or download integrity proof.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "/default/requests",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "Pipfile.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": "==8.3.3",
+          "extras": [],
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "/develop/pytest",
+          "marker": null,
+          "package": "pypi:pytest@8.3.3",
+          "path": "Pipfile.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "development",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3",
+        "pypi:pytest@8.3.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "Pipfile.lock": "{\"_meta\": {\"pipfile-spec\": 6, \"hash\": {\"sha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}, \"requires\": {}, \"sources\": [{\"name\": \"pypi\", \"url\": \"https://pypi.org/simple\", \"verify_ssl\": true}]}, \"default\": {\"requests\": {\"version\": \"==2.32.3\", \"hashes\": [\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"], \"index\": \"pypi\"}}, \"develop\": {\"pytest\": {\"version\": \"==8.3.3\", \"hashes\": [\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"], \"index\": \"pypi\"}}}"
+    },
+    "id": "python-pipfile-complete",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "malformed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "malformed",
+          "format": "poetry-lock",
+          "path": "poetry.lock",
+          "reason": "invalid-lock-metadata-hash",
+          "roots": [
+            "."
+          ],
+          "sha256": "972c46eb0e0a24f1ddf62c5045636469b19acc287decb7235d25500d358502be"
+        }
+      ],
+      "note": "The historical literal content-hash=fixture is not a SHA256 lock metadata hash. v4 keeps its bytes and treats it as a negative case.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "poetry.lock": "[[package]]\nname=\"requests\"\nversion=\"2.32.3\"\ndescription=\"\"\noptional=false\npython-versions=\">=3.8\"\nfiles=[]\n[metadata]\nlock-version=\"2.0\"\npython-versions=\">=3.8\"\ncontent-hash=\"fixture\"\n"
+    },
+    "id": "python-poetry",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [
+        {
+          "activation": "unknown",
+          "kind": "root",
+          "locator": "requires-python",
+          "path": "uv.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        }
+      ],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "conditional-unknown",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsupported",
+          "format": "uv-lock",
+          "path": "uv.lock",
+          "reason": "missing-lock-source",
+          "roots": [
+            "."
+          ],
+          "sha256": "b6607401adeeb0763b5230d8f53b670f56428d9d41d3818dff5eaf071c54f213"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": null,
+          "hashes": [],
+          "locator": "package[0]",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "uv.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked",
+          "source_identity": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+          "source_kind": "registry-asserted"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "uv.lock": "version=1\nrevision=3\nrequires-python=\">=3.12\"\n[[package]]\nname=\"requests\"\nversion=\"2.32.3\"\nsource={registry=\"https://pypi.org/simple\"}\n"
+    },
+    "id": "python-uv",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [
+        {
+          "activation": "unknown",
+          "kind": "package",
+          "locator": "package[0].requires_python",
+          "package": "pypi:requests@2.32.3",
+          "path": "pdm.lock",
+          "requires_python": ">=3.8",
+          "root": "."
+        }
+      ],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "conditional-unknown",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsupported",
+          "format": "pdm-lock",
+          "path": "pdm.lock",
+          "reason": "missing-lock-source",
+          "roots": [
+            "."
+          ],
+          "sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "default",
+          "hashes": [],
+          "locator": "package[0].groups[0]",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "pdm.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.8",
+          "root": ".",
+          "scope": "group:default",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pdm.lock": "[metadata]\nlock_version=\"4.5.0\"\ngroups=[\"default\"]\nstrategy=[\"inherit_metadata\"]\n[[package]]\nname=\"requests\"\nversion=\"2.32.3\"\nrequires_python=\">=3.8\"\ngroups=[\"default\"]\nfiles=[]\n"
+    },
+    "id": "python-pdm",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [
+        [
+          "pypi:parent@1",
+          "pypi:foo@1"
+        ]
+      ],
+      "environment_records": [
+        {
+          "activation": "unknown",
+          "constraint_dialect": "poetry-core-2.1.3",
+          "kind": "root",
+          "locator": "metadata.python-versions",
+          "path": "poetry.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        },
+        {
+          "activation": "unknown",
+          "constraint_dialect": "poetry-core-2.1.3",
+          "kind": "package",
+          "locator": "package[0].python-versions",
+          "package": "pypi:parent@1",
+          "path": "poetry.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        },
+        {
+          "activation": "unknown",
+          "constraint_dialect": "poetry-core-2.1.3",
+          "kind": "package",
+          "locator": "package[1].python-versions",
+          "package": "pypi:foo@1",
+          "path": "poetry.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        }
+      ],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "conditional-unknown",
+        "graph": "evidenced-only",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "poetry-lock",
+          "path": "poetry.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7"
+        }
+      ],
+      "note": "Registry subset, per-group marker and repeated group occurrences. Hash assertions do not prove freshness or authenticity.",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "main",
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "package[0].groups[0]",
+          "marker": "os_name == \"posix\"",
+          "optional": false,
+          "package": "pypi:parent@1",
+          "path": "poetry.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "requires_python_dialect": "poetry-core-2.1.3",
+          "root": ".",
+          "scope": "group:main",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "test",
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "package[0].groups[1]",
+          "marker": null,
+          "optional": false,
+          "package": "pypi:parent@1",
+          "path": "poetry.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "requires_python_dialect": "poetry-core-2.1.3",
+          "root": ".",
+          "scope": "group:test",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "main",
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "package[1].groups[0]",
+          "marker": null,
+          "optional": false,
+          "package": "pypi:foo@1",
+          "path": "poetry.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "requires_python_dialect": "poetry-core-2.1.3",
+          "root": ".",
+          "scope": "group:main",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "test",
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "package[1].groups[1]",
+          "marker": null,
+          "optional": false,
+          "package": "pypi:foo@1",
+          "path": "poetry.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "requires_python_dialect": "poetry-core-2.1.3",
+          "root": ".",
+          "scope": "group:test",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        }
+      ],
+      "packages": [
+        "pypi:parent@1",
+        "pypi:foo@1"
+      ],
+      "references": [],
+      "relationships": [
+        {
+          "activation": "unknown",
+          "child": "pypi:foo@1",
+          "child_locator": "package[1]",
+          "child_source_identity": null,
+          "constraint_dialect": "poetry-core-2.1.3",
+          "declared_constraint": ">=1,<2",
+          "extras": [],
+          "group": "main",
+          "kind": "dependency",
+          "locator": "package[0].dependencies.foo",
+          "marker": null,
+          "marker_semantics": "pep508",
+          "parent": "pypi:parent@1",
+          "parent_locator": "package[0].groups[0]",
+          "path": "poetry.lock",
+          "root": ".",
+          "scope": "group:main"
+        },
+        {
+          "activation": "unknown",
+          "child": "pypi:foo@1",
+          "child_locator": "package[1]",
+          "child_source_identity": null,
+          "constraint_dialect": "poetry-core-2.1.3",
+          "declared_constraint": ">=1,<2",
+          "extras": [],
+          "group": "test",
+          "kind": "dependency",
+          "locator": "package[0].dependencies.foo",
+          "marker": null,
+          "marker_semantics": "pep508",
+          "parent": "pypi:parent@1",
+          "parent_locator": "package[0].groups[1]",
+          "path": "poetry.lock",
+          "root": ".",
+          "scope": "group:test"
+        }
+      ],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "poetry.lock": "[metadata]\nlock-version=\"2.1\"\npython-versions=\">=3.12\"\ncontent-hash=\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"\n[[package]]\nname=\"parent\"\nversion=\"1\"\noptional=false\npython-versions=\">=3.12\"\ngroups=[\"main\",\"test\"]\nmarkers={main=\"os_name == 'posix'\"}\nfiles=[{file=\"parent-1-py3-none-any.whl\",hash=\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]\n[package.dependencies]\nfoo=\">=1,<2\"\n[[package]]\nname=\"foo\"\nversion=\"1\"\noptional=false\npython-versions=\">=3.12\"\ngroups=[\"main\",\"test\"]\nfiles=[{file=\"foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\n"
+    },
+    "id": "python-poetry-graph",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [
+        [
+          "pypi:parent@1",
+          "pypi:foo@1"
+        ],
+        [
+          "pypi:foo@1",
+          "pypi:foo@1"
+        ]
+      ],
+      "environment_records": [
+        {
+          "activation": "unknown",
+          "kind": "root",
+          "locator": "metadata.targets[0].requires_python",
+          "path": "pdm.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        },
+        {
+          "activation": "unknown",
+          "kind": "package",
+          "locator": "package[0].requires_python",
+          "package": "pypi:parent@1",
+          "path": "pdm.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        },
+        {
+          "activation": "unknown",
+          "kind": "package",
+          "locator": "package[1].requires_python",
+          "package": "pypi:foo@1",
+          "path": "pdm.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        },
+        {
+          "activation": "unknown",
+          "kind": "package",
+          "locator": "package[2].requires_python",
+          "package": "pypi:foo@1",
+          "path": "pdm.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        }
+      ],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "conditional-unknown",
+        "graph": "evidenced-only",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pdm-lock",
+          "path": "pdm.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218"
+        }
+      ],
+      "note": "Inherited groups and requested-extra candidate identity retained, including generated extras-to-base edge. Same-purl edges are a projection; occurrence locators disambiguate. Registry origin unknown.",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "default",
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "package[0].groups[0]",
+          "marker": null,
+          "package": "pypi:parent@1",
+          "path": "pdm.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "root": ".",
+          "scope": "group:default",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "test",
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "package[0].groups[1]",
+          "marker": null,
+          "package": "pypi:parent@1",
+          "path": "pdm.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "root": ".",
+          "scope": "group:test",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [
+            "test"
+          ],
+          "group": "default",
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "package[1].groups[0]",
+          "marker": null,
+          "package": "pypi:foo@1",
+          "path": "pdm.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "root": ".",
+          "scope": "group:default",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [
+            "test"
+          ],
+          "group": "test",
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "package[1].groups[1]",
+          "marker": null,
+          "package": "pypi:foo@1",
+          "path": "pdm.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "root": ".",
+          "scope": "group:test",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "default",
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "package[2].groups[0]",
+          "marker": null,
+          "package": "pypi:foo@1",
+          "path": "pdm.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "root": ".",
+          "scope": "group:default",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": "test",
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "package[2].groups[1]",
+          "marker": null,
+          "package": "pypi:foo@1",
+          "path": "pdm.lock",
+          "relationship": "unknown",
+          "requires_python": ">=3.12",
+          "root": ".",
+          "scope": "group:test",
+          "selection": "locked",
+          "source_identity": null,
+          "source_kind": "unknown"
+        }
+      ],
+      "packages": [
+        "pypi:parent@1",
+        "pypi:foo@1"
+      ],
+      "references": [],
+      "relationships": [
+        {
+          "activation": "unknown",
+          "child": "pypi:foo@1",
+          "child_locator": "package[1]",
+          "child_source_identity": null,
+          "constraint_dialect": "pep440",
+          "declared_constraint": ">=1,<2",
+          "extras": [
+            "test"
+          ],
+          "group": "default",
+          "kind": "dependency",
+          "locator": "package[0].dependencies[0]",
+          "marker": null,
+          "marker_semantics": "pep508",
+          "parent": "pypi:parent@1",
+          "parent_locator": "package[0].groups[0]",
+          "path": "pdm.lock",
+          "root": ".",
+          "scope": "group:default"
+        },
+        {
+          "activation": "unknown",
+          "child": "pypi:foo@1",
+          "child_locator": "package[1]",
+          "child_source_identity": null,
+          "constraint_dialect": "pep440",
+          "declared_constraint": ">=1,<2",
+          "extras": [
+            "test"
+          ],
+          "group": "test",
+          "kind": "dependency",
+          "locator": "package[0].dependencies[0]",
+          "marker": null,
+          "marker_semantics": "pep508",
+          "parent": "pypi:parent@1",
+          "parent_locator": "package[0].groups[1]",
+          "path": "pdm.lock",
+          "root": ".",
+          "scope": "group:test"
+        },
+        {
+          "activation": "unknown",
+          "child": "pypi:foo@1",
+          "child_locator": "package[2]",
+          "child_source_identity": null,
+          "constraint_dialect": "pep440",
+          "declared_constraint": "==1",
+          "extras": [],
+          "group": "default",
+          "kind": "dependency",
+          "locator": "package[1].dependencies[0]",
+          "marker": null,
+          "marker_semantics": "pep508",
+          "parent": "pypi:foo@1",
+          "parent_locator": "package[1].groups[0]",
+          "path": "pdm.lock",
+          "root": ".",
+          "scope": "group:default"
+        },
+        {
+          "activation": "unknown",
+          "child": "pypi:foo@1",
+          "child_locator": "package[2]",
+          "child_source_identity": null,
+          "constraint_dialect": "pep440",
+          "declared_constraint": "==1",
+          "extras": [],
+          "group": "test",
+          "kind": "dependency",
+          "locator": "package[1].dependencies[0]",
+          "marker": null,
+          "marker_semantics": "pep508",
+          "parent": "pypi:foo@1",
+          "parent_locator": "package[1].groups[1]",
+          "path": "pdm.lock",
+          "root": ".",
+          "scope": "group:test"
+        }
+      ],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pdm.lock": "[metadata]\nlock_version=\"4.5.0\"\ngroups=[\"default\",\"test\"]\nstrategy=[\"inherit_metadata\"]\ncontent_hash=\"sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"\ntargets=[{requires_python=\">=3.12\"}]\n[[package]]\nname=\"parent\"\nversion=\"1\"\nrequires_python=\">=3.12\"\ngroups=[\"default\",\"test\"]\nfiles=[{file=\"parent-1-py3-none-any.whl\",hash=\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]\ndependencies=[\"foo[test]>=1,<2\"]\n[[package]]\nname=\"foo\"\nversion=\"1\"\nrequires_python=\">=3.12\"\ngroups=[\"default\",\"test\"]\nextras=[\"test\"]\nfiles=[{file=\"foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\ndependencies=[\"foo==1\"]\n[[package]]\nname=\"foo\"\nversion=\"1\"\nrequires_python=\">=3.12\"\ngroups=[\"default\",\"test\"]\nfiles=[{file=\"foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\n"
+    },
+    "id": "python-pdm-graph",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [
+        [
+          "pypi:parent@1",
+          "pypi:foo@1"
+        ]
+      ],
+      "environment_records": [
+        {
+          "activation": "unknown",
+          "kind": "root",
+          "locator": "requires-python",
+          "path": "uv.lock",
+          "requires_python": ">=3.12",
+          "root": "."
+        }
+      ],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "conditional-unknown",
+        "graph": "evidenced-only",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "uv-lock",
+          "path": "uv.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9"
+        }
+      ],
+      "note": "Globally unambiguous package ID with simplified edge marker conditioned on root Python compatibility.",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": null,
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "package[0]",
+          "marker": null,
+          "package": "pypi:parent@1",
+          "path": "uv.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked",
+          "source_identity": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+          "source_kind": "registry-asserted"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": null,
+          "extras": [],
+          "group": null,
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "package[1]",
+          "marker": null,
+          "package": "pypi:foo@1",
+          "path": "uv.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked",
+          "source_identity": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+          "source_kind": "registry-asserted"
+        }
+      ],
+      "packages": [
+        "pypi:parent@1",
+        "pypi:foo@1"
+      ],
+      "references": [],
+      "relationships": [
+        {
+          "activation": "unknown",
+          "child": "pypi:foo@1",
+          "child_locator": "package[1]",
+          "child_source_identity": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+          "constraint_dialect": "exact-identity",
+          "declared_constraint": "",
+          "exact_version": null,
+          "extras": [
+            "test"
+          ],
+          "group": null,
+          "kind": "dependency",
+          "locator": "package[0].dependencies[0]",
+          "marker": "python_version < \"3.14\"",
+          "marker_semantics": "simplified-relative-to-root-python",
+          "parent": "pypi:parent@1",
+          "parent_locator": "package[0]",
+          "path": "uv.lock",
+          "root": ".",
+          "scope": "unknown"
+        }
+      ],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "uv.lock": "version=1\nrevision=3\nrequires-python=\">=3.12\"\n[[package]]\nname=\"parent\"\nversion=\"1\"\nsource={registry=\"https://pypi.org/simple\"}\nwheels=[{url=\"https://packages.invalid/parent-1-py3-none-any.whl\",hash=\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]\ndependencies=[{name=\"foo\",marker=\"python_version < '3.14'\",extra=[\"test\"]}]\n[[package]]\nname=\"foo\"\nversion=\"1\"\nsource={registry=\"https://pypi.org/simple\"}\nwheels=[{url=\"https://packages.invalid/foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\n"
+    },
+    "id": "python-uv-graph",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsupported",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsupported",
+          "format": "pylock",
+          "path": "pylock.toml",
+          "reason": "missing-lock-source",
+          "roots": [
+            "."
+          ],
+          "sha256": "4b2170324a24d5544a0b4506348cb73c49caf3944607f56db01bf0e65162f443"
+        }
+      ],
+      "note": "Enumeration fragment: missing source records; not a complete reproducible lock.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "packages[0]",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "pylock.toml",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pylock.toml": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"requests\"\nversion=\"2.32.3\"\n"
+    },
+    "id": "python-pylock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsupported",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsupported",
+          "format": "pylock",
+          "path": "pylock.dev.toml",
+          "reason": "missing-lock-source",
+          "roots": [
+            "."
+          ],
+          "sha256": "29c4debfb9581b2109f7ad0d93eb3063c5390e06440d25b38fbad41ef4e01956"
+        }
+      ],
+      "note": "Enumeration fragment: missing source records; not a complete reproducible lock.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "packages[0]",
+          "marker": null,
+          "package": "pypi:pytest@8.3.3",
+          "path": "pylock.dev.toml",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "pypi:pytest@8.3.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pylock.dev.toml": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"pytest\"\nversion=\"8.3.3\"\n"
+    },
+    "id": "python-pylock-variant",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "malformed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "malformed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "include-cycle",
+          "roots": [
+            "."
+          ],
+          "sha256": "f4389885fa005be5ca862fe0203ce1c4c2e998d80e25acea3fbe699b985713cc"
+        },
+        {
+          "disposition": "malformed",
+          "format": "pip-requirements",
+          "path": "other.txt",
+          "reason": "include-cycle",
+          "roots": [
+            "."
+          ],
+          "sha256": "69075054c6d3bf5e0104bbc5d72895f380f050216a76ee8978dc4fbfd62f95e8"
+        }
+      ],
+      "note": "Cycle must be bounded and reported.",
+      "occurrences": [],
+      "packages": [],
+      "references": [
+        {
+          "kind": "include",
+          "locator": "line:1",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "other.txt"
+        },
+        {
+          "kind": "include",
+          "locator": "line:1",
+          "path": "other.txt",
+          "root": ".",
+          "target": "requirements.txt"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "other.txt": "-r requirements.txt\n",
+      "requirements.txt": "-r other.txt\n"
+    },
+    "id": "python-include-cycle",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsafe",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsafe",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "outside-source",
+          "roots": [
+            "."
+          ],
+          "sha256": "7de3e3512c23e73db34b520ebf47a0c8f03815e2c6e6d1bd34c280dd1dd370d4"
+        }
+      ],
+      "note": "Synthetic outside.txt must not be inventoried.",
+      "occurrences": [],
+      "packages": [],
+      "references": [
+        {
+          "kind": "include-refused",
+          "locator": "line:1",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "../outside.txt"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "-r ../outside.txt\n"
+    },
+    "id": "python-include-escape",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "malformed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "malformed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "invalid-requirement",
+          "roots": [
+            "."
+          ],
+          "sha256": "2016457e61c51dd923edeca3b20f12a6da837819edc286114b9375cc8d831326"
+        }
+      ],
+      "note": "",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "requests===\nnot valid @@@ dependency\n"
+    },
+    "id": "python-malformed",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "ignored",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "ignored",
+          "format": "unrecognized",
+          "path": "meeting-notes.txt",
+          "reason": "non-dependency-prose",
+          "roots": [
+            "."
+          ],
+          "sha256": "8d70aaece6ad8a72e2d3e04993fd75ed0959a8b33f0b01d67518b7d65b74a364"
+        }
+      ],
+      "note": "",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "meeting-notes.txt": "Please discuss requests==2.32.3 next week.\n"
+    },
+    "id": "python-false-positive",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "npm-lock-v3",
+          "path": "package-lock.json",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "53bd8c565512495aa104d40de394938ee3807f224a76a5575ba5fdc4aa8ba42f"
+        }
+      ],
+      "note": "Enumeration fragment without paired manifest/root metadata.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1lodash",
+          "marker": null,
+          "package": "npm:lodash@4.17.21",
+          "path": "package-lock.json",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "npm:lodash@4.17.21"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "package-lock.json": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/lodash\": {\"version\": \"4.17.21\"}}}"
+    },
+    "id": "node-npm-v3",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [
+        [
+          "npm:debug@4.3.7",
+          "npm:ms@2.1.3"
+        ]
+      ],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "evidenced-only",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "npm-lock-v3",
+          "path": "package-lock.json",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe"
+        }
+      ],
+      "note": "Enumeration fragment without paired manifest/root metadata.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1debug",
+          "marker": null,
+          "package": "npm:debug@4.3.7",
+          "path": "package-lock.json",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1ms",
+          "marker": null,
+          "package": "npm:ms@2.1.3",
+          "path": "package-lock.json",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "npm:debug@4.3.7",
+        "npm:ms@2.1.3"
+      ],
+      "references": [],
+      "relationships": [
+        {
+          "child": "npm:ms@2.1.3",
+          "kind": "dependency",
+          "locator": "/packages/node_modules~1debug/dependencies/ms",
+          "parent": "npm:debug@4.3.7",
+          "path": "package-lock.json",
+          "root": "."
+        }
+      ],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "package-lock.json": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/debug\": {\"version\": \"4.3.7\", \"dependencies\": {\"ms\": \"^2.1.3\"}}, \"node_modules/ms\": {\"version\": \"2.1.3\"}}}"
+    },
+    "id": "node-npm-edges",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "npm-lock-v3",
+          "path": "package-lock.json",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "15a9ddd02fd7632c2bc6d4aa5f51c09266d4234a8b9080f4ff750074fd062cc3"
+        }
+      ],
+      "note": "Enumeration fragment without paired manifest/root metadata.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1mocha",
+          "marker": null,
+          "package": "npm:mocha@10.7.3",
+          "path": "package-lock.json",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "development",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "npm:mocha@10.7.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "package-lock.json": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/mocha\": {\"version\": \"10.7.3\", \"dev\": true}}}"
+    },
+    "id": "node-npm-dev",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "npm-lock-v3",
+          "path": "package-lock.json",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "feae19e8df9aa94027748ba1e88570e7a60ee97f424c4acfd8a727b0967d3827"
+        }
+      ],
+      "note": "Enumeration fragment without paired manifest/root metadata.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1ms",
+          "marker": null,
+          "package": "npm:ms@2.1.3",
+          "path": "package-lock.json",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1debug~1node_modules~1ms",
+          "marker": null,
+          "package": "npm:ms@2.0.0",
+          "path": "package-lock.json",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "npm:ms@2.1.3",
+        "npm:ms@2.0.0"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "package-lock.json": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/ms\": {\"version\": \"2.1.3\"}, \"node_modules/debug/node_modules/ms\": {\"version\": \"2.0.0\"}}}"
+    },
+    "id": "node-npm-nested",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "yarn-lock-v1",
+          "path": "yarn.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "54f540046f3850c449c8efc4a7c5d3c103c567a8fd6c02c69b1e3bcd1cea460c"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "lodash@^4.17.21",
+          "marker": null,
+          "package": "npm:lodash@4.17.21",
+          "path": "yarn.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "npm:lodash@4.17.21"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "yarn.lock": "# yarn lockfile v1\n\nlodash@^4.17.21:\n  version \"4.17.21\"\n  resolved \"https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz\"\n"
+    },
+    "id": "node-yarn",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pnpm-lock-v9",
+          "path": "pnpm-lock.yaml",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "deaddd1d7200f10371d9728e288503005241479cd52ae421109136f5bfa8c39b"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "^4.17.21",
+          "extras": [],
+          "hashes": [],
+          "locator": "packages.lodash@4.17.21",
+          "marker": null,
+          "package": "npm:lodash@4.17.21",
+          "path": "pnpm-lock.yaml",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "runtime",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "npm:lodash@4.17.21"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pnpm-lock.yaml": "lockfileVersion: '9.0'\nimporters:\n  .:\n    dependencies:\n      lodash:\n        specifier: ^4.17.21\n        version: 4.17.21\npackages:\n  lodash@4.17.21: {}\nsnapshots:\n  lodash@4.17.21: {}\n"
+    },
+    "id": "node-pnpm",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "direct-declared",
+          "extras": [],
+          "locator": "/dependencies/lodash",
+          "marker": null,
+          "name": "npm:lodash",
+          "path": "package.json",
+          "range": "^4.17.21",
+          "root": ".",
+          "scope": "runtime"
+        }
+      ],
+      "declarations": [
+        "npm:lodash:^4.17.21"
+      ],
+      "disposition": "declaration-only",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "declaration-only",
+          "format": "npm-manifest",
+          "path": "package.json",
+          "reason": "no-selected-version",
+          "roots": [
+            "."
+          ],
+          "sha256": "74019de7294fee98b5e849446fab195fcc064de10deb9381eb3de9c72fab25e4"
+        }
+      ],
+      "note": "",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "package.json": "{\"name\":\"fixture\",\"dependencies\":{\"lodash\":\"^4.17.21\"}}"
+    },
+    "id": "node-manifest-range",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "malformed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "malformed",
+          "format": "npm-lock-v3",
+          "path": "package-lock.json",
+          "reason": "invalid-json",
+          "roots": [
+            "."
+          ],
+          "sha256": "e1fb9e58bd3d9eb12aea92b7a52a6709a510a0589bca6a0ea7a466e8301ba80f"
+        }
+      ],
+      "note": "",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "package-lock.json": "{\"packages\":"
+    },
+    "id": "node-malformed",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "go",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "direct-declared",
+          "extras": [],
+          "locator": "line:5",
+          "marker": null,
+          "name": "golang:golang.org/x/text",
+          "path": "go.mod",
+          "range": ">=v0.18.0",
+          "root": ".",
+          "scope": "unknown"
+        }
+      ],
+      "declarations": [
+        "golang:golang.org/x/text:>=v0.18.0"
+      ],
+      "disposition": "declaration-only",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "declaration-only",
+          "format": "go-mod",
+          "path": "go.mod",
+          "reason": "unresolved-module-graph",
+          "roots": [
+            "."
+          ],
+          "sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+        }
+      ],
+      "note": "go.mod require records a minimum; the transitive MVS graph is unavailable.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "go.mod": "module example.test/fixture\n\ngo 1.22\n\nrequire golang.org/x/text v0.18.0\n"
+    },
+    "id": "go-module",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "go",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "indirect-declared",
+          "extras": [],
+          "locator": "line:5",
+          "marker": null,
+          "name": "golang:golang.org/x/text",
+          "path": "go.mod",
+          "range": ">=v0.18.0",
+          "root": ".",
+          "scope": "unknown"
+        }
+      ],
+      "declarations": [
+        "golang:golang.org/x/text:>=v0.18.0"
+      ],
+      "disposition": "declaration-only",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "declaration-only",
+          "format": "go-mod",
+          "path": "go.mod",
+          "reason": "unresolved-module-graph",
+          "roots": [
+            "."
+          ],
+          "sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828"
+        }
+      ],
+      "note": "go.mod require records a minimum; the transitive MVS graph is unavailable.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "go.mod": "module example.test/fixture\n\ngo 1.22\n\nrequire golang.org/x/text v0.18.0 // indirect\n"
+    },
+    "id": "go-indirect",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "go",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "declaration-only",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "declaration-only",
+          "format": "go-sum",
+          "path": "go.sum",
+          "reason": "historical-checksums",
+          "roots": [
+            "."
+          ],
+          "sha256": "780107b1f3080e221d2797103ac19b3768bdc26838f7e9df8ab2fe290deccbd9"
+        }
+      ],
+      "note": "Historical checksum entries are not selected requirements.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "go.sum": "golang.org/x/text v0.18.0 h1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\n"
+    },
+    "id": "go-sums-only",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "go",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsafe",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsafe",
+          "format": "go-mod",
+          "path": "go.mod",
+          "reason": "outside-source-replacement",
+          "roots": [
+            "."
+          ],
+          "sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb"
+        }
+      ],
+      "note": "Local replacement is unresolved; do not invent selected upstream version.",
+      "occurrences": [],
+      "packages": [],
+      "references": [
+        {
+          "kind": "replacement-refused",
+          "locator": "line:5",
+          "path": "go.mod",
+          "root": ".",
+          "target": "../dependency"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "go.mod": "module example.test/fixture\n\ngo 1.22\nrequire example.test/dependency v1.0.0\nreplace example.test/dependency => ../dependency\n"
+    },
+    "id": "go-local-replacement",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "rust",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "cargo-lock-v3",
+          "path": "Cargo.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "package[0]",
+          "marker": null,
+          "package": "cargo:itoa@1.0.11",
+          "path": "Cargo.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "cargo:itoa@1.0.11"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "Cargo.lock": "version=3\n[[package]]\nname=\"itoa\"\nversion=\"1.0.11\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n"
+    },
+    "id": "rust-lock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "rust",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [
+        [
+          "cargo:serde_json@1.0.128",
+          "cargo:itoa@1.0.11"
+        ]
+      ],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "evidenced-only",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "cargo-lock-v3",
+          "path": "Cargo.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "package[0]",
+          "marker": null,
+          "package": "cargo:serde_json@1.0.128",
+          "path": "Cargo.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "package[1]",
+          "marker": null,
+          "package": "cargo:itoa@1.0.11",
+          "path": "Cargo.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "cargo:serde_json@1.0.128",
+        "cargo:itoa@1.0.11"
+      ],
+      "references": [],
+      "relationships": [
+        {
+          "child": "cargo:itoa@1.0.11",
+          "kind": "dependency",
+          "locator": "package[0].dependencies[0]",
+          "parent": "cargo:serde_json@1.0.128",
+          "path": "Cargo.lock",
+          "root": "."
+        }
+      ],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "Cargo.lock": "version=3\n[[package]]\nname=\"serde_json\"\nversion=\"1.0.128\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\ndependencies=[\"itoa\"]\n[[package]]\nname=\"itoa\"\nversion=\"1.0.11\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n"
+    },
+    "id": "rust-edges",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "rust",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "cargo-lock-v3",
+          "path": "a/Cargo.lock",
+          "reason": "static-input",
+          "roots": [
+            "a"
+          ],
+          "sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9"
+        },
+        {
+          "disposition": "parsed",
+          "format": "cargo-lock-v3",
+          "path": "b/Cargo.lock",
+          "reason": "static-input",
+          "roots": [
+            "b"
+          ],
+          "sha256": "8da921dcaa739f503490703a6efeb2a7725d9a4d979fee559a8ee198063eb9ce"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "package[0]",
+          "marker": null,
+          "package": "cargo:itoa@1.0.11",
+          "path": "a/Cargo.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": "a",
+          "scope": "unknown",
+          "selection": "locked"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "package[0]",
+          "marker": null,
+          "package": "cargo:itoa@1.0.10",
+          "path": "b/Cargo.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": "b",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "cargo:itoa@1.0.11",
+        "cargo:itoa@1.0.10"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "a",
+        "b"
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "a/Cargo.lock": "version=3\n[[package]]\nname=\"itoa\"\nversion=\"1.0.11\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n",
+      "b/Cargo.lock": "version=3\n[[package]]\nname=\"itoa\"\nversion=\"1.0.10\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n"
+    },
+    "id": "rust-conflicting-roots",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "rust",
+    "expected": {
+      "applications": [
+        {
+          "identity": "cargo:fixture@0.1.0",
+          "path": "Cargo.toml",
+          "root": "."
+        }
+      ],
+      "declaration_records": [
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "dependencies.itoa",
+          "marker": null,
+          "name": "cargo:itoa",
+          "path": "Cargo.toml",
+          "range": "1",
+          "root": ".",
+          "scope": "unknown"
+        }
+      ],
+      "declarations": [
+        "cargo:itoa:1"
+      ],
+      "disposition": "declaration-only",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "declaration-only",
+          "format": "cargo-manifest",
+          "path": "Cargo.toml",
+          "reason": "no-selected-version",
+          "roots": [
+            "."
+          ],
+          "sha256": "57de19a76bd51a54bc6cdfa3d05e26c8c482874a68c4e3c26633b3df605c9169"
+        }
+      ],
+      "note": "",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "Cargo.toml": "[package]\nname=\"fixture\"\nversion=\"0.1.0\"\n[dependencies]\nitoa=\"1\"\n"
+    },
+    "id": "rust-manifest-range",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "java",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "gradle-lock",
+          "path": "gradle.lockfile",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "62e2bc5e3e59d6ed171ef15e00f4284d279281515b390b9bdab6e988993f7557"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "line:2",
+          "marker": null,
+          "package": "maven:org.apache.commons/commons-lang3@3.14.0",
+          "path": "gradle.lockfile",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "compileClasspath",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "maven:org.apache.commons/commons-lang3@3.14.0"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "gradle.lockfile": "# Gradle lock\norg.apache.commons:commons-lang3:3.14.0=compileClasspath\nempty=\n"
+    },
+    "id": "java-gradle-lock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "dotnet",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "nuget-lock",
+          "path": "packages.lock.json",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "1ec46b33777e8b40ec810dd97a57b3db8ae0ecad32551baf00f2c67d36d3cbf4"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "[13.0.3, )",
+          "extras": [],
+          "hashes": [],
+          "locator": "/dependencies/net8.0/Newtonsoft.Json",
+          "marker": null,
+          "package": "nuget:Newtonsoft.Json@13.0.3",
+          "path": "packages.lock.json",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "net8.0",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "nuget:Newtonsoft.Json@13.0.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "packages.lock.json": "{\"version\": 1, \"dependencies\": {\"net8.0\": {\"Newtonsoft.Json\": {\"type\": \"Direct\", \"requested\": \"[13.0.3, )\", \"resolved\": \"13.0.3\", \"contentHash\": \"fixture\"}}}}"
+    },
+    "id": "dotnet-lock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "ruby",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "bundler-lock",
+          "path": "Gemfile.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "4e4e1019ec30afd00ab829fac1c459f12617db402f9617b3934437d71ddefebe"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "GEM.specs.rack",
+          "marker": null,
+          "package": "gem:rack@3.1.7",
+          "path": "Gemfile.lock",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "gem:rack@3.1.7"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "Gemfile.lock": "GEM\n  remote: https://rubygems.org/\n  specs:\n    rack (3.1.7)\n\nPLATFORMS\n  ruby\n\nDEPENDENCIES\n  rack\n\nBUNDLED WITH\n   2.5.19\n"
+    },
+    "id": "ruby-lock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "php",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "composer-lock",
+          "path": "composer.lock",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "e800d938ddbfe068f395664c383d2bffe1c2caa2f919b4e801fcaf35271df0ce"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/0",
+          "marker": null,
+          "package": "composer:psr/log@3.0.2",
+          "path": "composer.lock",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "composer:psr/log@3.0.2"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "composer.lock": "{\"packages\": [{\"name\": \"psr/log\", \"version\": \"3.0.2\", \"type\": \"library\"}], \"packages-dev\": []}"
+    },
+    "id": "php-lock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsafe",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsafe",
+          "format": "symlink",
+          "path": "requirements.txt",
+          "reason": "outside-source",
+          "roots": [
+            "."
+          ],
+          "sha256": null
+        }
+      ],
+      "note": "Outside sentinel is a synthetic dependency; never follow escape.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {},
+    "id": "symlink-escape",
+    "symlinks": {
+      "requirements.txt": "../outside.txt"
+    }
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "unsafe",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "unsafe",
+          "format": "symlink",
+          "path": "a",
+          "reason": "symlink-cycle",
+          "roots": [
+            "."
+          ],
+          "sha256": null
+        },
+        {
+          "disposition": "unsafe",
+          "format": "symlink",
+          "path": "b",
+          "reason": "symlink-cycle",
+          "roots": [
+            "."
+          ],
+          "sha256": null
+        }
+      ],
+      "note": "Traversal must terminate.",
+      "occurrences": [],
+      "packages": [],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {},
+    "id": "symlink-cycle",
+    "symlinks": {
+      "a": "b",
+      "b": "a"
+    }
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "scripts/python-build.in",
+          "reason": "static-input",
+          "roots": [
+            "scripts"
+          ],
+          "sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==26.0.1",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:pip@26.0.1",
+          "path": "scripts/python-build.in",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": "scripts",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:pip@26.0.1"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "scripts"
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "scripts/python-build.in": "pip==26.0.1\n"
+    },
+    "id": "python-product-build-input",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": ".github/python-locks/build.txt",
+          "reason": "static-input",
+          "roots": [
+            ".github/python-locks"
+          ],
+          "sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+        }
+      ],
+      "note": "Product filename/version regression; synthetic integrity hash.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==26.0.1",
+          "extras": [],
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:pip@26.0.1",
+          "path": ".github/python-locks/build.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".github/python-locks",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:pip@26.0.1"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        ".github/python-locks"
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      ".github/python-locks/build.txt": "pip==26.0.1 --hash=sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+    },
+    "id": "python-product-hidden-lock",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "dependencies.pip",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+        }
+      ],
+      "note": "",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==3.0.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:flask@3.0.3",
+          "path": "dependencies.pip",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:flask@3.0.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "dependencies.pip": "flask==3.0.3\n"
+    },
+    "id": "python-pip-extension",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:requests",
+          "path": "locks/base.pip",
+          "range": ">=2.31,<3",
+          "root": ".",
+          "scope": "unknown"
+        },
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:requests",
+          "path": "constraints.txt",
+          "range": "==2.32.3",
+          "root": ".",
+          "scope": "constraint"
+        }
+      ],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "44b288bd56fd1ffdfbd481d7cfcbaddbd79965ae63e62228b13cc776c92fb65c"
+        },
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "locks/base.pip",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+        },
+        {
+          "disposition": "declaration-only",
+          "format": "pip-requirements",
+          "path": "constraints.txt",
+          "reason": "constraint-only",
+          "roots": [
+            "."
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        }
+      ],
+      "note": "Constraint refines declaration; does not independently install packages.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": ">=2.31,<3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "locks/base.pip",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "constrained"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [
+        {
+          "kind": "include",
+          "locator": "line:1",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "locks/base.pip"
+        },
+        {
+          "kind": "constraint",
+          "locator": "line:2",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "constraints.txt"
+        },
+        {
+          "kind": "version-evidence",
+          "locator": "line:1",
+          "path": "locks/base.pip",
+          "root": ".",
+          "target": "constraints.txt"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "constraints.txt": "requests==2.32.3\n",
+      "locks/base.pip": "requests>=2.31,<3\n",
+      "requirements.txt": "--requirement=locks/base.pip\n--constraint constraints.txt\n"
+    },
+    "id": "python-long-options",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:requests",
+          "path": "requirements.txt",
+          "range": "==2.32.3",
+          "root": ".",
+          "scope": "unknown"
+        },
+        {
+          "classification": "unknown",
+          "extras": [],
+          "locator": "line:1",
+          "marker": null,
+          "name": "pypi:requests",
+          "path": "constraints.txt",
+          "range": "<2.32",
+          "root": ".",
+          "scope": "constraint"
+        }
+      ],
+      "declarations": [],
+      "disposition": "malformed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "partial",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "partial",
+        "version_selection": "partial"
+      },
+      "inputs": [
+        {
+          "disposition": "malformed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "constraint-conflict",
+          "roots": [
+            "."
+          ],
+          "sha256": "fbc4e2b51bbc78426a088a02f819035525bb1b9f2349b964ecf71ed118c09563"
+        },
+        {
+          "disposition": "declaration-only",
+          "format": "pip-requirements",
+          "path": "constraints.txt",
+          "reason": "constraint-only",
+          "roots": [
+            "."
+          ],
+          "sha256": "0e6510cb47d0281811c57e851f75188401c3436cbc2b00fb7d10ca5f3ae8fe1a"
+        }
+      ],
+      "note": "Contradictory declaration/constraint cannot be matched as a selected package.",
+      "occurrences": [],
+      "packages": [],
+      "references": [
+        {
+          "kind": "constraint",
+          "locator": "line:2",
+          "path": "requirements.txt",
+          "root": ".",
+          "target": "constraints.txt"
+        }
+      ],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "constraints.txt": "requests<2.32\n",
+      "requirements.txt": "requests==2.32.3\n--constraint=constraints.txt\n"
+    },
+    "id": "python-conflicting-constraint",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "conditional-unknown",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "ffda96e804511781beb16f8661064bd1394dac65460e0fda06f57d64cd7ae63d"
+        }
+      ],
+      "note": "No target environment supplied; retain both mutually exclusive occurrences with unknown activation.",
+      "occurrences": [
+        {
+          "activation": "unknown",
+          "declared_range": "==2.31.0",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": "python_version < \"3.12\"",
+          "package": "pypi:requests@2.31.0",
+          "path": "requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        },
+        {
+          "activation": "unknown",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:2",
+          "marker": "python_version >= \"3.12\"",
+          "package": "pypi:requests@2.32.3",
+          "path": "requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.31.0",
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "requirements.txt": "requests==2.31.0; python_version < \"3.12\"\nrequests==2.32.3; python_version >= \"3.12\"\n"
+    },
+    "id": "python-marker-alternatives",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "a/requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "a"
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        },
+        {
+          "disposition": "parsed",
+          "format": "pip-requirements",
+          "path": "b/requirements.txt",
+          "reason": "static-input",
+          "roots": [
+            "b"
+          ],
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        }
+      ],
+      "note": "One identity, two independently evidenced root occurrences.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "a/requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": "a",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": "==2.32.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "line:1",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "b/requirements.txt",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": "b",
+          "scope": "unknown",
+          "selection": "declared-pin"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "a",
+        "b"
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "a/requirements.txt": "requests==2.32.3\n",
+      "b/requirements.txt": "requests==2.32.3\n"
+    },
+    "id": "python-identical-multiple-roots",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [
+        [
+          "pypi:requests@2.32.3",
+          "pypi:urllib3@2.2.2"
+        ]
+      ],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "evidenced-only",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pylock",
+          "path": "pylock.toml",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589"
+        }
+      ],
+      "note": "Complete structural sources/hashes, synthetic URLs; no fetch or wheel integrity claim.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [
+            "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          ],
+          "locator": "packages[0]",
+          "marker": null,
+          "package": "pypi:requests@2.32.3",
+          "path": "pylock.toml",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [
+            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ],
+          "locator": "packages[1]",
+          "marker": null,
+          "package": "pypi:urllib3@2.2.2",
+          "path": "pylock.toml",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "pypi:requests@2.32.3",
+        "pypi:urllib3@2.2.2"
+      ],
+      "references": [],
+      "relationships": [
+        {
+          "child": "pypi:urllib3@2.2.2",
+          "kind": "dependency",
+          "locator": "packages[0].dependencies[0]",
+          "parent": "pypi:requests@2.32.3",
+          "path": "pylock.toml",
+          "root": "."
+        }
+      ],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pylock.toml": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"requests\"\nversion=\"2.32.3\"\ndependencies=[{name=\"urllib3\",version=\"2.2.2\"}]\nwheels=[{name=\"requests-2.32.3-py3-none-any.whl\",url=\"https://packages.invalid/requests.whl\",hashes={sha256=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}]\n[[packages]]\nname=\"urllib3\"\nversion=\"2.2.2\"\nwheels=[{name=\"urllib3-2.2.2-py3-none-any.whl\",url=\"https://packages.invalid/urllib3.whl\",hashes={sha256=\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}}]\n"
+    },
+    "id": "python-pylock-complete",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "python",
+    "expected": {
+      "applications": [],
+      "declaration_records": [],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "unknown",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "pylock",
+          "path": "pylock.dev.toml",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "9f78a66dd20e198c4b0cec14bf8b5837068d16bde78ae7509e872066a30a86a1"
+        }
+      ],
+      "note": "Filename variant with complete structural source; synthetic hash/URL.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": null,
+          "extras": [],
+          "hashes": [
+            "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          ],
+          "locator": "packages[0]",
+          "marker": null,
+          "package": "pypi:pytest@8.3.3",
+          "path": "pylock.dev.toml",
+          "relationship": "unknown",
+          "requires_python": null,
+          "root": ".",
+          "scope": "unknown",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "pypi:pytest@8.3.3"
+      ],
+      "references": [],
+      "relationships": [],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "pylock.dev.toml": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"pytest\"\nversion=\"8.3.3\"\nwheels=[{name=\"pytest-8.3.3-py3-none-any.whl\",url=\"https://packages.invalid/pytest.whl\",hashes={sha256=\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}}]\n"
+    },
+    "id": "python-pylock-variant-complete",
+    "symlinks": {}
+  },
+  {
+    "ecosystem": "node",
+    "expected": {
+      "applications": [
+        {
+          "identity": "npm:fixture@1.0.0",
+          "path": "package.json",
+          "root": "."
+        }
+      ],
+      "declaration_records": [
+        {
+          "classification": "direct-declared",
+          "extras": [],
+          "locator": "/dependencies/debug",
+          "marker": null,
+          "name": "npm:debug",
+          "path": "package.json",
+          "range": "^4.3.7",
+          "root": ".",
+          "scope": "runtime"
+        }
+      ],
+      "declarations": [],
+      "disposition": "parsed",
+      "edges": [
+        [
+          "npm:debug@4.3.7",
+          "npm:ms@2.1.3"
+        ]
+      ],
+      "environment_records": [],
+      "fidelity": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "environment": "unconditional",
+        "graph": "evidenced-only",
+        "parsing": "complete",
+        "version_selection": "complete"
+      },
+      "inputs": [
+        {
+          "disposition": "parsed",
+          "format": "npm-manifest",
+          "path": "package.json",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+        },
+        {
+          "disposition": "parsed",
+          "format": "npm-lock-v3",
+          "path": "package-lock.json",
+          "reason": "static-input",
+          "roots": [
+            "."
+          ],
+          "sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+        }
+      ],
+      "note": "Paired manifest/lock with first-party root. Synthetic registry sources, never resolved online.",
+      "occurrences": [
+        {
+          "activation": "unconditional",
+          "declared_range": "^4.3.7",
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1debug",
+          "marker": null,
+          "package": "npm:debug@4.3.7",
+          "path": "package-lock.json",
+          "relationship": "direct",
+          "requires_python": null,
+          "root": ".",
+          "scope": "runtime",
+          "selection": "locked"
+        },
+        {
+          "activation": "unconditional",
+          "declared_range": "^2.1.3",
+          "extras": [],
+          "hashes": [],
+          "locator": "/packages/node_modules~1ms",
+          "marker": null,
+          "package": "npm:ms@2.1.3",
+          "path": "package-lock.json",
+          "relationship": "transitive",
+          "requires_python": null,
+          "root": ".",
+          "scope": "runtime",
+          "selection": "locked"
+        }
+      ],
+      "packages": [
+        "npm:debug@4.3.7",
+        "npm:ms@2.1.3"
+      ],
+      "references": [],
+      "relationships": [
+        {
+          "child": "npm:ms@2.1.3",
+          "kind": "dependency",
+          "locator": "/packages/node_modules~1debug/dependencies/ms",
+          "parent": "npm:debug@4.3.7",
+          "path": "package-lock.json",
+          "root": "."
+        }
+      ],
+      "roots": [
+        "."
+      ],
+      "semantic_schema": "m046-oracle-v4"
+    },
+    "files": {
+      "package-lock.json": "{\"name\": \"fixture\", \"version\": \"1.0.0\", \"lockfileVersion\": 3, \"requires\": true, \"packages\": {\"\": {\"name\": \"fixture\", \"version\": \"1.0.0\", \"dependencies\": {\"debug\": \"^4.3.7\"}}, \"node_modules/debug\": {\"version\": \"4.3.7\", \"resolved\": \"https://packages.invalid/debug.tgz\", \"dependencies\": {\"ms\": \"^2.1.3\"}}, \"node_modules/ms\": {\"version\": \"2.1.3\", \"resolved\": \"https://packages.invalid/ms.tgz\"}}}",
+      "package.json": "{\"name\": \"fixture\", \"version\": \"1.0.0\", \"dependencies\": {\"debug\": \"^4.3.7\"}}"
+    },
+    "id": "node-npm-complete",
+    "symlinks": {}
+  }
+]

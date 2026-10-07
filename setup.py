@@ -82,6 +82,7 @@ setup(
     ],
     python_requires=">=3.9",
     install_requires=[
+        "packaging==26.3",
         "click>=8.0",
         "jinja2>=3.1",
         "pydantic>=2.0",

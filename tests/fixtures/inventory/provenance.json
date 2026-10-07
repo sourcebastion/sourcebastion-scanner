@@ -1,0 +1,10 @@
+{
+  "source_head": "d98fbd0fb9c5563999a5c061a12fb68191fddd86",
+  "reference_modules": {
+    "evaluation/m046/corpus.py": "fb38182a3376c7cd5c90f9a2a373d20deb319a95677a9bac8363fa9b3f603af8",
+    "evaluation/m046/oracle.py": "13705ee54974f7fbb3e85975c64c8d823362619e2a39d69e424ae0db68b325f3"
+  },
+  "fixture_json_sha256": "d0d126aea56d38be463ac1aca67104bb870f51cc852324339ba778c18a9a7dae",
+  "case_count": 64,
+  "scope": "S01 source/expectation data preserved; S02 tests discovery/immutability only, canonical package/edge tests remain S03"
+}

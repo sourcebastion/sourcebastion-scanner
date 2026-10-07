@@ -318,7 +318,7 @@ def verify():
                 )
                 selected.add(row.id)
             unselected = by_path[fixture["expected"]["unselected"][0]["path"]]
-            assert unselected.selected_version is None and unselected.purl is None
+            assert unselected.selected_version is None and unselected.purl == "pkg:pypi/requests"
             assert (
                 unselected.source.locator == "line:1"
                 and unselected.source.source_sha256 == expected_files[unselected.source.path]["sha256"]

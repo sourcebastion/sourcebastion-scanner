@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import platform
 import signal
+import sys
 import tempfile
 
 import packaging
@@ -29,6 +30,8 @@ def check(root, config=None, limits=None):
 
 
 def main():
+    if sys.flags.optimize:
+        raise RuntimeError("optimized-probe-runtime-refused")
     signal.alarm(60)
     assert packaging.__version__ == "26.3"
     modules = [discovery, inputs, registry, requirements]

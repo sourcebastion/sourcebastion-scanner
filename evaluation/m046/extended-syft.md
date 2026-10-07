@@ -13,6 +13,9 @@ Preparation captures the complete Go module, frontend/evaluator sources, corpus
 and tool-pin hashes before the build and checks them after every command. Native
 evaluation requires that manifest to match both the executable hash and current
 candidate sources; freshly hashing an unrelated binary is insufficient.
+Raw/source evidence retains the existing archive's 64 MiB per-file bound. The
+larger compiled executable uploads separately and must match the preparation
+manifest and native summary hashes before an artifact audit can accept it.
 
 ## Two separate experiments
 

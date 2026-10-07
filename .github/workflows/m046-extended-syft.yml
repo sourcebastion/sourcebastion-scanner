@@ -58,7 +58,7 @@ jobs:
         if: always()
         run: |
           mkdir -p "$RUNNER_TEMP/m046-syft-retained"
-          for item in manifest.json buildinfo.stdout modules.stdout tests.stdout tests.stderr download.stdout download.stderr verify.stdout verify.stderr build.stdout build.stderr m046-syft; do
+          for item in manifest.json buildinfo.stdout modules.stdout tests.stdout tests.stderr download.stdout download.stderr verify.stdout verify.stderr build.stdout build.stderr; do
             if test -f "$RUNNER_TEMP/m046-syft-preparation/$item"; then
               cp "$RUNNER_TEMP/m046-syft-preparation/$item" "$RUNNER_TEMP/m046-syft-retained/$item"
             fi
@@ -79,4 +79,5 @@ jobs:
           path: |
             ${{ runner.temp }}/m046-syft.tar.gz
             ${{ runner.temp }}/m046-syft.tar.gz.sha256
+            ${{ runner.temp }}/m046-syft-preparation/m046-syft
           retention-days: 7

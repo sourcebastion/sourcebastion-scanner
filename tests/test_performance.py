@@ -8,6 +8,7 @@ import time
 import os
 import tempfile
 import shutil
+import statistics
 from pathlib import Path
 from typing import Dict, List, Any
 from sourcebastion.config import Config
@@ -225,31 +226,34 @@ class TestScanPerformance:
 class TestScalingCharacteristics:
     """Tests for understanding scaling behavior"""
 
-    def test_scan_time_scaling(self, test_config):
-        """8.2: Verify scan time scales approximately linearly with codebase size"""
+    def test_file_traversal_scaling(self, test_config):
+        """Measure actual traversal; disabling all scanners does no scan work."""
         sizes = [50, 100, 200, 400]
         durations = []
+        scanner = SecurityScanner(test_config, use_external_scanners=False)
 
         for size in sizes:
             with tempfile.TemporaryDirectory() as tmpdir:
                 self._create_test_files(tmpdir, file_count=size, lines_per_file=100)
 
-                start = time.time()
-                scanner = SecurityScanner(test_config, use_external_scanners=False)
-                results = scanner.scan(tmpdir)
-                duration = time.time() - start
-                durations.append(duration)
+                # Warm initialization/filesystem state outside the measurement.
+                assert scanner.quick_check(tmpdir)["files_scanned"] == size
+                samples = []
+                for _ in range(5):
+                    start = time.process_time_ns()
+                    results = scanner.quick_check(tmpdir)
+                    samples.append((time.process_time_ns() - start) / 1e9)
+                    assert results["files_scanned"] == size
+                durations.append(statistics.median(samples))
 
-        # Check that doubling size approximately doubles time (within reasonable bounds)
-        # Allow up to 3x for larger sizes (may have overhead)
+        # CPU medians reduce scheduler noise. Faster/sublinear work is allowed;
+        # only excessive growth is a regression. This is not native tool speed.
         for i in range(1, len(sizes)):
-            # Skip ratio check when durations are too small to measure reliably
-            if durations[i-1] < 0.01:
-                continue
             ratio = durations[i] / durations[i-1]
             size_ratio = sizes[i] / sizes[i-1]
-            assert 0.5 * size_ratio <= ratio <= 3 * size_ratio, \
+            assert ratio <= 3 * size_ratio, \
                 f"Non-linear scaling detected: size {sizes[i-1]}->{sizes[i]}, time {durations[i-1]:.2f}->{durations[i]:.2f}s"
+        assert durations[-1] / durations[0] <= 3 * (sizes[-1] / sizes[0])
 
     def _create_test_files(self, base_dir: str, file_count: int, lines_per_file: int):
         """Helper to create test codebase files"""

@@ -5063,6 +5063,616 @@
         "export": "not-run",
         "matching": "not-run"
       }
+    },
+    {
+      "case": "python-pyproject",
+      "fixture_files": [
+        {
+          "path": "pyproject.toml",
+          "utf8": "[project]\nname=\"fixture\"\nversion=\"1.0.0\"\ndependencies=[\"requests==2.32.3\"]\n",
+          "sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d"
+        }
+      ],
+      "records": {
+        "roots": [
+          {
+            "id": "root:project",
+            "path": ".",
+            "kind": "project",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d",
+              "locator": "manifest-application",
+              "parser": "sourcebastion.manifest-composition/1"
+            }
+          }
+        ],
+        "analysis_scopes": [
+          {
+            "id": "scope:manifest",
+            "kind": "manifest-input",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d",
+              "locator": "manifest-input",
+              "parser": "sourcebastion.manifest-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:dependency",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d",
+              "locator": "project.dependencies[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "pypi",
+            "name": "requests",
+            "declared_range": "==2.32.3",
+            "exact_version": "2.32.3",
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "root_id": "root:project",
+            "analysis_scope_id": "scope:manifest"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:dependency",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d",
+              "locator": "project.dependencies[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "declared",
+            "selected_version": "2.32.3",
+            "declared_range": "==2.32.3",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [
+              "declaration:dependency"
+            ],
+            "root_id": "root:project",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:manifest",
+            "directness": "direct",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "active"
+          }
+        ],
+        "relationships": [],
+        "applications": [
+          {
+            "id": "application:project",
+            "root_id": "root:project",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d",
+              "locator": "manifest-application",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "fixture",
+            "version": "1.0.0"
+          }
+        ],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pyproject.toml",
+            "source_sha256": "c72f1b786b8ab537edeabc38da904521116380b2eb0fc7f7d542b985a6adbc2d",
+            "format": "python-pyproject",
+            "parser": "sourcebastion.python-manifests/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [
+              "root:project"
+            ],
+            "analysis_scope_ids": [
+              "scope:manifest"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pyproject-optional",
+      "fixture_files": [
+        {
+          "path": "pyproject.toml",
+          "utf8": "[project]\nname=\"fixture\"\nversion=\"1.0.0\"\n[project.optional-dependencies]\ntest=[\"pytest==8.3.3\"]\n",
+          "sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2"
+        }
+      ],
+      "records": {
+        "roots": [
+          {
+            "id": "root:project",
+            "path": ".",
+            "kind": "project",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2",
+              "locator": "manifest-application",
+              "parser": "sourcebastion.manifest-composition/1"
+            }
+          }
+        ],
+        "analysis_scopes": [
+          {
+            "id": "scope:manifest",
+            "kind": "manifest-input",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2",
+              "locator": "manifest-input",
+              "parser": "sourcebastion.manifest-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:dependency",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2",
+              "locator": "project.optional-dependencies.test[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "pypi",
+            "name": "pytest",
+            "declared_range": "==8.3.3",
+            "exact_version": "8.3.3",
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "optional"
+            ],
+            "groups": [
+              "test"
+            ],
+            "root_id": "root:project",
+            "analysis_scope_id": "scope:manifest"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:dependency",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2",
+              "locator": "project.optional-dependencies.test[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "pytest",
+            "purl": "pkg:pypi/pytest@8.3.3",
+            "evidence_kind": "declared",
+            "selected_version": "8.3.3",
+            "declared_range": "==8.3.3",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [
+              "declaration:dependency"
+            ],
+            "root_id": "root:project",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:manifest",
+            "directness": "direct",
+            "scopes": [
+              "optional"
+            ],
+            "groups": [
+              "test"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [
+          {
+            "id": "application:project",
+            "root_id": "root:project",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2",
+              "locator": "manifest-application",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "fixture",
+            "version": "1.0.0"
+          }
+        ],
+        "losses": [],
+        "applicability": [
+          {
+            "id": "applicability:test-group",
+            "source": {
+              "path": "pyproject.toml",
+              "source_sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2",
+              "locator": "project.optional-dependencies.test[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "test",
+            "root_id": "root:project",
+            "analysis_scope_id": "scope:manifest",
+            "occurrence_id": "occurrence:dependency"
+          }
+        ],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pyproject.toml",
+            "source_sha256": "e8b30c63782882d39500f0aa58fe56a84769ff379d0ad0bc0f91fe55541502e2",
+            "format": "python-pyproject",
+            "parser": "sourcebastion.python-manifests/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [
+              "root:project"
+            ],
+            "analysis_scope_ids": [
+              "scope:manifest"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-setup-cfg",
+      "fixture_files": [
+        {
+          "path": "setup.cfg",
+          "utf8": "[metadata]\nname=fixture\n[options]\ninstall_requires=\n    requests==2.32.3\n",
+          "sha256": "1e95ac6fa87362e92a2a0fd8ad9a39acb6b60f8bf4bbd7cfdbbbac215a484734"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:manifest",
+            "kind": "manifest-input",
+            "source": {
+              "path": "setup.cfg",
+              "source_sha256": "1e95ac6fa87362e92a2a0fd8ad9a39acb6b60f8bf4bbd7cfdbbbac215a484734",
+              "locator": "manifest-input",
+              "parser": "sourcebastion.manifest-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:dependency",
+            "source": {
+              "path": "setup.cfg",
+              "source_sha256": "1e95ac6fa87362e92a2a0fd8ad9a39acb6b60f8bf4bbd7cfdbbbac215a484734",
+              "locator": "options.install_requires[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "pypi",
+            "name": "requests",
+            "declared_range": "==2.32.3",
+            "exact_version": "2.32.3",
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "root_id": null,
+            "analysis_scope_id": "scope:manifest"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:dependency",
+            "source": {
+              "path": "setup.cfg",
+              "source_sha256": "1e95ac6fa87362e92a2a0fd8ad9a39acb6b60f8bf4bbd7cfdbbbac215a484734",
+              "locator": "options.install_requires[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "declared",
+            "selected_version": "2.32.3",
+            "declared_range": "==2.32.3",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [
+              "declaration:dependency"
+            ],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:manifest",
+            "directness": "direct",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "active"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "setup.cfg",
+            "source_sha256": "1e95ac6fa87362e92a2a0fd8ad9a39acb6b60f8bf4bbd7cfdbbbac215a484734",
+            "format": "python-setup-cfg",
+            "parser": "sourcebastion.python-manifests/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:manifest"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-static-setup",
+      "fixture_files": [
+        {
+          "path": "setup.py",
+          "utf8": "from setuptools import setup\nsetup(name=\"fixture\", install_requires=[\"requests==2.32.3\"])\n",
+          "sha256": "c602c643f9c785edc005e47d2ff707ba050b3344e08d65b941f105eeb4cce3e5"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:manifest",
+            "kind": "manifest-input",
+            "source": {
+              "path": "setup.py",
+              "source_sha256": "c602c643f9c785edc005e47d2ff707ba050b3344e08d65b941f105eeb4cce3e5",
+              "locator": "manifest-input",
+              "parser": "sourcebastion.manifest-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:dependency",
+            "source": {
+              "path": "setup.py",
+              "source_sha256": "c602c643f9c785edc005e47d2ff707ba050b3344e08d65b941f105eeb4cce3e5",
+              "locator": "setup.install_requires[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "pypi",
+            "name": "requests",
+            "declared_range": "==2.32.3",
+            "exact_version": "2.32.3",
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "root_id": null,
+            "analysis_scope_id": "scope:manifest"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:dependency",
+            "source": {
+              "path": "setup.py",
+              "source_sha256": "c602c643f9c785edc005e47d2ff707ba050b3344e08d65b941f105eeb4cce3e5",
+              "locator": "setup.install_requires[0]",
+              "parser": "sourcebastion.manifest-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "declared",
+            "selected_version": "2.32.3",
+            "declared_range": "==2.32.3",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [
+              "declaration:dependency"
+            ],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:manifest",
+            "directness": "direct",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "active"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "setup.py",
+            "source_sha256": "c602c643f9c785edc005e47d2ff707ba050b3344e08d65b941f105eeb4cce3e5",
+            "format": "python-setup-static",
+            "parser": "sourcebastion.python-manifests/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:manifest"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-dynamic-setup",
+      "fixture_files": [
+        {
+          "path": "setup.py",
+          "utf8": "from pathlib import Path\nPath(\"EXECUTED\").write_text(\"unsafe\")\nfrom setuptools import setup\nsetup(name=\"fixture\", install_requires=compute_dependencies())\n",
+          "sha256": "5d071eae94b79e2e2038431790b1a24427a35d5374b8be3df9f537191dbe57ae"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "setup.py",
+            "source_sha256": "5d071eae94b79e2e2038431790b1a24427a35d5374b8be3df9f537191dbe57ae",
+            "format": "python-setup-static",
+            "parser": "sourcebastion.python-manifests/1",
+            "disposition": "unsupported",
+            "reason": "dynamic-metadata",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
     }
   ],
   "additional_source_authorities": {
@@ -5087,6 +5697,11 @@
       "go_checksum_history": "https://go.dev/ref/mod#go-sum-files",
       "pinned_span_contract": "https://raw.githubusercontent.com/golang/mod/v0.41.0/modfile/read.go",
       "adjudication": "Four unchanged original Go fixtures use an explicitly bound maintained modfile helper. Require directives are minimum declarations with no MVS-selected version, graph, installed ownership or inferred directness. Source spans include directive tokens and exclude indirect comments. Indirect annotation and unassessed replace control survive as projection losses; no outside replacement target is opened or selected. Checksum-only input does not establish an active selected package. Original .NET/Ruby/PHP fixtures are discovered but unsupported by the current canonical composition route, yielding explicit partial coverage, never false clean inventory or a claim about the separate legacy scanner route. The original NuGet contentHash=fixture placeholder remains untouched and is not treated as a validated integrity hash. Original meeting prose is ignored with explicit reason. Empty unsupported collections have vacuous complete version-resolution but partial discovery/enumeration and inventory; that field alone is not full coverage. Historical 64-case oracle and prior32 semantic expectations remain unchanged."
+    },
+    "python-static-manifests-and-dynamic-refusal": {
+      "pep621": "https://packaging.python.org/en/latest/specifications/pyproject-toml/",
+      "setuptools_declarative": "https://setuptools.pypa.io/en/latest/userguide/declarative_config.html",
+      "adjudication": "Five unchanged original source fixtures assert exact static dependencies and locations. Explicit PEP621 name/version binds project root and application; setup.cfg/setup.py name without version does not fabricate application identity or root. Runtime requirements are direct source declarations, not installed ownership or resolved edges. Optional test group remains an explicit applicability record with unknown activation under preserve-alternatives. Dynamic setup.py containing a Path.write_text statement is not executed: conservative static metadata admission refuses it as unsupported dynamic-metadata with empty records and honest partial inventory. Vacuous complete version-resolution of an empty unsupported case does not imply complete inventory. Prior40 and original64 unchanged."
     }
   }
 }

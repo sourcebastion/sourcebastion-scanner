@@ -25,6 +25,8 @@ from sourcebastion.inventory import (
     compose_npm,
     compose_pnpm,
     compose_yarn,
+    compose_cargo,
+    cargo_sources,
     yarn_sources,
     yarn_legacy,
     pnpm_sources,
@@ -108,6 +110,8 @@ def main():
         compose_npm,
         compose_pnpm,
         compose_yarn,
+        compose_cargo,
+        cargo_sources,
         yarn_sources,
         yarn_legacy,
         pnpm_sources,
@@ -772,6 +776,104 @@ def main():
     assert selector.declared_range == ">= 1 < 3" and selector.reason == "yarn-peer-context-unassessed"
     semantic.append(record)
 
+    cargo_registry = "registry+https://github.com/rust-lang/crates.io-index"
+    cargo_lock = f"""version=4
+[[package]]
+name="alpha"
+version="1.2.3"
+source="{cargo_registry}"
+dependencies=["beta 2.0.0 ({cargo_registry})"]
+[[package]]
+name="beta"
+version="2.0.0"
+source="{cargo_registry}"
+checksum="{'a'*64}"
+"""
+    result, record = record_case("cargo-qualified-source-graph", {"Cargo.lock": cargo_lock})
+    assert result.stages.inventory == "complete" and len(result.occurrences) == 2 and len(result.relationships) == 1
+    assert not result.roots and all(value.directness == "unknown" for value in result.occurrences)
+    (selector,) = result.dependency_selectors
+    assert selector.dialect == "cargo-lock-package-id-3-4" and selector.exact_version == "2.0.0"
+    semantic.append(record)
+    duplicate = cargo_lock + cargo_lock[cargo_lock.index('[[package]]\nname="beta"') :]
+    result, record = record_case("cargo-duplicate-source-ambiguous", {"Cargo.lock": duplicate})
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 3 and not result.relationships
+    semantic.append(record)
+    entry = cargo_lock[cargo_lock.index('[[package]]\nname="beta"') :]
+    result, record = record_case("cargo-duplicate-unreferenced-identity", {"Cargo.lock": "version=4\n" + entry + entry})
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 2 and not result.relationships
+    semantic.append(record)
+    legacy = '[package]\nname="demo"\nedition="2021"\n[dev_dependencies]\nalpha="1"\n[target.\'cfg(unix)\'.build_dependencies]\nbeta="2"\n'
+    result, record = record_case("cargo-legacy-source-dependency-tables", {"Cargo.toml": legacy})
+    assert result.stages.inventory == "partial" and len(result.declarations) == 2
+    assert {value.scopes for value in result.declarations} == {("dev",), ("build",)}
+    semantic.append(record)
+    result, record = record_case(
+        "cargo-legacy-inherited-edition", {"Cargo.toml": legacy.replace('edition="2021"', "edition.workspace=true")}
+    )
+    assert result.stages.inventory == "partial" and len(result.declarations) == 2
+    semantic.append(record)
+    alternate = (
+        cargo_lock
+        + '\n[[package]]\nname="beta"\nversion="2.0.0"\nsource="registry+https://other.example.invalid/index"\n'
+    )
+    result, record = record_case("cargo-qualified-distinct-source", {"Cargo.lock": alternate})
+    assert result.stages.inventory == "complete" and len(result.occurrences) == 3 and len(result.relationships) == 1
+    semantic.append(record)
+    blocker = (
+        cargo_lock.replace(f"beta 2.0.0 ({cargo_registry})", "beta 2.0.0", 1)
+        + '\n[[package]]\nname="beta"\nversion="2.0.0"\n'
+    )
+    result, record = record_case("cargo-refused-identity-blocks-fallback", {"Cargo.lock": blocker})
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 2 and not result.relationships
+    semantic.append(record)
+    manifest = '[package]\nname="demo"\nversion="0.1.0"\n[dependencies]\nalpha="1.2.3"\n'
+    result, record = record_case("cargo-manifest-no-floor-selection", {"Cargo.toml": manifest})
+    assert result.stages.inventory == "partial" and not result.occurrences and len(result.declarations) == 1
+    assert result.declarations[0].exact_version is None and result.coverage.version_resolution == "partial"
+    assert result.applications[0].name == "demo" and result.applications[0].version == "0.1.0"
+    semantic.append(record)
+    scoped = """[package]
+name="demo"
+version="0.1.0"
+[dependencies]
+alpha={version="^1",optional=true,features=["derive"]}
+[dev-dependencies]
+alpha="2"
+[target.'cfg(target_os = "linux")'.build-dependencies]
+renamed={package="actual",version="3"}
+"""
+    result, record = record_case("cargo-source-scopes-targets", {"Cargo.toml": scoped})
+    assert len(result.declarations) == 3 and not result.occurrences
+    assert {value.scopes for value in result.declarations} == {("runtime", "optional"), ("dev",), ("build",)}
+    semantic.append(record)
+    result, record = record_case(
+        "cargo-private-nonregistry-source",
+        {"Cargo.lock": cargo_lock.replace(cargo_registry, "registry+https://user:secret-token@example.invalid/index")},
+    )
+    assert result.stages.inventory == "partial" and not result.occurrences
+    assert b"secret-token" not in contract.canonical_bytes(result)
+    semantic.append(record)
+    result, record = record_case(
+        "cargo-malformed-file-local",
+        {"Cargo.lock": "version=4\n[[package]]\nname=[]\n", "requirements.txt": "pip==26.0.1\n"},
+    )
+    assert result.stages.inventory == "partial" and [value.name for value in result.occurrences] == ["pip"]
+    semantic.append(record)
+    result, record = record_case(
+        "cargo-global-shared-budget",
+        {"Cargo.lock": cargo_lock, "requirements.txt": "pip==26.0.1\n"},
+        config=registry.DiscoveryConfig(semantic_checks=80),
+    )
+    assert result.stages.inventory == "failed" and not result.occurrences and not result.declarations
+    semantic.append(record)
+    result, record = record_case(
+        "cargo-toml-depth-budget",
+        {"Cargo.lock": "version=4\nignored=" + "[" * 33 + "0" + "]" * 33, "requirements.txt": "pip==26.0.1\n"},
+    )
+    assert result.stages.inventory == "failed" and not result.occurrences and not result.declarations
+    semantic.append(record)
+
     corpus = json.loads(Path("tests/fixtures/inventory/corpus.json").read_text())
     assert len(corpus) == 64
     fixtures = []
@@ -807,7 +909,7 @@ def main():
                 "semantic_cases": semantic,
                 "epoch_failure": "no-consumable-records",
                 "fixtures": fixtures,
-                "scope": "finite requirements/static-manifest/Python-lock/npm/pnpm/Yarn-source composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
+                "scope": "finite requirements/static-manifest/Python-lock/npm/pnpm/Yarn/Cargo-source composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
             },
             sort_keys=True,
             indent=2,

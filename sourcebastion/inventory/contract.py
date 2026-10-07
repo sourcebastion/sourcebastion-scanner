@@ -398,10 +398,10 @@ class DependencySelector(Record):
     source: Locator
     parent_id: ID
     child_id: ID | None = None
-    ecosystem: Literal["pypi", "npm"] = "pypi"
+    ecosystem: Literal["pypi", "npm", "cargo"] = "pypi"
     name: Name
     declared_range: Text | None = None
-    dialect: Literal["pep440", "poetry-core-2.1.3", "npm-semver-7.8.5"] = "pep440"
+    dialect: Literal["pep440", "poetry-core-2.1.3", "npm-semver-7.8.5", "cargo-lock-package-id-3-4"] = "pep440"
     exact_version: Name | None = None
     registry_source_sha256: SHA256 | None = None
     marker: Text | None = None
@@ -419,7 +419,11 @@ class DependencySelector(Record):
         package_purl(self.ecosystem, self.name, self.exact_version)
         if (self.ecosystem == "npm") != (self.dialect == "npm-semver-7.8.5"):
             raise ValueError("contradictory-selector-ecosystem-dialect")
-        if self.ecosystem == "npm" and (
+        if (self.ecosystem == "cargo") != (self.dialect == "cargo-lock-package-id-3-4"):
+            raise ValueError("contradictory-selector-ecosystem-dialect")
+        if self.ecosystem == "cargo" and self.declared_range is not None:
+            raise ValueError("cargo-lock-selector-is-not-a-range")
+        if self.ecosystem in {"npm", "cargo"} and (
             self.marker is not None
             or self.extras
             or self.groups
@@ -427,7 +431,11 @@ class DependencySelector(Record):
             or self.extra_selection != "requested"
             or self.activation != "unknown"
         ):
-            raise ValueError("npm-selector-cannot-borrow-python-context")
+            raise ValueError(
+                "npm-selector-cannot-borrow-python-context"
+                if self.ecosystem == "npm"
+                else "cargo-selector-cannot-borrow-python-context"
+            )
         if (self.child_id is not None) != (self.disposition == "resolved"):
             raise ValueError("contradictory-selector-resolution")
         if self.ecosystem == "pypi" and self.marker_semantics == "none":

@@ -190,6 +190,24 @@ def verify(binary, preparation):
             assert len(result.occurrences) == 2 and any(
                 r.reason == "unassessed-go-checksum-history" for r in result.coverage.inputs
             )
+        if label in {"minimum-not-selected", "checksum-history-not-selection", "multiple-explicit-projects"}:
+            indirect = [row for row in result.occurrences if row.name == "example.invalid/alpha"]
+            assert len(result.losses) == len(indirect)
+            assert {loss.occurrence_id for loss in result.losses} == {row.id for row in indirect}
+            for loss in result.losses:
+                occurrence = next(row for row in indirect if row.id == loss.occurrence_id)
+                assert loss.reason == "unassessed-go-indirect-annotation" and loss.dimension == "graph"
+                assert loss.source == occurrence.source and occurrence.directness == "unknown"
+                assert loss.source.locator.startswith("require[0]:line[4]:bytes[")
+        if label == "controls-partial":
+            assert {loss.reason: loss.dimension for loss in result.losses} == {
+                "duplicate-go-requirement": "version",
+                "unassessed-replace-directive": "version",
+                "unassessed-exclude-directive": "version",
+                "unassessed-toolchain-directive": "environment",
+            }
+            assert len(result.losses) == 4
+            assert all(loss.source.locator == "module-input" and loss.occurrence_id is None for loss in result.losses)
         assert b"private-secret" not in encoded
         assert encoded == canonical_bytes(composed(files))
         canonical_records.append({"case": label, "canonical_sha256": digest(encoded)})

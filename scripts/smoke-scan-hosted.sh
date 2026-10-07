@@ -93,12 +93,57 @@ docker run --rm -i --user "$(id -u):$(id -g)" -e HOME=/tmp \
   -e GRYPE_DB_CACHE_DIR=/advisories --network none \
   -v "$work/python:/workspace:ro" -v "$database:/advisories:ro" \
   --entrypoint python "$image" - <<'PY'
+import json
+import os
+import subprocess
+import time
+from unittest.mock import patch
+
+from sourcebastion.config import ScannerSettings
 from sourcebastion.external_scanners import GrypeScanner
 
-findings = GrypeScanner().scan('/workspace')
-assert any('requests' in str(finding.get('title', '')) for finding in findings), (
-    'Python-only manifest scan lost dependency vulnerabilities'
-)
+# Observe the real subprocess boundary; delegate every command unchanged.
+# Both cases reuse the same immutable advisory mount.
+real_run = subprocess.run
+for mode in ('environment', 'repository-with-deadline'):
+    os.environ['SOURCEBASTION_SETUP_TIMEOUT_GRYPE'] = '90' if mode == 'environment' else '1'
+    scanner = GrypeScanner()
+    if mode == 'repository-with-deadline':
+        scanner.configure_timeouts(ScannerSettings(setup_timeout=300))
+        scanner.set_execution_deadline(time.monotonic() + 120)
+    budgets = {}
+
+    def observed_run(command, *args, **kwargs):
+        if command == ['grype', '--version']:
+            assert 0 < kwargs['timeout'] <= 30
+            budgets['probe'] = kwargs['timeout']
+        elif command == ['grype', 'db', 'status']:
+            assert kwargs['env']['GRYPE_DB_VALIDATE_BY_HASH_ON_START'] == 'true'
+            assert kwargs['env']['GRYPE_DB_VALIDATE_AGE'] == 'true'
+            assert kwargs['env']['GRYPE_DB_AUTO_UPDATE'] == 'false'
+            assert kwargs['env']['GRYPE_CHECK_FOR_APP_UPDATE'] == 'false'
+            if mode == 'environment':
+                assert kwargs['timeout'] == 90
+            else:
+                assert 1 < kwargs['timeout'] <= 120
+            budgets['database_status'] = kwargs['timeout']
+        else:
+            assert command[:2] == ['grype', 'dir:/workspace'], command
+            budgets['analysis'] = kwargs['timeout']
+        return real_run(command, *args, **kwargs)
+
+    with patch('sourcebastion.external_scanners.subprocess.run', observed_run):
+        findings, raw_path = scanner.scan_with_raw_output('/workspace')
+    try:
+        assert any('requests' in str(finding.get('title', '')) for finding in findings), (
+            'Python-only manifest scan lost dependency vulnerabilities'
+        )
+        assert set(budgets) == {'probe', 'database_status', 'analysis'}
+        if mode == 'repository-with-deadline':
+            assert 0 < budgets['analysis'] <= budgets['database_status']
+        print(json.dumps({'proof': 'grype-setup-budget/1', 'mode': mode, 'budgets': budgets}))
+    finally:
+        os.unlink(raw_path)
 print('Python-only read-only checkout reported dependency vulnerabilities')
 PY
 test ! -e "$work/python/.grype-deps"

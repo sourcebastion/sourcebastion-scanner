@@ -10,6 +10,7 @@ from .contract import (
     InputCoverage,
     Locator,
     Occurrence,
+    ProjectionLoss,
     Root,
     identifier,
     package_purl,
@@ -17,6 +18,19 @@ from .contract import (
 from .inputs import InputRefusal
 
 VERSION = "sourcebastion.go-composition/1"
+
+# The helper reports only directive kinds, never replacement targets or spans.
+# Preserve that uncertainty at the source-file level without inventing details.
+CONTROL_DIMENSIONS = {
+    "duplicate-go-requirement": "version",
+    "unassessed-replace-directive": "version",
+    "unassessed-exclude-directive": "version",
+    "unassessed-retract-directive": "version",
+    "unassessed-toolchain-directive": "environment",
+    "unassessed-tool-directive": "scope",
+    "unassessed-godebug-directive": "environment",
+    "unassessed-ignore-directive": "graph",
+}
 
 
 def extend(state, runtime):
@@ -67,6 +81,16 @@ def extend(state, runtime):
             return Locator(path=row.path, source_sha256=row.sha256, locator=value, parser=VERSION)
 
         origin = locate("module-input")
+
+        def loss(source, dimension, reason, occurrence_id=None):
+            values = dict(source=source, dimension=dimension, reason=reason, occurrence_id=occurrence_id)
+            state.retain(
+                state.losses,
+                ProjectionLoss(id=identifier("loss", {**values, "source": source.model_dump()}), **values),
+            )
+
+        for reason in observation.unassessed_directives:
+            loss(origin, CONTROL_DIMENSIONS[reason], reason)
         scope = AnalysisScope(id=identifier("scope", origin.model_dump()), kind="manifest-input", source=origin)
         state.retain(state.scopes, scope)
         state.mark_context(row.path, scope.id)
@@ -108,8 +132,8 @@ def extend(state, runtime):
                 scopes=("unknown",),
                 activation="unknown",
             )
-            state.retain(
-                state.occurrences,
-                Occurrence(id=identifier("occurrence", {**values, "source": source.model_dump()}), **values),
-                state.limits.occurrences,
-            )
+            occurrence = Occurrence(id=identifier("occurrence", {**values, "source": source.model_dump()}), **values)
+            state.retain(state.occurrences, occurrence, state.limits.occurrences)
+            if raw.indirect:
+                # A source annotation is not a resolved graph/directness proof.
+                loss(source, "graph", "unassessed-go-indirect-annotation", occurrence.id)

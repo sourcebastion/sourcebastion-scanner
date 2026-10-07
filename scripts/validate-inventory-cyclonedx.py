@@ -8,6 +8,21 @@ import sys
 
 PREFIX = "sourcebastion:inventory:"
 SCOPE_LOSS = "cyclonedx-default-required-scope-unassessed"
+VALIDATOR_VERSIONS = {
+    "jsonschema": "4.26.0",
+    "referencing": "0.37.0",
+    "attrs": "26.1.0",
+    "rpds-py": "2026.6.3",
+    "jsonschema-specifications": "2025.9.1",
+    "typing-extensions": "4.16.0",
+}
+
+
+def validator_versions():
+    versions = {name: importlib.metadata.version(name) for name in VALIDATOR_VERSIONS}
+    if versions != VALIDATOR_VERSIONS:
+        raise RuntimeError("unreviewed-cyclonedx-validator-version")
+    return versions
 
 
 def render(value):
@@ -136,6 +151,7 @@ def check_binding(case, schemas):
 def validate(path):
     if sys.flags.optimize:
         raise RuntimeError("optimized-probe-runtime-refused")
+    versions = validator_versions()
     from jsonschema import Draft7Validator, FormatChecker
     from referencing import Registry, Resource
 
@@ -185,10 +201,6 @@ def validate(path):
             )
             assert component["evidence"]["occurrences"][0]["location"] == row["source"]["path"]
         assert document["compositions"] == [{"aggregate": "unknown"}]
-    versions = {
-        name: importlib.metadata.version(name)
-        for name in ("jsonschema", "referencing", "attrs", "rpds-py", "jsonschema-specifications")
-    }
     print(
         json.dumps(
             {

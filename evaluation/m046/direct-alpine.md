@@ -29,6 +29,12 @@ compliance. The bounded OCI verifier checks every layer digest/diff ID, exact
 released base prefix/configuration, and actual added compressed layer bytes.
 The proposed 250 MiB ceiling remains subject to architecture budget review.
 
+Buildx's client writes the separately bounded 2 GiB OCI artifact. Controller
+streaming capture independently caps each stdout/stderr log at 64 MiB and kills
+the complete CLI process group on timeout or log overflow. Applying the log's
+64 MiB file ceiling to the OCI client truncated the first native exports;
+those aborted attempts remain retained and do not qualify runtime feasibility.
+
 The two musl rpds hashes were independently checked against their exact PyPI
 publication subjects and GitHub OIDC publisher workflow. They add CP314 native
 Alpine feasibility; they do not silently change any production scanner route,

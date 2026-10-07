@@ -180,6 +180,35 @@ def test_driver_capture_is_bounded_and_timeout_is_visible(tmp_path):
     assert (tmp_path / "timeout.stderr").exists()
 
 
+def test_oci_file_has_separate_ceiling_while_logs_remain_bounded(tmp_path):
+    archive = tmp_path / "separate-oci.tar"
+    code = f"from pathlib import Path; p=Path({str(archive)!r}); f=p.open('wb'); f.truncate(70*1024**2); f.close(); print('exported')"
+    alpine.checked([sys.executable, "-c", code], tmp_path, "large-oci", oci_export=True)
+    assert archive.stat().st_size == 70 * 1024**2
+    with pytest.raises(ValueError, match="log budget"):
+        alpine.checked(
+            [sys.executable, "-c", "import sys; sys.stdout.write('x'*10000)"],
+            tmp_path,
+            "large-log",
+            oci_export=True,
+            capture_limit=1024,
+        )
+    assert (tmp_path / "large-log.stdout").stat().st_size == 1024
+
+
+def test_streaming_timeout_kills_cli_descendant_group(tmp_path):
+    pid = tmp_path / "pid"
+    code = (
+        "import subprocess,sys,time; from pathlib import Path; "
+        + f"p=subprocess.Popen([sys.executable,'-c','import time;time.sleep(10)']); Path({str(pid)!r}).write_text(str(p.pid)); time.sleep(10)"
+    )
+    with pytest.raises(subprocess.TimeoutExpired):
+        alpine.checked([sys.executable, "-c", code], tmp_path, "descendant-timeout", 0.2)
+    child = int(pid.read_text())
+    status = Path(f"/proc/{child}/status")
+    assert not status.exists() or "State:\tZ" in status.read_text()
+
+
 def fake_docker(tmp_path):
     script = tmp_path / "fake-docker.py"
     script.write_text(

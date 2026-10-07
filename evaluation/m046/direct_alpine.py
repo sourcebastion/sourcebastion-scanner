@@ -7,9 +7,12 @@ import json
 import os
 from pathlib import Path
 import platform
+import selectors
+import signal
 import shutil
 import subprocess
 import sys
+import time
 import uuid
 import zipfile
 
@@ -43,12 +46,50 @@ def source_identity():
     }
 
 
-def checked(command, output, name, timeout=300):
+def checked(command, output, name, timeout=300, *, oci_export=False, capture_limit=MAX_OUTPUT):
     parent = os.getpid()
     with (output / (name + ".stdout")).open("xb") as stdout, (output / (name + ".stderr")).open("xb") as stderr:
-        subprocess.run(
-            command, stdout=stdout, stderr=stderr, check=True, timeout=timeout, preexec_fn=lambda: child_limits(parent)
+        # Buildx's client writes the separate OCI archive. Keep its 2GiB file
+        # ceiling separate from the controller's bounded streaming log capture.
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+            preexec_fn=lambda: child_limits(parent, 2 * 1024**3 if oci_export else MAX_OUTPUT),
         )
+        deadline, counts = time.monotonic() + timeout, {"stdout": 0, "stderr": 0}
+        try:
+            with selectors.DefaultSelector() as poller:
+                poller.register(process.stdout, selectors.EVENT_READ, ("stdout", stdout))
+                poller.register(process.stderr, selectors.EVENT_READ, ("stderr", stderr))
+                while poller.get_map():
+                    if time.monotonic() >= deadline:
+                        raise subprocess.TimeoutExpired(command, timeout)
+                    for key, _event in poller.select(min(0.1, max(0, deadline - time.monotonic()))):
+                        chunk = os.read(key.fileobj.fileno(), 65536)
+                        if not chunk:
+                            poller.unregister(key.fileobj)
+                            continue
+                        label, destination = key.data
+                        remaining = capture_limit - counts[label]
+                        destination.write(chunk[:remaining])
+                        counts[label] += len(chunk)
+                        if counts[label] > capture_limit:
+                            raise ValueError("trusted command log budget exceeded")
+            status = process.wait(timeout=max(0.001, deadline - time.monotonic()))
+            if status:
+                raise subprocess.CalledProcessError(status, command)
+        except BaseException:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.wait(timeout=5)
+            raise
+        finally:
+            process.stdout.close()
+            process.stderr.close()
 
 
 def inspect(name, output, label):
@@ -249,6 +290,7 @@ def run(output):
             output,
             "image-build",
             900,
+            oci_export=True,
         )
         loaded = inspect(tag, output, "loaded-inspect")
         if source_identity() != identity or context_identity(target) != report["context_files"]:

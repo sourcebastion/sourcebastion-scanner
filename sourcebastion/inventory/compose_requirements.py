@@ -501,6 +501,7 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             root_contexts=defaultdict(set),
             adapted_inputs=set(),
             enumerated=False,
+            unresolved_versions=False,
             selection_nodes=selection_nodes,
             step=step,
             retain=retain,
@@ -524,6 +525,9 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             from .compose_yarn import extend as extend_yarn
 
             extend_yarn(extra)
+            from .compose_cargo import extend as extend_cargo
+
+            extend_cargo(extra)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(
@@ -535,7 +539,11 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             for path in sorted(inputs)
         )
         incomplete = bool(global_refusals) or any(row.disposition not in {"parsed", "ignored"} for row in covered)
-        version_fidelity = "partial" if any(row.selected_version is None for row in occurrences) else "complete"
+        version_fidelity = (
+            "partial"
+            if extra.unresolved_versions or any(row.selected_version is None for row in occurrences)
+            else "complete"
+        )
         enumeration = "partial" if incomplete else "complete" if had_requirement or extra.enumerated else "unknown"
         discovery_fidelity = "partial" if result.status == "partial" else "complete"
         if (

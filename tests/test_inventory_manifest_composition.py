@@ -177,12 +177,12 @@ def test_unknown_non_python_input_cannot_be_promoted_by_valid_manifest(tmp_path)
         tmp_path,
         {
             "pyproject.toml": '[project]\nname="app"\nversion="1"\ndependencies=["pip==26.0.1"]\n',
-            "package.json": '{"dependencies":{"debug":"^4"}}',
+            "Cargo.lock": 'version = 4\n[[package]]\nname = "fixture"\nversion = "1.0.0"\n',
         },
     )
     result = run(tmp_path)
     assert result.stages.inventory == "partial" and result.occurrences[0].selected_version == "26.0.1"
-    assert {r.source_path: r.disposition for r in result.coverage.inputs}["package.json"] == "unsupported"
+    assert {r.source_path: r.disposition for r in result.coverage.inputs}["Cargo.lock"] == "unsupported"
 
 
 def test_final_manifest_epoch_failure_clears_every_kind_of_consumable_evidence(tmp_path, monkeypatch):

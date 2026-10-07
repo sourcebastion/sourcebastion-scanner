@@ -398,15 +398,15 @@ class DependencySelector(Record):
     source: Locator
     parent_id: ID
     child_id: ID | None = None
-    ecosystem: Literal["pypi"] = "pypi"
+    ecosystem: Literal["pypi", "npm"] = "pypi"
     name: Name
     declared_range: Text | None = None
-    dialect: Literal["pep440", "poetry-core-2.1.3"] = "pep440"
+    dialect: Literal["pep440", "poetry-core-2.1.3", "npm-semver-7.8.5"] = "pep440"
     exact_version: Name | None = None
     registry_source_sha256: SHA256 | None = None
     marker: Text | None = None
     extra_selection: Literal["requested", "variant-exact"] = "requested"
-    marker_semantics: Literal["pep508", "relative-to-lock-python"] = "pep508"
+    marker_semantics: Literal["pep508", "relative-to-lock-python", "none"] = "pep508"
     extras: tuple[Name, ...] = Field(default=(), max_length=256)
     scopes: tuple[Name, ...] = Field(default=(), max_length=256)
     groups: tuple[Name, ...] = Field(default=(), max_length=256)
@@ -416,9 +416,22 @@ class DependencySelector(Record):
 
     @model_validator(mode="after")
     def consistent_selection(self):
-        package_purl("pypi", self.name, self.exact_version)
+        package_purl(self.ecosystem, self.name, self.exact_version)
+        if (self.ecosystem == "npm") != (self.dialect == "npm-semver-7.8.5"):
+            raise ValueError("contradictory-selector-ecosystem-dialect")
+        if self.ecosystem == "npm" and (
+            self.marker is not None
+            or self.extras
+            or self.groups
+            or self.marker_semantics != "none"
+            or self.extra_selection != "requested"
+            or self.activation != "unknown"
+        ):
+            raise ValueError("npm-selector-cannot-borrow-python-context")
         if (self.child_id is not None) != (self.disposition == "resolved"):
             raise ValueError("contradictory-selector-resolution")
+        if self.ecosystem == "pypi" and self.marker_semantics == "none":
+            raise ValueError("python-selector-requires-marker-semantics")
         if self.marker_semantics == "relative-to-lock-python" and self.activation != "unknown":
             raise ValueError("relative-marker-cannot-prove-activation")
         return self
@@ -691,10 +704,12 @@ class Inventory(Record):
                 raise ValueError("unbound-selector-endpoint")
             if (
                 parent.evidence_kind != "locked"
-                or parent.ecosystem != "pypi"
+                or parent.ecosystem != selector.ecosystem
                 or parent.source.path != selector.source.path
-                or parent.groups != selector.groups
-                or parent.scopes != selector.scopes
+                or (
+                    selector.ecosystem == "pypi"
+                    and (parent.groups != selector.groups or parent.scopes != selector.scopes)
+                )
             ):
                 raise ValueError("selector-requires-same-lock-parent")
             if child is not None and (
@@ -704,12 +719,18 @@ class Inventory(Record):
                 or child.evidence_kind != "locked"
                 or child.source.path != parent.source.path
                 or child.analysis_scope_id != parent.analysis_scope_id
-                or child.groups != selector.groups
-                or child.scopes != selector.scopes
+                or (
+                    selector.ecosystem == "pypi"
+                    and (child.groups != selector.groups or child.scopes != selector.scopes)
+                )
                 or (selector.extra_selection == "variant-exact" and child.extras != selector.extras)
                 or (
                     selector.exact_version is not None
-                    and Version(child.selected_version) != Version(selector.exact_version)
+                    and (
+                        Version(child.selected_version) != Version(selector.exact_version)
+                        if selector.ecosystem == "pypi"
+                        else child.selected_version != selector.exact_version
+                    )
                 )
                 or (
                     selector.registry_source_sha256 is not None

@@ -366,6 +366,7 @@ jobs:
           if-no-files-found: error
 
       - name: Build pinned restricted provider outside customer scanning
+        id: inventory_provider_preparation
         run: python3 scripts/build-inventory-provider.py --output "$RUNNER_TEMP/inventory-provider"
 
       - name: Exercise installed source-bound provider protocol offline
@@ -382,7 +383,7 @@ jobs:
               --binary /provider --preparation /provider-manifest.json > inventory-provider-native.json
 
       - name: Upload native provider and preparation evidence
-        if: always() && steps.inventory_provider.outcome != 'skipped'
+        if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_provider_preparation.outcome)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: inventory-provider-${{ matrix.arch }}

@@ -4,7 +4,7 @@ from .compose_requirements import _compose
 
 
 def compose_source(source, *, source_sha256, producer, environment=None, config=None, limits=None):
-    """Compose requirements, static Python manifests and registry lock evidence."""
+    """Compose static Python and npm declarations and source lock evidence."""
     return _compose(
         source,
         source_sha256=source_sha256,

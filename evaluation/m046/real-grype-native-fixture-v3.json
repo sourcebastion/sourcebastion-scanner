@@ -1,0 +1,215 @@
+{
+  "schema_version": "m046.real-grype-native-fixture-proposal/3",
+  "status": "source-authored proposal; independent review required before new driver execution",
+  "files": [
+    {
+      "path": "one/dependencies.pip",
+      "utf8": "requests==2.19.1\n",
+      "sha256": "8caa32834ed25cd885f19ce1d36b90db608bda455c450a79f38f1442a0cc8381"
+    },
+    {
+      "path": ".deps/requirements.txt",
+      "utf8": "requests==2.19.1; python_version < \"4\"\n",
+      "sha256": "4d5f9affb3eb8f4396ab6bc6041864e792abade9d7995318da2373382587d77f"
+    },
+    {
+      "path": "range/requirements.in",
+      "utf8": "requests>=2.19,<3\n",
+      "sha256": "21921964be785eadeba67b3a319febfdc5c81f839a00952ae41fb94ea65a9da8"
+    },
+    {
+      "path": "scripts/python-build.in",
+      "utf8": "pip==26.0.1\n",
+      "sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+    },
+    {
+      "path": ".github/python-locks/build.txt",
+      "utf8": "pip==26.0.1 --hash=sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n",
+      "sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+    }
+  ],
+  "expected": {
+    "selected": [
+      {
+        "path": "one/dependencies.pip",
+        "line": 1,
+        "name": "requests",
+        "version": "2.19.1",
+        "activation": "active",
+        "required_advisories": [
+          [
+            {
+              "id": "GHSA-x84v-xcm2-53pg",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2018-18074",
+              "namespace": "nvd:cpe"
+            }
+          ]
+        ],
+        "hashes": []
+      },
+      {
+        "path": ".deps/requirements.txt",
+        "line": 1,
+        "name": "requests",
+        "version": "2.19.1",
+        "marker": "python_version < \"4\"",
+        "activation": "unknown",
+        "required_advisories": [
+          [
+            {
+              "id": "GHSA-x84v-xcm2-53pg",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2018-18074",
+              "namespace": "nvd:cpe"
+            }
+          ]
+        ],
+        "hashes": []
+      },
+      {
+        "path": "scripts/python-build.in",
+        "line": 1,
+        "name": "pip",
+        "version": "26.0.1",
+        "activation": "active",
+        "hashes": [],
+        "required_advisories": [
+          [
+            {
+              "id": "GHSA-wf93-45jw-7689",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-8643",
+              "namespace": "nvd:cpe"
+            }
+          ],
+          [
+            {
+              "id": "GHSA-qwm4-qh6w-59xr",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-13346",
+              "namespace": "nvd:cpe"
+            }
+          ],
+          [
+            {
+              "id": "GHSA-jp4c-xjxw-mgf9",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-6357",
+              "namespace": "nvd:cpe"
+            }
+          ],
+          [
+            {
+              "id": "GHSA-58qw-9mgm-455v",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-3219",
+              "namespace": "nvd:cpe"
+            }
+          ]
+        ]
+      },
+      {
+        "path": ".github/python-locks/build.txt",
+        "line": 1,
+        "name": "pip",
+        "version": "26.0.1",
+        "activation": "active",
+        "hashes": [
+          {
+            "algorithm": "sha256",
+            "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "kind": "artifact"
+          }
+        ],
+        "required_advisories": [
+          [
+            {
+              "id": "GHSA-wf93-45jw-7689",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-8643",
+              "namespace": "nvd:cpe"
+            }
+          ],
+          [
+            {
+              "id": "GHSA-qwm4-qh6w-59xr",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-13346",
+              "namespace": "nvd:cpe"
+            }
+          ],
+          [
+            {
+              "id": "GHSA-jp4c-xjxw-mgf9",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-6357",
+              "namespace": "nvd:cpe"
+            }
+          ],
+          [
+            {
+              "id": "GHSA-58qw-9mgm-455v",
+              "namespace": "github:language:python"
+            },
+            {
+              "id": "CVE-2026-3219",
+              "namespace": "nvd:cpe"
+            }
+          ]
+        ]
+      }
+    ],
+    "unselected": [
+      {
+        "path": "range/requirements.in",
+        "line": 1,
+        "name": "requests",
+        "declared_range": ">=2.19,<3"
+      }
+    ],
+    "root_ownership": "unknown",
+    "installed_ownership": "unknown",
+    "directness": "unknown",
+    "graph": "unknown",
+    "canonical_edges": 0,
+    "exported_components": 4,
+    "must_match_advisory": "GHSA-x84v-xcm2-53pg",
+    "advisory_primary_source": "https://github.com/advisories/GHSA-x84v-xcm2-53pg",
+    "matching_policy": "Known advisory must appear on each selected exact occurrence ID via vulnerability or relatedVulnerabilities exact ID+namespace. Additional advisories allowed. Retain complete original stdout bytes/SHA and semantic original match object equality, no purl/name joins; versionless occurrence never eligible.",
+    "pip_advisory_primary_sources": [
+      "https://github.com/advisories/GHSA-wf93-45jw-7689",
+      "https://github.com/advisories/GHSA-qwm4-qh6w-59xr",
+      "https://github.com/advisories/GHSA-jp4c-xjxw-mgf9",
+      "https://github.com/advisories/GHSA-58qw-9mgm-455v"
+    ],
+    "pip_regression_policy": "Both original custom-path pip26.0.1 observations must independently receive all four reviewed advisories via exact occurrence ID and exact ID+namespace alias groups. Additional advisories retained. Hash text is an asserted source hash, never downloaded/verified artifact integrity. Original four advisory baseline is unchanged; each actual snapshot is separately recorded, with no equal historical snapshot claim."
+  },
+  "discovery_config": {
+    "mappings": [
+      [
+        "one/dependencies.pip",
+        "pip-requirements"
+      ]
+    ],
+    "purpose": "Explicit reviewed mapping witness; generic .pip is already supported automatically."
+  }
+}

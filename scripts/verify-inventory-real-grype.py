@@ -15,7 +15,7 @@ import sys
 import tempfile
 import time
 
-FIXTURE = Path("evaluation/m046/real-grype-native-fixture-v2.json")
+FIXTURE = Path("evaluation/m046/real-grype-native-fixture-v3.json")
 PINS = Path("evaluation/m046/real-grype-native-binaries-v1.json")
 BINARY = Path("/usr/local/bin/grype")
 ADVISORIES = Path("/advisories")
@@ -188,6 +188,25 @@ def known_advisory(match, aliases):
     return any((row.get("id"), row.get("namespace")) in aliases for row in rows if type(row) is dict)
 
 
+def required_advisories(bindings, matches, expected):
+    """Require every alias group on its exact recovered source occurrence."""
+    if not expected or any(not groups for groups in expected.values()):
+        raise ValueError("real-grype-proof-missing-required-advisory")
+    result = {}
+    for occurrence_id, groups in expected.items():
+        result[occurrence_id] = []
+        for group in groups:
+            aliases = {(row["id"], row["namespace"]) for row in group}
+            ordinals = [
+                binding.ordinal for binding in bindings
+                if binding.occurrence_id == occurrence_id and known_advisory(matches[binding.ordinal], aliases)
+            ]
+            if not aliases or not ordinals:
+                raise ValueError("real-grype-proof-missing-required-advisory")
+            result[occurrence_id].append({"aliases": group, "match_ordinals": ordinals})
+    return result
+
+
 def verify():
     if sys.flags.optimize:
         raise RuntimeError("optimized-probe-runtime-refused")
@@ -296,13 +315,15 @@ def verify():
             before = canonical_bytes(value)
             (OUTPUT / "inventory.json").write_bytes(before)
             assert (
-                len(value.occurrences) == 3
+                len(value.occurrences) == 5
                 and not value.relationships
                 and not value.roots
                 and not value.installed_environments
             )
             by_path = {row.source.path: row for row in value.occurrences}
+            assert len(by_path) == len(value.occurrences)
             selected = set()
+            required = {}
             for wanted in fixture["expected"]["selected"]:
                 row = by_path[wanted["path"]]
                 assert (
@@ -310,7 +331,8 @@ def verify():
                     and row.source.source_sha256 == expected_files[wanted["path"]]["sha256"]
                 )
                 assert row.name == wanted["name"] and row.selected_version == wanted["version"]
-                assert row.purl == "pkg:pypi/requests@2.19.1"
+                assert row.purl == "pkg:pypi/" + wanted["name"] + "@" + wanted["version"]
+                assert [value.model_dump(mode="json") for value in row.hashes] == wanted["hashes"]
                 assert row.activation == wanted["activation"] and row.marker == wanted.get("marker")
                 assert (
                     row.root_id is row.installed_environment_id is None
@@ -318,6 +340,7 @@ def verify():
                     and not row.scopes
                 )
                 selected.add(row.id)
+                required[row.id] = wanted["required_advisories"]
             unselected = by_path[fixture["expected"]["unselected"][0]["path"]]
             assert unselected.selected_version is None and unselected.purl == "pkg:pypi/requests"
             assert (
@@ -333,13 +356,13 @@ def verify():
                 unselected.root_id is unselected.installed_environment_id is None and unselected.directness == "unknown"
             )
             assert (
-                len(selected) == 2
-                and len({by_path[w["path"]].analysis_scope_id for w in fixture["expected"]["selected"]}) == 2
+                len(selected) == 4
+                and len({by_path[w["path"]].analysis_scope_id for w in fixture["expected"]["selected"]}) == 4
             )
             artifact = export(value, deadline=source.deadline, check=source.check)
             document = json.loads(artifact.content)
             assert {row["bom-ref"] for row in document["components"]} == selected
-            assert len(document["components"]) == 2 and not document.get("dependencies")
+            assert len(document["components"]) == 4 and not document.get("dependencies")
             sbom_path = OUTPUT / "inventory.cdx.json"
             sbom_path.write_bytes(artifact.content)
             execution = capture(
@@ -355,10 +378,7 @@ def verify():
             result = recover(value, artifact, raw, consumer=consumer, deadline=source.deadline, check=source.check)
             assert result.original_output == raw and result.output_sha256 == sha(raw)
             matches = json.loads(raw)["matches"]
-            aliases = {(row["id"], row["namespace"]) for row in fixture["expected"]["advisory_aliases"]}
-            assert {
-                binding.occurrence_id for binding in result.matches if known_advisory(matches[binding.ordinal], aliases)
-            } == selected
+            required_evidence = required_advisories(result.matches, matches, required)
             assert all(binding.match_sha256 == sha(render(matches[binding.ordinal])) for binding in result.matches)
             assert all(
                 json.loads(context) == by_path[row["path"]].model_dump(mode="json")
@@ -402,6 +422,7 @@ def verify():
                 "unselected_id": unselected.id,
                 "matches": len(result.matches),
                 "known_advisory_on_each_selected_id": True,
+                "required_advisories_by_occurrence": required_evidence,
                 "recovered_contexts": {
                     identifier: json.loads(context) for identifier, context in result.occurrence_contexts
                 },

@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import sys
 import time
+from types import SimpleNamespace
 
 import pytest
 
@@ -97,6 +98,38 @@ def test_advisory_symlink_and_excess_entries_refused(probe, tmp_path):
         (tmp_path / ("extra-" + str(index))).write_bytes(b"x")
     with pytest.raises(ValueError, match="entry-budget-exceeded"):
         probe.advisory_binding(tmp_path, time.monotonic() + 5)
+
+
+def advisory_fixture():
+    groups = [[{"id": f"GHSA-required-{number}", "namespace": "github:language:python"}] for number in range(4)]
+    matches = [{"vulnerability": dict(group[0])} for group in groups]
+    bindings = [SimpleNamespace(ordinal=number, occurrence_id="occurrence:first") for number in range(4)]
+    return groups, matches, bindings
+
+
+def test_all_four_groups_required_on_each_distinct_source_id(probe):
+    groups, matches, bindings = advisory_fixture()
+    expected = {"occurrence:first": groups, "occurrence:second": groups}
+    # Four matches on one equal-purl source cannot satisfy the other source.
+    with pytest.raises(ValueError, match="missing-required-advisory"):
+        probe.required_advisories(bindings, matches, expected)
+    second = [SimpleNamespace(ordinal=number + 4, occurrence_id="occurrence:second") for number in range(4)]
+    evidence = probe.required_advisories(bindings + second, matches + matches, expected)
+    assert [row["match_ordinals"] for row in evidence["occurrence:first"]] == [[0], [1], [2], [3]]
+    assert [row["match_ordinals"] for row in evidence["occurrence:second"]] == [[4], [5], [6], [7]]
+
+
+@pytest.mark.parametrize("missing", range(4))
+def test_three_of_four_advisories_refused(probe, missing):
+    groups, matches, bindings = advisory_fixture()
+    with pytest.raises(ValueError, match="missing-required-advisory"):
+        probe.required_advisories([row for row in bindings if row.ordinal != missing], matches, {"occurrence:first": groups})
+
+
+@pytest.mark.parametrize("expected", [{}, {"occurrence:first": []}, {"occurrence:first": [[]]}])
+def test_empty_advisory_policy_never_reports_success(probe, expected):
+    with pytest.raises(ValueError, match="missing-required-advisory"):
+        probe.required_advisories([], [], expected)
 
 
 def test_missing_advisory_files_refused(probe, tmp_path):

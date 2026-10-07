@@ -15,6 +15,8 @@ import pytest
         "verify-inventory-foundation.py",
         "verify-inventory-composition.py",
         "verify-go-source.py",
+        "verify-inventory-cyclonedx.py",
+        "validate-inventory-cyclonedx.py",
     ],
 )
 @pytest.mark.parametrize("mode", ["flag", "environment"])
@@ -31,5 +33,7 @@ def test_optimized_interpreter_refuses_probe_receipt(name, mode, tmp_path):
     result = subprocess.run(command, cwd=tmp_path, env=environment, capture_output=True, text=True, timeout=15)
     assert result.returncode != 0
     assert "optimized-probe-runtime-refused" in result.stderr
-    assert '"status": "native-' in result.stdout and '"reason": "RuntimeError"' in result.stdout
+    assert '"reason": "RuntimeError"' in result.stdout
+    expected = "offline-official-cyclonedx-validation-failed" if name.startswith("validate-") else "native-"
+    assert expected in result.stdout
     assert "-passed" not in result.stdout

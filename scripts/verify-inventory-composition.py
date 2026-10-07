@@ -20,6 +20,10 @@ from sourcebastion.inventory import (
     compose_requirements,
     compose_source,
     compose_manifests,
+    compose_locks,
+    python_locks,
+    python_lock_formats,
+    poetry_constraints,
     contract,
     discovery,
     inputs,
@@ -85,10 +89,15 @@ def main():
         raise RuntimeError("optimized-probe-runtime-refused")
     signal.alarm(60)
     assert packaging.__version__ == "26.3"
+    assert poetry_constraints.GRAMMAR_VERSION == "2.1.3"
     modules = (
         compose_requirements,
         compose_source,
         compose_manifests,
+        compose_locks,
+        python_locks,
+        python_lock_formats,
+        poetry_constraints,
         contract,
         discovery,
         inputs,
@@ -274,6 +283,137 @@ def main():
     assert all(p.scopes == ("build",) for p in build.occurrences)
     semantic.append(record)
 
+    lock_sha = "a" * 64
+    poetry_header = '[metadata]\nlock-version="2.1"\npython-versions=">=3.12"\ncontent-hash="' + lock_sha + '"\n'
+    pdm_header = (
+        '[metadata]\nlock_version="4.5.0"\ngroups=["default","test"]\nstrategy=["inherit_metadata"]\ncontent_hash="sha256:'
+        + lock_sha
+        + '"\n'
+    )
+    uv_header = 'version=1\nrevision=3\nrequires-python=">=3.12"\n'
+
+    def lock_package(name="foo", style="poetry", extra=""):
+        header = '[[package]]\nname="' + name + '"\nversion="1"\n'
+        fields = {
+            "poetry": 'optional=false\npython-versions=">=3.12"\ngroups=["main"]\n',
+            "pdm": 'requires_python=">=3.12"\ngroups=["default"]\n',
+            "uv": 'source={registry="https://pypi.org/simple"}\n',
+        }
+        artifact = (
+            'wheels=[{url="https://packages.invalid/' + name + '-1-py3-none-any.whl",hash="sha256:' + lock_sha + '"}]\n'
+            if style == "uv"
+            else 'files=[{file="' + name + '-1-py3-none-any.whl",hash="sha256:' + lock_sha + '"}]\n'
+        )
+        return header + fields[style] + artifact + extra
+
+    for style, header in (("poetry", poetry_header), ("pdm", pdm_header), ("uv", uv_header)):
+        result, record = record_case("locked-" + style, {style + ".lock": header + lock_package(style=style)})
+        assert result.stages.inventory == "complete" and len(result.occurrences) == 1
+        occurrence = result.occurrences[0]
+        assert occurrence.evidence_kind == "locked" and occurrence.selected_version == "1"
+        assert occurrence.root_id is occurrence.installed_environment_id is None
+        assert occurrence.activation == "unknown" and occurrence.hashes[0].digest == lock_sha
+        assert not result.roots and not result.applications
+        semantic.append(record)
+    pipfile = json.dumps(
+        {
+            "_meta": {"pipfile-spec": 6, "hash": {"sha256": lock_sha}, "requires": {}, "sources": []},
+            "default": {"foo": {"version": "==1", "hashes": ["sha256:" + lock_sha]}},
+        }
+    )
+    result, record = record_case("locked-pipfile", {"Pipfile.lock": pipfile})
+    assert result.stages.inventory == "complete" and result.occurrences[0].evidence_kind == "locked"
+    assert result.occurrences[0].hashes[0].digest == lock_sha
+    semantic.append(record)
+    pylock = (
+        'lock-version="1.0"\ncreated-by="native"\n[[packages]]\nname="foo"\nversion="1"\n'
+        'wheels=[{name="foo-1-py3-none-any.whl",url="https://packages.invalid/foo.whl",hashes={sha256="'
+        + lock_sha
+        + '"}}]\n'
+    )
+    result, record = record_case("locked-pylock", {"pylock.toml": pylock})
+    assert result.stages.inventory == "complete" and result.occurrences[0].evidence_kind == "locked"
+    semantic.append(record)
+    result, record = record_case(
+        "poetry-conditional-graph",
+        {
+            "poetry.lock": poetry_header
+            + lock_package("parent", extra='[package.dependencies]\nfoo="^1.0"\n')
+            + lock_package()
+        },
+    )
+    assert result.stages.inventory == "complete" and len(result.relationships) == len(result.dependency_selectors) == 1
+    selector = result.dependency_selectors[0]
+    assert (
+        selector.declared_range == "^1.0"
+        and selector.dialect == "poetry-core-2.1.3"
+        and selector.activation == "unknown"
+    )
+    assert result.relationships[0].selector_id == selector.id and result.coverage.graph == "partial"
+    semantic.append(record)
+    result, record = record_case(
+        "pdm-multigroup-graph",
+        {
+            "pdm.lock": pdm_header
+            + (lock_package("parent", "pdm", 'dependencies=["foo>=1"]\n') + lock_package(style="pdm")).replace(
+                'groups=["default"]', 'groups=["default","test"]'
+            )
+        },
+    )
+    assert result.stages.inventory == "complete" and len(result.occurrences) == 4 and len(result.relationships) == 2
+    assert {selector.groups for selector in result.dependency_selectors} == {("default",), ("test",)}
+    semantic.append(record)
+    uv_parent = lock_package("parent", "uv", 'dependencies=[{name="foo",version="1"}]\n')
+    result, record = record_case(
+        "uv-ambiguous-source",
+        {
+            "uv.lock": uv_header
+            + uv_parent
+            + lock_package(style="uv")
+            + lock_package(style="uv").replace("pypi.org", "other.invalid")
+        },
+    )
+    assert result.stages.inventory == "partial" and not result.relationships and len(result.dependency_selectors) == 1
+    assert (
+        result.dependency_selectors[0].child_id is None
+        and result.dependency_selectors[0].reason == "ambiguous-lock-dependency"
+    )
+    semantic.append(record)
+    result, record = record_case(
+        "uv-relative-marker",
+        {
+            "uv.lock": uv_header
+            + lock_package("parent", "uv", 'dependencies=[{name="foo",marker="python_version < \'3.14\'"}]\n')
+            + lock_package(style="uv")
+        },
+        environment=contract.Environment(policy="explicit-target", python_version="3.15.1"),
+    )
+    assert (
+        result.stages.inventory == "complete"
+        and result.dependency_selectors[0].marker_semantics == "relative-to-lock-python"
+    )
+    assert result.dependency_selectors[0].activation == result.relationships[0].activation == "unknown"
+    semantic.append(record)
+    result, record = record_case("missing-lock-target", {"uv.lock": uv_header + uv_parent})
+    assert (
+        result.stages.inventory == "partial"
+        and not result.relationships
+        and result.dependency_selectors[0].reason == "missing-lock-dependency"
+    )
+    semantic.append(record)
+    result, record = record_case(
+        "lock-shared-budget",
+        {"uv.lock": uv_header + lock_package(style="uv"), "requirements.txt": "pip==26.0.1\n"},
+        config=registry.DiscoveryConfig(semantic_checks=20),
+    )
+    assert (
+        result.stages.inventory == "failed"
+        and not result.occurrences
+        and not result.relationships
+        and not result.dependency_selectors
+    )
+    semantic.append(record)
+
     corpus = json.loads(Path("tests/fixtures/inventory/corpus.json").read_text())
     assert len(corpus) == 64
     fixtures = []
@@ -288,13 +428,14 @@ def main():
                 "architecture": platform.machine(),
                 "packaging": packaging.__version__,
                 "pydantic": pydantic.__version__,
+                "poetry_core": poetry_constraints.GRAMMAR_VERSION,
                 "source_modules": {
                     Path(m.__file__).name: hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest() for m in modules
                 },
                 "semantic_cases": semantic,
                 "epoch_failure": "no-consumable-records",
                 "fixtures": fixtures,
-                "scope": "finite requirements/static-manifest composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
+                "scope": "finite requirements/static-manifest/registry-lock composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
             },
             sort_keys=True,
             indent=2,

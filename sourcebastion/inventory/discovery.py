@@ -52,6 +52,8 @@ class Discovery:
     documents: tuple
     refusal_codes: tuple
     parsed_input_digest: str
+    # Actual visits, including those deduplicated in reference evidence.
+    semantic_checks: int
 
     def to_dict(self):
         return asdict(self)
@@ -225,4 +227,5 @@ def discover(source, *, config=None):
         tuple(documents[key] for key in sorted(documents)),
         tuple(sorted(refusals)),
         digest,
+        checks,
     )

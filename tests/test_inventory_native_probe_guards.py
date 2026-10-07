@@ -8,7 +8,9 @@ import sys
 import pytest
 
 
-@pytest.mark.parametrize("name", ["verify-inventory-discovery.py", "verify-inventory-foundation.py"])
+@pytest.mark.parametrize(
+    "name", ["verify-inventory-discovery.py", "verify-inventory-foundation.py", "verify-inventory-composition.py"]
+)
 @pytest.mark.parametrize("mode", ["flag", "environment"])
 def test_optimized_interpreter_refuses_probe_receipt(name, mode, tmp_path):
     root = Path(__file__).resolve().parents[1]

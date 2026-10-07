@@ -348,6 +348,23 @@ jobs:
           path: inventory-foundation-native.json
           if-no-files-found: error
 
+      - name: Exercise installed requirements composition offline
+        id: inventory_composition
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
+            -v "$PWD:/workspace:ro" -w /workspace \
+            sourcebastion:standard-rule-test scripts/verify-inventory-composition.py > inventory-composition-native.json
+
+      - name: Upload native requirements composition evidence
+        if: always() && steps.inventory_composition.outcome != 'skipped'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-composition-${{ matrix.arch }}
+          path: inventory-composition-native.json
+          if-no-files-found: error
+
       - name: Exercise release scanner runtime
         run: |
           smoke_dir="$RUNNER_TEMP/release-scanner-runtime"

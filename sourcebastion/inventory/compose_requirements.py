@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 import re
+from types import SimpleNamespace
 
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
@@ -126,7 +127,7 @@ def _origins(documents, step):
     return sorted(origins)
 
 
-def compose_requirements(source, *, source_sha256, producer, environment=None, config=None, limits=None):
+def _compose(source, *, source_sha256, producer, environment=None, config=None, limits=None, manifest_inputs=False):
     """Consume a controller Source once; publish only after final epoch checks.
 
     The controller supplies admitted source/producer identities and the outer
@@ -479,15 +480,58 @@ def compose_requirements(source, *, source_sha256, producer, environment=None, c
                     mark_unresolved((declaration.source.path,), "no-selected-version")
             if not required:
                 mark_unresolved(affected, "no-required-dependency-declaration")
+        # Only built-in, reviewed adapters can extend this private state. No
+        # customer config can supply code or an arbitrary parser callback.
+        extra = SimpleNamespace(
+            source=source,
+            result=result,
+            limits=limits,
+            environment=environment,
+            inputs=inputs,
+            scopes=scopes,
+            declarations=declarations,
+            occurrences=occurrences,
+            global_refusals=global_refusals,
+            roots=[],
+            applications=[],
+            applicability=[],
+            root_contexts=defaultdict(set),
+            adapted_inputs=set(),
+            enumerated=False,
+            selection_nodes=selection_nodes,
+            step=step,
+            retain=retain,
+            locate=locate,
+            mark_context=mark_context,
+            mark_unresolved=mark_unresolved,
+        )
+        if manifest_inputs:
+            from .compose_manifests import extend
+
+            extend(extra)
         source.validate()
         covered = tuple(
-            inputs[path].model_copy(update={"analysis_scope_ids": tuple(sorted(context_ids[path]))})
+            inputs[path].model_copy(
+                update={
+                    "analysis_scope_ids": tuple(sorted(context_ids[path])),
+                    "root_ids": tuple(sorted(extra.root_contexts[path])),
+                }
+            )
             for path in sorted(inputs)
         )
         incomplete = bool(global_refusals) or any(row.disposition not in {"parsed", "ignored"} for row in covered)
         version_fidelity = "partial" if any(row.selected_version is None for row in occurrences) else "complete"
-        enumeration = "partial" if incomplete else "complete" if had_requirement else "unknown"
+        enumeration = "partial" if incomplete else "complete" if had_requirement or extra.enumerated else "unknown"
         discovery_fidelity = "partial" if result.status == "partial" else "complete"
+        if (
+            extra.adapted_inputs
+            and not result.refusal_codes
+            and all(
+                row.disposition in {"parsed", "ignored"} or row.path in extra.adapted_inputs for row in result.inputs
+            )
+            and all(row.disposition in {"parsed", "ignored"} for row in result.references)
+        ):
+            discovery_fidelity = "complete"
         status = "complete" if enumeration == version_fidelity == discovery_fidelity == "complete" else "partial"
         payload = dict(
             schema_version="sourcebastion.inventory/1",
@@ -496,12 +540,12 @@ def compose_requirements(source, *, source_sha256, producer, environment=None, c
             limits=limits,
             environment=environment,
             environment_sha256=environment.sha256,
-            roots=(),
+            roots=tuple(extra.roots),
             installed_environments=(),
             relationships=(),
-            applications=(),
+            applications=tuple(extra.applications),
             losses=(),
-            applicability=(),
+            applicability=tuple(extra.applicability),
             analysis_scopes=tuple(scopes),
             declarations=tuple(declarations),
             input_references=tuple(references),
@@ -532,3 +576,10 @@ def compose_requirements(source, *, source_sha256, producer, environment=None, c
         # A typed/source selector that cannot be admitted grants no selected
         # package authority. Diagnostic code never includes source text.
         return build_failed("canonical-composition-refused")
+
+
+def compose_requirements(source, *, source_sha256, producer, environment=None, config=None, limits=None):
+    """Compose pip inputs only, retaining other formats as unsupported."""
+    return _compose(
+        source, source_sha256=source_sha256, producer=producer, environment=environment, config=config, limits=limits
+    )

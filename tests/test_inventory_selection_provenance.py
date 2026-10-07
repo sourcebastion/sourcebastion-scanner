@@ -94,7 +94,9 @@ def test_constraints_are_separate_records_and_selection_is_bound():
         inventory(occurrences=(occurrence(),))
 
 
-@pytest.mark.parametrize("changes", [dict(name="setuptools"), dict(analysis_scope_id=None)])
+@pytest.mark.parametrize(
+    "changes", [dict(name="setuptools"), dict(analysis_scope_id=None), dict(scopes=("build",)), dict(groups=("test",))]
+)
 def test_selection_cannot_borrow_another_identity_or_context(changes):
     with pytest.raises(ValidationError, match="contradictory-selection-context"):
         inventory(declarations=(declaration(**changes),), occurrences=(occurrence(),))

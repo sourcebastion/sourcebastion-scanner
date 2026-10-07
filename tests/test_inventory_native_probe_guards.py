@@ -17,6 +17,7 @@ import pytest
         "verify-go-source.py",
         "verify-inventory-cyclonedx.py",
         "validate-inventory-cyclonedx.py",
+        "verify-inventory-matching.py",
     ],
 )
 @pytest.mark.parametrize("mode", ["flag", "environment"])

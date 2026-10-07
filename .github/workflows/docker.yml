@@ -389,6 +389,8 @@ jobs:
           path: |
             inventory-provider-native.json
             ${{ runner.temp }}/inventory-provider/manifest.json
+            ${{ runner.temp }}/inventory-provider/sourcebastion-inventory-provider
+            ${{ runner.temp }}/inventory-provider/go.tar.gz
             ${{ runner.temp }}/inventory-provider/*.stdout
             ${{ runner.temp }}/inventory-provider/*.stderr
           if-no-files-found: error

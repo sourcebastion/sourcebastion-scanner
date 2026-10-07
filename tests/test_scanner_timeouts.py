@@ -1,6 +1,9 @@
 """Per-scanner budgets, resolved at run time rather than baked into an image."""
 
+import json
+import subprocess
 import time
+from pathlib import Path
 
 import pytest
 
@@ -10,6 +13,7 @@ from sourcebastion.external_scanners import (
     ExternalScannerManager,
     GrypeScanner,
     KicsScanner,
+    ScannerExecutionError,
 )
 
 
@@ -117,3 +121,74 @@ class TestWiring:
         config = Config.from_file(str(config_file))
         assert config.scanners["kics"].timeout == 800
         assert config.scanners["grype"].setup_timeout == 400
+
+
+class TestGrypeDatabaseValidationBudget:
+    @pytest.fixture
+    def boundary(self, monkeypatch, tmp_path):
+        clock = [100.0]
+        calls = []
+        monkeypatch.delenv("SOURCEBASTION_SETUP_TIMEOUT_GRYPE", raising=False)
+        monkeypatch.delenv("SOURCEBASTION_SCAN_TIMEOUT_GRYPE", raising=False)
+        monkeypatch.setenv("SOURCEBASTION_SCAN_OFFLINE", "1")
+        monkeypatch.setattr("sourcebastion.external_scanners.time.monotonic", lambda: clock[0])
+        monkeypatch.setattr("sourcebastion.external_scanners.tempfile.tempdir", str(tmp_path))
+
+        def run(command, **kwargs):
+            calls.append((command, kwargs))
+            if command == ["grype", "--version"]:
+                clock[0] += 5
+            elif command == ["grype", "db", "status"]:
+                env = kwargs["env"]
+                assert env["GRYPE_DB_AUTO_UPDATE"] == "false"
+                assert env["GRYPE_CHECK_FOR_APP_UPDATE"] == "false"
+                assert env["GRYPE_DB_VALIDATE_AGE"] == "true"
+                assert env["GRYPE_DB_VALIDATE_BY_HASH_ON_START"] == "true"
+                clock[0] += 2
+            else:
+                assert command[:2] == ["grype", "dir:/fixture"]
+                Path(command[command.index("--file") + 1]).write_text(json.dumps({"matches": []}))
+            return subprocess.CompletedProcess(command, 0)
+
+        monkeypatch.setattr("sourcebastion.external_scanners.subprocess.run", run)
+        return calls, clock
+
+    @pytest.mark.parametrize(
+        "environment,configured,deadline,status_budget,scan_budget",
+        [
+            (None, None, None, 300, 300),
+            (90, None, None, 90, 300),
+            (90, 120, None, 120, 300),
+            (90, 120, 140, 35, 33),
+        ],
+    )
+    def test_setup_budget_reaches_database_status_after_version_probe(
+        self, monkeypatch, boundary, environment, configured, deadline, status_budget, scan_budget
+    ):
+        calls, _clock = boundary
+        if environment is not None:
+            monkeypatch.setenv("SOURCEBASTION_SETUP_TIMEOUT_GRYPE", str(environment))
+        scanner = GrypeScanner()
+        scanner.configure_timeouts(ScannerSettings(setup_timeout=configured))
+        if deadline is not None:
+            scanner.set_execution_deadline(deadline)
+        findings, raw_path = scanner.scan_with_raw_output("/fixture")
+        try:
+            assert findings == []
+            assert [call[0] for call in calls[:2]] == [["grype", "--version"], ["grype", "db", "status"]]
+            assert calls[0][1]["timeout"] == 30
+            assert calls[1][1]["timeout"] == status_budget
+            assert calls[2][1]["timeout"] == scan_budget
+        finally:
+            Path(raw_path).unlink()
+
+    def test_deadline_exhausted_by_probe_prevents_database_work(self, boundary, tmp_path):
+        calls, _clock = boundary
+        scanner = GrypeScanner()
+        scanner.configure_timeouts(ScannerSettings(setup_timeout=450))
+        scanner.set_execution_deadline(105)
+        with pytest.raises(ScannerExecutionError) as failure:
+            scanner.scan_with_raw_output("/fixture")
+        assert failure.value.scanner == "grype" and failure.value.code == "timeout"
+        assert [call[0] for call in calls] == [["grype", "--version"]]
+        assert not list(tmp_path.glob("*.json"))

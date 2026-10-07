@@ -1590,7 +1590,9 @@ class GrypeScanner(ScannerWrapper):
             db_check = subprocess.run(
                 ["grype", "db", "status"],
                 capture_output=True,
-                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
+                # Status verifies database integrity; its cost tracks the
+                # advisory snapshot, so use setup rather than the version probe.
+                timeout=self._budget("setup"),
                 env=grype_env,
             )
             if db_check.returncode != 0:

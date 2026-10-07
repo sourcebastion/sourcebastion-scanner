@@ -64,7 +64,7 @@ def evaluate(queries, *, deadline, check):
         if re.search(r"\d{129,}", version + selector) or len(re.split(r"\s+|\|\|", selector)) > 128:
             _refuse("npm-selector-query-budget-exceeded")
         # Reserve worst-case JSON escaping before building the full request.
-        size += 32 + 6 * (len(version) + len(selector))
+        size += 32 + 12 * (len(version) + len(selector))
         if size > MAX_BYTES:
             _refuse("npm-selector-input-budget-exceeded")
     verify_vendor()

@@ -116,6 +116,10 @@ are diagnostic only. Stock/extended CPE controls need new full-candidate native
 cgroup resource evidence, overflow/cancellation proofs and measured image/license
 costs before budgets are reviewed and frozen.
 
+The separate [same-library CPE resource controls](syft-controls.md) preserve the
+existing 64 MiB raw-result harness. They characterize the library control profile
+first; they do not establish full extension resources or its larger wrapper bound.
+
 Actual pinned Grype 0.119.0 embeds older Syft 1.52.0: producer-only decoding is
 insufficient. Use explicit SBOM input and a frozen verified offline database,
 disable Grype CPE regeneration for CPE-off comparisons, record per-matcher CPE

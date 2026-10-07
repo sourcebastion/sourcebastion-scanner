@@ -22,6 +22,7 @@ CPU_SECONDS = 120
 WALL_SECONDS = 150
 MEMORY_BYTES = 2 * 1024 * 1024 * 1024
 DOCKER = ["docker", "--host", "unix:///var/run/docker.sock"]
+SYFT_CONTROL_ENGINES = {"syft-control-cpe-on": True, "syft-control-cpe-off": False}
 
 
 def docker(*arguments):
@@ -53,6 +54,14 @@ def budget_overruns(result, metrics, baseline):
 
 def command(engine, source_tool):
     raw = "/work/raw.json"
+    if engine in SYFT_CONTROL_ENGINES:
+        return [
+            "/usr/local/bin/python3",
+            "-I",
+            "-B",
+            "/harness/syft_control_job.py",
+            "on" if SYFT_CONTROL_ENGINES[engine] else "off",
+        ]
     if engine == "syft":
         return [
             "/candidate/binary",
@@ -116,6 +125,8 @@ def measure(engine, tool, source, output, source_tool):
         (control, "/output", False),
         (Path(__file__).with_name("container_job.py"), "/harness/job.py", True),
     ]
+    if engine in SYFT_CONTROL_ENGINES:
+        mounts.append((Path(__file__).with_name("syft_control_job.py"), "/harness/syft_control_job.py", True))
     if engine == "cdxgen":
         app = Path(tool["entrypoint"]).parent.parent
         if tree_digest(app) != tool["entrypoint_tree_sha256"]:

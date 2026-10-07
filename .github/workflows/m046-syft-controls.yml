@@ -1,0 +1,120 @@
+name: M046 Syft Resource Controls
+
+on:
+  pull_request:
+    paths:
+      - evaluation/m046/**
+      - tests/test_m046_syft_controls.py
+      - tests/test_m046_benchmark.py
+      - PYTHON_VERSION
+      - .github/workflows/m046-syft-controls.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proofs:
+    name: CPE control harness proofs (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: PYTHON_VERSION
+      - run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r evaluation/m046/requirements-static.txt
+          python -m pip install pytest==8.3.5
+          python -m pytest tests/test_m046_syft_controls.py tests/test_m046_benchmark.py -q --junitxml="$RUNNER_TEMP/m046-control-tests.xml"
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y gcc
+          python -c 'import platform; from evaluation.m046.benchmark import docker,IMAGE; docker("pull","--platform","linux/"+{"x86_64":"amd64","aarch64":"arm64"}[platform.machine()],IMAGE)'
+          sudo "$(command -v python)" -m evaluation.m046.docker_proofs --output "$RUNNER_TEMP/m046-control-proofs"
+          sudo "$(command -v python)" -m evaluation.m046.syft_control_proofs --output "$RUNNER_TEMP/m046-control-launcher-proofs"
+      - name: Archive proof inputs and records
+        if: always()
+        run: |
+          sudo "$(command -v python)" -m evaluation.m046.pack_evidence \
+            --root "proofs=$RUNNER_TEMP/m046-control-proofs" \
+            --root "launcher-proofs=$RUNNER_TEMP/m046-control-launcher-proofs" \
+            --root "tests=$RUNNER_TEMP/m046-control-tests.xml" \
+            --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
+            --root "control-tests=$GITHUB_WORKSPACE/tests/test_m046_syft_controls.py" \
+            --root "harness-tests=$GITHUB_WORKSPACE/tests/test_m046_benchmark.py" \
+            --output "$RUNNER_TEMP/m046-control-proofs.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: m046-control-proofs-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-control-proofs.tar.gz
+            ${{ runner.temp }}/m046-control-proofs.tar.gz.sha256
+          retention-days: 7
+  controls:
+    name: Same-library CPE resources (${{ matrix.arch }})
+    needs: proofs
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: PYTHON_VERSION
+      - name: Prepare pinned candidate
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r evaluation/m046/requirements-static.txt
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y gcc g++
+          python -m evaluation.m046.syft_prepare --output "$RUNNER_TEMP/m046-control-preparation"
+      - name: Measure both arms under unchanged cgroup limits
+        run: |
+          sudo "$(command -v python)" -m evaluation.m046.syft_control_benchmark \
+            --binary "$RUNNER_TEMP/m046-control-preparation/m046-syft" \
+            --manifest "$RUNNER_TEMP/m046-control-preparation/manifest.json" \
+            --output "$RUNNER_TEMP/m046-control-evidence" --repeat 3
+      - name: Archive bounded raw records and source
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/m046-control-retained"
+          for item in manifest.json buildinfo.stdout modules.stdout tests.stdout tests.stderr download.stdout download.stderr verify.stdout verify.stderr build.stdout build.stderr; do
+            if test -f "$RUNNER_TEMP/m046-control-preparation/$item"; then
+              cp "$RUNNER_TEMP/m046-control-preparation/$item" "$RUNNER_TEMP/m046-control-retained/$item"
+            fi
+          done
+          sudo "$(command -v python)" -m evaluation.m046.pack_evidence \
+            --root "preparation=$RUNNER_TEMP/m046-control-retained" \
+            --root "evidence=$RUNNER_TEMP/m046-control-evidence" \
+            --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
+            --root "control-tests=$GITHUB_WORKSPACE/tests/test_m046_syft_controls.py" \
+            --root "harness-tests=$GITHUB_WORKSPACE/tests/test_m046_benchmark.py" \
+            --output "$RUNNER_TEMP/m046-syft-controls.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: m046-syft-controls-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-syft-controls.tar.gz
+            ${{ runner.temp }}/m046-syft-controls.tar.gz.sha256
+            ${{ runner.temp }}/m046-control-preparation/m046-syft
+          retention-days: 7

@@ -21,7 +21,7 @@ database="$(readlink -f "$work/database/current")"
 # Fixed reviewed fixture only; no change to the released directory-scan route.
 canonical_output="${SOURCEBASTION_NATIVE_GRYPE_PROOF_OUTPUT:-$work/canonical-output}"
 mkdir -m 700 "$work/canonical-source" "$canonical_output"
-python3 - "$root/evaluation/m046/real-grype-native-fixture-v2.json" "$work/canonical-source" <<'PY'
+python3 - "$root/evaluation/m046/real-grype-native-fixture-v3.json" "$work/canonical-source" <<'PY'
 import hashlib
 import json
 from pathlib import Path

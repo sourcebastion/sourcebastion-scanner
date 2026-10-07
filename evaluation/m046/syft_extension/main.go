@@ -86,6 +86,41 @@ func controlConfig(cpes bool) *syft.CreateSBOMConfig {
 		})
 }
 
+// The provider is deliberately separate from both historical CPE controls and
+// the Go-to-Python extension. No Python declaration cataloger owns source files.
+var providerCatalogers = []string{
+	"javascript-lock-cataloger", "javascript-package-cataloger",
+	"go-module-file-cataloger", "rust-cargo-lock-cataloger",
+	"python-installed-package-cataloger", "java-gradle-lockfile-cataloger",
+	"java-pom-cataloger", "dotnet-packages-lock-cataloger",
+	"ruby-gemfile-cataloger", "php-composer-lock-cataloger",
+}
+
+func providerConfig() *syft.CreateSBOMConfig {
+	return controlConfig(false).
+		WithCatalogerSelection(cataloging.NewSelectionRequest().WithDefaults(providerCatalogers...)).
+		WithTool("m046-restricted-evidence-provider", "v1", map[string]any{
+			"syft": "1.54.0", "profile": "offline-file-provider-v1", "generate_cpes": false,
+			"catalogers": providerCatalogers, "coverage": "unassessed",
+		})
+}
+
+func runProvider(ctx context.Context, root string, output io.Writer) error {
+	document, err := create(ctx, root, providerConfig())
+	if err != nil {
+		return err
+	}
+	buffer := &boundedBuffer{limit: maxOutput, ctx: ctx}
+	if err := syftjson.NewFormatEncoder().Encode(buffer, *document); err != nil {
+		return err
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	_, err = output.Write(buffer.Bytes())
+	return err
+}
+
 func create(ctx context.Context, root string, cfg *syft.CreateSBOMConfig) (*sbom.SBOM, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -176,15 +211,15 @@ func runExtended(ctx context.Context, root, python, cli string, cpes bool, outpu
 
 func main() {
 	root := flag.String("root", "", "absolute read-only synthetic source directory")
-	mode := flag.String("mode", "control", "control or extended evaluation mode")
+	mode := flag.String("mode", "control", "control, extended or provider evaluation mode")
 	python := flag.String("python", "", "trusted absolute Python executable (extended mode)")
 	frontend := flag.String("frontend", "", "trusted absolute static_cli.py (extended mode)")
 	cpes := flag.Bool("generate-cpes", true, "only experimental variable in the library control")
 	timeout := flag.Duration("timeout", 150*time.Second, "clamp to remaining outer job deadline (max 150s)")
 	flag.Parse()
 	if flag.NArg() != 0 || *timeout <= 0 || *timeout > 150*time.Second ||
-		(*mode != "control" && *mode != "extended") ||
-		(*mode == "control" && (*python != "" || *frontend != "")) ||
+		(*mode != "control" && *mode != "extended" && *mode != "provider") ||
+		(*mode != "extended" && (*python != "" || *frontend != "")) ||
 		(*mode == "extended" && (*python == "" || *frontend == "")) {
 		fmt.Fprintln(os.Stderr, "invalid-evaluation-arguments")
 		os.Exit(2)
@@ -196,6 +231,8 @@ func main() {
 	var err error
 	if *mode == "control" {
 		err = run(ctx, *root, *cpes, os.Stdout)
+	} else if *mode == "provider" {
+		err = runProvider(ctx, *root, os.Stdout)
 	} else {
 		err = runExtended(ctx, *root, *python, *frontend, *cpes, os.Stdout)
 	}

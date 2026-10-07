@@ -1,12 +1,19 @@
 """Native fixed Go parser proof; private synthetic source observations only."""
 
 import argparse
+import errno
 import hashlib
 import json
 from pathlib import Path
 import platform
 import subprocess
 import sys
+import tempfile
+
+from sourcebastion.inventory import go_sources, compose_go, compose_source, compose_requirements, provider
+from sourcebastion.inventory.contract import Producer, canonical_bytes
+from sourcebastion.inventory.inputs import Source, InputRefusal
+from sourcebastion.inventory.registry import DiscoveryConfig, REGISTRY_SHA256
 import time
 
 
@@ -120,6 +127,142 @@ def verify(binary, preparation):
         process.stderr.close()
         if not process.stdin.closed:
             process.stdin.close()
+    # Exercise the installed Python bridge with the source-bound executable.
+    modules = (go_sources, compose_go, compose_source, compose_requirements, provider)
+    module_hashes = {}
+    for module in modules:
+        loaded = Path(module.__file__).resolve()
+        expected = Path(*module.__name__.split(".")).with_suffix(".py")
+        assert loaded != expected.resolve()
+        assert digest(loaded.read_bytes()) == digest(expected.read_bytes())
+        module_hashes[module.__name__] = digest(loaded.read_bytes())
+    runtime = go_sources.Runtime(binary, manifest["go_source_binary_sha256"])
+    config = DiscoveryConfig()
+    producer = Producer(
+        name="native-go-source",
+        version="1",
+        code_sha256=digest(Path(__file__).read_bytes()),
+        registry_sha256=REGISTRY_SHA256,
+        config_sha256=config.sha256,
+    )
+
+    def composed(files, *, config=config):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, content in files.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+            with Source(root) as source:
+                return compose_source.compose_source(
+                    source,
+                    source_sha256=digest(basic),
+                    producer=producer.model_copy(update={"config_sha256": config.sha256}),
+                    config=config,
+                    go_runtime=runtime,
+                )
+
+    canonical_records = []
+    for label, files in [
+        ("minimum-not-selected", {"go.mod": basic}),
+        (
+            "checksum-history-not-selection",
+            {"go.mod": basic, "go.sum": b"example.invalid/alpha v9.9.9 h1:" + b"a" * 43 + b"=\n"},
+        ),
+        ("multiple-explicit-projects", {"one/go.mod": basic, "two/go.mod": basic.replace(b"root", b"next")}),
+        ("controls-partial", {"go.mod": controlled}),
+        ("malformed-file-local", {"go.mod": b"future private-secret\n", "requirements.txt": b"pip==26.0.1\n"}),
+    ]:
+        result = composed(files)
+        encoded = canonical_bytes(result)
+        assert result.stages.inventory == "partial" and not result.relationships
+        if label == "malformed-file-local":
+            assert [(r.name, r.selected_version) for r in result.occurrences] == [("pip", "26.0.1")]
+        else:
+            assert result.occurrences and all(
+                r.selected_version is None and r.activation == "unknown" for r in result.occurrences
+            )
+            assert all(r.exact_version is None for r in result.declarations)
+            assert all(app.version is None for app in result.applications)
+        if label == "multiple-explicit-projects":
+            assert len(result.roots) == 2 and len({r.root_id for r in result.occurrences}) == 2
+        if label == "checksum-history-not-selection":
+            assert len(result.occurrences) == 2 and any(
+                r.reason == "unassessed-go-checksum-history" for r in result.coverage.inputs
+            )
+        assert b"private-secret" not in encoded
+        assert encoded == canonical_bytes(composed(files))
+        canonical_records.append({"case": label, "canonical_sha256": digest(encoded)})
+    result = composed(
+        {"go.mod": basic, "requirements.txt": b"pip==26.0.1\n"}, config=DiscoveryConfig(semantic_checks=80)
+    )
+    assert result.stages.inventory == "failed" and not result.occurrences and not result.declarations
+    canonical_records.append({"case": "shared-budget-global", "canonical_sha256": digest(canonical_bytes(result))})
+    original_parse = go_sources.parse
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        (root / "go.mod").write_bytes(basic)
+        (root / "requirements.txt").write_bytes(b"pip==26.0.1\n")
+
+        def changed_source(content, **kwargs):
+            observed = original_parse(content, **kwargs)
+            (root / "go.mod").write_bytes(content.replace(b"v1.2.3", b"v1.2.4"))
+            return observed
+
+        go_sources.parse = changed_source
+        try:
+            with Source(root) as source:
+                result = compose_source.compose_source(
+                    source, source_sha256=digest(basic), producer=producer, config=config, go_runtime=runtime
+                )
+        finally:
+            go_sources.parse = original_parse
+        assert result.stages.inventory == "failed" and not result.occurrences and not result.declarations
+        canonical_records.append(
+            {"case": "source-mutation-global", "canonical_sha256": digest(canonical_bytes(result))}
+        )
+    original_run = go_sources.subprocess.run
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        copied = root / "trusted-helper"
+        copied.write_bytes(binary.read_bytes())
+        copied.chmod(0o600)
+        local_runtime = go_sources.Runtime(copied, runtime.sha256)
+        checkout = root / "checkout"
+        checkout.mkdir()
+        (checkout / "go.mod").write_bytes(basic)
+        (checkout / "requirements.txt").write_bytes(b"pip==26.0.1\n")
+
+        execution_error = None
+
+        def changed_runtime(*args, **kwargs):
+            nonlocal execution_error
+            try:
+                return original_run(*args, **kwargs)
+            except OSError as error:
+                execution_error = error.errno
+                raise
+            finally:
+                copied.unlink()
+
+        go_sources.subprocess.run = changed_runtime
+        try:
+            with Source(checkout) as source:
+                result = compose_source.compose_source(
+                    source, source_sha256=digest(basic), producer=producer, config=config, go_runtime=local_runtime
+                )
+        finally:
+            go_sources.subprocess.run = original_run
+        assert result.stages.inventory == "failed" and not result.occurrences and not result.declarations
+        assert "changed-go-parser-runtime" in result.coverage.refusal_codes
+        assert execution_error == errno.EACCES
+        canonical_records.append(
+            {
+                "case": "helper-mutation-after-exec-error-global",
+                "execution_errno": execution_error,
+                "canonical_sha256": digest(canonical_bytes(result)),
+            }
+        )
     print(
         json.dumps(
             {
@@ -130,6 +273,8 @@ def verify(binary, preparation):
                 "binary_sha256": manifest["go_source_binary_sha256"],
                 "source_files": manifest["source_files"],
                 "cases": records,
+                "canonical_cases": canonical_records,
+                "source_modules": module_hashes,
                 "scope": "finite maintained Go source parser observations; no selected versions, canonical graph, production route, rich corpus or whole-pipeline resource acceptance",
             },
             sort_keys=True,

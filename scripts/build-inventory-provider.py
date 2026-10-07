@@ -67,6 +67,10 @@ def prepare(destination):
     binary = destination / "sourcebastion-inventory-provider"
     commands = [
         ("download", ["mod", "download"]),
+        # Lazy module loading downloads build inputs but not every module's
+        # metadata. Hydrate the complete graph while trusted preparation has
+        # network access; all verification/build evidence remains offline.
+        ("hydrate", ["list", "-m", "-json", "all"]),
         ("verify", ["mod", "verify"]),
         ("tests", ["test", "-trimpath", "-count=1", "-p", "2", "-timeout", "90s", "-json", "./..."]),
         ("build", ["build", "-trimpath", "-buildvcs=false", "-p", "2", "-o", str(binary), "."]),
@@ -75,7 +79,7 @@ def prepare(destination):
     ]
     logs = {}
     for name, arguments in commands:
-        if name != "download":
+        if name not in {"download", "hydrate"}:
             env.update(GOPROXY="off", GOSUMDB="off")
         with (
             (destination / f"{name}.stdout").open("xb") as stdout,

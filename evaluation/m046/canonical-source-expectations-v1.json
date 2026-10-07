@@ -614,6 +614,107 @@
         "export": "not-run",
         "matching": "not-run"
       }
+    },
+    {
+      "case": "java-gradle-lock",
+      "fixture_files": [
+        {
+          "path": "gradle.lockfile",
+          "sha256": "62e2bc5e3e59d6ed171ef15e00f4284d279281515b390b9bdab6e988993f7557",
+          "utf8": "# Gradle lock\norg.apache.commons:commons-lang3:3.14.0=compileClasspath\nempty=\n"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:gradle-lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "gradle.lockfile",
+              "source_sha256": "62e2bc5e3e59d6ed171ef15e00f4284d279281515b390b9bdab6e988993f7557",
+              "locator": "lock-input",
+              "parser": "sourcebastion.gradle-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:gradle-module",
+            "source": {
+              "path": "gradle.lockfile",
+              "source_sha256": "62e2bc5e3e59d6ed171ef15e00f4284d279281515b390b9bdab6e988993f7557",
+              "locator": "line:2",
+              "parser": "sourcebastion.gradle-composition/1"
+            },
+            "ecosystem": "maven",
+            "name": "org.apache.commons/commons-lang3",
+            "purl": "pkg:maven/org.apache.commons/commons-lang3@3.14.0",
+            "evidence_kind": "locked",
+            "selected_version": "3.14.0",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:gradle-lock",
+            "directness": "unknown",
+            "scopes": [
+              "compileClasspath"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "gradle.lockfile",
+            "source_sha256": "62e2bc5e3e59d6ed171ef15e00f4284d279281515b390b9bdab6e988993f7557",
+            "format": "gradle-lock",
+            "parser": "sourcebastion.gradle-lock/1",
+            "disposition": "parsed",
+            "reason": "static-gradle-lock",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:gradle-lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
     }
-  ]
+  ],
+  "additional_source_authorities": {
+    "java-gradle-lock": {
+      "format": "https://docs.gradle.org/current/userguide/dependency_locking.html",
+      "adjudication": "Original fixture GAV/configuration and exact source line/hash retained. Lock-input scope does not establish a project root; activation/directness remain unknown and no dependency edges are inferred. Prior source_adjudication_sha256 applies to original four cases only."
+    }
+  }
 }

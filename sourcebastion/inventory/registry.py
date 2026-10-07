@@ -9,8 +9,8 @@ import re
 from .inputs import relative_path
 
 VERSION = "sourcebastion.inventory-registry/1"
-# Names select parsers, never executables or imports. Non-requirements adapters
-# are discovered here and explicitly remain unsupported until S03 implements them.
+# Names select built-in parsers, never executables or imports. Formats without
+# a reviewed canonical adapter remain explicit unsupported source evidence.
 NAMES = {
     "pyproject.toml": "python-pyproject",
     "setup.cfg": "python-setup-cfg",
@@ -33,6 +33,7 @@ NAMES = {
     "build.gradle": "gradle-manifest",
     "build.gradle.kts": "gradle-manifest",
     "gradle.lockfile": "gradle-lock",
+    "buildscript-gradle.lockfile": "gradle-lock",
     "packages.lock.json": "nuget-lock",
     "packages.config": "nuget-packages",
     "Gemfile": "bundler-manifest",

@@ -1,0 +1,71 @@
+name: M046 Local CycloneDX Contract
+
+on:
+  pull_request:
+    paths:
+      - evaluation/m046/**
+      - tests/test_m046_cyclonedx_export.py
+      - PYTHON_VERSION
+      - .github/workflows/m046-cyclonedx.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Local CycloneDX contract (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: PYTHON_VERSION
+      - name: Prepare pinned trusted schema tools
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: \
+            -r evaluation/m046/requirements-static.txt -r evaluation/m046/requirements-export.txt
+          python -m pip install pytest==8.3.5
+          mkdir -p "$RUNNER_TEMP/m046-cyclonedx"
+          python -m pip freeze > "$RUNNER_TEMP/m046-cyclonedx/tools.txt"
+          python --version > "$RUNNER_TEMP/m046-cyclonedx/python.txt"
+          uname -a > "$RUNNER_TEMP/m046-cyclonedx/uname.txt"
+      - name: Validate corpus round trips and refusal boundaries
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+          M046_TEST_XML: ${{ runner.temp }}/m046-cyclonedx/tests.xml
+        run: |
+          timeout --signal=KILL 150s python -c '
+          import os, resource, sys
+          resource.setrlimit(resource.RLIMIT_AS, (1024*1024*1024,)*2)
+          resource.setrlimit(resource.RLIMIT_CPU, (120,)*2)
+          resource.setrlimit(resource.RLIMIT_FSIZE, (64*1024*1024,)*2)
+          os.execv(sys.executable, [sys.executable, "-m", "pytest", "tests/test_m046_cyclonedx_export.py", "-q", "--junitxml="+os.environ["M046_TEST_XML"]])'
+      - name: Retain exact source and bounded native test evidence
+        if: always()
+        run: |
+          python -m evaluation.m046.pack_evidence \
+            --root "host=$RUNNER_TEMP/m046-cyclonedx" \
+            --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
+            --root "export-tests=$GITHUB_WORKSPACE/tests/test_m046_cyclonedx_export.py" \
+            --root "workflow=$GITHUB_WORKSPACE/.github/workflows/m046-cyclonedx.yml" \
+            --output "$RUNNER_TEMP/m046-cyclonedx.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: m046-cyclonedx-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-cyclonedx.tar.gz
+            ${{ runner.temp }}/m046-cyclonedx.tar.gz.sha256
+          retention-days: 7

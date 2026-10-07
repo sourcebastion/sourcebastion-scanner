@@ -1,0 +1,308 @@
+{
+  "observed_at": "2026-10-07T07:54:45.574664+00:00",
+  "projects": [
+    {
+      "repo": "anchore/syft",
+      "pinned_tag": "v1.54.0",
+      "archived": false,
+      "releases": [
+        {
+          "tag_name": "v1.54.1",
+          "published_at": "2026-10-06T15:35:10Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.54.1"
+        },
+        {
+          "tag_name": "v1.54.0",
+          "published_at": "2026-10-01T20:54:29Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.54.0"
+        },
+        {
+          "tag_name": "v1.52.0",
+          "published_at": "2026-09-17T14:38:17Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.52.0"
+        },
+        {
+          "tag_name": "v1.51.1",
+          "published_at": "2026-08-27T17:01:15Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.51.1"
+        },
+        {
+          "tag_name": "v1.51.0",
+          "published_at": "2026-08-10T14:55:18Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.51.0"
+        },
+        {
+          "tag_name": "v1.50.0",
+          "published_at": "2026-07-28T17:44:08Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.50.0"
+        },
+        {
+          "tag_name": "v1.49.0",
+          "published_at": "2026-07-21T13:16:54Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.49.0"
+        },
+        {
+          "tag_name": "v1.48.0",
+          "published_at": "2026-07-16T14:47:52Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.48.0"
+        },
+        {
+          "tag_name": "v1.46.0",
+          "published_at": "2026-06-26T09:45:12Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.46.0"
+        },
+        {
+          "tag_name": "v1.45.1",
+          "published_at": "2026-06-05T14:29:07Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.45.1"
+        },
+        {
+          "tag_name": "v1.45.0",
+          "published_at": "2026-06-02T20:32:58Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.45.0"
+        },
+        {
+          "tag_name": "v1.44.0",
+          "published_at": "2026-05-01T17:17:31Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/anchore/syft/releases/tag/v1.44.0"
+        }
+      ],
+      "policies": [
+        {
+          "path": "SECURITY.md",
+          "url": "https://github.com/anchore/syft/blob/v1.54.0/SECURITY.md",
+          "git_blob_sha": "8101bdc8e539ee590ba38adb4e9c23f78798755a",
+          "sha256": "309790b56157268dbe2e1ed21fc54ce0c2e5c138d6c30521563956ff4a3dcc06"
+        }
+      ]
+    },
+    {
+      "repo": "cdxgen/cdxgen",
+      "pinned_tag": "v13.3.0",
+      "archived": false,
+      "releases": [
+        {
+          "tag_name": "v13.3.0",
+          "published_at": "2026-10-02T20:03:54Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v13.3.0"
+        },
+        {
+          "tag_name": "v12.8.5",
+          "published_at": "2026-09-29T11:13:30Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v12.8.5"
+        },
+        {
+          "tag_name": "v13.2.0",
+          "published_at": "2026-09-22T16:14:44Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v13.2.0"
+        },
+        {
+          "tag_name": "v13.1.0",
+          "published_at": "2026-09-04T16:57:05Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v13.1.0"
+        },
+        {
+          "tag_name": "v13.0.1",
+          "published_at": "2026-08-18T09:12:12Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v13.0.1"
+        },
+        {
+          "tag_name": "v12.8.4",
+          "published_at": "2026-08-18T08:56:37Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v12.8.4"
+        },
+        {
+          "tag_name": "v13.0.0",
+          "published_at": "2026-08-13T14:15:25Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v13.0.0"
+        },
+        {
+          "tag_name": "v12.8.3",
+          "published_at": "2026-08-11T12:57:17Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v12.8.3"
+        },
+        {
+          "tag_name": "v12.8.2",
+          "published_at": "2026-07-23T20:59:08Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v12.8.2"
+        },
+        {
+          "tag_name": "v12.8.1",
+          "published_at": "2026-07-22T11:13:42Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v12.8.1"
+        },
+        {
+          "tag_name": "v12.8.0",
+          "published_at": "2026-07-19T12:48:36Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v12.8.0"
+        },
+        {
+          "tag_name": "v12.7.1",
+          "published_at": "2026-07-08T11:52:10Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/cdxgen/cdxgen/releases/tag/v12.7.1"
+        }
+      ],
+      "policies": [
+        {
+          "path": "SECURITY.md",
+          "url": "https://github.com/cdxgen/cdxgen/blob/v13.3.0/SECURITY.md",
+          "git_blob_sha": "844381e536760330a971843a1acfff519c89d8b9",
+          "sha256": "ae79d0edcd0f3665d0429c454f5e5e70ccef3f5c7f546a235c345b2ac48c6ac6"
+        }
+      ]
+    },
+    {
+      "repo": "google/osv-scalibr",
+      "pinned_tag": "v0.5.3",
+      "archived": false,
+      "releases": [
+        {
+          "tag_name": "v0.5.3",
+          "published_at": "2026-09-22T11:25:37Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.5.3"
+        },
+        {
+          "tag_name": "v0.5.2",
+          "published_at": "2026-08-10T14:22:58Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.5.2"
+        },
+        {
+          "tag_name": "0.5.1",
+          "published_at": "2026-07-27T11:22:21Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/0.5.1"
+        },
+        {
+          "tag_name": "v0.4.5",
+          "published_at": "2026-03-10T09:30:25Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.4.5"
+        },
+        {
+          "tag_name": "v0.4.4",
+          "published_at": "2026-02-23T12:43:02Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.4.4"
+        },
+        {
+          "tag_name": "v0.4.3",
+          "published_at": "2026-02-09T16:01:51Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.4.3"
+        },
+        {
+          "tag_name": "v0.4.2",
+          "published_at": "2026-01-12T12:59:45Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.4.2"
+        },
+        {
+          "tag_name": "v0.4.1",
+          "published_at": "2025-12-15T12:57:07Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.4.1"
+        },
+        {
+          "tag_name": "v0.4.0",
+          "published_at": "2025-11-19T12:07:44Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.4.0"
+        },
+        {
+          "tag_name": "v0.3.6",
+          "published_at": "2025-10-21T08:59:01Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.3.6"
+        },
+        {
+          "tag_name": "v0.3.5",
+          "published_at": "2025-10-08T11:05:02Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.3.5"
+        },
+        {
+          "tag_name": "v0.3.4",
+          "published_at": "2025-09-22T12:07:56Z",
+          "prerelease": false,
+          "draft": false,
+          "html_url": "https://github.com/google/osv-scalibr/releases/tag/v0.3.4"
+        }
+      ],
+      "policies": []
+    }
+  ],
+  "files": {
+    "anchore-syft/releases.json": "ae20f470afcd10e1f94d48cba0324e4e9c7af20d84daae829d7d52b030d65c69",
+    "anchore-syft/repo.json": "d2f34c3270e927981167fb6344ebfd148cb17806189ca0b8c610ad435679f81f",
+    "anchore-syft/security-0.md": "309790b56157268dbe2e1ed21fc54ce0c2e5c138d6c30521563956ff4a3dcc06",
+    "anchore-syft/tree.json": "45f4f52c64f5bb20d0b003190e25a68d73134e68c91c7088cd567306934027e8",
+    "cdxgen-cdxgen/releases.json": "1b614b08e70b16ddd5a350ef8f19fe75c57fca98389513950da0eca943b237e5",
+    "cdxgen-cdxgen/repo.json": "dedd71dbb497e9e6584030dabfe3d16e9805d2f30d55e9d77ebf0aca31172283",
+    "cdxgen-cdxgen/security-0.md": "ae79d0edcd0f3665d0429c454f5e5e70ccef3f5c7f546a235c345b2ac48c6ac6",
+    "cdxgen-cdxgen/tree.json": "d5824d3d260008f4f2597384d9faa069d988340ee6a459d08459227b58a95bee",
+    "google-osv-scalibr/releases.json": "63782640e58b5983ea3e4d8c798683020d402a6b6bc610759fb13c27c0ce3acd",
+    "google-osv-scalibr/repo.json": "748b8b877fac82508349d9759416355ab8d1a45bb6aaab035e3132f3fad55d5e",
+    "google-osv-scalibr/tree.json": "d6509762ce2fb160a588df9e94e00d81832ed96c89cd9343a182626994bf460c"
+  }
+}

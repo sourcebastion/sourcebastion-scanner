@@ -127,7 +127,17 @@ def _origins(documents, step):
     return sorted(origins)
 
 
-def _compose(source, *, source_sha256, producer, environment=None, config=None, limits=None, manifest_inputs=False):
+def _compose(
+    source,
+    *,
+    source_sha256,
+    producer,
+    environment=None,
+    config=None,
+    limits=None,
+    manifest_inputs=False,
+    go_runtime=None,
+):
     """Consume a controller Source once; publish only after final epoch checks.
 
     The controller supplies admitted source/producer identities and the outer
@@ -528,6 +538,9 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             from .compose_cargo import extend as extend_cargo
 
             extend_cargo(extra)
+            from .compose_go import extend as extend_go
+
+            extend_go(extra, go_runtime)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(

@@ -99,6 +99,14 @@ for equality. Traces allow Go runtime threads and the one trusted Python process
 unexpected process or socket attempts fail even if denied. The trace scope
 process/network/%file does not cover descriptor-only write families. The existing
 host-read-visible harness is a diagnostic environment, not a production jail.
+The parser admits the exact decoded strace result
+`? ERESTARTSYS (To be restarted if SA_RESTART is set)`, including split/resumed
+calls. It retains the interrupted syscall as an attempt; it does not count it as
+successful execution, child creation or reap. This fixes a false refusal of an
+observed signal-interrupted `waitid`, without admitting other unobserved restart
+forms, undecoded `???`/unknown syscall names or incomplete terminal/ancestry data.
+Historical complete-trace acceptance remains withdrawn where capture is missing;
+this parser repair cannot recover an undecoded syscall or establish a full run.
 Pinned Go 1.27.1 can create one additional pidfd capability-probe child before
 Python starts. Admission requires exact probe clone flags, a known Go parent,
 successful creation, captured child calls limited to `exit_group(0)`, and matching

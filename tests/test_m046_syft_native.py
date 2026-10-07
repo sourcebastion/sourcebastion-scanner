@@ -166,6 +166,92 @@ def test_split_pidfd_waitid_retains_semantics_without_separator_space():
     assert trace_admission(trace, "/trusted/go", "/trusted/python")["pidfd_probe_children"] == ["2"]
 
 
+def restarted_waitid_trace():
+    return "\n".join(
+        [
+            '1 execve("/trusted/go", [], []) = 0',
+            "1 waitid(P_PIDFD, 12,  <unfinished ...>",
+            "1 <... waitid resumed>, 0x123, WEXITED, 0x456) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)",
+            "1 --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL} ---",
+            "1 waitid(P_PIDFD, 12, {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=2, si_status=0}, WEXITED, NULL) = 0",
+            "1 +++ exited with 0 +++",
+        ]
+    )
+
+
+@pytest.mark.parametrize("split", [True, False])
+def test_decoded_interrupted_waitid_remains_an_attempt_without_success_inference(split):
+    trace = restarted_waitid_trace()
+    if not split:
+        trace = trace.replace("  <unfinished ...>\n1 <... waitid resumed>", " ")
+    calls = syft_native.trace_calls(trace, terminal_binary="/trusted/go", require_complete=True)
+    assert [name for _pid, name, _args in calls] == ["execve", "waitid", "waitid"]
+    assert calls[1][2].endswith("= ? ERESTARTSYS (To be restarted if SA_RESTART is set)")
+    assert calls[2][2].endswith("= 0")
+    assert trace_admission(trace, "/trusted/go", require_complete=True)["network_attempts"] == 0
+    # Signal disposition may instead produce EINTR; no later success required.
+    without_reap = trace.replace(trace.splitlines()[-2] + "\n", "")
+    assert trace_admission(without_reap, "/trusted/go", require_complete=True)
+
+
+def test_interrupted_result_does_not_discharge_pending_call_or_missing_terminal():
+    trace = restarted_waitid_trace()
+    for invalid in (
+        trace.replace("1 +++ exited with 0 +++", ""),
+        trace.replace("1 +++ exited with 0 +++", "1 waitid(P_PIDFD, 13, <unfinished ...>\n1 +++ exited with 0 +++"),
+        trace.replace("1 waitid(P_PIDFD, 12,  <unfinished ...>", ""),
+    ):
+        with pytest.raises(ValueError):
+            trace_admission(invalid, "/trusted/go", require_complete=True)
+
+
+@pytest.mark.parametrize(
+    "result",
+    [
+        "? ERESTARTSYS",
+        "? ERESTARTSYS (unknown)",
+        "? ERESTARTSYS (To be restarted if SA_RESTART is set) trailing",
+        "? ERESTARTNOHAND (To be restarted if no handler)",
+        "? ENOSYS (To be restarted if SA_RESTART is set)",
+        "?? ERESTARTSYS (To be restarted if SA_RESTART is set)",
+    ],
+)
+def test_unknown_or_unadmitted_restart_result_remains_refused(result):
+    trace = restarted_waitid_trace().replace("? ERESTARTSYS (To be restarted if SA_RESTART is set)", result)
+    with pytest.raises(ValueError, match="undecoded-process-trace"):
+        trace_admission(trace, "/trusted/go", require_complete=True)
+
+
+@pytest.mark.parametrize(
+    "attempt",
+    [
+        "socket(AF_INET, SOCK_STREAM, 0)",
+        "socketpair(AF_UNIX, SOCK_STREAM, 0, [])",
+        "connect(3, {sa_family=AF_INET}, 16)",
+        "fork()",
+        "clone(flags=CLONE_VM|CLONE_VFORK|SIGCHLD)",
+        'execve("/trusted/go", [], [])',
+        'execveat(1, "project", [], [], 0)',
+    ],
+)
+def test_restart_pseudo_result_never_hides_network_or_process_attempt(attempt):
+    trace = restarted_waitid_trace()
+    trace = trace.replace(
+        "1 --- SIGURG", f"1 {attempt} = ? ERESTARTSYS (To be restarted if SA_RESTART is set)\n1 --- SIGURG"
+    )
+    with pytest.raises(ValueError):
+        trace_admission(trace, "/trusted/go", require_complete=True)
+
+
+def test_interrupted_waitid_cannot_establish_successful_pidfd_probe_reap():
+    trace = pidfd_trace().replace(
+        "WEXITED|__WCLONE, NULL) = 0",
+        "WEXITED|__WCLONE, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)",
+    )
+    with pytest.raises(ValueError, match="untrusted-pidfd-probe"):
+        trace_admission(trace, "/trusted/go", "/trusted/python")
+
+
 def test_vfork_probe_child_can_exit_before_parent_creation_resumes():
     trace = pidfd_trace().replace("2 exit_group(0) = ?", "2 exit_group(0) = ?\n2 +++ exited with 0 +++")
     assert trace_admission(trace, "/trusted/go", "/trusted/python")["pidfd_probe_children"] == ["2"]

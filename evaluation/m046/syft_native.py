@@ -15,6 +15,9 @@ from .run import MAX_OUTPUT, compare, digest, execute, materialize, snapshot
 from .static_native import NETWORK_SYSCALLS, SUPPORTED_MANIFESTS, runtime_identity, source_identity, supported
 
 CONTROLS = {"python-requirements", "node-npm-complete", "go-module", "java-gradle-lock"}
+# strace's decoded Linux restart pseudo-result is neither a missing syscall
+# nor successful completion. Keep the attempted call for admission checks.
+RESTART_SYS_RESULT = re.compile(r"\)\s*= \? ERESTARTSYS \(To be restarted if SA_RESTART is set\)$")
 
 
 def trace_calls(trace, *, terminal_binary=None, terminal_exit_groups=None, require_complete=False):
@@ -75,7 +78,7 @@ def trace_calls(trace, *, terminal_binary=None, terminal_exit_groups=None, requi
                     line_number,
                 )
                 continue
-        if not re.search(r"\)\s*= (?:\?|[-0-9].*)$", arguments):
+        if not re.search(r"\)\s*= (?:\?|[-0-9].*)$", arguments) and not RESTART_SYS_RESULT.search(arguments):
             raise ValueError("syft-undecoded-process-trace")
         if name == "execve" and first_exec is None:
             first_exec = pid

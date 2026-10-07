@@ -388,6 +388,19 @@ jobs:
             sourcebastion:standard-rule-test scripts/verify-inventory-provider.py \
               --binary /provider --preparation /provider-manifest.json > inventory-provider-native.json
 
+      - name: Exercise maintained Go source parser offline
+        id: inventory_go_source
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
+            -v "$PWD:/workspace:ro" -w /workspace \
+            -v "$RUNNER_TEMP/inventory-provider/sourcebastion-go-source:/go-source:ro" \
+            -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
+            sourcebastion:standard-rule-test scripts/verify-go-source.py \
+              --binary /go-source --preparation /provider-manifest.json > inventory-go-source-native.json
+
       - name: Upload native provider and preparation evidence
         if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_provider_preparation.outcome)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -395,8 +408,10 @@ jobs:
           name: inventory-provider-${{ matrix.arch }}
           path: |
             inventory-provider-native.json
+            inventory-go-source-native.json
             ${{ runner.temp }}/inventory-provider/manifest.json
             ${{ runner.temp }}/inventory-provider/sourcebastion-inventory-provider
+            ${{ runner.temp }}/inventory-provider/sourcebastion-go-source
             ${{ runner.temp }}/inventory-provider/go.tar.gz
             ${{ runner.temp }}/inventory-provider/*.stdout
             ${{ runner.temp }}/inventory-provider/*.stderr

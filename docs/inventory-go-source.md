@@ -9,3 +9,22 @@ Canonical projection preserves an `unassessed-go-indirect-annotation` graph loss
 The native proof explicitly refuses optimized Python (`-O` and `PYTHONOPTIMIZE`), so its checks cannot disappear. The deadline covers blocked input and output; consumers require successful exit and a complete typed document, since a timed-out pipe can contain partial bytes. The executable accepts at most2MiB input/100000 records and64MiB output, and uses the caller remaining deadline (at most150s). Input hashes bind the returned observations to exact supplied bytes. Public library errors and local replacement paths are not projected; the result remains private source evidence. Parent/controller kernel CPU/memory/PID/network controls remain required; parser flags are not a sandbox.
 
 Trusted preparation downloads and verifies the pinned official compiler, hydrates the module graph while online, then verifies/tests/builds offline with unchanged source hashes. Both architectures retain helper binary/buildinfo, compiler and module receipts plus finite offline synthetic probes. These checks do not establish rich corpus agreement, canonical integration, matching, complete SBOM accuracy, licenses/maintenance/resources or M046 acceptance.
+
+The source-authored canonical expectation driver now accepts explicit
+`--go-binary` and `--go-preparation` paths. It checks the trusted preparation
+schema/status, native ELF architecture, compiler archive pin, exact seven
+provider source hashes and helper digest/size before composition. Bounded
+regular single-link file reads and final identity/hash checks cover the helper,
+manifest and source files. These checks bind the supplied preparation evidence;
+they do not independently attest how an arbitrary executable was built or
+establish persistent custody. CI supplies the helper built by its earlier
+trusted preparation step and retains that step's compiler/build evidence.
+
+Forty hand-authored full-record cases include the four original Go inputs:
+minimum declarations, an indirect annotation, checksum-only history and a local
+replacement. Go versions stay unselected; controls and annotations stay explicit
+losses. Three unchanged .NET/Ruby/PHP fixtures document unsupported canonical
+adapters with partial coverage, and a prose fixture documents ignored input.
+This records gaps in the canonical route; it does not assess the separate legacy
+scanner route. The historical 64-case oracle and earlier 32 full-record cases
+remain unchanged. This finite proof does not complete S03 or M046.

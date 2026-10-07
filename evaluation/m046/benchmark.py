@@ -23,6 +23,7 @@ WALL_SECONDS = 150
 MEMORY_BYTES = 2 * 1024 * 1024 * 1024
 DOCKER = ["docker", "--host", "unix:///var/run/docker.sock"]
 SYFT_CONTROL_ENGINES = {"syft-control-cpe-on": True, "syft-control-cpe-off": False}
+SYFT_RUNTIME_ENGINE = "syft-runtime-static"
 
 
 def docker(*arguments):
@@ -54,13 +55,13 @@ def budget_overruns(result, metrics, baseline):
 
 def command(engine, source_tool):
     raw = "/work/raw.json"
-    if engine in SYFT_CONTROL_ENGINES:
+    if engine in SYFT_CONTROL_ENGINES or engine == SYFT_RUNTIME_ENGINE:
         return [
             "/usr/local/bin/python3",
             "-I",
             "-B",
             "/harness/syft_control_job.py",
-            "on" if SYFT_CONTROL_ENGINES[engine] else "off",
+            "extended" if engine == SYFT_RUNTIME_ENGINE else "on" if SYFT_CONTROL_ENGINES[engine] else "off",
         ]
     if engine == "syft":
         return [
@@ -107,7 +108,12 @@ def command(engine, source_tool):
     ]
 
 
-def measure(engine, tool, source, output, source_tool):
+def measure(engine, tool, source, output, source_tool, *, runtime_image=IMAGE):
+    if engine == SYFT_RUNTIME_ENGINE:
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", runtime_image):
+            raise ValueError("runtime experiment requires an inspected immutable local image ID")
+    elif runtime_image != IMAGE:
+        raise ValueError("legacy resource runtime cannot be overridden")
     output.mkdir(parents=True, exist_ok=False)
     output.chmod(0o700)
     control = output / "controller"
@@ -125,14 +131,14 @@ def measure(engine, tool, source, output, source_tool):
         (control, "/output", False),
         (Path(__file__).with_name("container_job.py"), "/harness/job.py", True),
     ]
-    if engine in SYFT_CONTROL_ENGINES:
+    if engine in SYFT_CONTROL_ENGINES or engine == SYFT_RUNTIME_ENGINE:
         mounts.append((Path(__file__).with_name("syft_control_job.py"), "/harness/syft_control_job.py", True))
     if engine == "cdxgen":
         app = Path(tool["entrypoint"]).parent.parent
         if tree_digest(app) != tool["entrypoint_tree_sha256"]:
             raise ValueError("candidate prepared tree changed")
         mounts.append((app, "/candidate/app", True))
-    else:
+    elif engine != SYFT_RUNTIME_ENGINE:
         mounts.append((Path(tool["binary"]), "/candidate/binary", True))
     invocation = command(engine, source_tool)
     (control / "launch.json").write_text(json.dumps({"command": invocation, "wall_limit_seconds": WALL_SECONDS}) + "\n")
@@ -183,12 +189,16 @@ def measure(engine, tool, source, output, source_tool):
         "--entrypoint",
         "python3",
     ]
+    if engine == SYFT_RUNTIME_ENGINE:
+        # Only the trusted controller starts as root. Its existing Popen drops
+        # candidate UID/GID/capabilities; the released image defaults to an app user.
+        arguments += ["--user", "0:0", "--no-healthcheck"]
     for path, target, readonly in mounts:
         arguments += [
             "--mount",
             f"type=bind,source={path.resolve()},target={target}" + (",readonly" if readonly else ""),
         ]
-    arguments += [IMAGE, "/harness/job.py"]
+    arguments += [runtime_image, "/harness/job.py"]
     before = snapshot(source)
     result, paths, baseline, metrics, reason = {}, None, None, None, None
     identifier = None
@@ -247,7 +257,7 @@ def measure(engine, tool, source, output, source_tool):
                 "native_architecture": architecture,
                 "driver_reason": reason,
                 "container_id": identifier,
-                "runtime_image": IMAGE,
+                "runtime_image": runtime_image,
                 "cpu_slots": selected_cpus,
                 "command": invocation,
                 "memory_measurement": "kernel cgroup charged memory, not aggregate RSS",

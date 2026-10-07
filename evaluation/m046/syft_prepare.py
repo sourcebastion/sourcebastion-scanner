@@ -11,9 +11,10 @@ import tarfile
 from .prepare import build_environment, download
 from .run import digest
 from .syft_native import candidate_source_identity
+from .static_elf import validate as validate_static_elf
 
 
-def prepare(destination):
+def prepare(destination, static=False):
     architecture = {"x86_64": "amd64", "aarch64": "arm64"}.get(platform.machine())
     if architecture is None or platform.system() != "Linux":
         raise ValueError("native-linux-required")
@@ -32,6 +33,8 @@ def prepare(destination):
     modules_before = {name: digest(source / name) for name in ("go.mod", "go.sum")}
     sources_before = candidate_source_identity()
     env = build_environment(destination, architecture)
+    if static:
+        env["CGO_ENABLED"] = "0"
     env["GOMAXPROCS"] = "2"
     env["GOTMPDIR"] = str(destination / "tmp")
     env["M046_FRONTEND_PYTHON"] = sys.executable
@@ -58,6 +61,9 @@ def prepare(destination):
     manifest = {
         "status": "trusted-preparation-only",
         "architecture": architecture,
+        "runtime_profile": "static" if static else "glibc-evaluator",
+        "cgo_enabled": env["CGO_ENABLED"],
+        "static_elf": validate_static_elf(binary) if static else None,
         "go_version": pins["go_version"],
         "go_archive_sha256": digest(archive_path),
         "go_executable_sha256": digest(go),
@@ -76,8 +82,9 @@ def prepare(destination):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--static", action="store_true", help="separate CGO-disabled runtime experiment")
     args = parser.parse_args()
-    prepare(args.output.resolve())
+    prepare(args.output.resolve(), static=args.static)
 
 
 if __name__ == "__main__":

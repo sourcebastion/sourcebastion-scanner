@@ -12,8 +12,26 @@ RAW = "/work/raw.json"
 
 
 def launch(cpes):
-    if cpes not in {"on", "off"}:
+    if cpes not in {"on", "off", "extended"}:
         raise ValueError("expected explicit CPE control")
+    binary = "/opt/m046/bin/m046-syft" if cpes == "extended" else BINARY
+    command = [
+        binary,
+        "--mode",
+        "extended" if cpes == "extended" else "control",
+        "--root",
+        "/source",
+        "--generate-cpes=" + str(cpes == "on").lower(),
+        "--timeout",
+        "150s",
+    ]
+    if cpes == "extended":
+        command += [
+            "--python",
+            "/opt/m046/venv/bin/python",
+            "--frontend",
+            "/opt/m046/frontend/evaluation/m046/static_cli.py",
+        ]
     descriptor = os.open(RAW, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     try:
         # The root controller intentionally lacks DAC_OVERRIDE. Give it read
@@ -23,19 +41,7 @@ def launch(cpes):
     finally:
         if descriptor != 1:
             os.close(descriptor)
-    os.execv(
-        BINARY,
-        [
-            BINARY,
-            "--mode",
-            "control",
-            "--root",
-            "/source",
-            "--generate-cpes=" + str(cpes == "on").lower(),
-            "--timeout",
-            "150s",
-        ],
-    )
+    os.execv(binary, command)
 
 
 if __name__ == "__main__":

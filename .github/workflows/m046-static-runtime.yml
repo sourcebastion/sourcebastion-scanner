@@ -1,0 +1,116 @@
+name: M046 Static Runtime Evaluation
+
+on:
+  pull_request:
+    paths:
+      - evaluation/m046/**
+      - tests/test_m046_static_elf.py
+      - tests/test_m046_runtime_oci.py
+      - tests/test_m046_static_runtime.py
+      - PYTHON_VERSION
+      - .github/workflows/m046-static-runtime.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    name: Static Alpine runtime (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: PYTHON_VERSION
+      - uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
+      - name: Verify evaluation boundaries and prepare pinned static candidate
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r evaluation/m046/requirements-static.txt
+          python -m pip install pytest==8.3.5
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y gcc g++
+          python -m pytest tests/test_m046_static_elf.py tests/test_m046_runtime_oci.py tests/test_m046_static_runtime.py tests/test_m046_syft_controls.py tests/test_m046_benchmark.py -q --junitxml="$RUNNER_TEMP/m046-runtime-tests.xml"
+          python -m evaluation.m046.syft_prepare --static --output "$RUNNER_TEMP/m046-static-preparation"
+      - name: Evaluate actual released Alpine overlay and compressed OCI layers
+        run: |
+          sudo env DOCKER_CONFIG="$HOME/.docker" "$(command -v python)" -m evaluation.m046.static_runtime \
+            --binary "$RUNNER_TEMP/m046-static-preparation/m046-syft" \
+            --manifest "$RUNNER_TEMP/m046-static-preparation/manifest.json" \
+            --output "$RUNNER_TEMP/m046-runtime"
+      - name: Retain bounded source, preparation, runtime and failure records
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/m046-static-retained"
+          for item in manifest.json buildinfo.stdout modules.stdout tests.stdout tests.stderr download.stdout download.stderr verify.stdout verify.stderr build.stdout build.stderr; do
+            if test -f "$RUNNER_TEMP/m046-static-preparation/$item"; then
+              cp "$RUNNER_TEMP/m046-static-preparation/$item" "$RUNNER_TEMP/m046-static-retained/$item"
+            fi
+          done
+          sudo "$(command -v python)" -m evaluation.m046.pack_evidence \
+            --root "preparation=$RUNNER_TEMP/m046-static-retained" \
+            --root "runs=$RUNNER_TEMP/m046-runtime/runs" \
+            --root "fixtures=$RUNNER_TEMP/m046-runtime/sources" \
+            --root "report=$RUNNER_TEMP/m046-runtime/report.json" \
+            --root "context-frontend=$RUNNER_TEMP/m046-runtime/context/frontend" \
+            --root "wheels=$RUNNER_TEMP/m046-runtime/context/wheels" \
+            --root "dockerfile=$RUNNER_TEMP/m046-runtime/context/Dockerfile" \
+            --root "image-build-stdout=$RUNNER_TEMP/m046-runtime/image-build.stdout" \
+            --root "image-build-stderr=$RUNNER_TEMP/m046-runtime/image-build.stderr" \
+            --root "identity-stdout=$RUNNER_TEMP/m046-runtime/image-identity.stdout" \
+            --root "identity-stderr=$RUNNER_TEMP/m046-runtime/image-identity.stderr" \
+            --root "oci-audit-stdout=$RUNNER_TEMP/m046-runtime/oci-audit.stdout" \
+            --root "oci-audit-stderr=$RUNNER_TEMP/m046-runtime/oci-audit.stderr" \
+            --root "identity-container=$RUNNER_TEMP/m046-runtime/identity-container.id" \
+            --root "docker-version=$RUNNER_TEMP/m046-runtime/docker-version.stdout" \
+            --root "buildx-version=$RUNNER_TEMP/m046-runtime/buildx-version.stdout" \
+            --root "builder-inspect=$RUNNER_TEMP/m046-runtime/builder-inspect.stdout" \
+            --root "tests=$RUNNER_TEMP/m046-runtime-tests.xml" \
+            --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
+            --root "elf-tests=$GITHUB_WORKSPACE/tests/test_m046_static_elf.py" \
+            --root "oci-tests=$GITHUB_WORKSPACE/tests/test_m046_runtime_oci.py" \
+            --root "runtime-tests=$GITHUB_WORKSPACE/tests/test_m046_static_runtime.py" \
+            --output "$RUNNER_TEMP/m046-static-runtime.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: m046-static-runtime-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-static-runtime.tar.gz
+            ${{ runner.temp }}/m046-static-runtime.tar.gz.sha256
+            ${{ runner.temp }}/m046-static-preparation/m046-syft
+          retention-days: 7
+      - name: Gate separately retained OCI export
+        id: oci
+        if: always()
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'm046-runtime'
+          path, checksum = root / 'runtime.oci.tar', root / 'runtime.oci.tar.sha256'
+          eligible = path.is_file() and checksum.is_file() and 0 < path.stat().st_size <= 2 * 1024**3
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'eligible={str(eligible).lower()}\n')
+          if path.exists() and not eligible:
+              print('OCI export is incomplete, unverified or exceeds its separate 2 GiB bound; not uploaded')
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always() && steps.oci.outputs.eligible == 'true'
+        with:
+          name: m046-static-runtime-oci-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-runtime/runtime.oci.tar
+            ${{ runner.temp }}/m046-runtime/runtime.oci.tar.sha256
+          retention-days: 7

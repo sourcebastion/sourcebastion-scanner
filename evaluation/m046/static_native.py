@@ -43,6 +43,12 @@ SUPPORTED_MANIFESTS = {
     "python-pyproject-optional",
     "python-setup-cfg",
     "python-static-setup",
+    "python-pipfile",
+    "python-pipfile-complete",
+    "python-pylock-variant",
+    "python-pylock-variant-complete",
+    "python-pylock",
+    "python-pylock-complete",
 }
 
 

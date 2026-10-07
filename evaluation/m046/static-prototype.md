@@ -10,7 +10,8 @@ including hidden paths. Conventional requirements/constraints names, exact
 local includes and explicitly mapped paths can contain bare declarations;
 ambiguous bare custom files and prose remain ignored. PEP 621 `pyproject.toml`,
 literal `setup.cfg` and a conservative `setup.py` AST subset have typed adapters.
-Other known manifests and locks are reported as unsupported, with separate inventory, export and
+Pipfile locks and standard `pylock.toml`/named variants have bounded typed lock
+adapters. Other known manifests and locks are reported as unsupported, with separate inventory, export and
 matching states. An explicit mapping is data, not permission to execute or
 fetch anything. No repository code, package manager or metadata API is called.
 
@@ -80,6 +81,37 @@ or a globally atomic snapshot. The outer reviewed isolation boundary must
 provide immutable source inputs. Controller root ancestors and the installed
 frontend code/runtime are trusted. These helpers are not a production jail.
 
+The lock tranche preserves exact locked occurrences with original group/field
+locators, hashes, markers, extras and root/package Python compatibility. Pipfile
+custom categories retain group scope; direct/transitive classification remains
+unknown without a manifest relationship. Pipfile metadata hash/requires/sources
+are structurally checked when supplied. Missing required metadata permits only
+explicit partial fragment enumeration with unknown activation; it never proves
+lock freshness or integrity. The original minimal Pipfile corpus input was
+corrected to this negative contract and a complete positive was added. This is
+corpus/oracle v3 (61 cases); earlier 60-case v2 evidence remains bound to its
+original source and is not reassessed using the new oracle.
+
+The pylock subset supports named locks, stable versioned wheel/sdist sources,
+SHA256/SHA512 assertions and informational dependency selectors by name/version/
+marker. Artifact filenames follow standard name > path > URL precedence and
+must agree with the declared wheel/sdist identity. Sources are never read,
+downloaded or installed. Credentials/query-bearing references and external/local
+source trees are refused. Missing source entries remain labelled fragments;
+multi-use environment/group selection, artifact dates and unimplemented selectors
+remain explicit unsupported data. Edges are retained only when a selector
+identifies one lock occurrence. Missing/ambiguous targets and overlapping variants
+with unproved marker separation report partial coverage; no guessed edge or
+unconditional installation claim is emitted. All scopes/edges stay source/root
+aware; cross-file installation selection remains unimplemented.
+
+Lock admission charges a shared structured-record budget before retention for
+packages, dependency selectors, artifacts, hash assertions, extras and environment
+records. JSON duplicate keys/nonfinite constants and TOML duplicate/malformed data
+are refused. Initial standard-library JSON/TOML allocation is bounded by source
+bytes and the outer resource boundary; this does not establish aggregate resource
+acceptance. The lock-only edge ceiling (100000) is also proposed, not frozen.
+
 Proposed ceilings remain **unfrozen**: 100000 traversal entries, depth 64,
 2 MiB/file, 256 MiB retained text, 150-second wall deadline, 100000 parsed
 records, 100000 records per semantic dimension, include depth 64 and 4096
@@ -107,7 +139,7 @@ Trusted preparation pins packaging 25.0 to the recorded wheel SHA256 in
 Local prototype tests use packaging 25.0 and Python 3.13.5. That is diagnostic
 development verification; it is not the required pinned native Python 3.14
 offline/runtime proof. `m046-static.yml` runs native Python 3.14.8 AMD64/ARM64
-jobs with hash-verified preparation, all 60 built-in synthetic cases and raw
+jobs with hash-verified preparation, the built-in synthetic corpus and raw
 traces. The runner records starting/ending frontend/shared source and corpus
 hashes, interpreter/tracer/library identities, and fails unexpected process or
 socket calls. The fixed scrubbed HOME points to controller scratch; the initial
@@ -115,7 +147,7 @@ local diagnostic without this value observed failed Python-startup NSS socket
 attempts and is not accepted. These namespaces still expose host reads; they
 are not the production boundary. Whole trace review remains an independent
 gate. The 24 pip-text and four static-manifest
-fixtures match the independent rich oracle locally; other formats do not
+fixtures and six typed-lock cases match the independent rich oracle locally; other formats do not
 claim supported semantic agreement. Native/process/network/write audits,
 overflow/performance distributions, SBOM validation, frozen-advisory matching,
 cache identity and production integration remain separate acceptance work.

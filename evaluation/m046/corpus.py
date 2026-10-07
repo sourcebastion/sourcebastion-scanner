@@ -148,6 +148,28 @@ CORPUS = [
             )
         },
         ["pypi:requests@2.32.3", "pypi:pytest@8.3.3"],
+        disposition="unsupported",
+        note="Enumeration fragment: missing required Pipfile hash/requires/sources metadata; no complete lock claim.",
+    ),
+    case(
+        "python-pipfile-complete",
+        "python",
+        {
+            "Pipfile.lock": json.dumps(
+                {
+                    "_meta": {
+                        "pipfile-spec": 6,
+                        "hash": {"sha256": "c" * 64},
+                        "requires": {},
+                        "sources": [{"name": "pypi", "url": "https://pypi.org/simple", "verify_ssl": True}],
+                    },
+                    "default": {"requests": {"version": "==2.32.3", "hashes": ["sha256:" + "a" * 64], "index": "pypi"}},
+                    "develop": {"pytest": {"version": "==8.3.3", "hashes": ["sha256:" + "b" * 64], "index": "pypi"}},
+                }
+            )
+        },
+        ["pypi:requests@2.32.3", "pypi:pytest@8.3.3"],
+        note="Complete structural metadata with synthetic hashes, not Pipfile freshness or download integrity proof.",
     ),
     case(
         "python-poetry",

@@ -6,10 +6,10 @@ No production scan modules, image dependencies or runtime settings are changed.
 
 The separate [static Python frontend prototype](static-prototype.md) explores
 bounded general input discovery, typed include/constraint semantics and static
-manifest declarations. It is
+manifest declarations and a typed Pipfile/standard pylock subset. It is
 under review, not an engine selection or a production integration.
 
-`corpus.py` contains 60 handwritten cases with expected exact package identities,
+`corpus.py` contains 61 handwritten cases with expected exact package identities,
 evidenced edges, separate unresolved declarations and coverage dispositions. It
 includes Python requirements/.in/custom hashed locks, hidden paths, includes and
 constraints, markers/extras, conflicting roots, pyproject/setup/Pipfile/Poetry/uv/
@@ -19,6 +19,9 @@ occurrences, source locators, scope/selection/marker/extras/compatibility eviden
 include/constraint references and separately reported fidelity axes. The exact
 pip 26.0.1 build and hidden-lock regressions are included. Earlier incomplete lock
 fragments are retained and labelled alongside structurally complete counterparts.
+The v3 tranche labels the original minimal Pipfile metadata fragment partial and
+adds a complete Pipfile positive. Prior 60-case v2 measurements remain bound to
+their exact historical source/oracle, not this updated contract.
 Unsafe paths reference only a synthetic sibling sentinel. Artifact integrity hashes
 in synthetic locks are test strings, not verified package download hashes.
 

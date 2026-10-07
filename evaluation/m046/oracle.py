@@ -161,6 +161,30 @@ SEMANTICS = {
     ),
     "python-dynamic-setup": ([inp("setup.py", "setup-python-static", "unsupported", "dynamic-metadata")], []),
     "python-pipfile": (
+        [inp("Pipfile.lock", "pipfile-lock", "unsupported", "missing-lock-metadata")],
+        [
+            occ(
+                "pypi:requests@2.32.3",
+                "Pipfile.lock",
+                "/default/requests",
+                selection="locked",
+                declaration="==2.32.3",
+                relationship="unknown",
+                activation="unknown",
+            ),
+            occ(
+                "pypi:pytest@8.3.3",
+                "Pipfile.lock",
+                "/develop/pytest",
+                selection="locked",
+                scope="development",
+                declaration="==8.3.3",
+                relationship="unknown",
+                activation="unknown",
+            ),
+        ],
+    ),
+    "python-pipfile-complete": (
         [inp("Pipfile.lock", "pipfile-lock")],
         [
             occ(
@@ -169,6 +193,7 @@ SEMANTICS = {
                 "/default/requests",
                 selection="locked",
                 declaration="==2.32.3",
+                hashes=["sha256:" + "a" * 64],
                 relationship="unknown",
             ),
             occ(
@@ -178,6 +203,7 @@ SEMANTICS = {
                 selection="locked",
                 scope="development",
                 declaration="==8.3.3",
+                hashes=["sha256:" + "b" * 64],
                 relationship="unknown",
             ),
         ],
@@ -548,7 +574,7 @@ DIMENSIONS = (
 def enrich(fixture):
     inputs, occurrences = SEMANTICS[fixture["id"]]
     expected = fixture["expected"]
-    expected["semantic_schema"] = "m046-oracle-v2"
+    expected["semantic_schema"] = "m046-oracle-v3"
     expected["inputs"] = [
         {
             **record,
@@ -575,8 +601,12 @@ def enrich(fixture):
         "version_selection": "partial" if invalid or expected["declarations"] else "complete",
         "graph": "evidenced-only" if expected["relationships"] else "unknown",
         "environment": (
-            "conditional-unknown"
-            if any(record["activation"] == "unknown" for record in occurrences)
-            else "unconditional"
+            "unknown"
+            if fixture["id"] == "python-pipfile"
+            else (
+                "conditional-unknown"
+                if any(record["activation"] == "unknown" for record in occurrences)
+                else "unconditional"
+            )
         ),
     }

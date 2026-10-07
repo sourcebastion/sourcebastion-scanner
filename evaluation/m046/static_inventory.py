@@ -16,10 +16,13 @@ from .static_inputs import InputRefusal, Source, relative_path
 from .static_markers import context_key, disjoint
 from .static_manifests import parse as parse_manifest
 from .static_manifest_records import render as render_manifest
+from .static_locks import parse as parse_lock
+from .static_lock_records import render as render_lock
 from .static_requirements import Document, parse
 
-VERSION = "m046-static-inventory-prototype-v2"
+VERSION = "m046-static-inventory-prototype-v3"
 MANIFEST_FORMATS = {"pep621", "setup-cfg", "setup-python-static"}
+LOCK_FORMATS = {"pipfile-lock", "pylock"}
 MAX_OCCURRENCES = 100000
 MAX_INCLUDE_DEPTH = 64
 MAX_INCLUDE_TARGETS = 4096
@@ -123,6 +126,7 @@ def _evaluate(source, *, mapping=None):
     source.check()
     inputs, documents, refs = {}, {}, []
     manifests = {}
+    locks = {}
     roots_for = defaultdict(set)
     outcomes = defaultdict(list)
     refusal_codes = []
@@ -196,7 +200,7 @@ def _evaluate(source, *, mapping=None):
                 load(entry.path)
             elif fmt == "unrecognized":
                 inputs[entry.path] = {**base, "disposition": "ignored", "reason": "unrecognized-input"}
-            elif fmt in MANIFEST_FORMATS:
+            elif fmt in MANIFEST_FORMATS | LOCK_FORMATS:
                 try:
                     data = source.read(entry.path)
                 except InputRefusal as refusal:
@@ -209,15 +213,16 @@ def _evaluate(source, *, mapping=None):
                     inputs[entry.path] = {**base, "disposition": disposition, "reason": refusal.reason}
                     refusal_codes.append(refusal.reason)
                     continue
-                document = parse_manifest(
+                adapter = parse_manifest if fmt in MANIFEST_FORMATS else parse_lock
+                document = adapter(
                     entry.path,
                     data.content,
                     fmt,
                     deadline=source.deadline,
                     max_records=MAX_OCCURRENCES - parsed_records,
                 )
-                parsed_records += len(document.declarations)
-                manifests[entry.path] = document
+                parsed_records += len(document.declarations) if fmt in MANIFEST_FORMATS else document.record_count
+                (manifests if fmt in MANIFEST_FORMATS else locks)[entry.path] = document
                 if document.disposition in {"unsupported", "malformed", "budget-exceeded"}:
                     refusal_codes.append(document.reason)
                 inputs[entry.path] = {
@@ -276,7 +281,7 @@ def _evaluate(source, *, mapping=None):
     seen_scopes = set()
     claimed_scopes = set()
     occurrences, declarations, all_roots = [], [], set()
-    applications, environments = [], []
+    applications, environments, relationships = [], [], []
     unresolved = False
 
     def context(seed):
@@ -561,6 +566,22 @@ def _evaluate(source, *, mapping=None):
         unresolved = unresolved or rendered["unresolved"]
         if status in {"unsupported", "malformed", "budget-exceeded"}:
             refusal_codes.append(reason)
+    for path, document in sorted(locks.items()):
+        if path in incoming or path in claimed_scopes:
+            continue
+        if document.disposition != "parsed" and document.reason not in {"missing-lock-source", "missing-lock-metadata"}:
+            continue
+        root = posixpath.dirname(path) or "."
+        rendered = render_lock(document, root, step)
+        status, reason = rendered["status"]
+        inputs[path].update(disposition=status, reason=reason)
+        roots_for[path].add(root)
+        all_roots.add(root)
+        extend(occurrences, rendered["occurrences"])
+        extend(relationships, rendered["relationships"])
+        extend(environments, rendered["environment"])
+        if status in {"unsupported", "malformed", "budget-exceeded"}:
+            refusal_codes.append(reason)
     rank = {
         "ignored": 0,
         "parsed": 1,
@@ -594,7 +615,7 @@ def _evaluate(source, *, mapping=None):
     dimensions = {
         "inputs": [inputs[path] for path in sorted(inputs)],
         "occurrences": occurrences,
-        "relationships": [],
+        "relationships": relationships,
         "declaration_records": declarations,
         "references": refs,
         "roots": sorted(all_roots),
@@ -605,10 +626,13 @@ def _evaluate(source, *, mapping=None):
             "parsing": "partial" if partial else "complete",
             "enumeration": "partial" if partial else "complete",
             "version_selection": "partial" if partial or unresolved else "complete",
-            "graph": "unknown",
+            "graph": "evidenced-only" if relationships else "unknown",
             "environment": (
                 "unknown"
-                if any(record["disposition"] == "unsupported" for record in inputs.values())
+                if any(
+                    record["disposition"] == "unsupported" and record["reason"] != "missing-lock-source"
+                    for record in inputs.values()
+                )
                 else (
                     "conditional-unknown"
                     if any(r["activation"] == "unknown" for r in occurrences)
@@ -627,7 +651,7 @@ def _evaluate(source, *, mapping=None):
         "sbom_status": "not-run",
         "matching_status": "not-run",
         "packages": sorted({record["package"] for record in occurrences}),
-        "edges": [],
+        "edges": sorted({(record["parent"], record["child"]) for record in relationships}),
         "application_identities": sorted({record["identity"] for record in applications}),
         "semantic_dimensions": dimensions,
         "coverage": "prototype-static-python",

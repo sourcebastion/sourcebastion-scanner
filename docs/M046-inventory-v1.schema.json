@@ -534,7 +534,8 @@
           "default": "pep440",
           "enum": [
             "pep440",
-            "poetry-core-2.1.3"
+            "poetry-core-2.1.3",
+            "npm-semver-7.8.5"
           ],
           "title": "Dialect",
           "type": "string"
@@ -548,8 +549,11 @@
           "type": "string"
         },
         "ecosystem": {
-          "const": "pypi",
           "default": "pypi",
+          "enum": [
+            "pypi",
+            "npm"
+          ],
           "title": "Ecosystem",
           "type": "string"
         },
@@ -626,7 +630,8 @@
           "default": "pep508",
           "enum": [
             "pep508",
-            "relative-to-lock-python"
+            "relative-to-lock-python",
+            "none"
           ],
           "title": "Marker Semantics",
           "type": "string"

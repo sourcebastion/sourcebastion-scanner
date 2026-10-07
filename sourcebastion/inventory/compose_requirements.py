@@ -515,6 +515,9 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             from .compose_locks import extend as extend_locks
 
             extend_locks(extra)
+            from .compose_npm import extend as extend_npm
+
+            extend_npm(extra)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(

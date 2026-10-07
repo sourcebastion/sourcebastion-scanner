@@ -178,6 +178,12 @@ jobs:
           pip install --no-cache-dir -e .
           pip install --no-cache-dir pytest pytest-cov pytest-xdist psutil
 
+      - name: Install trusted host Node for inventory selector tests
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends nodejs
+          /usr/bin/node --version
+
       - name: Run tests
         run: |
           echo "🧪 Running unit tests with pytest..."

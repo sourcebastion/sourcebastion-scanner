@@ -21,6 +21,9 @@ from sourcebastion.inventory import (
     compose_source,
     compose_manifests,
     compose_locks,
+    compose_npm,
+    npm_sources,
+    npm_selectors,
     python_locks,
     python_lock_formats,
     poetry_constraints,
@@ -95,6 +98,9 @@ def main():
         compose_source,
         compose_manifests,
         compose_locks,
+        compose_npm,
+        npm_sources,
+        npm_selectors,
         python_locks,
         python_lock_formats,
         poetry_constraints,
@@ -414,6 +420,144 @@ def main():
     )
     semantic.append(record)
 
+    npm_lock = {
+        "lockfileVersion": 3,
+        "packages": {
+            "": {"name": "fixture", "version": "1.0.0", "dependencies": {"debug": "^4.3.7"}},
+            "node_modules/debug": {"version": "4.3.7", "dependencies": {"ms": "^2.0.0"}},
+            "node_modules/ms": {"version": "2.1.3"},
+            "node_modules/debug/node_modules/ms": {"version": "2.0.0"},
+        },
+    }
+    result, record = record_case("npm-nested-source-selection", {"package-lock.json": json.dumps(npm_lock)})
+    assert result.stages.inventory == "complete" and len(result.occurrences) == 3
+    assert len(result.relationships) == len(result.dependency_selectors) == 1
+    by_id = {row.id: row for row in result.occurrences}
+    edge = result.relationships[0]
+    assert by_id[edge.parent_id].directness == "direct" and by_id[edge.child_id].directness == "transitive"
+    assert by_id[edge.child_id].selected_version == "2.0.0"
+    assert result.dependency_selectors[0].dialect == "npm-semver-7.8.5"
+    assert all(row.activation == "unknown" and row.installed_environment_id is None for row in result.occurrences)
+    semantic.append(record)
+    for name, change, reason in (
+        ("npm-nearer-refused", {"link": True, "resolved": "../other"}, "npm-source-endpoint-not-admitted"),
+        ("npm-range-mismatch", {"version": "3.0.0"}, "npm-selector-version-mismatch"),
+        ("npm-prerelease-policy", {"version": "2.2.0-beta.1"}, "npm-selector-version-mismatch"),
+    ):
+        changed = json.loads(json.dumps(npm_lock))
+        changed["packages"]["node_modules/debug/node_modules/ms"] = change
+        result, record = record_case(name, {"package-lock.json": json.dumps(changed)})
+        assert result.stages.inventory == "partial" and not result.relationships
+        assert result.dependency_selectors[0].reason == reason
+        semantic.append(record)
+    manifest = {
+        "name": "fixture",
+        "version": "1.0.0",
+        "dependencies": {"debug": "^4.3.7"},
+        "scripts": {"preinstall": "touch EXECUTED"},
+    }
+    result, record = record_case("npm-declared-range-no-resolver", {"package.json": json.dumps(manifest)})
+    assert result.stages.inventory == "partial" and result.occurrences[0].selected_version is None
+    assert result.occurrences[0].scopes == ("runtime",) and not result.relationships
+    semantic.append(record)
+    manifest["dependencies"]["debug"] = "4.3.7"
+    result, record = record_case("npm-explicit-declared-pin", {"package.json": json.dumps(manifest)})
+    assert result.stages.inventory == "complete" and result.occurrences[0].selected_version == "4.3.7"
+    assert result.occurrences[0].evidence_kind == "declared" and result.occurrences[0].selection_declaration_ids
+    semantic.append(record)
+    result, record = record_case(
+        "npm-shared-semantic-budget",
+        {"package-lock.json": json.dumps(npm_lock), "requirements.txt": "pip==26.0.1\n"},
+        config=registry.DiscoveryConfig(semantic_checks=100),
+    )
+    assert result.stages.inventory == "failed" and result.occurrences == result.dependency_selectors == ()
+    semantic.append(record)
+    result, record = record_case(
+        "npm-peer-context-unassessed",
+        {
+            "package-lock.json": json.dumps(
+                {
+                    "lockfileVersion": 3,
+                    "packages": {
+                        "node_modules/debug": {"version": "4.3.7", "peerDependencies": {"ms": "^2"}},
+                        "node_modules/ms": {"version": "2.1.3"},
+                    },
+                }
+            )
+        },
+    )
+    assert result.stages.inventory == "partial" and not result.relationships
+    assert result.dependency_selectors[0].reason == "npm-peer-context-unassessed"
+    semantic.append(record)
+
+    for present in (False, True):
+        packages = {
+            "node_modules/foo": {
+                "version": "1.0.0",
+                "dependencies": {"bar": "https://alice:secret-token@example.invalid/a.tgz"},
+            }
+        }
+        if present:
+            packages["node_modules/bar"] = {"version": "1.0.0"}
+        result, record = record_case(
+            "npm-private-selector-" + ("present" if present else "missing"),
+            {"package-lock.json": json.dumps({"lockfileVersion": 3, "packages": packages})},
+        )
+        assert result.stages.inventory == "partial" and not result.relationships
+        assert b"secret-token" not in contract.canonical_bytes(result)
+        assert result.dependency_selectors[0].declared_range is None
+        assert result.dependency_selectors[0].reason == "unsupported-npm-dependency-selector"
+        semantic.append(record)
+    result, record = record_case(
+        "npm-private-manifest-selector",
+        {"package.json": json.dumps({"dependencies": {"foo": "https://alice:secret-token@example.invalid/a.tgz"}})},
+    )
+    assert result.stages.inventory == "partial" and result.declarations[0].declared_range is None
+    assert b"secret-token" not in contract.canonical_bytes(result)
+    semantic.append(record)
+    for flag, scope in (("peer", ("peer",)), ("extraneous", ("unknown",))):
+        result, record = record_case(
+            "npm-" + flag + "-context",
+            {
+                "package-lock.json": json.dumps(
+                    {"lockfileVersion": 3, "packages": {"node_modules/foo": {"version": "1.0.0", flag: True}}}
+                )
+            },
+        )
+        assert result.stages.inventory == "partial" and result.occurrences[0].scopes == scope
+        assert result.coverage.inputs[0].reason == "unsupported-npm-package-selection-context"
+        semantic.append(record)
+    result, record = record_case(
+        "npm-nested-manager-controls",
+        {
+            "package.json": json.dumps(
+                {
+                    "name": "fixture",
+                    "version": "1.0.0",
+                    "dependencies": {"foo": "1.0.0"},
+                    "pnpm": {"overrides": {"foo": "2.0.0"}},
+                }
+            )
+        },
+    )
+    assert (
+        result.stages.inventory == "partial"
+        and result.coverage.inputs[0].reason == "unsupported-npm-selection-controls"
+    )
+    semantic.append(record)
+
+    result, record = record_case(
+        "npm-strict-application-version",
+        {
+            "package.json": json.dumps(
+                {"name": "fixture", "version": "9007199254740992.0.0", "dependencies": {"foo": "1.0.0"}}
+            )
+        },
+    )
+    assert result.stages.inventory == "partial" and not result.roots and not result.applications
+    assert result.occurrences[0].selected_version == "1.0.0" and result.occurrences[0].root_id is None
+    semantic.append(record)
+
     corpus = json.loads(Path("tests/fixtures/inventory/corpus.json").read_text())
     assert len(corpus) == 64
     fixtures = []
@@ -429,13 +573,22 @@ def main():
                 "packaging": packaging.__version__,
                 "pydantic": pydantic.__version__,
                 "poetry_core": poetry_constraints.GRAMMAR_VERSION,
+                "npm_semver_manifest_sha256": npm_selectors.verify_vendor(),
+                "npm_selector_entry_sha256": hashlib.sha256(
+                    Path(npm_selectors.__file__).with_name("node_selectors.cjs").read_bytes()
+                ).hexdigest(),
+                "node": __import__("subprocess")
+                .check_output(
+                    ["/usr/bin/node", "--version"], env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"}, text=True
+                )
+                .strip(),
                 "source_modules": {
                     Path(m.__file__).name: hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest() for m in modules
                 },
                 "semantic_cases": semantic,
                 "epoch_failure": "no-consumable-records",
                 "fixtures": fixtures,
-                "scope": "finite requirements/static-manifest/registry-lock composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
+                "scope": "finite requirements/static-manifest/Python-lock/npm-source composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
             },
             sort_keys=True,
             indent=2,

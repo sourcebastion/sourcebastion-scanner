@@ -91,6 +91,16 @@ setup(
         "requests>=2.28",
     ],
     package_data={
+        "sourcebastion.inventory": [
+            "node_selectors.cjs",
+            "vendor/npm-semver-manifest.json",
+            "vendor/npm-semver/*",
+            "vendor/npm-semver/bin/*",
+            "vendor/npm-semver/classes/*",
+            "vendor/npm-semver/functions/*",
+            "vendor/npm-semver/internal/*",
+            "vendor/npm-semver/ranges/*",
+        ],
         "sourcebastion": [
             "data/frameworks/*.json",
             "templates/*.j2",

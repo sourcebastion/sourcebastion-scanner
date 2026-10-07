@@ -17,6 +17,7 @@ from urllib.parse import quote
 
 from packaging.utils import canonicalize_name
 from packaging.version import Version
+from packaging.specifiers import SpecifierSet
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .inputs import relative_path
@@ -165,7 +166,7 @@ class Root(Record):
 
 class AnalysisScope(Record):
     id: ID
-    kind: Literal["requirements-origin", "lock-input", "provider-directory"]
+    kind: Literal["requirements-origin", "manifest-input", "lock-input", "provider-directory"]
     source: Locator
 
 
@@ -268,6 +269,81 @@ class ProviderReference(Record):
     raw_record_sha256: SHA256
 
 
+class Declaration(Record):
+    """A source requirement/constraint, separately from package enumeration."""
+
+    id: ID
+    source: Locator
+    kind: Literal["requirement", "constraint"]
+    ecosystem: Ecosystem
+    name: Name
+    declared_range: Text | None = None
+    exact_version: Name | None = None
+    marker: Text | None = None
+    extras: tuple[Name, ...] = Field(default=(), max_length=256)
+    hashes: tuple[ContentHash, ...] = Field(default=(), max_length=4096)
+    scopes: tuple[Name, ...] = Field(default=(), max_length=256)
+    groups: tuple[Name, ...] = Field(default=(), max_length=256)
+    root_id: ID | None = None
+    analysis_scope_id: ID | None = None
+
+    @model_validator(mode="after")
+    def source_identity(self):
+        package_purl(self.ecosystem, self.name, self.exact_version)
+        if self.ecosystem == "pypi" and self.exact_version is not None and self.declared_range is not None:
+            if not SpecifierSet(self.declared_range).contains(self.exact_version, prereleases=True):
+                raise ValueError("contradictory-declaration-version")
+        return self
+
+
+class InputReference(Record):
+    """Located include/constraint provenance, never a dependency edge."""
+
+    id: ID
+    source: Locator
+    analysis_scope_id: ID
+    kind: Literal["include", "constraint"]
+    role: Literal["requirement", "constraint"]
+    target_path: Text | None
+    target_sha256: SHA256 | None
+    disposition: Literal["discovered", "parsed", "ignored", "unsupported", "failed", "bounded-omission", "unresolved"]
+    reason: Reason
+
+    @model_validator(mode="after")
+    def safe_target(self):
+        if self.target_path is not None and relative_path(self.target_path) != self.target_path:
+            raise ValueError("noncanonical-reference-target")
+        if self.target_path is None and self.target_sha256 is not None:
+            raise ValueError("reference-hash-requires-target")
+        if self.disposition == "parsed" and (self.target_path is None or self.target_sha256 is None):
+            raise ValueError("parsed-reference-requires-read-target")
+        return self
+
+
+class Applicability(Record):
+    """An evidenced selection condition, independent of the worker target."""
+
+    id: ID
+    source: Locator
+    kind: Literal["python-version", "marker", "group"]
+    dialect: Literal["pep440", "pep508", "poetry-core-2.1.3", "group-name"]
+    expression: Text
+    root_id: ID | None = None
+    analysis_scope_id: ID | None = None
+    occurrence_id: ID | None = None
+
+    @model_validator(mode="after")
+    def compatible_dialect(self):
+        allowed = {
+            "python-version": {"pep440", "poetry-core-2.1.3"},
+            "marker": {"pep508"},
+            "group": {"group-name"},
+        }
+        if self.dialect not in allowed[self.kind]:
+            raise ValueError("contradictory-applicability-dialect")
+        return self
+
+
 class Occurrence(Record):
     id: ID
     source: Locator
@@ -279,6 +355,9 @@ class Occurrence(Record):
     declared_range: Text | None = None
     hashes: tuple[ContentHash, ...] = Field(default=(), max_length=4096)
     provider_references: tuple[ProviderReference, ...] = Field(default=(), max_length=256)
+    # Binding is structural. Adapters prove that these declarations jointly
+    # justify a selected version; constraints are never packages or edges.
+    selection_declaration_ids: tuple[ID, ...] = Field(default=(), max_length=4096)
     root_id: ID | None = None
     installed_environment_id: ID | None = None
     analysis_scope_id: ID | None = None
@@ -437,6 +516,9 @@ class Inventory(Record):
     relationships: tuple[Relationship, ...] = Field(default=(), max_length=500000)
     applications: tuple[Application, ...] = Field(default=(), max_length=100000)
     losses: tuple[ProjectionLoss, ...] = Field(default=(), max_length=100000)
+    declarations: tuple[Declaration, ...] = Field(default=(), max_length=100000)
+    input_references: tuple[InputReference, ...] = Field(default=(), max_length=100000)
+    applicability: tuple[Applicability, ...] = Field(default=(), max_length=100000)
     coverage: Coverage
     stages: StageStates
 
@@ -457,6 +539,9 @@ class Inventory(Record):
             ("relationship", self.relationships),
             ("application", self.applications),
             ("loss", self.losses),
+            ("declaration", self.declarations),
+            ("input-reference", self.input_references),
+            ("applicability", self.applicability),
         ):
             ids = {row.id for row in records}
             if len(ids) != len(records) or any(not key.startswith(kind + ":sha256:") for key in ids):
@@ -479,12 +564,67 @@ class Inventory(Record):
             self.relationships,
             self.applications,
             self.losses,
+            self.declarations,
+            self.input_references,
+            self.applicability,
         ):
             for record in records:
                 covered = inputs.get(record.source.path)
                 if covered is None or covered.source_sha256 != record.source.source_sha256:
                     raise ValueError("unbound-source-coverage")
+        for declaration in self.declarations:
+            if (declaration.root_id is not None and declaration.root_id not in indexes["root"]) or (
+                declaration.analysis_scope_id is not None and declaration.analysis_scope_id not in indexes["scope"]
+            ):
+                raise ValueError("unbound-declaration-context")
+        for reference in self.input_references:
+            if reference.analysis_scope_id not in indexes["scope"]:
+                raise ValueError("unbound-input-reference-context")
+            if reference.target_path is not None:
+                target = inputs.get(reference.target_path)
+                if target is None or target.source_sha256 != reference.target_sha256:
+                    raise ValueError("unbound-input-reference-target")
+                if reference.disposition == "parsed" and target.disposition not in {"parsed", "unresolved"}:
+                    raise ValueError("parsed-reference-requires-parsed-target")
+        for condition in self.applicability:
+            for kind, key in (
+                ("root", condition.root_id),
+                ("scope", condition.analysis_scope_id),
+                ("occurrence", condition.occurrence_id),
+            ):
+                if key is not None and key not in indexes[kind]:
+                    raise ValueError("unbound-applicability-context")
+        declaration_index = {row.id: row for row in self.declarations}
         for occurrence in self.occurrences:
+            keys = occurrence.selection_declaration_ids
+            if len(set(keys)) != len(keys) or any(key not in indexes["declaration"] for key in keys):
+                raise ValueError("unbound-or-duplicate-selection-evidence")
+            if keys and occurrence.selected_version is None:
+                raise ValueError("selection-evidence-requires-selected-version")
+            selected_evidence = [declaration_index[key] for key in keys]
+            if any(
+                row.name != occurrence.name
+                or row.ecosystem != occurrence.ecosystem
+                or row.root_id != occurrence.root_id
+                or row.analysis_scope_id != occurrence.analysis_scope_id
+                for row in selected_evidence
+            ):
+                raise ValueError("contradictory-selection-context")
+            if selected_evidence and not any(
+                row.exact_version is not None
+                and (
+                    Version(row.exact_version) == Version(occurrence.selected_version)
+                    if occurrence.ecosystem == "pypi"
+                    else row.exact_version == occurrence.selected_version
+                )
+                for row in selected_evidence
+            ):
+                raise ValueError("selection-requires-exact-source-evidence")
+            if occurrence.ecosystem == "pypi" and any(
+                not SpecifierSet(row.declared_range or "").contains(occurrence.selected_version, prereleases=True)
+                for row in selected_evidence
+            ):
+                raise ValueError("contradictory-selection-range")
             for kind, key in (
                 ("root", occurrence.root_id),
                 ("scope", occurrence.analysis_scope_id),
@@ -599,8 +739,13 @@ def canonical_bytes(inventory, *, max_bytes=64 * 1024 * 1024, max_nodes=2000000)
         "relationships",
         "applications",
         "losses",
+        "declarations",
+        "input_references",
+        "applicability",
     ):
         data[field].sort(key=lambda row: row["id"])
+    for row in data["occurrences"]:
+        row["selection_declaration_ids"].sort()
     data["coverage"]["inputs"].sort(key=lambda row: row["source_path"])
     for row in data["coverage"]["inputs"]:
         for key in ("root_ids", "analysis_scope_ids", "installed_environment_ids"):

@@ -4,9 +4,10 @@ The accepted S01 architecture is recorded in merged PR110 and
 `evaluation/m046/architecture-decision.md`. This slice defines production
 `sourcebastion.inventory/1`, `inventory-coverage/1`, `environment/1` and
 `inventory-limits/1` records in `sourcebastion.inventory.contract`, with a
-[structural schema snapshot](M046-inventory-v1.schema.json). It does not yet
-implement the canonical adapters, source/provider join, environment evaluator,
-CycloneDX exporter, matcher or production scanner integration. S03 remains open.
+[structural schema snapshot](M046-inventory-v1.schema.json). The [requirements composition slice](M046-requirements-composition.md) adds
+source-aware pip composition and explicit-target marker evaluation. Source/provider
+joining, other canonical adapters, CycloneDX export, matching and production
+scanner integration remain incomplete. S03 remains open.
 
 Strict frozen records reject unknown fields, invalid digest/ID namespaces,
 noncanonical outside-root source paths, contradictory name/version/purl fields,
@@ -62,8 +63,9 @@ explicit target records supplied implementation/version/platform/architecture
 and named PEP508 marker inputs; conflicting/duplicate inputs are refused.
 `marker_environment` contains only supplied or deterministic target-derived
 values, with no worker host fallback. A minor-only Python target does not invent
-a full patch version. This module does not evaluate markers: missing inputs or
-unresolved extra/group activation must remain unknown in later adapters.
+a full patch version. This contract module does not evaluate markers; the reviewed marker helper
+uses explicit target inputs only. Missing inputs or unresolved extra/group
+activation remain unknown.
 Environment identity is digested independently of provider/config versions.
 
 Per-input discovery/parsed/ignored/unsupported/failed/omitted/unresolved records

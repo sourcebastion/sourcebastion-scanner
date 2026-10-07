@@ -9,8 +9,10 @@ to the stock CLI or prove that CPEs caused its failures.
 Both arms use the existing native resource harness without changing its
 controller, file bounds, UID isolation, cgroup enforcement, watchdog or cleanup.
 A trusted Python launcher runs under candidate UID 65534, exclusively creates
-`/work/raw.json`, redirects stdout there and execs the pinned Go binary. It reads
-no project code and performs no installation. The launcher and native Go process
+`/work/raw.json`, redirects stdout there and execs the pinned Go binary. The file
+explicitly permits controller reads (0644), including under a restrictive umask;
+the root controller keeps its existing lack of DAC_OVERRIDE capability. The
+launcher reads no project code and performs no installation. It and the native Go process
 share the measured cgroup, as does the root job controller. Trusted build/source
 generation and the bounded post-measurement correctness audit remain outside it.
 

@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
 
@@ -55,7 +56,11 @@ def run(output):
         source = output / (name + "-source")
         source.mkdir()
         (source / "mode").write_text(mode)
-        measurement = benchmark.measure(engine, tool, source, output / name, "python")
+        previous_umask = os.umask(0o077)
+        try:
+            measurement = benchmark.measure(engine, tool, source, output / name, "python")
+        finally:
+            os.umask(previous_umask)
         raw = output / name / "controller/raw.json"
         if mode == "small":
             result = json.loads(raw.read_text())

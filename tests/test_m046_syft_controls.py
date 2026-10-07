@@ -88,7 +88,8 @@ def test_isolated_audit_entrypoint_imports_no_checkout(pins, tmp_path):
 
 
 @pytest.mark.parametrize("cpes", ["on", "off"])
-def test_launcher_exec_preserves_signal_and_raw_descriptor(tmp_path, cpes):
+@pytest.mark.parametrize("mask", [0o022, 0o077])
+def test_launcher_exec_preserves_signal_and_raw_descriptor(tmp_path, cpes, mask):
     raw = tmp_path / "raw.json"
     binary = tmp_path / "native-probe"
     binary.write_text(
@@ -99,7 +100,9 @@ def test_launcher_exec_preserves_signal_and_raw_descriptor(tmp_path, cpes):
         "from evaluation.m046 import syft_control_job as job; "
         "job.BINARY,job.RAW=__import__('sys').argv[1:3]; job.launch(__import__('sys').argv[3])"
     )
-    process = subprocess.Popen([sys.executable, "-B", "-c", code, str(binary), str(raw), cpes], stdout=subprocess.PIPE)
+    process = subprocess.Popen(
+        [sys.executable, "-B", "-c", code, str(binary), str(raw), cpes], stdout=subprocess.PIPE, umask=mask
+    )
     stdout, _ = process.communicate(timeout=10)
     assert process.returncode == 0 and stdout == b""
     record = json.loads(raw.read_text())
@@ -113,7 +116,7 @@ def test_launcher_exec_preserves_signal_and_raw_descriptor(tmp_path, cpes):
         "--timeout",
         "150s",
     ]
-    assert raw.stat().st_mode & 0o777 == 0o600
+    assert raw.stat().st_mode & 0o777 == 0o644
 
 
 @pytest.mark.parametrize("kind", ["existing", "symlink", "fifo"])

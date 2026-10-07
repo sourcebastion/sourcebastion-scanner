@@ -16,6 +16,9 @@ def launch(cpes):
         raise ValueError("expected explicit CPE control")
     descriptor = os.open(RAW, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     try:
+        # The root controller intentionally lacks DAC_OVERRIDE. Give it read
+        # access after UID drain without adding any capture capability.
+        os.fchmod(descriptor, 0o644)
         os.dup2(descriptor, 1, inheritable=True)
     finally:
         if descriptor != 1:

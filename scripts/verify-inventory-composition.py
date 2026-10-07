@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Finite installed pip composition checks plus 64-case repeatability records.
+"""Finite installed Python source composition checks plus 64-case repeatability records.
 
 No production scanner route, rich corpus acceptance, matching or kernel proof.
 """
@@ -18,6 +18,8 @@ import pydantic
 
 from sourcebastion.inventory import (
     compose_requirements,
+    compose_source,
+    compose_manifests,
     contract,
     discovery,
     inputs,
@@ -42,7 +44,7 @@ def compose(root, files, *, links=None, environment=None, config=None):
     # that recognized files establish a complete arbitrary checkout digest.
     sha = hashlib.sha256(json.dumps([files, links or {}], sort_keys=True).encode()).hexdigest()
     with inputs.Source(root) as source:
-        return compose_requirements.compose_requirements(
+        return compose_source.compose_source(
             source,
             source_sha256=sha,
             producer=contract.Producer(
@@ -83,7 +85,18 @@ def main():
         raise RuntimeError("optimized-probe-runtime-refused")
     signal.alarm(60)
     assert packaging.__version__ == "26.3"
-    modules = (compose_requirements, contract, discovery, inputs, markers, python_manifests, registry, requirements)
+    modules = (
+        compose_requirements,
+        compose_source,
+        compose_manifests,
+        contract,
+        discovery,
+        inputs,
+        markers,
+        python_manifests,
+        registry,
+        requirements,
+    )
     for module in modules:
         assert "/site-packages/sourcebastion/inventory/" in module.__file__
 
@@ -209,6 +222,58 @@ def main():
         assert failed.occurrences == failed.declarations == failed.input_references == failed.analysis_scopes == ()
         assert any(code.startswith("changed-") for code in failed.coverage.refusal_codes)
 
+    manifest, record = record_case(
+        "static-project-conditions",
+        {
+            "pyproject.toml": '[project]\nname="native-app"\nversion="v1.0"\nrequires-python=">=3.12,<3.13"\ndependencies=["pip==26.0.1"]\n[project.optional-dependencies]\ntest=["pytest==8.3.3; sys_platform == \\"linux\\""]\n[build-system]\nrequires=["setuptools==80.0"]\n'
+        },
+    )
+    assert manifest.stages.inventory == "complete"
+    assert len(manifest.roots) == len(manifest.applications) == 1
+    assert manifest.applications[0].name == "native-app" and manifest.applications[0].version == "1.0"
+    assert {p.name: p.activation for p in manifest.occurrences} == {
+        "pip": "unknown",
+        "pytest": "unknown",
+        "setuptools": "active",
+    }
+    assert {a.kind for a in manifest.applicability} == {"python-version", "group"}
+    assert not manifest.relationships and not manifest.installed_environments
+    semantic.append(record)
+    manifest_target, record = record_case(
+        "static-project-explicit-target",
+        {
+            "pyproject.toml": '[project]\nname="native-app"\nversion="v1.0"\nrequires-python=">=3.12,<3.13"\ndependencies=["pip==26.0.1"]\n[project.optional-dependencies]\ntest=["pytest==8.3.3; sys_platform == \\"linux\\""]\n[build-system]\nrequires=["setuptools==80.0"]\n'
+        },
+        environment=contract.Environment(policy="explicit-target", python_version="3.13.1", platform="linux"),
+    )
+    assert {p.name: p.activation for p in manifest_target.occurrences} == {
+        "pip": "inactive",
+        "pytest": "inactive",
+        "setuptools": "active",
+    }
+    semantic.append(record)
+    combined, record = record_case(
+        "requirements-and-project",
+        {
+            "requirements.txt": "pip==26.0.1\n",
+            "pyproject.toml": '[project]\nname="native-app"\nversion="1"\ndependencies=["pip==26.0.1"]\n',
+        },
+    )
+    assert combined.stages.inventory == "complete" and len(combined.occurrences) == 2
+    assert {p.root_id for p in combined.occurrences} == {None, combined.roots[0].id}
+    semantic.append(record)
+
+    build, record = record_case(
+        "project-target-is-not-build-target",
+        {
+            "pyproject.toml": '[project]\nname="native-build"\nversion="1"\nrequires-python=">=3.13"\n[build-system]\nrequires=["setuptools==80.0; python_version < \\"3.13\\"", "wheel==0.45.1; sys_platform == \\"linux\\""]\n'
+        },
+        environment=contract.Environment(policy="explicit-target", python_version="3.13.1", platform="linux"),
+    )
+    assert len(build.occurrences) == 2 and {p.activation for p in build.occurrences} == {"unknown"}
+    assert all(p.scopes == ("build",) for p in build.occurrences)
+    semantic.append(record)
+
     corpus = json.loads(Path("tests/fixtures/inventory/corpus.json").read_text())
     assert len(corpus) == 64
     fixtures = []
@@ -229,7 +294,7 @@ def main():
                 "semantic_cases": semantic,
                 "epoch_failure": "no-consumable-records",
                 "fixtures": fixtures,
-                "scope": "finite pip composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
+                "scope": "finite requirements/static-manifest composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
             },
             sort_keys=True,
             indent=2,

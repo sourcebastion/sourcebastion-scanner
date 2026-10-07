@@ -607,6 +607,8 @@ class Inventory(Record):
                 or row.ecosystem != occurrence.ecosystem
                 or row.root_id != occurrence.root_id
                 or row.analysis_scope_id != occurrence.analysis_scope_id
+                or row.scopes != occurrence.scopes
+                or row.groups != occurrence.groups
                 for row in selected_evidence
             ):
                 raise ValueError("contradictory-selection-context")

@@ -4344,6 +4344,725 @@
         "export": "not-run",
         "matching": "not-run"
       }
+    },
+    {
+      "case": "go-module",
+      "fixture_files": [
+        {
+          "path": "go.mod",
+          "utf8": "module example.test/fixture\n\ngo 1.22\n\nrequire golang.org/x/text v0.18.0\n",
+          "sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+        }
+      ],
+      "records": {
+        "roots": [
+          {
+            "id": "root:fixture",
+            "path": ".",
+            "kind": "project",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            }
+          }
+        ],
+        "analysis_scopes": [
+          {
+            "id": "scope:fixture",
+            "kind": "manifest-input",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:minimum",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9",
+              "locator": "require[0]:line[5]:bytes[38:71]",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "golang",
+            "name": "golang.org/x/text",
+            "declared_range": "v0.18.0",
+            "exact_version": null,
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "root_id": "root:fixture",
+            "analysis_scope_id": "scope:fixture"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:minimum",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9",
+              "locator": "require[0]:line[5]:bytes[38:71]",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "ecosystem": "golang",
+            "name": "golang.org/x/text",
+            "purl": "pkg:golang/golang.org/x/text",
+            "evidence_kind": "declared",
+            "selected_version": null,
+            "declared_range": "v0.18.0",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": "root:fixture",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:fixture",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [
+          {
+            "id": "application:fixture",
+            "root_id": "root:fixture",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "ecosystem": "golang",
+            "name": "example.test/fixture",
+            "version": null
+          }
+        ],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "partial",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "go.mod",
+            "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9",
+            "format": "go-mod",
+            "parser": "sourcebastion.go-sources/1",
+            "disposition": "unsupported",
+            "reason": "unresolved-go-module-selection-and-graph",
+            "root_ids": [
+              "root:fixture"
+            ],
+            "analysis_scope_ids": [
+              "scope:fixture"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "go-indirect",
+      "fixture_files": [
+        {
+          "path": "go.mod",
+          "utf8": "module example.test/fixture\n\ngo 1.22\n\nrequire golang.org/x/text v0.18.0 // indirect\n",
+          "sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828"
+        }
+      ],
+      "records": {
+        "roots": [
+          {
+            "id": "root:fixture",
+            "path": ".",
+            "kind": "project",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            }
+          }
+        ],
+        "analysis_scopes": [
+          {
+            "id": "scope:fixture",
+            "kind": "manifest-input",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:minimum",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828",
+              "locator": "require[0]:line[5]:bytes[38:71]",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "golang",
+            "name": "golang.org/x/text",
+            "declared_range": "v0.18.0",
+            "exact_version": null,
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "root_id": "root:fixture",
+            "analysis_scope_id": "scope:fixture"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:minimum",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828",
+              "locator": "require[0]:line[5]:bytes[38:71]",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "ecosystem": "golang",
+            "name": "golang.org/x/text",
+            "purl": "pkg:golang/golang.org/x/text",
+            "evidence_kind": "declared",
+            "selected_version": null,
+            "declared_range": "v0.18.0",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": "root:fixture",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:fixture",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [
+          {
+            "id": "application:fixture",
+            "root_id": "root:fixture",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "ecosystem": "golang",
+            "name": "example.test/fixture",
+            "version": null
+          }
+        ],
+        "losses": [
+          {
+            "id": "loss:indirect",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828",
+              "locator": "require[0]:line[5]:bytes[38:71]",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "dimension": "graph",
+            "reason": "unassessed-go-indirect-annotation",
+            "occurrence_id": "occurrence:minimum",
+            "relationship_id": null
+          }
+        ],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "partial",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "go.mod",
+            "source_sha256": "8b2cc491e941fad685908b11fa02eaaf49842a504836594dc8ded50dda28e828",
+            "format": "go-mod",
+            "parser": "sourcebastion.go-sources/1",
+            "disposition": "unsupported",
+            "reason": "unresolved-go-module-selection-and-graph",
+            "root_ids": [
+              "root:fixture"
+            ],
+            "analysis_scope_ids": [
+              "scope:fixture"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "go-sums-only",
+      "fixture_files": [
+        {
+          "path": "go.sum",
+          "utf8": "golang.org/x/text v0.18.0 h1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\n",
+          "sha256": "780107b1f3080e221d2797103ac19b3768bdc26838f7e9df8ab2fe290deccbd9"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "partial",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "go.sum",
+            "source_sha256": "780107b1f3080e221d2797103ac19b3768bdc26838f7e9df8ab2fe290deccbd9",
+            "format": "go-sum",
+            "parser": "sourcebastion.go-composition/1",
+            "disposition": "unsupported",
+            "reason": "unassessed-go-checksum-history",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "go-local-replacement",
+      "fixture_files": [
+        {
+          "path": "go.mod",
+          "utf8": "module example.test/fixture\n\ngo 1.22\nrequire example.test/dependency v1.0.0\nreplace example.test/dependency => ../dependency\n",
+          "sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb"
+        }
+      ],
+      "records": {
+        "roots": [
+          {
+            "id": "root:fixture",
+            "path": ".",
+            "kind": "project",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            }
+          }
+        ],
+        "analysis_scopes": [
+          {
+            "id": "scope:fixture",
+            "kind": "manifest-input",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:minimum",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb",
+              "locator": "require[0]:line[4]:bytes[37:75]",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "golang",
+            "name": "example.test/dependency",
+            "declared_range": "v1.0.0",
+            "exact_version": null,
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "root_id": "root:fixture",
+            "analysis_scope_id": "scope:fixture"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:minimum",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb",
+              "locator": "require[0]:line[4]:bytes[37:75]",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "ecosystem": "golang",
+            "name": "example.test/dependency",
+            "purl": "pkg:golang/example.test/dependency",
+            "evidence_kind": "declared",
+            "selected_version": null,
+            "declared_range": "v1.0.0",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": "root:fixture",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:fixture",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [
+          {
+            "id": "application:fixture",
+            "root_id": "root:fixture",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "ecosystem": "golang",
+            "name": "example.test/fixture",
+            "version": null
+          }
+        ],
+        "losses": [
+          {
+            "id": "loss:replace",
+            "source": {
+              "path": "go.mod",
+              "source_sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb",
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1"
+            },
+            "dimension": "version",
+            "reason": "unassessed-replace-directive",
+            "occurrence_id": null,
+            "relationship_id": null
+          }
+        ],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "partial",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "go.mod",
+            "source_sha256": "3a86259757f00e5dd7b091c9dc657f660dd5c71bb9904c10c03636b1a945d2eb",
+            "format": "go-mod",
+            "parser": "sourcebastion.go-sources/1",
+            "disposition": "unsupported",
+            "reason": "unresolved-go-module-selection-and-graph",
+            "root_ids": [
+              "root:fixture"
+            ],
+            "analysis_scope_ids": [
+              "scope:fixture"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "dotnet-lock",
+      "fixture_files": [
+        {
+          "path": "packages.lock.json",
+          "utf8": "{\"version\": 1, \"dependencies\": {\"net8.0\": {\"Newtonsoft.Json\": {\"type\": \"Direct\", \"requested\": \"[13.0.3, )\", \"resolved\": \"13.0.3\", \"contentHash\": \"fixture\"}}}}",
+          "sha256": "1ec46b33777e8b40ec810dd97a57b3db8ae0ecad32551baf00f2c67d36d3cbf4"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "packages.lock.json",
+            "source_sha256": "1ec46b33777e8b40ec810dd97a57b3db8ae0ecad32551baf00f2c67d36d3cbf4",
+            "format": "nuget-lock",
+            "parser": null,
+            "disposition": "unsupported",
+            "reason": "unsupported-format-adapter",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "ruby-lock",
+      "fixture_files": [
+        {
+          "path": "Gemfile.lock",
+          "utf8": "GEM\n  remote: https://rubygems.org/\n  specs:\n    rack (3.1.7)\n\nPLATFORMS\n  ruby\n\nDEPENDENCIES\n  rack\n\nBUNDLED WITH\n   2.5.19\n",
+          "sha256": "4e4e1019ec30afd00ab829fac1c459f12617db402f9617b3934437d71ddefebe"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "Gemfile.lock",
+            "source_sha256": "4e4e1019ec30afd00ab829fac1c459f12617db402f9617b3934437d71ddefebe",
+            "format": "bundler-lock",
+            "parser": null,
+            "disposition": "unsupported",
+            "reason": "unsupported-format-adapter",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "php-lock",
+      "fixture_files": [
+        {
+          "path": "composer.lock",
+          "utf8": "{\"packages\": [{\"name\": \"psr/log\", \"version\": \"3.0.2\", \"type\": \"library\"}], \"packages-dev\": []}",
+          "sha256": "e800d938ddbfe068f395664c383d2bffe1c2caa2f919b4e801fcaf35271df0ce"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "composer.lock",
+            "source_sha256": "e800d938ddbfe068f395664c383d2bffe1c2caa2f919b4e801fcaf35271df0ce",
+            "format": "composer-lock",
+            "parser": null,
+            "disposition": "unsupported",
+            "reason": "unsupported-format-adapter",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-false-positive",
+      "fixture_files": [
+        {
+          "path": "meeting-notes.txt",
+          "utf8": "Please discuss requests==2.32.3 next week.\n",
+          "sha256": "8d70aaece6ad8a72e2d3e04993fd75ed0959a8b33f0b01d67518b7d65b74a364"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "unknown",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "meeting-notes.txt",
+            "source_sha256": "8d70aaece6ad8a72e2d3e04993fd75ed0959a8b33f0b01d67518b7d65b74a364",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "ignored",
+            "reason": "non-dependency-prose",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
     }
   ],
   "additional_source_authorities": {
@@ -4362,6 +5081,12 @@
       "adjudication": "Original minimal lock fixtures have top-level name but no explicit packages empty-key application; retain no root/borrowed reachability/directness. Explicit entry paths keep nested ms versions distinct. Source debug dependency selects ancestor node_modules/ms; range verifies explicit endpoint, not a name-only join. Development scope follows explicit dev flag. Original manifest-only range expectation remains unchanged. Complete npm fixture shares the explicit matching application and dependency-table identity, retains unresolved manifest declaration separately from selected lock occurrences, and assigns direct/transitive roots only through explicit root selector and evidenced lock edge. Malformed npm JSON is failed. Yarn classic explicit descriptor/version/resolved URL retains one locked package in unknown analysis context. pnpm9 explicit importer/version/snapshot retains one direct source-selected package and declaration while missing package resolution is explicit partial coverage; no application root or installed environment inferred. Graph remains partial/unknown; installed/activation unknown.",
       "yarn_classic": "https://github.com/yarnpkg/website/blob/master/lang/en/docs/yarn-lock.md",
       "pnpm_lock9": "https://github.com/pnpm/spec/blob/master/lockfile/9.0.md"
+    },
+    "go-original-four-and-explicit-unsupported-inputs": {
+      "go_requirements": "https://go.dev/ref/mod#go-mod-file-require",
+      "go_checksum_history": "https://go.dev/ref/mod#go-sum-files",
+      "pinned_span_contract": "https://raw.githubusercontent.com/golang/mod/v0.41.0/modfile/read.go",
+      "adjudication": "Four unchanged original Go fixtures use an explicitly bound maintained modfile helper. Require directives are minimum declarations with no MVS-selected version, graph, installed ownership or inferred directness. Source spans include directive tokens and exclude indirect comments. Indirect annotation and unassessed replace control survive as projection losses; no outside replacement target is opened or selected. Checksum-only input does not establish an active selected package. Original .NET/Ruby/PHP fixtures are discovered but unsupported by the current canonical composition route, yielding explicit partial coverage, never false clean inventory or a claim about the separate legacy scanner route. The original NuGet contentHash=fixture placeholder remains untouched and is not treated as a validated integrity hash. Original meeting prose is ignored with explicit reason. Empty unsupported collections have vacuous complete version-resolution but partial discovery/enumeration and inventory; that field alone is not full coverage. Historical 64-case oracle and prior32 semantic expectations remain unchanged."
     }
   }
 }

@@ -468,23 +468,6 @@ jobs:
             cyclonedx-validator-install.log
             ${{ runner.temp }}/cyclonedx-validator/wheels/*.whl
 
-      - name: Verify source-authored canonical expectations
-        id: inventory_expectations
-        run: |
-          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
-            --user 65534:65534 --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
-            -e PYTHONPATH= -v "$PWD:/repo:ro" -w /repo \
-            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
-            sourcebastion:standard-rule-test scripts/verify-inventory-expectations.py > inventory-source-expectations-native.json
-
-      - name: Retain source-authored expectation proof
-        if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_expectations.outcome)
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: inventory-source-expectations-${{ matrix.arch }}
-          path: inventory-source-expectations-native.json
-          if-no-files-found: error
-
       - name: Exercise installed canonical match recovery offline
         id: inventory_matching
         run: |
@@ -531,6 +514,26 @@ jobs:
             -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
             sourcebastion:standard-rule-test scripts/verify-go-source.py \
               --binary /go-source --preparation /provider-manifest.json > inventory-go-source-native.json
+
+      - name: Verify source-authored canonical expectations
+        id: inventory_expectations
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --user 65534:65534 --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            -e PYTHONPATH= -v "$PWD:/repo:ro" -w /repo \
+            -v "$RUNNER_TEMP/inventory-provider/sourcebastion-go-source:/go-source:ro" \
+            -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
+            sourcebastion:standard-rule-test scripts/verify-inventory-expectations.py \
+              --go-binary /go-source --go-preparation /provider-manifest.json > inventory-source-expectations-native.json
+
+      - name: Retain source-authored expectation proof
+        if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_expectations.outcome)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-source-expectations-${{ matrix.arch }}
+          path: inventory-source-expectations-native.json
+          if-no-files-found: error
 
       - name: Upload native provider and preparation evidence
         if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_provider_preparation.outcome)

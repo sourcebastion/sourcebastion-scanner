@@ -1,6 +1,7 @@
 """Native fixed Go parser proof; private synthetic source observations only."""
 
 import argparse
+import errno
 import hashlib
 import json
 from pathlib import Path
@@ -225,17 +226,24 @@ def verify(binary, preparation):
         root = Path(directory)
         copied = root / "trusted-helper"
         copied.write_bytes(binary.read_bytes())
-        copied.chmod(0o700)
+        copied.chmod(0o600)
         local_runtime = go_sources.Runtime(copied, runtime.sha256)
         checkout = root / "checkout"
         checkout.mkdir()
         (checkout / "go.mod").write_bytes(basic)
         (checkout / "requirements.txt").write_bytes(b"pip==26.0.1\n")
 
+        execution_error = None
+
         def changed_runtime(*args, **kwargs):
-            process = original_run(*args, **kwargs)
-            copied.unlink()
-            return process
+            nonlocal execution_error
+            try:
+                return original_run(*args, **kwargs)
+            except OSError as error:
+                execution_error = error.errno
+                raise
+            finally:
+                copied.unlink()
 
         go_sources.subprocess.run = changed_runtime
         try:
@@ -247,8 +255,13 @@ def verify(binary, preparation):
             go_sources.subprocess.run = original_run
         assert result.stages.inventory == "failed" and not result.occurrences and not result.declarations
         assert "changed-go-parser-runtime" in result.coverage.refusal_codes
+        assert execution_error == errno.EACCES
         canonical_records.append(
-            {"case": "helper-mutation-global", "canonical_sha256": digest(canonical_bytes(result))}
+            {
+                "case": "helper-mutation-after-exec-error-global",
+                "execution_errno": execution_error,
+                "canonical_sha256": digest(canonical_bytes(result)),
+            }
         )
     print(
         json.dumps(

@@ -521,6 +521,9 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             from .compose_pnpm import extend as extend_pnpm
 
             extend_pnpm(extra)
+            from .compose_yarn import extend as extend_yarn
+
+            extend_yarn(extra)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(

@@ -24,6 +24,9 @@ from sourcebastion.inventory import (
     compose_locks,
     compose_npm,
     compose_pnpm,
+    compose_yarn,
+    yarn_sources,
+    yarn_legacy,
     pnpm_sources,
     bounded_yaml,
     npm_sources,
@@ -104,6 +107,9 @@ def main():
         compose_locks,
         compose_npm,
         compose_pnpm,
+        compose_yarn,
+        yarn_sources,
+        yarn_legacy,
         pnpm_sources,
         bounded_yaml,
         npm_sources,
@@ -663,6 +669,109 @@ def main():
     )
     semantic.append(record)
 
+    yarn_classic = """# yarn lockfile v1
+"alpha@^1":
+  version "1.2.3"
+  resolved "https://registry.npmjs.org/alpha/-/alpha-1.2.3.tgz"
+  dependencies:
+    beta "^2"
+"beta@^2":
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/beta/-/beta-2.0.0.tgz"
+"""
+    yarn_modern = {
+        "__metadata": {"version": "10", "cacheKey": "10c0"},
+        "alpha@npm:^1": {
+            "version": "1.2.3",
+            "resolution": "alpha@npm:1.2.3",
+            "linkType": "hard",
+            "dependencies": {"beta": "npm:^2"},
+        },
+        "beta@npm:^2": {"version": "2.0.0", "resolution": "beta@npm:2.0.0", "linkType": "hard"},
+    }
+    for name, text in (
+        ("yarn-classic-source-graph", yarn_classic),
+        ("yarn-modern-source-graph", yaml.safe_dump(yarn_modern)),
+    ):
+        result, record = record_case(name, {"yarn.lock": text})
+        assert result.stages.inventory == "complete" and len(result.occurrences) == 2 and len(result.relationships) == 1
+        assert (
+            not result.roots
+            and not result.applications
+            and all(value.directness == "unknown" for value in result.occurrences)
+        )
+        semantic.append(record)
+
+    result, record = record_case(
+        "yarn-one-entry-aliases", {"yarn.lock": yarn_classic.replace('"alpha@^1":', '"alpha@^1", "alpha@~1":')}
+    )
+    assert len(result.occurrences) == 2 and len(result.relationships) == 1
+    semantic.append(record)
+    result, record = record_case(
+        "yarn-equal-separate-entries",
+        {
+            "yarn.lock": yarn_classic
+            + '\n"beta@~2":\n  version "2.0.0"\n  resolved "https://registry.npmjs.org/beta/-/beta-2.0.0.tgz"\n'
+        },
+    )
+    assert len(result.occurrences) == 3 and len({value.id for value in result.occurrences if value.name == "beta"}) == 2
+    semantic.append(record)
+    result, record = record_case(
+        "yarn-no-descriptor-fallback", {"yarn.lock": yarn_classic.replace('"beta@^2":', '"beta@~2":')}
+    )
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 2 and not result.relationships
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(yarn_modern))
+    changed["beta@npm:^2, beta@npm:~2"] = {"version": "invalid"}
+    result, record = record_case("yarn-refused-alias-still-blocks", {"yarn.lock": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 2 and not result.relationships
+    semantic.append(record)
+    changed = json.loads(json.dumps(yarn_modern))
+    changed["alpha@npm:^1"]["dependencies"]["beta"] = "https://user:secret-token@example.invalid/a.tgz"
+    result, record = record_case("yarn-private-selector-refused", {"yarn.lock": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and result.dependency_selectors[0].declared_range is None
+    assert b"secret-token" not in contract.canonical_bytes(result)
+    semantic.append(record)
+    changed = json.loads(json.dumps(yarn_modern))
+    changed["alpha@npm:^1"].pop("resolution")
+    result, record = record_case("yarn-incomplete-resolution-fragment", {"yarn.lock": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 2
+    assert result.coverage.inputs[0].reason == "incomplete-yarn-package-resolution"
+    semantic.append(record)
+    result, record = record_case(
+        "yarn-global-budget-refusal",
+        {"yarn.lock": yarn_classic, "requirements.txt": "pip==26.0.1\n"},
+        config=registry.DiscoveryConfig(semantic_checks=100),
+    )
+    assert result.stages.inventory == "failed" and not result.occurrences and not result.declarations
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(yarn_modern))
+    changed["beta@^2"] = changed.pop("beta@npm:^2")
+    changed["alpha@npm:^1"]["dependencies"]["beta"] = "^2"
+    result, record = record_case("yarn-modern-missing-protocol-refused", {"yarn.lock": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and not result.relationships
+    assert [value.name for value in result.occurrences] == ["alpha"]
+    semantic.append(record)
+    result, record = record_case(
+        "yarn-classic-alias-identity-refused",
+        {
+            "yarn.lock": '# yarn lockfile v1\n"alpha@npm:beta@^2":\n  version "2.0.0"\n  resolved "https://registry.npmjs.org/beta/-/beta-2.0.0.tgz"\n'
+        },
+    )
+    assert result.stages.inventory == "partial" and not result.occurrences
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(yarn_modern))
+    changed["alpha@npm:^1"].pop("dependencies")
+    changed["alpha@npm:^1"]["peerDependencies"] = {"beta": ">= 1 < 3"}
+    result, record = record_case("yarn-modern-bare-peer-range", {"yarn.lock": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 2 and not result.relationships
+    (selector,) = result.dependency_selectors
+    assert selector.declared_range == ">= 1 < 3" and selector.reason == "yarn-peer-context-unassessed"
+    semantic.append(record)
+
     corpus = json.loads(Path("tests/fixtures/inventory/corpus.json").read_text())
     assert len(corpus) == 64
     fixtures = []
@@ -680,6 +789,10 @@ def main():
                 "poetry_core": poetry_constraints.GRAMMAR_VERSION,
                 "pyyaml": yaml.__version__,
                 "npm_semver_manifest_sha256": npm_selectors.verify_vendor(),
+                "yarn_syml_manifest_sha256": yarn_legacy.verify_vendor(),
+                "yarn_legacy_entry_sha256": hashlib.sha256(
+                    Path(yarn_legacy.__file__).with_name("yarn_legacy.cjs").read_bytes()
+                ).hexdigest(),
                 "npm_selector_entry_sha256": hashlib.sha256(
                     Path(npm_selectors.__file__).with_name("node_selectors.cjs").read_bytes()
                 ).hexdigest(),
@@ -694,7 +807,7 @@ def main():
                 "semantic_cases": semantic,
                 "epoch_failure": "no-consumable-records",
                 "fixtures": fixtures,
-                "scope": "finite requirements/static-manifest/Python-lock/npm/pnpm-source composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
+                "scope": "finite requirements/static-manifest/Python-lock/npm/pnpm/Yarn-source composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
             },
             sort_keys=True,
             indent=2,

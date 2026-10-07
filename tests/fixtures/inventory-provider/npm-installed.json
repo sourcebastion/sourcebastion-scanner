@@ -1,0 +1,406 @@
+{
+  "artifacts": [
+    {
+      "id": "15ba81a7e148e73b",
+      "name": "debug",
+      "version": "4.3.7",
+      "type": "npm",
+      "foundBy": "javascript-lock-cataloger",
+      "locations": [
+        {
+          "path": "/package-lock.json",
+          "accessPath": "/package-lock.json",
+          "annotations": {
+            "evidence": "primary"
+          }
+        }
+      ],
+      "licenses": [],
+      "language": "javascript",
+      "cpes": [],
+      "purl": "pkg:npm/debug@4.3.7",
+      "metadataType": "javascript-npm-package-lock-entry",
+      "metadata": {
+        "resolved": "",
+        "integrity": "",
+        "dependencies": {
+          "ms": "^2.1.3"
+        }
+      }
+    },
+    {
+      "id": "2715685d25177a42",
+      "name": "ms",
+      "version": "2.1.3",
+      "type": "npm",
+      "foundBy": "javascript-lock-cataloger",
+      "locations": [
+        {
+          "path": "/package-lock.json",
+          "accessPath": "/package-lock.json",
+          "annotations": {
+            "evidence": "primary"
+          }
+        }
+      ],
+      "licenses": [],
+      "language": "javascript",
+      "cpes": [],
+      "purl": "pkg:npm/ms@2.1.3",
+      "metadataType": "javascript-npm-package-lock-entry",
+      "metadata": {
+        "resolved": "",
+        "integrity": "",
+        "dependencies": null
+      }
+    },
+    {
+      "id": "6085af52c2a8ce2b",
+      "name": "pip",
+      "version": "26.0.1",
+      "type": "python",
+      "foundBy": "python-installed-package-cataloger",
+      "locations": [
+        {
+          "path": "/site-packages/pip-26.0.1.dist-info/METADATA",
+          "accessPath": "/site-packages/pip-26.0.1.dist-info/METADATA",
+          "annotations": {
+            "evidence": "primary"
+          }
+        }
+      ],
+      "licenses": [],
+      "language": "python",
+      "cpes": [],
+      "purl": "pkg:pypi/pip@26.0.1",
+      "metadataType": "python-package",
+      "metadata": {
+        "name": "pip",
+        "version": "26.0.1",
+        "author": "",
+        "authorEmail": "",
+        "platform": "",
+        "sitePackagesRootPath": "/site-packages"
+      }
+    },
+    {
+      "id": "b75f493028ee03ca",
+      "name": "probe-app",
+      "version": "1.0.0",
+      "type": "npm",
+      "foundBy": "javascript-lock-cataloger",
+      "locations": [
+        {
+          "path": "/package-lock.json",
+          "accessPath": "/package-lock.json",
+          "annotations": {
+            "evidence": "primary"
+          }
+        }
+      ],
+      "licenses": [],
+      "language": "javascript",
+      "cpes": [],
+      "purl": "pkg:npm/probe-app@1.0.0",
+      "metadataType": "javascript-npm-package-lock-entry",
+      "metadata": {
+        "resolved": "",
+        "integrity": "",
+        "dependencies": {
+          "debug": "^4.3.7"
+        }
+      }
+    },
+    {
+      "id": "3c041e25655ab33a",
+      "name": "probe-app",
+      "version": "1.0.0",
+      "type": "npm",
+      "foundBy": "javascript-package-cataloger",
+      "locations": [
+        {
+          "path": "/package.json",
+          "accessPath": "/package.json",
+          "annotations": {
+            "evidence": "primary"
+          }
+        }
+      ],
+      "licenses": [],
+      "language": "javascript",
+      "cpes": [],
+      "purl": "pkg:npm/probe-app@1.0.0",
+      "metadataType": "javascript-npm-package",
+      "metadata": {
+        "name": "probe-app",
+        "version": "1.0.0",
+        "author": "",
+        "homepage": "",
+        "description": "",
+        "url": "",
+        "private": false
+      }
+    }
+  ],
+  "artifactRelationships": [
+    {
+      "parent": "15ba81a7e148e73b",
+      "child": "b75f493028ee03ca",
+      "type": "dependency-of"
+    },
+    {
+      "parent": "15ba81a7e148e73b",
+      "child": "fd71c2238fc07657",
+      "type": "evident-by",
+      "metadata": {
+        "kind": "primary"
+      }
+    },
+    {
+      "parent": "2715685d25177a42",
+      "child": "15ba81a7e148e73b",
+      "type": "dependency-of"
+    },
+    {
+      "parent": "2715685d25177a42",
+      "child": "fd71c2238fc07657",
+      "type": "evident-by",
+      "metadata": {
+        "kind": "primary"
+      }
+    },
+    {
+      "parent": "3c041e25655ab33a",
+      "child": "6a1ac1c3044969b7",
+      "type": "evident-by",
+      "metadata": {
+        "kind": "primary"
+      }
+    },
+    {
+      "parent": "6085af52c2a8ce2b",
+      "child": "207250dc58f50881",
+      "type": "evident-by",
+      "metadata": {
+        "kind": "primary"
+      }
+    },
+    {
+      "parent": "b75f493028ee03ca",
+      "child": "fd71c2238fc07657",
+      "type": "evident-by",
+      "metadata": {
+        "kind": "primary"
+      }
+    },
+    {
+      "parent": "c5135b0882ac9fb34051d7d12f09d1ec613822a121435de61fe0a617c6ff8ea7",
+      "child": "15ba81a7e148e73b",
+      "type": "contains"
+    },
+    {
+      "parent": "c5135b0882ac9fb34051d7d12f09d1ec613822a121435de61fe0a617c6ff8ea7",
+      "child": "2715685d25177a42",
+      "type": "contains"
+    },
+    {
+      "parent": "c5135b0882ac9fb34051d7d12f09d1ec613822a121435de61fe0a617c6ff8ea7",
+      "child": "3c041e25655ab33a",
+      "type": "contains"
+    },
+    {
+      "parent": "c5135b0882ac9fb34051d7d12f09d1ec613822a121435de61fe0a617c6ff8ea7",
+      "child": "6085af52c2a8ce2b",
+      "type": "contains"
+    },
+    {
+      "parent": "c5135b0882ac9fb34051d7d12f09d1ec613822a121435de61fe0a617c6ff8ea7",
+      "child": "b75f493028ee03ca",
+      "type": "contains"
+    }
+  ],
+  "files": [
+    {
+      "id": "fd71c2238fc07657",
+      "location": {
+        "path": "/package-lock.json"
+      },
+      "metadata": {
+        "mode": 664,
+        "type": "RegularFile",
+        "userID": 1002,
+        "groupID": 1002,
+        "mimeType": "application/json",
+        "size": 280
+      },
+      "digests": [
+        {
+          "algorithm": "sha256",
+          "value": "839f8d2dfebf8689a8090d01b3ae6ae686e7719ba279499702b15d1dfc689b34"
+        }
+      ]
+    },
+    {
+      "id": "6a1ac1c3044969b7",
+      "location": {
+        "path": "/package.json"
+      },
+      "metadata": {
+        "mode": 664,
+        "type": "RegularFile",
+        "userID": 1002,
+        "groupID": 1002,
+        "mimeType": "application/json",
+        "size": 78
+      },
+      "digests": [
+        {
+          "algorithm": "sha256",
+          "value": "d125e52fb8b0ed5412d82b7603f49a11bc4445739664a499f0db272039598758"
+        }
+      ]
+    },
+    {
+      "id": "207250dc58f50881",
+      "location": {
+        "path": "/site-packages/pip-26.0.1.dist-info/METADATA"
+      },
+      "metadata": {
+        "mode": 664,
+        "type": "RegularFile",
+        "userID": 1002,
+        "groupID": 1002,
+        "mimeType": "text/plain",
+        "size": 48
+      },
+      "digests": [
+        {
+          "algorithm": "sha256",
+          "value": "f27b989b37bcc5e54fc7a472809ab4f4550951293b42f7d52629e313ce8221ef"
+        }
+      ]
+    }
+  ],
+  "source": {
+    "type": "directory"
+  },
+  "descriptor": {
+    "name": "sourcebastion-restricted-provider",
+    "version": "1",
+    "configuration": {
+      "catalogers": {
+        "requested": {
+          "default": [
+            "javascript-lock-cataloger",
+            "javascript-package-cataloger",
+            "go-module-file-cataloger",
+            "rust-cargo-lock-cataloger",
+            "python-installed-package-cataloger",
+            "java-gradle-lockfile-cataloger",
+            "java-pom-cataloger",
+            "dotnet-packages-lock-cataloger",
+            "ruby-gemfile-cataloger",
+            "php-composer-lock-cataloger",
+            "file"
+          ]
+        },
+        "used": [
+          "dotnet-packages-lock-cataloger",
+          "file-content-cataloger",
+          "file-digest-cataloger",
+          "file-executable-cataloger",
+          "file-metadata-cataloger",
+          "go-module-file-cataloger",
+          "java-gradle-lockfile-cataloger",
+          "java-pom-cataloger",
+          "javascript-lock-cataloger",
+          "javascript-package-cataloger",
+          "php-composer-lock-cataloger",
+          "python-installed-package-cataloger",
+          "ruby-gemfile-cataloger",
+          "rust-cargo-lock-cataloger"
+        ]
+      },
+      "data-generation": {
+        "generate-cpes": false
+      },
+      "extra": [
+        {
+          "catalogers": [
+            "javascript-lock-cataloger",
+            "javascript-package-cataloger",
+            "go-module-file-cataloger",
+            "rust-cargo-lock-cataloger",
+            "python-installed-package-cataloger",
+            "java-gradle-lockfile-cataloger",
+            "java-pom-cataloger",
+            "dotnet-packages-lock-cataloger",
+            "ruby-gemfile-cataloger",
+            "php-composer-lock-cataloger"
+          ],
+          "coverage": "unassessed",
+          "generate_cpes": false,
+          "profile": "offline-file-provider-v1",
+          "syft": "1.54.0"
+        }
+      ],
+      "files": {
+        "content": {
+          "globs": null,
+          "skip-files-above-size": 0
+        },
+        "hashers": [
+          "sha-256"
+        ],
+        "selection": "owned-by-package"
+      },
+      "packages": {
+        "cpp": {
+          "vcpkg-allow-git-clone": false
+        },
+        "golang": {
+          "capture-symbols": "none",
+          "local-mod-cache-dir": "",
+          "local-vendor-dir": "",
+          "main-module-version": {
+            "from-build-settings": true,
+            "from-contents": false,
+            "from-ld-flags": true
+          },
+          "search-local-mod-cache-licenses": false,
+          "search-local-vendor-licenses": false,
+          "search-remote-licenses": false,
+          "use-packages-lib": false
+        },
+        "java-archive": {
+          "include-indexed-archives": true,
+          "include-unindexed-archives": false,
+          "max-parent-recursive-depth": 0,
+          "resolve-transitive-dependencies": false,
+          "use-maven-localrepository": false,
+          "use-network": false
+        },
+        "javascript": {
+          "include-dev-dependencies": true,
+          "search-remote-licenses": false
+        },
+        "python": {
+          "guess-unpinned-requirements": false,
+          "search-remote-licenses": false
+        }
+      },
+      "relationships": {
+        "exclude-binary-packages-with-file-ownership-overlap": true,
+        "package-file-ownership": true,
+        "package-file-ownership-overlap": true
+      },
+      "search": {
+        "scope": "squashed"
+      }
+    }
+  },
+  "schema": {
+    "version": "16.1.11",
+    "url": "https://raw.githubusercontent.com/anchore/syft/main/schema/json/schema-16.1.11.json"
+  }
+}

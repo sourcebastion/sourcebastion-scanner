@@ -15,6 +15,7 @@ import tempfile
 import packaging
 import packaging.markers
 import pydantic
+import yaml
 
 from sourcebastion.inventory import (
     compose_requirements,
@@ -22,6 +23,9 @@ from sourcebastion.inventory import (
     compose_manifests,
     compose_locks,
     compose_npm,
+    compose_pnpm,
+    pnpm_sources,
+    bounded_yaml,
     npm_sources,
     npm_selectors,
     python_locks,
@@ -99,6 +103,9 @@ def main():
         compose_manifests,
         compose_locks,
         compose_npm,
+        compose_pnpm,
+        pnpm_sources,
+        bounded_yaml,
         npm_sources,
         npm_selectors,
         python_locks,
@@ -558,6 +565,91 @@ def main():
     assert result.occurrences[0].selected_version == "1.0.0" and result.occurrences[0].root_id is None
     semantic.append(record)
 
+    pnpm_lock = {
+        "lockfileVersion": "9.0",
+        "importers": {".": {"dependencies": {"alpha": {"specifier": "^1", "version": "1.2.3"}}}},
+        "packages": {
+            name: {"resolution": {"integrity": "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}}
+            for name in ("alpha@1.2.3", "beta@2.0.0")
+        },
+        "snapshots": {"alpha@1.2.3": {"dependencies": {"beta": "2.0.0"}}, "beta@2.0.0": {}},
+    }
+    result, record = record_case("pnpm-exact-source-graph", {"pnpm-lock.yaml": yaml.safe_dump(pnpm_lock)})
+    assert result.stages.inventory == "complete" and len(result.occurrences) == 2
+    assert len(result.relationships) == 1 and not result.roots
+    assert {value.directness for value in result.occurrences} == {"direct", "transitive"}
+    assert all(value.root_id is None and value.activation == "unknown" for value in result.occurrences)
+    semantic.append(record)
+
+    env_lock = json.loads(json.dumps(pnpm_lock))
+    env_lock["importers"]["."]["configDependencies"] = env_lock["importers"]["."].pop("dependencies")
+    result, record = record_case(
+        "pnpm-two-document-contexts", {"pnpm-lock.yaml": yaml.safe_dump_all([env_lock, pnpm_lock])}
+    )
+    assert len(result.occurrences) == 4 and len(result.relationships) == 2
+    assert len({value.analysis_scope_id for value in result.occurrences}) == 2
+    assert {value.scopes for value in result.occurrences} == {("build",), ("runtime",)}
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(pnpm_lock))
+    changed["importers"]["packages/tool"] = {"devDependencies": {"alpha": {"specifier": "^1", "version": "1.2.3"}}}
+    result, record = record_case("pnpm-importer-scopes", {"pnpm-lock.yaml": yaml.safe_dump(changed)})
+    assert len(result.occurrences) == 4 and len(result.relationships) == 2
+    assert {value.scopes for value in result.occurrences} == {("development",), ("runtime",)}
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(pnpm_lock))
+    changed["importers"]["."]["dependencies"]["alpha"]["version"] = "1.2.3(peer@1.0.0)"
+    changed["snapshots"] = {
+        "alpha@1.2.3(peer@1.0.0)": {"dependencies": {"beta": "2.0.0"}},
+        "alpha@1.2.3(peer@2.0.0)": {},
+        "beta@2.0.0": {},
+    }
+    result, record = record_case("pnpm-peer-snapshot-keys", {"pnpm-lock.yaml": yaml.safe_dump(changed)})
+    alpha = [value for value in result.occurrences if value.name == "alpha"]
+    assert len(alpha) == 2 and {value.directness for value in alpha} == {"direct", "unknown"}
+    assert len(result.relationships) == 1
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(pnpm_lock))
+    changed["importers"]["."]["dependencies"]["alpha"]["version"] = "1.2.3(peer@missing)"
+    result, record = record_case("pnpm-no-peer-fallback", {"pnpm-lock.yaml": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and all(value.directness == "unknown" for value in result.occurrences)
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(pnpm_lock))
+    changed["importers"]["."]["dependencies"]["alpha"]["specifier"] = "https://alice:secret-token@example.invalid/a.tgz"
+    result, record = record_case("pnpm-private-unsupported-selector", {"pnpm-lock.yaml": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and result.declarations[0].declared_range is None
+    assert b"secret-token" not in contract.canonical_bytes(result)
+    semantic.append(record)
+
+    result, record = record_case(
+        "pnpm-yaml-alias-refused", {"pnpm-lock.yaml": "lockfileVersion: '9.0'\npackages: &x {}\nsnapshots: *x\n"}
+    )
+    assert result.stages.inventory == "partial" and not result.occurrences
+    assert result.coverage.inputs[0].reason == "unsupported-yaml-alias-or-anchor"
+    semantic.append(record)
+    result, record = record_case(
+        "pnpm-shared-budget-refusal",
+        {
+            "pnpm-lock.yaml": yaml.safe_dump(pnpm_lock),
+            "requirements.txt": "pip==26.0.1\n",
+        },
+        config=registry.DiscoveryConfig(semantic_checks=100),
+    )
+    assert (
+        result.stages.inventory == "failed" and result.occurrences == result.declarations == result.relationships == ()
+    )
+    semantic.append(record)
+
+    changed = json.loads(json.dumps(pnpm_lock))
+    changed["packages"]["alpha@1.2.3"] = {}
+    result, record = record_case("pnpm-incomplete-resolution-fragment", {"pnpm-lock.yaml": yaml.safe_dump(changed)})
+    assert result.stages.inventory == "partial" and len(result.occurrences) == 2
+    assert result.coverage.inputs[0].reason == "incomplete-pnpm-package-resolution"
+    semantic.append(record)
+
     corpus = json.loads(Path("tests/fixtures/inventory/corpus.json").read_text())
     assert len(corpus) == 64
     fixtures = []
@@ -573,6 +665,7 @@ def main():
                 "packaging": packaging.__version__,
                 "pydantic": pydantic.__version__,
                 "poetry_core": poetry_constraints.GRAMMAR_VERSION,
+                "pyyaml": yaml.__version__,
                 "npm_semver_manifest_sha256": npm_selectors.verify_vendor(),
                 "npm_selector_entry_sha256": hashlib.sha256(
                     Path(npm_selectors.__file__).with_name("node_selectors.cjs").read_bytes()
@@ -588,7 +681,7 @@ def main():
                 "semantic_cases": semantic,
                 "epoch_failure": "no-consumable-records",
                 "fixtures": fixtures,
-                "scope": "finite requirements/static-manifest/Python-lock/npm-source composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
+                "scope": "finite requirements/static-manifest/Python-lock/npm/pnpm-source composition assertions and 64 repeated canonical digests; no full rich oracle agreement, production integration, matching or kernel/resource qualification",
             },
             sort_keys=True,
             indent=2,

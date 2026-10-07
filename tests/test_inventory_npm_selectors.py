@@ -120,3 +120,17 @@ def test_failing_or_missing_runtime_returns_only_fixed_diagnostic(monkeypatch):
 
 def test_vendor_hashes_match_pinned_immutable_upstream():
     assert npm_selectors.verify_vendor() == "85a15ddf20cf437c7b886df975c3e897daa4cfcd494df85b13091053132b54f3"
+
+
+def test_supplementary_unicode_is_reserved_before_request_serialization(monkeypatch):
+    # A supplementary code point becomes two escaped UTF-16 units (12 bytes)
+    # under ensure_ascii, even though Python len counts one code point.
+    import sourcebastion.inventory.npm_selectors as selectors
+
+    def serialized(*args, **kwargs):
+        raise AssertionError("oversize request reached serialization")
+
+    monkeypatch.setattr(selectors, "MAX_BYTES", 100)
+    monkeypatch.setattr(selectors.json, "dumps", serialized)
+    with pytest.raises(InputRefusal, match="npm-selector-input-budget-exceeded"):
+        selectors.evaluate([("1.0.0", "\U0001f680" * 4)], deadline=time.monotonic() + 10, check=lambda: None)

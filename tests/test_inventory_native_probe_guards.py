@@ -20,6 +20,7 @@ import pytest
         "validate-inventory-cyclonedx.py",
         "verify-inventory-matching.py",
         "verify-inventory-expectations.py",
+        "verify-inventory-real-grype.py",
     ],
 )
 @pytest.mark.parametrize("mode", ["flag", "environment"])

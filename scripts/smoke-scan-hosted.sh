@@ -17,6 +17,37 @@ docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
   -m sourcebastion.grype_database /database
 database="$(readlink -f "$work/database/current")"
 
+# Separate canonical SBOM/real-Grype evidence reuses this source-free generation.
+# Fixed reviewed fixture only; no change to the released directory-scan route.
+canonical_output="${SOURCEBASTION_NATIVE_GRYPE_PROOF_OUTPUT:-$work/canonical-output}"
+mkdir -m 700 "$work/canonical-source" "$canonical_output"
+python3 - "$root/evaluation/m046/real-grype-native-fixture-v2.json" "$work/canonical-source" <<'PY'
+import hashlib
+import json
+from pathlib import Path
+import sys
+
+fixture = json.loads(Path(sys.argv[1]).read_bytes())
+root = Path(sys.argv[2])
+for row in fixture['files']:
+    relative = Path(row['path'])
+    assert not relative.is_absolute() and '..' not in relative.parts
+    raw = row['utf8'].encode()
+    assert hashlib.sha256(raw).hexdigest() == row['sha256']
+    target = root / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open('xb') as handle:
+        handle.write(raw)
+PY
+docker run --rm --init --no-healthcheck --user "$(id -u):$(id -g)" \
+  --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+  --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+  --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+  -e PYTHONPATH= -e HOME=/tmp -e PYTHONDONTWRITEBYTECODE=1 \
+  -v "$root:/src:ro" -v "$work/canonical-source:/fixture:ro" \
+  -v "$database:/advisories:ro" -v "$canonical_output:/out" \
+  -w /src --entrypoint python "$image" scripts/verify-inventory-real-grype.py
+
 cp "$root/tests/fixtures/scanners/deps/"*.json "$work/source/"
 cp "$root/tests/fixtures/scanners/iac/main.tf.fixture" "$work/source/main.tf"
 printf 'requests==2.19.1\n' > "$work/source/requirements.txt"

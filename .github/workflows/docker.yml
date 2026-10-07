@@ -580,7 +580,17 @@ jobs:
           scripts/smoke-scan-iac.sh sourcebastion:standard-rule-test
 
       - name: Scan through the offline hosted-worker boundary
+        env:
+          SOURCEBASTION_NATIVE_GRYPE_PROOF_OUTPUT: ${{ github.workspace }}/inventory-real-grype-proof
         run: bash scripts/smoke-scan-hosted.sh sourcebastion:standard-rule-test
+
+      - name: Upload finite canonical real-Grype evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-real-grype-${{ matrix.arch }}
+          path: inventory-real-grype-proof/
+          if-no-files-found: ignore
 
 
   build-docker-standard:

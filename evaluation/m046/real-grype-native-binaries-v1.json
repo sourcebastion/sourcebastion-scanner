@@ -1,0 +1,23 @@
+{
+  "schema_version": "m046.native-grype-binaries/1",
+  "architectures": {
+    "amd64": {
+      "version": "0.119.0",
+      "archive_name": "grype_0.119.0_linux_amd64.tar.gz",
+      "archive_sha256": "3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b",
+      "archive_asset_id": 570620608,
+      "binary_sha256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e",
+      "binary_bytes": 90607778,
+      "source": "https://github.com/anchore/grype/releases/tag/v0.119.0"
+    },
+    "arm64": {
+      "version": "0.119.0",
+      "archive_name": "grype_0.119.0_linux_arm64.tar.gz",
+      "archive_sha256": "29f0ec7c549ddb0e2b6a0ca714851f7399438afc399b80c12808e065edc9a8f8",
+      "archive_asset_id": 570620605,
+      "binary_sha256": "885734e2e13cdd6ac25341e4b751aa504cbc3d27a2924ca1d6db0b7aa499b742",
+      "binary_bytes": 84017314,
+      "source": "https://github.com/anchore/grype/releases/tag/v0.119.0"
+    }
+  }
+}

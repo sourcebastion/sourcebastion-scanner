@@ -365,6 +365,35 @@ jobs:
           path: inventory-composition-native.json
           if-no-files-found: error
 
+      - name: Build pinned restricted provider outside customer scanning
+        run: python3 scripts/build-inventory-provider.py --output "$RUNNER_TEMP/inventory-provider"
+
+      - name: Exercise installed source-bound provider protocol offline
+        id: inventory_provider
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
+            -v "$PWD:/workspace:ro" -w /workspace \
+            -v "$RUNNER_TEMP/inventory-provider/sourcebastion-inventory-provider:/provider:ro" \
+            -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
+            sourcebastion:standard-rule-test scripts/verify-inventory-provider.py \
+              --binary /provider --preparation /provider-manifest.json > inventory-provider-native.json
+
+      - name: Upload native provider and preparation evidence
+        if: always() && steps.inventory_provider.outcome != 'skipped'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-provider-${{ matrix.arch }}
+          path: |
+            inventory-provider-native.json
+            ${{ runner.temp }}/inventory-provider/manifest.json
+            ${{ runner.temp }}/inventory-provider/*.stdout
+            ${{ runner.temp }}/inventory-provider/*.stderr
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Exercise release scanner runtime
         run: |
           smoke_dir="$RUNNER_TEMP/release-scanner-runtime"

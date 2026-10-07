@@ -24,6 +24,7 @@ MEMORY_BYTES = 2 * 1024 * 1024 * 1024
 DOCKER = ["docker", "--host", "unix:///var/run/docker.sock"]
 SYFT_CONTROL_ENGINES = {"syft-control-cpe-on": True, "syft-control-cpe-off": False}
 SYFT_RUNTIME_ENGINE = "syft-runtime-static"
+DIRECT_ENGINES = {"direct-inventory", "direct-cyclonedx"}
 
 
 def docker(*arguments):
@@ -55,6 +56,8 @@ def budget_overruns(result, metrics, baseline):
 
 def command(engine, source_tool):
     raw = "/work/raw.json"
+    if engine in DIRECT_ENGINES:
+        return ["/usr/local/bin/python3", "-I", "-B", "/candidate/app/direct_job.py", engine]
     if engine in SYFT_CONTROL_ENGINES or engine == SYFT_RUNTIME_ENGINE:
         return [
             "/usr/local/bin/python3",
@@ -123,9 +126,13 @@ def measure(engine, tool, source, output, source_tool, *, runtime_image=IMAGE):
         raise RuntimeError("host controller must have a different UID from candidate")
     for name in ("ready", "done", "result.json", "go", "ack"):
         (control / name).write_text("pending\n")
-    if digest(tool["binary"]) != tool["sha256"]:
-        raise ValueError("candidate binary digest mismatch")
-    native_elf(tool["binary"])
+    if engine in DIRECT_ENGINES:
+        if tree_digest(Path(tool["app"])) != tool["app_sha256"]:
+            raise ValueError("direct candidate prepared tree changed")
+    else:
+        if digest(tool["binary"]) != tool["sha256"]:
+            raise ValueError("candidate binary digest mismatch")
+        native_elf(tool["binary"])
     mounts = [
         (source, "/source", True),
         (control, "/output", False),
@@ -133,7 +140,9 @@ def measure(engine, tool, source, output, source_tool, *, runtime_image=IMAGE):
     ]
     if engine in SYFT_CONTROL_ENGINES or engine == SYFT_RUNTIME_ENGINE:
         mounts.append((Path(__file__).with_name("syft_control_job.py"), "/harness/syft_control_job.py", True))
-    if engine == "cdxgen":
+    if engine in DIRECT_ENGINES:
+        mounts.append((Path(tool["app"]), "/candidate/app", True))
+    elif engine == "cdxgen":
         app = Path(tool["entrypoint"]).parent.parent
         if tree_digest(app) != tool["entrypoint_tree_sha256"]:
             raise ValueError("candidate prepared tree changed")

@@ -5,6 +5,7 @@ on:
     paths:
       - evaluation/m046/**
       - tests/test_m046_provider_evidence.py
+      - tests/test_m046_composition_spike.py
       - PYTHON_VERSION
       - .github/workflows/m046-restricted-provider.yml
   workflow_dispatch:
@@ -46,7 +47,7 @@ jobs:
           fi
           unshare -Urnmpf --kill-child=KILL true
       - name: Verify native evaluator contracts
-        run: python -m pytest tests/test_m046_provider_evidence.py tests/test_m046_syft_native.py -q --junitxml="$RUNNER_TEMP/m046-provider-host/tests.xml"
+        run: python -m pytest tests/test_m046_provider_evidence.py tests/test_m046_composition_spike.py tests/test_m046_syft_native.py -q --junitxml="$RUNNER_TEMP/m046-provider-host/tests.xml"
       - name: Build and test pinned native library candidate
         run: python -m evaluation.m046.syft_prepare --static --output "$RUNNER_TEMP/m046-provider-preparation"
       - name: Evaluate synthetic corpus offline
@@ -54,6 +55,11 @@ jobs:
           python -m evaluation.m046.provider_native --binary "$RUNNER_TEMP/m046-provider-preparation/m046-syft" \
             --manifest "$RUNNER_TEMP/m046-provider-preparation/manifest.json" \
             --strace /usr/bin/strace --output "$RUNNER_TEMP/m046-provider-evidence"
+      - name: Evaluate finite composition feasibility
+        run: |
+          python -m evaluation.m046.composition_native --binary "$RUNNER_TEMP/m046-provider-preparation/m046-syft" \
+            --manifest "$RUNNER_TEMP/m046-provider-preparation/manifest.json" \
+            --strace /usr/bin/strace --output "$RUNNER_TEMP/m046-composition-evidence"
       - name: Package exact source and raw evidence
         if: always()
         run: |
@@ -67,9 +73,11 @@ jobs:
             --root "host=$RUNNER_TEMP/m046-provider-host" \
             --root "preparation=$RUNNER_TEMP/m046-provider-retained" \
             --root "evidence=$RUNNER_TEMP/m046-provider-evidence" \
+            --root "composition=$RUNNER_TEMP/m046-composition-evidence" \
             --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
             --root "workflow=$GITHUB_WORKSPACE/.github/workflows/m046-restricted-provider.yml" \
             --root "runner-tests=$GITHUB_WORKSPACE/tests/test_m046_provider_evidence.py" \
+            --root "composition-tests=$GITHUB_WORKSPACE/tests/test_m046_composition_spike.py" \
             --root "trace-tests=$GITHUB_WORKSPACE/tests/test_m046_syft_native.py" \
             --output "$RUNNER_TEMP/m046-provider.tar.gz"
       - name: Retain native evidence

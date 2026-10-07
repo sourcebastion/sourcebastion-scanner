@@ -1,5 +1,8 @@
 # Preliminary S01 comparison and decision record
 
+Historical initial 50-case tranche. Use [current comparison](current-comparison.md)
+for the current oracle, additional native evidence and finite architecture gate.
+
 Date: 2026-10-06. Status: evaluation started; **engine decision deferred**.
 This is the first evidence tranche for scanner #89/#88, not S01 acceptance.
 The corpus/oracle has not received independent approval. Exact package/edge

@@ -1,0 +1,17 @@
+{
+  "archive_integrity": "sha512-WoxUM/Be4hfsX06FxsvpGgfYqwgivMV7/Ol7aFuSfSmY6rRaiju4QxOEe9RUS0iYcSHWl5i9AhB1cMoE0p+XiA==",
+  "archive_sha256": "88b9d8a741d69ab9fc732f595a39844b20d90100bb7fe18c9a3687b7658960aa",
+  "files": {
+    "LICENSE.md": "238d933f5c226cc197bd1dae2ad0c468e157b4cba8ed844f81549ba6db777dc4",
+    "syml.js": "3cdca6a573830eb6c277e8de1e2238f58a7e88f8a490bf405f5343bebc91dee6",
+    "syml.pegjs": "d72027a96b9ddabb1a8d90c49f3f8dc82ce27ee13251c35b3b98486b668cd092"
+  },
+  "git_commit": "923f69827c77fe5cf4f6c28c0cab3c02a256abf0",
+  "license": "BSD-2-Clause",
+  "metadata_sha256": "6750a345730f18430a6ec970e6f9fb08383f9edcb3b95d3903dac0a532b44f82",
+  "package": "@yarnpkg/parsers",
+  "scope": "Unmodified standalone generated legacy SYML grammar and source only; no full Yarn runtime, js-yaml, tslib, shell or resolution parser dependency. Root upstream license retained.",
+  "source_grammar_equal_to_archive": true,
+  "source_grammar_path": "packages/yarnpkg-parsers/sources/grammars/syml.pegjs",
+  "version": "3.1.0"
+}

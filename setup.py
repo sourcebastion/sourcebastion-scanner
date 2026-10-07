@@ -93,6 +93,9 @@ setup(
     package_data={
         "sourcebastion.inventory": [
             "node_selectors.cjs",
+            "yarn_legacy.cjs",
+            "vendor/yarn-syml-manifest.json",
+            "vendor/yarn-syml/*",
             "vendor/npm-semver-manifest.json",
             "vendor/npm-semver/*",
             "vendor/npm-semver/bin/*",

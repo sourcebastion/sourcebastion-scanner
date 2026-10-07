@@ -5,6 +5,7 @@ only by the separate comparison function, never by facts().
 """
 
 from pathlib import PurePosixPath
+import re
 import time
 
 from .run import compare, identity, normalize
@@ -33,6 +34,27 @@ UNREPORTED = (
     "complete-graph",
     "application-role",
 )
+
+
+def versionless_metadata(artifact):
+    """Admit only observed, typed versionless metadata; never synthesize a key."""
+    role = (artifact.get("foundBy"), artifact.get("type"), artifact.get("metadataType"))
+    ecosystems = {
+        ("javascript-package-cataloger", "npm", "javascript-npm-package"): "npm",
+        ("go-module-file-cataloger", "go-module", "go-module-entry"): "golang",
+    }
+    ecosystem = ecosystems.get(role)
+    name = artifact.get("name")
+    if ecosystem is None or artifact.get("version") != "" or type(name) is not str:
+        return False
+    # Deliberately narrow: new representations need a reviewed disposition.
+    # No qualifiers, fragments, empty segments, escapes or version separator can
+    # turn a malformed/version-bearing purl into accepted versionless metadata.
+    if not re.fullmatch(r"[A-Za-z0-9._~-]+(?:/[A-Za-z0-9._~-]+)*", name):
+        return False
+    if any(part in {".", ".."} for part in name.split("/")):
+        return False
+    return artifact.get("purl") == f"pkg:{ecosystem}/{name}"
 
 
 def bounded_tree(document):
@@ -76,7 +98,7 @@ def facts(document):
         if cataloger not in CATALOGERS or artifact.get("cpes"):
             raise ValueError("unadmitted-provider-or-cpe")
         package = identity(artifact.get("purl"))
-        if package is None:
+        if package is None and not versionless_metadata(artifact):
             raise ValueError("missing-provider-package-identity")
         locations = artifact.get("locations")
         if type(locations) is not list or not locations:
@@ -100,6 +122,7 @@ def facts(document):
         record = {
             "provider_id": identifier,
             "identity": package,
+            "identity_status": "version-unreported" if package is None else "versioned-provider-key",
             "purl": artifact["purl"],
             "raw_name": artifact.get("name"),
             "raw_version": artifact.get("version"),
@@ -150,6 +173,7 @@ def facts(document):
         "provider_dependencies": sorted(
             dependencies, key=lambda row: (row["parent_provider_id"], row["child_provider_id"])
         ),
+        "unselected_provider_ids": sorted(row["provider_id"] for row in records if row["identity"] is None),
         "coverage": "unassessed",
         "unreported_dimensions": list(UNREPORTED),
         "joining_policy": "no name/purl-only occurrence or root joining",
@@ -184,12 +208,20 @@ def comparison(expected, document):
     basic = normalize(document, "syft-provider")
     # go.mod and POM version strings do not establish a selected dependency.
     declarations = {
-        row["identity"] for row in observed["records"] if row["evidence_kind"] == "declared-version-candidate"
+        row["identity"]
+        for row in observed["records"]
+        if row["identity"] is not None and row["evidence_kind"] == "declared-version-candidate"
     }
-    selected = {row["identity"] for row in observed["records"] if row["evidence_kind"] != "declared-version-candidate"}
+    selected = {
+        row["identity"]
+        for row in observed["records"]
+        if row["identity"] is not None and row["evidence_kind"] != "declared-version-candidate"
+    }
     basic["packages"] = sorted(selected)
     admitted_ids = {
-        row["provider_id"] for row in observed["records"] if row["evidence_kind"] != "declared-version-candidate"
+        row["provider_id"]
+        for row in observed["records"]
+        if row["identity"] is not None and row["evidence_kind"] != "declared-version-candidate"
     }
     basic["edges"] = sorted(
         {
@@ -201,6 +233,7 @@ def comparison(expected, document):
     return {
         "basic": compare(expected, basic),
         "declared_version_candidates": sorted(declarations),
+        "unselected_provider_ids": observed["unselected_provider_ids"],
         "unreported_dimensions": list(UNREPORTED),
         "full_contract_qualified": False,
     }

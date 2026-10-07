@@ -10,6 +10,8 @@ import pytest
 
 from evaluation.m046 import provider_evidence as provider
 from evaluation.m046.provider_native import audit_child
+from evaluation.m046.provider_corpus import PROVIDER_CORPUS
+from evaluation.m046.run import materialize, validate_case
 
 
 def document():
@@ -214,3 +216,88 @@ def test_actual_isolated_guardian_launches_auditor(tmp_path):
         status = audit_child([sys.executable, "-I", "-B", "-c", "print('auditor-started')"], stdout, stderr)
     assert status == 0, (tmp_path / "stderr").read_text()
     assert (tmp_path / "stdout").read_text() == "auditor-started\n"
+
+
+def test_every_provider_fixture_materializes_through_actual_shared_contract(tmp_path):
+    for fixture in PROVIDER_CORPUS:
+        validate_case(fixture)
+        destination = tmp_path / fixture["id"] / "source"
+        materialize(fixture, destination)
+        for path, content in fixture["files"].items():
+            assert (destination / path).read_text() == content
+    probe = PROVIDER_CORPUS[-1]
+    assert probe["expected"]["packages"] == ["pypi:pip@26.0.1"]
+    assert len(probe["expected"]["inputs"]) == 3
+    assert probe["expected"]["fidelity"]["version_selection"] == "unassessed"
+
+
+def versionless_document(kind="npm"):
+    raw = document()
+    artifact = raw["artifacts"][0]
+    artifact.update(version="", purl="pkg:npm/debug", foundBy="javascript-package-cataloger")
+    artifact["metadataType"] = "javascript-npm-package"
+    if kind == "go":
+        artifact.update(
+            name="example.test/dependency",
+            purl="pkg:golang/example.test/dependency",
+            type="go-module",
+            foundBy="go-module-file-cataloger",
+            metadataType="go-module-entry",
+        )
+    return raw
+
+
+@pytest.mark.parametrize("kind", ["npm", "go"])
+def test_versionless_metadata_retains_raw_evidence_without_selected_identity(kind):
+    raw = versionless_document(kind)
+    result = provider.facts(raw)
+    record = result["records"][0]
+    assert record["identity"] is None
+    assert record["identity_status"] == "version-unreported"
+    assert record["purl"] == raw["artifacts"][0]["purl"]
+    assert record["raw_name"] == raw["artifacts"][0]["name"]
+    assert record["raw_version"] == ""
+    assert record["raw_metadata"] == raw["artifacts"][0]["metadata"]
+    assert record["paths"] == ["a/package-lock.json"]
+    assert result["unselected_provider_ids"] == ["a"]
+    assert result["provider_dependencies"][0]["parent"] is None
+    compared = provider.comparison({"packages": ["npm:ms@2.1.3"], "edges": []}, raw)
+    assert compared["basic"]["missing_packages"] == compared["basic"]["extra_packages"] == []
+    assert compared["declared_version_candidates"] == []
+    assert compared["unselected_provider_ids"] == ["a"]
+    assert compared["full_contract_qualified"] is False
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"purl": "pkg:npm/debug@"},
+        {"purl": "pkg:npm/other"},
+        {"purl": "pkg:npm/debug?version=4.3.7"},
+        {"purl": "pkg:npm/debug#fragment"},
+        {"purl": "pkg:npm/%64ebug"},
+        {"purl": "pkg:golang/debug"},
+        {"version": "4.3.7"},
+        {"version": None},
+        {"foundBy": "javascript-lock-cataloger"},
+        {"metadataType": "javascript-npm-package-lock-entry"},
+        {"name": "..", "purl": "pkg:npm/.."},
+    ],
+)
+def test_versionless_disposition_cannot_hide_malformed_or_contradictory_identity(change):
+    raw = versionless_document()
+    raw["artifacts"][0].update(change)
+    with pytest.raises(ValueError):
+        provider.facts(raw)
+
+
+def test_versionless_endpoint_cannot_borrow_same_name_selected_identity():
+    raw = versionless_document()
+    selected = deepcopy(document()["artifacts"][0])
+    selected["id"] = "selected-debug"
+    raw["artifacts"].append(selected)
+    expected = {"packages": ["npm:debug@4.3.7", "npm:ms@2.1.3"], "edges": [["npm:debug@4.3.7", "npm:ms@2.1.3"]]}
+    result = provider.comparison(expected, raw)
+    assert result["basic"]["missing_edges"] == [("npm:debug@4.3.7", "npm:ms@2.1.3")]
+    assert result["basic"]["extra_edges"] == []
+    assert provider.facts(raw)["provider_dependencies"][0]["parent_provider_id"] == "a"

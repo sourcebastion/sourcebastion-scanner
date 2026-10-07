@@ -23,6 +23,16 @@ cross-call descriptor custody nor source record locators. Raw duplicate
 identities at different paths remain separate. No name/purl-only joining or
 inferred project root is permitted.
 
+Two observed versionless representations have an explicit unselected
+disposition: JavaScript package metadata and Go module-entry metadata with
+empty raw versions and consistent canonical versionless purls. Their raw IDs,
+names, purls, paths and metadata survive with a null comparison identity.
+They cannot enter selected dependency comparison or lend an endpoint identity
+to another record. Malformed, contradictory and other unreviewed versionless
+representations still refuse. This disposition does not establish application
+role, a resolved version or dependency absence. Earlier diagnostic refusals
+remain historical refusals; corrected source needs fresh native collection.
+
 The adapter explicitly leaves per-input parse outcomes, canonical record/root,
 scope/environment/declared-range, application role and complete graph semantics
 unassessed. Raw metadata may contain useful hints, but it is retained without

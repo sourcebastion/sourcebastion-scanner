@@ -1,0 +1,14 @@
+{
+  "status": "portable-current-comparison-publication-verified",
+  "archive_sha256": "4099343197d477c2ce66809c1465e5d01ad1e89b5178b93c539602ed554aff44",
+  "inner_entries": 2973,
+  "original_regular_files_byte_equal": 2964,
+  "synthetic_symlinks_exact": 24,
+  "replayed_attempts": 480,
+  "original_report_sha256": "9a408fc1d168c0c799915b965fe0aad57856eb0fb3b969a7474e859dcc2f649f",
+  "portable_report_sha256": "d0a9b50a499dac7718a49043fa9eaddfa2045423896b97af117449aed473149b",
+  "only_report_delta": [
+    "builder_sha256"
+  ],
+  "scope": "recomparison of historical retained60 original fixtures; four current cases not evaluated; no candidate reexecution or new trace admission"
+}

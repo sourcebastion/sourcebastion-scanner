@@ -1,0 +1,576 @@
+{
+  "head": "612e39cb320911184f19855ae903164d46d0c8e2",
+  "run": 37588602868,
+  "decision": "Current-head controlled native provider and finite mixed composition evidence verified; not architecture or engine qualification",
+  "architectures": {
+    "amd64": {
+      "head": "612e39cb320911184f19855ae903164d46d0c8e2",
+      "run": 37588602868,
+      "architecture": "amd64",
+      "artifact_id": 11467623405,
+      "zip_sha256": "4dcf487dab75e48d7e56dfa775e0e18a68e5a6a0c0b96f0650fc24f68709b385",
+      "archive_sha256": "a24d8889b913288fdb3b3481757d234dbb42e7c5b0972666d3fd4543f9ed963e",
+      "binary_sha256": "fd05b872573970793f320cc87aaaab58560577dc7cb870c3e42026f48ce85c47",
+      "binary_bytes": 112322326,
+      "native_elf_machine_verified": true,
+      "verified_inner_entries": 1145,
+      "exact_git_source_files": 88,
+      "native_python": "3.14.8",
+      "native_tests": 147,
+      "go_test_pass_events": 86,
+      "go_top_level_pass_events": 22,
+      "planned_attempts": 130,
+      "completed_attempts": 130,
+      "not_started_attempts": 0,
+      "counts": {
+        "trace_admitted": 129,
+        "audit:facts-retained-not-qualified": 130,
+        "pair:True": 65,
+        "trace_refused:syft-undecoded-process-trace": 1
+      },
+      "basic_identity_edge_matching_fixtures": [
+        "dotnet-lock",
+        "go-indirect",
+        "go-local-replacement",
+        "go-module",
+        "go-sums-only",
+        "java-gradle-lock",
+        "node-malformed",
+        "node-manifest-range",
+        "node-npm-dev",
+        "node-npm-edges",
+        "node-npm-nested",
+        "node-npm-v3",
+        "node-pnpm",
+        "node-yarn",
+        "php-lock",
+        "provider-installed-python-ownership",
+        "python-conflicting-constraint",
+        "python-constraint-only",
+        "python-dynamic-setup",
+        "python-false-positive",
+        "python-include-cycle",
+        "python-include-escape",
+        "python-malformed",
+        "python-poetry",
+        "python-range",
+        "ruby-lock",
+        "rust-conflicting-roots",
+        "rust-edges",
+        "rust-lock",
+        "rust-manifest-range",
+        "symlink-cycle",
+        "symlink-escape"
+      ],
+      "scope": [
+        "Workflow completed diagnostic-only; not qualification",
+        "raw facts and source snapshot path binding only; coverage and rich dimensions unassessed",
+        "No engine/budget/Alpine/license/production/S01 acceptance",
+        "Strict refused traces remain refused; no complete zero-attempt inference from those traces",
+        "Preparation pins and Python version verified; no retained runtime wheel-code map or tracer binary supplied"
+      ]
+    },
+    "arm64": {
+      "head": "612e39cb320911184f19855ae903164d46d0c8e2",
+      "run": 37588602868,
+      "architecture": "arm64",
+      "artifact_id": 11467802368,
+      "zip_sha256": "74f414d28a569ebe83c4b0f5a619501a8736ff8bc73615caf700e9803019425c",
+      "archive_sha256": "d3b190122ccee3b1d15673e6e30df1cde7725376117194759239d3c47631d252",
+      "binary_sha256": "9a3298de0299ce483fbcab2da2b4f4b23870b15782c8eff1629ef4d68cf45228",
+      "binary_bytes": 105375918,
+      "native_elf_machine_verified": true,
+      "verified_inner_entries": 1145,
+      "exact_git_source_files": 88,
+      "native_python": "3.14.8",
+      "native_tests": 147,
+      "go_test_pass_events": 86,
+      "go_top_level_pass_events": 22,
+      "planned_attempts": 130,
+      "completed_attempts": 130,
+      "not_started_attempts": 0,
+      "counts": {
+        "trace_admitted": 129,
+        "audit:facts-retained-not-qualified": 130,
+        "pair:True": 65,
+        "trace_refused:syft-undecoded-process-trace": 1
+      },
+      "basic_identity_edge_matching_fixtures": [
+        "dotnet-lock",
+        "go-indirect",
+        "go-local-replacement",
+        "go-module",
+        "go-sums-only",
+        "java-gradle-lock",
+        "node-malformed",
+        "node-manifest-range",
+        "node-npm-dev",
+        "node-npm-edges",
+        "node-npm-nested",
+        "node-npm-v3",
+        "node-pnpm",
+        "node-yarn",
+        "php-lock",
+        "provider-installed-python-ownership",
+        "python-conflicting-constraint",
+        "python-constraint-only",
+        "python-dynamic-setup",
+        "python-false-positive",
+        "python-include-cycle",
+        "python-include-escape",
+        "python-malformed",
+        "python-poetry",
+        "python-range",
+        "ruby-lock",
+        "rust-conflicting-roots",
+        "rust-edges",
+        "rust-lock",
+        "rust-manifest-range",
+        "symlink-cycle",
+        "symlink-escape"
+      ],
+      "scope": [
+        "Workflow completed diagnostic-only; not qualification",
+        "raw facts and source snapshot path binding only; coverage and rich dimensions unassessed",
+        "No engine/budget/Alpine/license/production/S01 acceptance",
+        "Strict refused traces remain refused; no complete zero-attempt inference from those traces",
+        "Preparation pins and Python version verified; no retained runtime wheel-code map or tracer binary supplied"
+      ]
+    }
+  },
+  "additional_provider_audit": {
+    "amd64": {
+      "decoded_calls_in_admitted_traces": 24425,
+      "file_mutator_or_write_open_attempts_in_admitted_selected_trace_classes": 0,
+      "versionless_records": [
+        {
+          "fixture": "node-manifest-range",
+          "repeat": 0,
+          "id": "551b8ea2ab25e1ce",
+          "purl": "pkg:npm/fixture"
+        },
+        {
+          "fixture": "node-manifest-range",
+          "repeat": 1,
+          "id": "551b8ea2ab25e1ce",
+          "purl": "pkg:npm/fixture"
+        },
+        {
+          "fixture": "go-local-replacement",
+          "repeat": 0,
+          "id": "145968de8f209fc0",
+          "purl": "pkg:golang/example.test/dependency"
+        },
+        {
+          "fixture": "go-local-replacement",
+          "repeat": 1,
+          "id": "145968de8f209fc0",
+          "purl": "pkg:golang/example.test/dependency"
+        }
+      ],
+      "clone_flags": {
+        "CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS": 825
+      },
+      "strict_trace_refusals": [
+        {
+          "fixture": "python-false-positive",
+          "repeat": 1,
+          "reason": "syft-undecoded-process-trace"
+        }
+      ],
+      "readelf_no_interp_or_needed": true
+    },
+    "arm64": {
+      "decoded_calls_in_admitted_traces": 26200,
+      "file_mutator_or_write_open_attempts_in_admitted_selected_trace_classes": 0,
+      "versionless_records": [
+        {
+          "fixture": "node-manifest-range",
+          "repeat": 0,
+          "id": "551b8ea2ab25e1ce",
+          "purl": "pkg:npm/fixture"
+        },
+        {
+          "fixture": "node-manifest-range",
+          "repeat": 1,
+          "id": "551b8ea2ab25e1ce",
+          "purl": "pkg:npm/fixture"
+        },
+        {
+          "fixture": "go-local-replacement",
+          "repeat": 0,
+          "id": "145968de8f209fc0",
+          "purl": "pkg:golang/example.test/dependency"
+        },
+        {
+          "fixture": "go-local-replacement",
+          "repeat": 1,
+          "id": "145968de8f209fc0",
+          "purl": "pkg:golang/example.test/dependency"
+        }
+      ],
+      "clone_flags": {
+        "CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM": 853
+      },
+      "strict_trace_refusals": [
+        {
+          "fixture": "node-pnpm",
+          "repeat": 0,
+          "reason": "syft-undecoded-process-trace"
+        }
+      ],
+      "readelf_no_interp_or_needed": true
+    }
+  },
+  "composition_review_sha256": "ad9bae3026e300553b42894567f082226786cf1cb0082ef37181db6dcc034df7",
+  "composition": {
+    "head": "612e39cb320911184f19855ae903164d46d0c8e2",
+    "run": 37588602868,
+    "status": "finite-native-composition-evidence-verified-not-engine-qualification",
+    "architectures": {
+      "amd64": {
+        "head": "612e39cb320911184f19855ae903164d46d0c8e2",
+        "run": 37588602868,
+        "native_python": "3.14.8",
+        "planned_attempts": 2,
+        "completed_attempts": 2,
+        "not_started_attempts": 0,
+        "report_sha256": "e8d864cb53f030b8d19873ae8a3889875c9401ee19ad3552cc5d00ff4ad54902",
+        "preparation_sha256": "1c78c6b09f167733a5d08419e14cb502dd5bda3895c8d8e65cb392089bc14614",
+        "binary_sha256": "fd05b872573970793f320cc87aaaab58560577dc7cb870c3e42026f48ce85c47",
+        "code_sha256": {
+          "benchmark.py": "255eb167a014b34ababc0b2c9386619a3131b5689fbbc398cd5f1a874c913395",
+          "cgroup_metrics.py": "0f1d2e9dbd9fb31cf0c02a60a2c587405bd1a424948e30b5697f9d9f39c890dc",
+          "composition_native.py": "f3aed433cf217adbd2b1e2d325caa75cf0655eade7df1a314969237e93516ae7",
+          "composition_spike.py": "3a1446974448719a273fadd2e4555166889b4869f4c5806d9874cdbba91a2cbe",
+          "container_job.py": "8f6a310ea9e6f7547d885d6a9845e25ceb6146467504364638dc70bbf111b8e9",
+          "corpus.py": "fb38182a3376c7cd5c90f9a2a373d20deb319a95677a9bac8363fa9b3f603af8",
+          "cyclonedx_export.py": "39d2e49e9ede5585422ce30201c077c3362926a62aecffee496048ee2a585184",
+          "cyclonedx_matches.py": "847931fa2d95060be17ad045f9d2b6dc73887c29398e5c74c6e797297cfce78f",
+          "direct_audit.py": "33ad4729907c65c8b34790f2422d1dc594d6f15abef810cd278502a9749ef8ff",
+          "direct_benchmark.py": "63107978945dd7a58ac49dfe4cb93ff0de6d578c88ba96d070d195264ed57170",
+          "direct_job.py": "2f33fbf5ead5e0e37c6e2a29bd9bedd6f82c33eb1ebeead3b74762280b597380",
+          "direct_prepare.py": "834a5dc7ee0355075a6f94fbf4c5190fbe3b1b415064a2b557c45a4c53def925",
+          "docker_proofs.py": "7615d4bc7a8285a00e36d06bd1ff2eb770182871c49ca560c78c3e4c386e2594",
+          "native.py": "909f0a3146b11894c65d7605efa522cb4be25b979368b32d4e77fc0592a52942",
+          "oracle.py": "13705ee54974f7fbb3e85975c64c8d823362619e2a39d69e424ae0db68b325f3",
+          "pack_evidence.py": "13386b3ebdfa3f5b3540478a63de320a8f17279a288c7fdc12d3363c01384570",
+          "performance_corpus.py": "e4f4c222c1342ce954b5189430d14e5a947e6eafff3ff35d00db4f970958aa59",
+          "prepare.py": "695772bf267dae6180060735142b6043ec3f57ab025cdc2d2271569134382828",
+          "provider_audit.py": "5ed368c60905f0f7f97f7ec107ab3003403a91a06f4cc62aba5e39e4aa71f990",
+          "provider_corpus.py": "62a45f61b78ccc760d1ac9a1a06ee8a71b6cb9e2a8ec4059c5fd37d0858b567d",
+          "provider_evidence.py": "112415256bdb3504c4b15296ef56d743d8e257b48f7fb4e6ac98843d027529e9",
+          "provider_native.py": "ef67e86915c7ff080b88b681eba10d4454c07b041cd794ff730de6b62a9d8635",
+          "run.py": "c5e2fb0d2980de5f998b981f16bec5edc7363b8f856dd6a2d31b87698c181e49",
+          "runtime_audit.py": "0ef93435a5f19d8ad35e5991efdf61c2f9d6526e51567c195ff5058183455dd3",
+          "runtime_inspect.py": "4de33c480112ca04c4bd4cde2fc216d68dba78cc9eecfbb5b2d579078d4e0b54",
+          "runtime_oci.py": "d4e846ef1ff980134f6e0e4d935b41902a757e23fc7bb3e4019d139273d81b00",
+          "static_cli.py": "51b0fc8e59144508f69447a6b74909821637f5637b08f80ede3fe849db6b4efb",
+          "static_elf.py": "54f79b64d85f1c559b36c6e22d6a09c25939567a20a5afbfd6c505c403d8f1e6",
+          "static_inputs.py": "5084c1fd6301f3e541f796f75646d39a2427ed042f004c15d45f8bcfa31ad4cd",
+          "static_inventory.py": "9f092a236eb36ea5eec38b0253d3d8e4e5c628c33b34c9f0ab9d96302498a0f2",
+          "static_lock_records.py": "900953875c91fe8cd22e33456439de99f60d1e227d4015517ed940d7d60df0b8",
+          "static_locks.py": "6fed630a853b8853a1113d0d2574c6317a4599670056ab06274bfd6b27f0dcaa",
+          "static_manifest_records.py": "bf312c470d6e89fcd82fa5cfe15e6d1771097a83c98d16c847ed629014cbaf94",
+          "static_manifests.py": "df8b2fa2b9134ca6a7e7ae4c19cd64cc0c47beaced0a0b29fffc79105c105691",
+          "static_markers.py": "4e3644be2cdb3ba7c9a2130376d54153a9c4d30e7a3ffe2bb3a566afe476b73e",
+          "static_native.py": "2671ef0c8819e42e73e6b25df96d874441a9cde85eabb1c165f7be2b35abe29d",
+          "static_poetry_constraints.py": "be0cbf9db8eb8c07a1f8092d609ae00a6b77b572be211a461d29cf773da7418a",
+          "static_python_lock_records.py": "377e2150c4bd92351d129ec907349f70c43d7f51333e87e327c952108507be08",
+          "static_python_locks.py": "0b191cb21e4f7616bd30e630804faecf072f3b4a25c261be917c621448d1ec48",
+          "static_requirements.py": "53af8e9c689acfc52bd4f6b8b37083c204e2046fe74c3387e1799a467200a32c",
+          "static_runtime.py": "a8e125079038fabc64186bd22913b385bdfd1382a5280311f703a482d38693d8",
+          "summarize.py": "dab37bf85fc5605d9ae9e865c0b81191a8b296d353b3f2af7692612f93133f46",
+          "syft_control_audit.py": "44ca8b5d55a75ee7e12d01a7bcb25b6f65940cadcd0ed50d218758efb58356f6",
+          "syft_control_benchmark.py": "c8a5e158661839a5db1e1ee56498adb714b9faec6bef22700bcd2a6546eb72b2",
+          "syft_control_job.py": "8a4c966253b2b55be382dc9d695e6900e09d193882160d84202c7055f7f85a10",
+          "syft_control_proofs.py": "7e30e63db4fdbf135e5ce61296e39b75c7558354b0151af7426807980c3d0638",
+          "syft_native.py": "b4e2a5b4d6f820d3189bbd03ba6fc3be09f991bfa5d586157c5d002638f7d380",
+          "syft_prepare.py": "9d001e4b72a4ebbbaae86e7ffbfb23f2e819859cd663965940668bd6024db6cb"
+        },
+        "tracer_sha256": "28f957c227012de0b18d1bd7fff2d396cb693ea60ed8013be68de071e84b5001",
+        "records": [
+          {
+            "repeat": 0,
+            "raw_sha256": "c9577841311b0744e98142bf5dea462bcf7b8fc8520f97b4ede6a1a522345b34",
+            "trace_sha256": "f3078732066230cc492f671951d4ee7e3e77a4019426cb200ee9134cc1993474",
+            "composition_sha256": "090e960e278a874f07c700f4a17f368eca6d1424dd3bed2cb3f9d420144bdec6",
+            "strict_trace_admitted": true,
+            "trace_refusal": null,
+            "trace": {
+              "executions": [
+                "/home/runner/work/_temp/m046-provider-preparation/m046-syft"
+              ],
+              "nonthread_process_calls": [],
+              "pidfd_probe_children": [],
+              "terminal_exit_groups": [],
+              "terminal_markers_required": true,
+              "network_attempts": 0
+            },
+            "source_occurrences": 2,
+            "provider_records": 7,
+            "provider_edges": 2,
+            "roles": [
+              "application-metadata",
+              "declaration-candidate",
+              "installed-version-evidence",
+              "lock-evidence-unadapted",
+              "unselected-versionless-metadata"
+            ]
+          },
+          {
+            "repeat": 1,
+            "raw_sha256": "7070aaa7f0107894d19b020f287aa33dc2c5de1ce79afb0378e1ac34648e4474",
+            "trace_sha256": "6bdeda51f8a49bf11de5f871dfa892b951df1afe47d92aaa996228cfc1f6012a",
+            "composition_sha256": "090e960e278a874f07c700f4a17f368eca6d1424dd3bed2cb3f9d420144bdec6",
+            "strict_trace_admitted": true,
+            "trace_refusal": null,
+            "trace": {
+              "executions": [
+                "/home/runner/work/_temp/m046-provider-preparation/m046-syft"
+              ],
+              "nonthread_process_calls": [],
+              "pidfd_probe_children": [],
+              "terminal_exit_groups": [],
+              "terminal_markers_required": true,
+              "network_attempts": 0
+            },
+            "source_occurrences": 2,
+            "provider_records": 7,
+            "provider_edges": 2,
+            "roles": [
+              "application-metadata",
+              "declaration-candidate",
+              "installed-version-evidence",
+              "lock-evidence-unadapted",
+              "unselected-versionless-metadata"
+            ]
+          }
+        ],
+        "full_composition_repeat_equal": true
+      },
+      "arm64": {
+        "head": "612e39cb320911184f19855ae903164d46d0c8e2",
+        "run": 37588602868,
+        "native_python": "3.14.8",
+        "planned_attempts": 2,
+        "completed_attempts": 2,
+        "not_started_attempts": 0,
+        "report_sha256": "a021acf8a54d5e2639af667ffa2e306b5dd49ffd26734420e4c6e9bddb6e1205",
+        "preparation_sha256": "2e80fd80ea8fdc740247f1126e233626f0fc0bb9fab53dbe6ef53671a7705c75",
+        "binary_sha256": "9a3298de0299ce483fbcab2da2b4f4b23870b15782c8eff1629ef4d68cf45228",
+        "code_sha256": {
+          "benchmark.py": "255eb167a014b34ababc0b2c9386619a3131b5689fbbc398cd5f1a874c913395",
+          "cgroup_metrics.py": "0f1d2e9dbd9fb31cf0c02a60a2c587405bd1a424948e30b5697f9d9f39c890dc",
+          "composition_native.py": "f3aed433cf217adbd2b1e2d325caa75cf0655eade7df1a314969237e93516ae7",
+          "composition_spike.py": "3a1446974448719a273fadd2e4555166889b4869f4c5806d9874cdbba91a2cbe",
+          "container_job.py": "8f6a310ea9e6f7547d885d6a9845e25ceb6146467504364638dc70bbf111b8e9",
+          "corpus.py": "fb38182a3376c7cd5c90f9a2a373d20deb319a95677a9bac8363fa9b3f603af8",
+          "cyclonedx_export.py": "39d2e49e9ede5585422ce30201c077c3362926a62aecffee496048ee2a585184",
+          "cyclonedx_matches.py": "847931fa2d95060be17ad045f9d2b6dc73887c29398e5c74c6e797297cfce78f",
+          "direct_audit.py": "33ad4729907c65c8b34790f2422d1dc594d6f15abef810cd278502a9749ef8ff",
+          "direct_benchmark.py": "63107978945dd7a58ac49dfe4cb93ff0de6d578c88ba96d070d195264ed57170",
+          "direct_job.py": "2f33fbf5ead5e0e37c6e2a29bd9bedd6f82c33eb1ebeead3b74762280b597380",
+          "direct_prepare.py": "834a5dc7ee0355075a6f94fbf4c5190fbe3b1b415064a2b557c45a4c53def925",
+          "docker_proofs.py": "7615d4bc7a8285a00e36d06bd1ff2eb770182871c49ca560c78c3e4c386e2594",
+          "native.py": "909f0a3146b11894c65d7605efa522cb4be25b979368b32d4e77fc0592a52942",
+          "oracle.py": "13705ee54974f7fbb3e85975c64c8d823362619e2a39d69e424ae0db68b325f3",
+          "pack_evidence.py": "13386b3ebdfa3f5b3540478a63de320a8f17279a288c7fdc12d3363c01384570",
+          "performance_corpus.py": "e4f4c222c1342ce954b5189430d14e5a947e6eafff3ff35d00db4f970958aa59",
+          "prepare.py": "695772bf267dae6180060735142b6043ec3f57ab025cdc2d2271569134382828",
+          "provider_audit.py": "5ed368c60905f0f7f97f7ec107ab3003403a91a06f4cc62aba5e39e4aa71f990",
+          "provider_corpus.py": "62a45f61b78ccc760d1ac9a1a06ee8a71b6cb9e2a8ec4059c5fd37d0858b567d",
+          "provider_evidence.py": "112415256bdb3504c4b15296ef56d743d8e257b48f7fb4e6ac98843d027529e9",
+          "provider_native.py": "ef67e86915c7ff080b88b681eba10d4454c07b041cd794ff730de6b62a9d8635",
+          "run.py": "c5e2fb0d2980de5f998b981f16bec5edc7363b8f856dd6a2d31b87698c181e49",
+          "runtime_audit.py": "0ef93435a5f19d8ad35e5991efdf61c2f9d6526e51567c195ff5058183455dd3",
+          "runtime_inspect.py": "4de33c480112ca04c4bd4cde2fc216d68dba78cc9eecfbb5b2d579078d4e0b54",
+          "runtime_oci.py": "d4e846ef1ff980134f6e0e4d935b41902a757e23fc7bb3e4019d139273d81b00",
+          "static_cli.py": "51b0fc8e59144508f69447a6b74909821637f5637b08f80ede3fe849db6b4efb",
+          "static_elf.py": "54f79b64d85f1c559b36c6e22d6a09c25939567a20a5afbfd6c505c403d8f1e6",
+          "static_inputs.py": "5084c1fd6301f3e541f796f75646d39a2427ed042f004c15d45f8bcfa31ad4cd",
+          "static_inventory.py": "9f092a236eb36ea5eec38b0253d3d8e4e5c628c33b34c9f0ab9d96302498a0f2",
+          "static_lock_records.py": "900953875c91fe8cd22e33456439de99f60d1e227d4015517ed940d7d60df0b8",
+          "static_locks.py": "6fed630a853b8853a1113d0d2574c6317a4599670056ab06274bfd6b27f0dcaa",
+          "static_manifest_records.py": "bf312c470d6e89fcd82fa5cfe15e6d1771097a83c98d16c847ed629014cbaf94",
+          "static_manifests.py": "df8b2fa2b9134ca6a7e7ae4c19cd64cc0c47beaced0a0b29fffc79105c105691",
+          "static_markers.py": "4e3644be2cdb3ba7c9a2130376d54153a9c4d30e7a3ffe2bb3a566afe476b73e",
+          "static_native.py": "2671ef0c8819e42e73e6b25df96d874441a9cde85eabb1c165f7be2b35abe29d",
+          "static_poetry_constraints.py": "be0cbf9db8eb8c07a1f8092d609ae00a6b77b572be211a461d29cf773da7418a",
+          "static_python_lock_records.py": "377e2150c4bd92351d129ec907349f70c43d7f51333e87e327c952108507be08",
+          "static_python_locks.py": "0b191cb21e4f7616bd30e630804faecf072f3b4a25c261be917c621448d1ec48",
+          "static_requirements.py": "53af8e9c689acfc52bd4f6b8b37083c204e2046fe74c3387e1799a467200a32c",
+          "static_runtime.py": "a8e125079038fabc64186bd22913b385bdfd1382a5280311f703a482d38693d8",
+          "summarize.py": "dab37bf85fc5605d9ae9e865c0b81191a8b296d353b3f2af7692612f93133f46",
+          "syft_control_audit.py": "44ca8b5d55a75ee7e12d01a7bcb25b6f65940cadcd0ed50d218758efb58356f6",
+          "syft_control_benchmark.py": "c8a5e158661839a5db1e1ee56498adb714b9faec6bef22700bcd2a6546eb72b2",
+          "syft_control_job.py": "8a4c966253b2b55be382dc9d695e6900e09d193882160d84202c7055f7f85a10",
+          "syft_control_proofs.py": "7e30e63db4fdbf135e5ce61296e39b75c7558354b0151af7426807980c3d0638",
+          "syft_native.py": "b4e2a5b4d6f820d3189bbd03ba6fc3be09f991bfa5d586157c5d002638f7d380",
+          "syft_prepare.py": "9d001e4b72a4ebbbaae86e7ffbfb23f2e819859cd663965940668bd6024db6cb"
+        },
+        "tracer_sha256": "33b3ea325915f1213dc477d80e0f0b2b09ffeff5e81d98b25a35320fbcbcaf42",
+        "records": [
+          {
+            "repeat": 0,
+            "raw_sha256": "c9577841311b0744e98142bf5dea462bcf7b8fc8520f97b4ede6a1a522345b34",
+            "trace_sha256": "4939c46bab2e7500448e47401f95f72b6f14b714baf8fbf7b9bee312609c988a",
+            "composition_sha256": "090e960e278a874f07c700f4a17f368eca6d1424dd3bed2cb3f9d420144bdec6",
+            "strict_trace_admitted": true,
+            "trace_refusal": null,
+            "trace": {
+              "executions": [
+                "/home/runner/work/_temp/m046-provider-preparation/m046-syft"
+              ],
+              "nonthread_process_calls": [],
+              "pidfd_probe_children": [],
+              "terminal_exit_groups": [],
+              "terminal_markers_required": true,
+              "network_attempts": 0
+            },
+            "source_occurrences": 2,
+            "provider_records": 7,
+            "provider_edges": 2,
+            "roles": [
+              "application-metadata",
+              "declaration-candidate",
+              "installed-version-evidence",
+              "lock-evidence-unadapted",
+              "unselected-versionless-metadata"
+            ]
+          },
+          {
+            "repeat": 1,
+            "raw_sha256": "7070aaa7f0107894d19b020f287aa33dc2c5de1ce79afb0378e1ac34648e4474",
+            "trace_sha256": "37cf2ec19e933d7c394fbb84b9df953bf3e72ef4592ce30ce031a46467db27dc",
+            "composition_sha256": "090e960e278a874f07c700f4a17f368eca6d1424dd3bed2cb3f9d420144bdec6",
+            "strict_trace_admitted": true,
+            "trace_refusal": null,
+            "trace": {
+              "executions": [
+                "/home/runner/work/_temp/m046-provider-preparation/m046-syft"
+              ],
+              "nonthread_process_calls": [],
+              "pidfd_probe_children": [],
+              "terminal_exit_groups": [],
+              "terminal_markers_required": true,
+              "network_attempts": 0
+            },
+            "source_occurrences": 2,
+            "provider_records": 7,
+            "provider_edges": 2,
+            "roles": [
+              "application-metadata",
+              "declaration-candidate",
+              "installed-version-evidence",
+              "lock-evidence-unadapted",
+              "unselected-versionless-metadata"
+            ]
+          }
+        ],
+        "full_composition_repeat_equal": true
+      }
+    },
+    "all4_full_compositions_byte_equal": true,
+    "scope": [
+      "Python3.14.8 nativeAMD64/ARM64 source-bound finite mixed feasibility",
+      "Provider execution only is traced; direct composition separately runs in bounded guardian child",
+      "No full production canonical provider adapters, export/cache/Grype, aggregate cgroup resource, Alpine or compliance/engine/budget/S01 acceptance",
+      "Historical traces remain unchanged; any current trace refusal is separately preserved"
+    ]
+  },
+  "cross_arch_exact_provider_fact_pairs": 65,
+  "cross_arch_exact_provider_fact_fixtures": [
+    "python-requirements",
+    "python-input",
+    "python-custom-input",
+    "python-custom-hashed-lock",
+    "python-hidden",
+    "python-include",
+    "python-constraint-only",
+    "python-constraint-resolves",
+    "python-marker",
+    "python-extras",
+    "python-range",
+    "python-normalization",
+    "python-conflicting-roots",
+    "python-pyproject",
+    "python-pyproject-optional",
+    "python-setup-cfg",
+    "python-static-setup",
+    "python-dynamic-setup",
+    "python-pipfile",
+    "python-pipfile-complete",
+    "python-poetry",
+    "python-uv",
+    "python-pdm",
+    "python-poetry-graph",
+    "python-pdm-graph",
+    "python-uv-graph",
+    "python-pylock",
+    "python-pylock-variant",
+    "python-include-cycle",
+    "python-include-escape",
+    "python-malformed",
+    "python-false-positive",
+    "node-npm-v3",
+    "node-npm-edges",
+    "node-npm-dev",
+    "node-npm-nested",
+    "node-yarn",
+    "node-pnpm",
+    "node-manifest-range",
+    "node-malformed",
+    "go-module",
+    "go-indirect",
+    "go-sums-only",
+    "go-local-replacement",
+    "rust-lock",
+    "rust-edges",
+    "rust-conflicting-roots",
+    "rust-manifest-range",
+    "java-gradle-lock",
+    "dotnet-lock",
+    "ruby-lock",
+    "php-lock",
+    "symlink-escape",
+    "symlink-cycle",
+    "python-product-build-input",
+    "python-product-hidden-lock",
+    "python-pip-extension",
+    "python-long-options",
+    "python-conflicting-constraint",
+    "python-marker-alternatives",
+    "python-identical-multiple-roots",
+    "python-pylock-complete",
+    "python-pylock-variant-complete",
+    "node-npm-complete",
+    "provider-installed-python-ownership"
+  ],
+  "changed7file_sha256": {
+    ".github/workflows/m046-restricted-provider.yml": "697ecc80380d855ed986e7d647a8a1c7488831d1e7399c278e01e1d5892f3f77",
+    "evaluation/m046/comparison.md": "1d9371a7df6847334b737618754c4fec56f95297b6f8334a7c0fe9cecaae3e82",
+    "evaluation/m046/composition-contract.md": "c9d2f9252596d44db158b78ac85780bcda02962ea00cf91b107878b085b0f0d1",
+    "evaluation/m046/composition_native.py": "f3aed433cf217adbd2b1e2d325caa75cf0655eade7df1a314969237e93516ae7",
+    "evaluation/m046/composition_spike.py": "3a1446974448719a273fadd2e4555166889b4869f4c5806d9874cdbba91a2cbe",
+    "evaluation/m046/current-comparison.md": "c06651a5b5c1c71ce78dfd2f23aa76f87aacc8ff3130365bcc8900866116886a",
+    "tests/test_m046_composition_spike.py": "fe474a52ec8f3d305b7fe98d9d859c1ff550959698205b4b3047acaf335714e6"
+  },
+  "total_planned_provider_attempts": 260,
+  "total_completed_provider_attempts": 260,
+  "total_planned_mixed_attempts": 4,
+  "total_completed_mixed_attempts": 4,
+  "findings": [
+    "All130provider and2mixed attempts perarchitecture complete; compare workflow success only to this finite diagnostic scope",
+    "65provider repeat/cross-architecture fact sets and4full mixed compositions equal",
+    "Versionless/declaration/application metadata does not become selected matching evidence; only source-validated installed identity is eligible in the mixed spike",
+    "Provider raw-ID edges retain context and remain canonical/matching-unassessed",
+    "All rich provider dimensions remain unreported; mixed inventory remains partial/full_contractfalse",
+    "Strict trace admission/refusals are separately retained; prior historical refusals remain unaccepted",
+    "Provider execution is traced; Python composition runs separately in bounded guardian child, so no whole-composition zero-attempt claim",
+    "Current-source and pinned preparation verified; native runtime wheel-code map/tracerbinary not retained in these CI archives",
+    "No aggregate cgroup resources, selected Alpine/schema loaded closure, vendorlicenses, export/cache/Grype, production or engine/budget/S01 acceptance"
+  ],
+  "method": "Private bounded1GiB/60-120CPU/150wall verifiers; safe ZIP/tar, outer+inner digests, exact Git source/test/workflow bytes, nativeELF/preparation/runtime pins, replayed facts/comparison/strict traces and full compositions",
+  "scope": "Read-only private independent review; no GitHub writes or approval"
+}

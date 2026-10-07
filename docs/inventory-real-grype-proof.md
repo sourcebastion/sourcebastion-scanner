@@ -17,7 +17,9 @@ objects and canonical contexts. It never joins by package name or purl.
 The proof reuses hosted smoke's source-free advisory generation. Before fixture
 admission it binds the installed inventory source, reviewed native binary hashes,
 explicit private config/environment, actual database status and every bounded
-advisory file. Binary hashes derive from the official release archives already
+advisory file, with at most 32 files, 32 directories, depth 8 and 4 GiB of
+aggregate advisory bytes. This file bound is separate from the 2 GiB container
+memory limit; files are hashed in 1 MiB chunks. Binary hashes derive from the official release archives already
 pinned by the image build. Admission has a separate 330-second limit. Composition,
 export, real consumer, recovery and final identity checks share one 150-second
 source deadline. Stdout is capped at 2 MiB and stderr at 256 KiB per child; failure

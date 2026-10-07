@@ -22,6 +22,7 @@ ADVISORIES = Path("/advisories")
 OUTPUT = Path("/out")
 STDOUT_BYTES = 2 * 1024 * 1024
 STDERR_BYTES = 256 * 1024
+ADVISORY_BYTES = 4 * 1024**3
 
 
 def render(value):
@@ -101,7 +102,7 @@ def advisory_binding(root, deadline):
                 else:
                     if len(files) >= 32:
                         raise ValueError("real-grype-proof-advisory-entry-budget-exceeded")
-                    binding = file_binding(child, maximum=2 * 1024**3 - total, deadline=deadline)
+                    binding = file_binding(child, maximum=ADVISORY_BYTES - total, deadline=deadline)
                     total += binding["bytes"]
                     files[child.relative_to(root).as_posix()] = binding
     if not {"snapshot.json", "6/vulnerability.db"} <= files.keys():
@@ -389,6 +390,7 @@ def verify():
                 "discovery_config_sha256": config.sha256,
                 "consumer": consumer.model_dump(mode="json"),
                 "admission_wall_seconds": scan_start - admission_start,
+                "advisory_byte_ceiling": ADVISORY_BYTES,
                 "source_wall_seconds": time.monotonic() - scan_start,
                 "source_deadline_seconds": source.limits.wall_seconds,
                 "execution": execution,

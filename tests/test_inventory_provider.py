@@ -131,6 +131,20 @@ def test_invalid_observation_never_returns_partial_receipt(tmp_path, mutation):
         b"null",
         b"",
     ],
+    # Pytest otherwise embeds the entire 2 MiB payload in collection/node IDs,
+    # duplicating it across xdist workers and verbose CI logs.
+    ids=[
+        "duplicate-key",
+        "nan",
+        "infinite-exponent",
+        "surrogate",
+        "invalid-utf8",
+        "depth-33",
+        "string-over-2mib",
+        "utf16",
+        "null",
+        "empty",
+    ],
 )
 def test_bounded_strict_json_refusals(tmp_path, raw):
     with pytest.raises(InputRefusal):

@@ -49,6 +49,12 @@ SUPPORTED_MANIFESTS = {
     "python-pylock-variant-complete",
     "python-pylock",
     "python-pylock-complete",
+    "python-poetry",
+    "python-poetry-graph",
+    "python-uv",
+    "python-uv-graph",
+    "python-pdm",
+    "python-pdm-graph",
 }
 
 
@@ -84,7 +90,11 @@ def supported(fixture):
 
 
 def runtime_identity():
-    if platform.python_version() != "3.14.8" or importlib.metadata.version("packaging") != "25.0":
+    if (
+        platform.python_version() != "3.14.8"
+        or importlib.metadata.version("packaging") != "25.0"
+        or importlib.metadata.version("poetry-core") != "2.1.3"
+    ):
         raise ValueError("static-native-runtime-pin-mismatch")
     native_elf(Path(sys.executable).resolve())
     distribution = importlib.metadata.distribution("packaging")
@@ -94,12 +104,22 @@ def runtime_identity():
             files[path.as_posix()] = digest(distribution.locate_file(path))
     if not files:
         raise ValueError("static-native-runtime-manifest-empty")
+    poetry = importlib.metadata.distribution("poetry-core")
+    poetry_files = {
+        path.as_posix(): digest(poetry.locate_file(path))
+        for path in poetry.files or ()
+        if path.suffix == ".py" and path.parts[0] == "poetry"
+    }
+    if not poetry_files:
+        raise ValueError("static-native-runtime-manifest-empty")
     return {
         "python": platform.python_version(),
         "architecture": platform.machine(),
         "python_binary_sha256": digest(Path(sys.executable).resolve()),
         "packaging": distribution.version,
         "packaging_source_files": files,
+        "poetry_core": poetry.version,
+        "poetry_core_source_files": poetry_files,
     }
 
 

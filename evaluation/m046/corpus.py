@@ -177,7 +177,9 @@ CORPUS = [
         {
             "poetry.lock": '[[package]]\nname="requests"\nversion="2.32.3"\ndescription=""\noptional=false\npython-versions=">=3.8"\nfiles=[]\n[metadata]\nlock-version="2.0"\npython-versions=">=3.8"\ncontent-hash="fixture"\n'
         },
-        ["pypi:requests@2.32.3"],
+        [],
+        disposition="malformed",
+        note="The historical literal content-hash=fixture is not a SHA256 lock metadata hash. v4 keeps its bytes and treats it as a negative case.",
     ),
     case(
         "python-uv",
@@ -194,6 +196,59 @@ CORPUS = [
             "pdm.lock": '[metadata]\nlock_version="4.5.0"\ngroups=["default"]\nstrategy=["inherit_metadata"]\n[[package]]\nname="requests"\nversion="2.32.3"\nrequires_python=">=3.8"\ngroups=["default"]\nfiles=[]\n'
         },
         ["pypi:requests@2.32.3"],
+    ),
+    case(
+        "python-poetry-graph",
+        "python",
+        {
+            "poetry.lock": '[metadata]\nlock-version="2.1"\npython-versions=">=3.12"\ncontent-hash="' + "c" * 64 + '"\n'
+            '[[package]]\nname="parent"\nversion="1"\noptional=false\npython-versions=">=3.12"\ngroups=["main","test"]\n'
+            'markers={main="os_name == \'posix\'"}\nfiles=[{file="parent-1-py3-none-any.whl",hash="sha256:'
+            + "a" * 64
+            + '"}]\n'
+            '[package.dependencies]\nfoo=">=1,<2"\n'
+            '[[package]]\nname="foo"\nversion="1"\noptional=false\npython-versions=">=3.12"\ngroups=["main","test"]\n'
+            'files=[{file="foo-1-py3-none-any.whl",hash="sha256:' + "b" * 64 + '"}]\n'
+        },
+        ["pypi:parent@1", "pypi:foo@1"],
+        edges=[("pypi:parent@1", "pypi:foo@1")],
+        note="Registry subset, per-group marker and repeated group occurrences. Hash assertions do not prove freshness or authenticity.",
+    ),
+    case(
+        "python-pdm-graph",
+        "python",
+        {
+            "pdm.lock": '[metadata]\nlock_version="4.5.0"\ngroups=["default","test"]\nstrategy=["inherit_metadata"]\ncontent_hash="sha256:'
+            + "c" * 64
+            + '"\n'
+            'targets=[{requires_python=">=3.12"}]\n'
+            '[[package]]\nname="parent"\nversion="1"\nrequires_python=">=3.12"\ngroups=["default","test"]\n'
+            'files=[{file="parent-1-py3-none-any.whl",hash="sha256:'
+            + "a" * 64
+            + '"}]\ndependencies=["foo[test]>=1,<2"]\n'
+            '[[package]]\nname="foo"\nversion="1"\nrequires_python=">=3.12"\ngroups=["default","test"]\nextras=["test"]\n'
+            'files=[{file="foo-1-py3-none-any.whl",hash="sha256:' + "b" * 64 + '"}]\ndependencies=["foo==1"]\n'
+            '[[package]]\nname="foo"\nversion="1"\nrequires_python=">=3.12"\ngroups=["default","test"]\n'
+            'files=[{file="foo-1-py3-none-any.whl",hash="sha256:' + "b" * 64 + '"}]\n'
+        },
+        ["pypi:parent@1", "pypi:foo@1"],
+        edges=[("pypi:parent@1", "pypi:foo@1"), ("pypi:foo@1", "pypi:foo@1")],
+        note="Inherited groups and requested-extra candidate identity retained, including generated extras-to-base edge. Same-purl edges are a projection; occurrence locators disambiguate. Registry origin unknown.",
+    ),
+    case(
+        "python-uv-graph",
+        "python",
+        {
+            "uv.lock": 'version=1\nrevision=3\nrequires-python=">=3.12"\n'
+            '[[package]]\nname="parent"\nversion="1"\nsource={registry="https://pypi.org/simple"}\n'
+            'wheels=[{url="https://packages.invalid/parent-1-py3-none-any.whl",hash="sha256:' + "a" * 64 + '"}]\n'
+            'dependencies=[{name="foo",marker="python_version < \'3.14\'",extra=["test"]}]\n'
+            '[[package]]\nname="foo"\nversion="1"\nsource={registry="https://pypi.org/simple"}\n'
+            'wheels=[{url="https://packages.invalid/foo-1-py3-none-any.whl",hash="sha256:' + "b" * 64 + '"}]\n'
+        },
+        ["pypi:parent@1", "pypi:foo@1"],
+        edges=[("pypi:parent@1", "pypi:foo@1")],
+        note="Globally unambiguous package ID with simplified edge marker conditioned on root Python compatibility.",
     ),
     case(
         "python-pylock",

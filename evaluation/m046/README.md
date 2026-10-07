@@ -6,10 +6,10 @@ No production scan modules, image dependencies or runtime settings are changed.
 
 The separate [static Python frontend prototype](static-prototype.md) explores
 bounded general input discovery, typed include/constraint semantics and static
-manifest declarations and a typed Pipfile/standard pylock subset. It is
+manifest declarations and typed Pipfile/pylock/Poetry/uv/PDM registry subsets. It is
 under review, not an engine selection or a production integration.
 
-`corpus.py` contains 61 handwritten cases with expected exact package identities,
+`corpus.py` contains 64 handwritten cases with expected exact package identities,
 evidenced edges, separate unresolved declarations and coverage dispositions. It
 includes Python requirements/.in/custom hashed locks, hidden paths, includes and
 constraints, markers/extras, conflicting roots, pyproject/setup/Pipfile/Poetry/uv/
@@ -22,6 +22,10 @@ fragments are retained and labelled alongside structurally complete counterparts
 The v3 tranche labels the original minimal Pipfile metadata fragment partial and
 adds a complete Pipfile positive. Prior 60-case v2 measurements remain bound to
 their exact historical source/oracle, not this updated contract.
+The v4 tranche adds three rich Python lock graph cases. Original Poetry bytes
+with literal invalid content hash remain a malformed negative; minimal uv/PDM
+locks retain known occurrences with explicit missing-source partial coverage.
+Earlier v3 evidence remains bound to its 61-case source, not v4.
 Unsafe paths reference only a synthetic sibling sentinel. Artifact integrity hashes
 in synthetic locks are test strings, not verified package download hashes.
 

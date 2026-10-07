@@ -20,9 +20,9 @@ from .static_locks import parse as parse_lock
 from .static_lock_records import render as render_lock
 from .static_requirements import Document, parse
 
-VERSION = "m046-static-inventory-prototype-v3"
+VERSION = "m046-static-inventory-prototype-v4"
 MANIFEST_FORMATS = {"pep621", "setup-cfg", "setup-python-static"}
-LOCK_FORMATS = {"pipfile-lock", "pylock"}
+LOCK_FORMATS = {"pipfile-lock", "pylock", "poetry-lock", "uv-lock", "pdm-lock"}
 MAX_OCCURRENCES = 100000
 MAX_INCLUDE_DEPTH = 64
 MAX_INCLUDE_TARGETS = 4096

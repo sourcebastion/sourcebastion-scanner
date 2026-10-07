@@ -15,7 +15,7 @@ from .static_inputs import InputRefusal, relative_path
 from .static_manifests import Parser, MAX_RECORDS
 from .static_requirements import parse_requirement
 
-VERSION = "m046-static-python-locks-v1"
+VERSION = "m046-static-python-locks-v2"
 MAX_EDGES = 100000
 HASH = re.compile(r"(?:sha256:[0-9a-fA-F]{64}|sha512:[0-9a-fA-F]{128})")
 
@@ -32,6 +32,12 @@ class LockedPackage:
     declared_range: str | None = None
     requires_python: str | None = None
     dependencies: tuple = ()
+    # Additional lock adapters retain unresolved installation/group selection.
+    conditional: bool = False
+    source_key: str | None = None
+    entry: str | None = None
+    optional: bool | None = None
+    group: str | None = None
 
 
 @dataclass(frozen=True)
@@ -355,7 +361,7 @@ class LockParser(Parser):
 
 def parse(path, content, fmt, *, deadline=None, max_records=MAX_RECORDS):
     path = relative_path(path)
-    if fmt not in {"pipfile-lock", "pylock"}:
+    if fmt not in {"pipfile-lock", "pylock", "poetry-lock", "uv-lock", "pdm-lock"}:
         raise ValueError("unsupported-lock-parser")
     if not isinstance(content, bytes):
         raise TypeError("lock parser requires exact bytes")
@@ -363,7 +369,12 @@ def parse(path, content, fmt, *, deadline=None, max_records=MAX_RECORDS):
         raise InputRefusal("input-file-budget-exceeded")
     if type(max_records) is not int or not 0 <= max_records <= MAX_RECORDS:
         raise ValueError("invalid-parser-record-limit")
-    parser = LockParser(deadline if deadline is not None else time.monotonic() + 150, max_records)
+    parser_class = LockParser
+    if fmt in {"poetry-lock", "uv-lock", "pdm-lock"}:
+        from .static_python_locks import PythonLockParser
+
+        parser_class = PythonLockParser
+    parser = parser_class(deadline if deadline is not None else time.monotonic() + 150, max_records)
     sha256 = hashlib.sha256(content).hexdigest()
 
     def pairs(items):
@@ -385,8 +396,10 @@ def parse(path, content, fmt, *, deadline=None, max_records=MAX_RECORDS):
                 parse_constant=lambda value: (_ for _ in ()).throw(InputRefusal("invalid-lock-number")),
             )
             parser.pipfile(data)
-        else:
+        elif fmt == "pylock":
             parser.pylock(tomllib.loads(text))
+        else:
+            getattr(parser, fmt.split("-", 1)[0])(tomllib.loads(text))
         parser.check()
         incomplete = parser.missing_source or parser.missing_metadata
         return Lock(

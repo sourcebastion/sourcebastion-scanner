@@ -112,6 +112,62 @@ are refused. Initial standard-library JSON/TOML allocation is bounded by source
 bytes and the outer resource boundary; this does not establish aggregate resource
 acceptance. The lock-only edge ceiling (100000) is also proposed, not frozen.
 
+The v4 corpus has 64 cases, adding typed Poetry 2.0/2.1, PDM 4.5.0 and uv lock
+version 1/revision 3 registry subsets. The original Poetry literal content hash
+is malformed and stays a negative with its original bytes. Minimal uv/PDM source
+fragments remain partial. All earlier evidence stays bound to its original oracle.
+Group occurrences preserve original group values and indexed source locators,
+requested-extra variants, markers, optionality, asserted hashes and unknown
+activation/directness. No root application or registry origin is inferred from
+a Poetry/PDM lock. Edges preserve parent/child locators, constraint dialect,
+requested extras, group and marker context plus an opaque source fingerprint
+where a registry is explicitly asserted. Purl pairs are only a graph projection.
+
+Poetry constraint/Python compatibility uses the maintained pure parser from
+`poetry-core==2.1.3`, pinned by Poetry 2.1.4, including caret, tilde and OR ranges.
+The wheel is hash-pinned in trusted preparation; no project factories, builders,
+plugins or source imports run. Inputs are bounded to 16 KiB, 128 terms and 128-digit
+numeric runs before conversion. The outer constraint cache is bypassed and both
+it and the nested PEP440 version cache are cleared on every helper exit, including
+refusals and renderer version conversions. This prototype owns grammar use in a
+single-job CLI process; foreign concurrent grammar use is not supported. Installed
+library functions are not monkeypatched.
+Native evidence binds every installed Poetry Core Python source, alongside
+packaging. Both the new wheel and schema versions remain evaluation dependencies,
+with actual production image/license/resource acceptance still separate.
+
+PDM requires `inherit_metadata` to admit inherited group/marker evidence; its
+extra set participates in candidate identity. Only Python-compatibility target
+records are admitted, with target activation unknown. Platform/implementation
+targets remain unsupported. uv dependencies resolve exact name/version/source
+identity; omitted version/source is usable only for globally unambiguous names.
+Raw uv edge markers are explicitly simplified relative to root Python
+compatibility and are never evaluated or used to prove disjointness. Top/package
+fork markers, conflicts, nonempty resolver manifests/options, optional/dev group
+controls, local/editable/VCS sources and unimplemented artifact fields remain
+visible refusals. No sources are fetched or installed.
+
+uv duplicate dependency identities are refused after unwiring name/version/source
+and canonical requested extras. Repeated targets with different raw marker
+contexts remain unsupported rather than guessing whether root-relative marker
+normalization makes them equivalent. Exact uv version comparison includes local
+version identity (`1` does not select `1+local`); it is not a PEP440 public pin.
+The separate uv artifact contract permits a local wheel version whose public
+version equals the lock pin, as upstream does. uv sdist filenames need not encode
+name/version; those filenames do not corroborate identity. No hash or filename
+assertion is described as fetched artifact verification.
+
+Ambiguous/missing targets clear graph relationships for that file. Overlapping
+variants retain unknown activation and partial coverage; separately unambiguous
+informational edges may remain. Group/dependency expansion charges the proposed
+100000-edge ceiling before retention, with global failure clearing all selections.
+These subsets do not establish a complete executable installation graph.
+
+Schema references: [Poetry locker 2.1.4](https://github.com/python-poetry/poetry/blob/2.1.4/src/poetry/packages/locker.py),
+[PDM lock writer 2.26.0](https://github.com/pdm-project/pdm/blob/2.26.0/src/pdm/project/lockfile/pdmlock.py),
+[PDM identity reader](https://github.com/pdm-project/pdm/blob/2.26.0/src/pdm/models/repositories/lock.py),
+[uv lock 0.9.0](https://github.com/astral-sh/uv/blob/0.9.0/crates/uv-resolver/src/lock/mod.rs).
+
 Proposed ceilings remain **unfrozen**: 100000 traversal entries, depth 64,
 2 MiB/file, 256 MiB retained text, 150-second wall deadline, 100000 parsed
 records, 100000 records per semantic dimension, include depth 64 and 4096

@@ -97,12 +97,12 @@ def test_explicit_mapping_is_data_and_does_not_grant_network_or_execution(tmp_pa
             scan(tmp_path, mapping=mapping)
 
 
-def test_other_known_formats_are_visible_without_guessing_packages(tmp_path):
+def test_incomplete_poetry_metadata_is_visible_without_guessing_packages(tmp_path):
     write(tmp_path, "poetry.lock", '[[package]]\nname="requests"\nversion="2.32.3"\n')
     observed = scan(tmp_path)
     assert observed["packages"] == [] and observed["inventory_status"] == "partial"
     (record,) = observed["semantic_dimensions"]["inputs"]
-    assert record["format"] == "poetry-lock" and record["disposition"] == "unsupported"
+    assert record["format"] == "poetry-lock" and record["disposition"] == "malformed"
 
 
 def test_include_symlink_never_consumes_outside_content(tmp_path):

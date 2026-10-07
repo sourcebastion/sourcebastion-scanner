@@ -9,6 +9,10 @@ def identity(package):
 
 
 def render(document, root, check):
+    if document.format in {"poetry-lock", "pdm-lock", "uv-lock"}:
+        from .static_python_lock_records import render as render_python
+
+        return render_python(document, root, check)
     occurrences, relationships, environments = [], [], []
     by_name = defaultdict(list)
     for package in document.packages:

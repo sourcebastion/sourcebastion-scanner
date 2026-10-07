@@ -209,25 +209,37 @@ SEMANTICS = {
         ],
     ),
     "python-poetry": (
-        [inp("poetry.lock", "poetry-lock")],
-        [locked("pypi:requests@2.32.3", "poetry.lock", "package[0]", requires_python=">=3.8")],
+        [inp("poetry.lock", "poetry-lock", "malformed", "invalid-lock-metadata-hash")],
+        [],
     ),
     "python-uv": (
-        [inp("uv.lock", "uv-lock")],
-        [locked("pypi:requests@2.32.3", "uv.lock", "package[0]", activation="unknown")],
+        [inp("uv.lock", "uv-lock", "unsupported", "missing-lock-source")],
+        [
+            {
+                **locked("pypi:requests@2.32.3", "uv.lock", "package[0]", activation="unknown"),
+                "source_identity": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+                "source_kind": "registry-asserted",
+                "group": None,
+            }
+        ],
     ),
     "python-pdm": (
-        [inp("pdm.lock", "pdm-lock")],
+        [inp("pdm.lock", "pdm-lock", "unsupported", "missing-lock-source")],
         [
-            occ(
-                "pypi:requests@2.32.3",
-                "pdm.lock",
-                "package[0]",
-                selection="locked",
-                scope="default",
-                relationship="unknown",
-                requires_python=">=3.8",
-            )
+            {
+                **occ(
+                    "pypi:requests@2.32.3",
+                    "pdm.lock",
+                    "package[0].groups[0]",
+                    selection="locked",
+                    scope="group:default",
+                    relationship="unknown",
+                    requires_python=">=3.8",
+                ),
+                "source_identity": None,
+                "source_kind": "unknown",
+                "group": "default",
+            }
         ],
     ),
     "python-pylock": (
@@ -524,16 +536,7 @@ APPLICATIONS = {
 }
 
 ENVIRONMENTS = {
-    "python-poetry": [
-        {
-            "root": ".",
-            "path": "poetry.lock",
-            "locator": "metadata.python-versions",
-            "requires_python": ">=3.8",
-            "activation": "unknown",
-            "kind": "root",
-        }
-    ],
+    "python-poetry": [],
     "python-uv": [
         {
             "root": ".",
@@ -558,6 +561,306 @@ ENVIRONMENTS = {
 }
 
 
+def registry_occ(
+    package,
+    path,
+    locator,
+    *,
+    group=None,
+    scope="unknown",
+    marker=None,
+    extras=(),
+    hashes=(),
+    compatibility=None,
+    source=None,
+    optional=None,
+):
+    record = {
+        **occ(
+            package,
+            path,
+            locator,
+            selection="locked",
+            scope=scope,
+            marker=marker,
+            extras=extras,
+            hashes=hashes,
+            activation="unknown",
+            requires_python=compatibility,
+        ),
+        "group": group,
+        "source_identity": source,
+        "source_kind": "registry-asserted" if source else "unknown",
+    }
+    if path == "poetry.lock":
+        record["optional"] = optional
+        record["requires_python_dialect"] = "poetry-core-2.1.3"
+    return record
+
+
+def registry_edge(
+    path,
+    locator,
+    parent_locator,
+    *,
+    group=None,
+    scope="unknown",
+    constraint=">=1,<2",
+    marker=None,
+    extras=(),
+    source=None,
+    dialect="pep440",
+    marker_semantics="pep508",
+    parent="pypi:parent@1",
+    child_locator="package[1]",
+):
+    record = {
+        **edge(parent, "pypi:foo@1", path, locator),
+        "parent_locator": parent_locator,
+        "child_locator": child_locator,
+        "child_source_identity": source,
+        "group": group,
+        "scope": scope,
+        "declared_constraint": constraint,
+        "marker": marker,
+        "extras": list(extras),
+        "constraint_dialect": dialect,
+        "marker_semantics": marker_semantics,
+        "activation": "unknown",
+    }
+    if path == "uv.lock":
+        record["exact_version"] = None
+    return record
+
+
+def compatibility(path, locator, *, package=None):
+    record = {
+        "root": ".",
+        "path": path,
+        "locator": locator,
+        "requires_python": ">=3.12",
+        "activation": "unknown",
+        "kind": "package" if package else "root",
+    }
+    if package:
+        record["package"] = package
+    if path == "poetry.lock":
+        record["constraint_dialect"] = "poetry-core-2.1.3"
+    return record
+
+
+UV_REGISTRY = "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706"
+SEMANTICS.update(
+    {
+        "python-poetry-graph": (
+            [inp("poetry.lock", "poetry-lock")],
+            [
+                registry_occ(
+                    "pypi:parent@1",
+                    "poetry.lock",
+                    "package[0].groups[0]",
+                    group="main",
+                    scope="group:main",
+                    marker='os_name == "posix"',
+                    hashes=["sha256:" + "a" * 64],
+                    compatibility=">=3.12",
+                    optional=False,
+                ),
+                registry_occ(
+                    "pypi:parent@1",
+                    "poetry.lock",
+                    "package[0].groups[1]",
+                    group="test",
+                    scope="group:test",
+                    hashes=["sha256:" + "a" * 64],
+                    compatibility=">=3.12",
+                    optional=False,
+                ),
+                registry_occ(
+                    "pypi:foo@1",
+                    "poetry.lock",
+                    "package[1].groups[0]",
+                    group="main",
+                    scope="group:main",
+                    hashes=["sha256:" + "b" * 64],
+                    compatibility=">=3.12",
+                    optional=False,
+                ),
+                registry_occ(
+                    "pypi:foo@1",
+                    "poetry.lock",
+                    "package[1].groups[1]",
+                    group="test",
+                    scope="group:test",
+                    hashes=["sha256:" + "b" * 64],
+                    compatibility=">=3.12",
+                    optional=False,
+                ),
+            ],
+        ),
+        "python-pdm-graph": (
+            [inp("pdm.lock", "pdm-lock")],
+            [
+                registry_occ(
+                    "pypi:parent@1",
+                    "pdm.lock",
+                    "package[0].groups[0]",
+                    group="default",
+                    scope="group:default",
+                    hashes=["sha256:" + "a" * 64],
+                    compatibility=">=3.12",
+                ),
+                registry_occ(
+                    "pypi:parent@1",
+                    "pdm.lock",
+                    "package[0].groups[1]",
+                    group="test",
+                    scope="group:test",
+                    hashes=["sha256:" + "a" * 64],
+                    compatibility=">=3.12",
+                ),
+                registry_occ(
+                    "pypi:foo@1",
+                    "pdm.lock",
+                    "package[1].groups[0]",
+                    group="default",
+                    scope="group:default",
+                    extras=["test"],
+                    hashes=["sha256:" + "b" * 64],
+                    compatibility=">=3.12",
+                ),
+                registry_occ(
+                    "pypi:foo@1",
+                    "pdm.lock",
+                    "package[1].groups[1]",
+                    group="test",
+                    scope="group:test",
+                    extras=["test"],
+                    hashes=["sha256:" + "b" * 64],
+                    compatibility=">=3.12",
+                ),
+                registry_occ(
+                    "pypi:foo@1",
+                    "pdm.lock",
+                    "package[2].groups[0]",
+                    group="default",
+                    scope="group:default",
+                    hashes=["sha256:" + "b" * 64],
+                    compatibility=">=3.12",
+                ),
+                registry_occ(
+                    "pypi:foo@1",
+                    "pdm.lock",
+                    "package[2].groups[1]",
+                    group="test",
+                    scope="group:test",
+                    hashes=["sha256:" + "b" * 64],
+                    compatibility=">=3.12",
+                ),
+            ],
+        ),
+        "python-uv-graph": (
+            [inp("uv.lock", "uv-lock")],
+            [
+                registry_occ(
+                    "pypi:parent@1", "uv.lock", "package[0]", hashes=["sha256:" + "a" * 64], source=UV_REGISTRY
+                ),
+                registry_occ("pypi:foo@1", "uv.lock", "package[1]", hashes=["sha256:" + "b" * 64], source=UV_REGISTRY),
+            ],
+        ),
+    }
+)
+EDGES.update(
+    {
+        "python-poetry-graph": [
+            registry_edge(
+                "poetry.lock",
+                "package[0].dependencies.foo",
+                "package[0].groups[0]",
+                group="main",
+                scope="group:main",
+                dialect="poetry-core-2.1.3",
+            ),
+            registry_edge(
+                "poetry.lock",
+                "package[0].dependencies.foo",
+                "package[0].groups[1]",
+                group="test",
+                scope="group:test",
+                dialect="poetry-core-2.1.3",
+            ),
+        ],
+        "python-pdm-graph": [
+            registry_edge(
+                "pdm.lock",
+                "package[0].dependencies[0]",
+                "package[0].groups[0]",
+                group="default",
+                scope="group:default",
+                extras=["test"],
+            ),
+            registry_edge(
+                "pdm.lock",
+                "package[0].dependencies[0]",
+                "package[0].groups[1]",
+                group="test",
+                scope="group:test",
+                extras=["test"],
+            ),
+            registry_edge(
+                "pdm.lock",
+                "package[1].dependencies[0]",
+                "package[1].groups[0]",
+                parent="pypi:foo@1",
+                child_locator="package[2]",
+                group="default",
+                scope="group:default",
+                constraint="==1",
+            ),
+            registry_edge(
+                "pdm.lock",
+                "package[1].dependencies[0]",
+                "package[1].groups[1]",
+                parent="pypi:foo@1",
+                child_locator="package[2]",
+                group="test",
+                scope="group:test",
+                constraint="==1",
+            ),
+        ],
+        "python-uv-graph": [
+            registry_edge(
+                "uv.lock",
+                "package[0].dependencies[0]",
+                "package[0]",
+                constraint="",
+                marker='python_version < "3.14"',
+                extras=["test"],
+                source=UV_REGISTRY,
+                dialect="exact-identity",
+                marker_semantics="simplified-relative-to-root-python",
+            ),
+        ],
+    }
+)
+ENVIRONMENTS.update(
+    {
+        "python-poetry-graph": [
+            compatibility("poetry.lock", "metadata.python-versions"),
+            compatibility("poetry.lock", "package[0].python-versions", package="pypi:parent@1"),
+            compatibility("poetry.lock", "package[1].python-versions", package="pypi:foo@1"),
+        ],
+        "python-pdm-graph": [
+            compatibility("pdm.lock", "metadata.targets[0].requires_python"),
+            compatibility("pdm.lock", "package[0].requires_python", package="pypi:parent@1"),
+            compatibility("pdm.lock", "package[1].requires_python", package="pypi:foo@1"),
+            compatibility("pdm.lock", "package[2].requires_python", package="pypi:foo@1"),
+        ],
+        "python-uv-graph": [compatibility("uv.lock", "requires-python")],
+    }
+)
+
+
 DIMENSIONS = (
     "inputs",
     "occurrences",
@@ -574,7 +877,7 @@ DIMENSIONS = (
 def enrich(fixture):
     inputs, occurrences = SEMANTICS[fixture["id"]]
     expected = fixture["expected"]
-    expected["semantic_schema"] = "m046-oracle-v3"
+    expected["semantic_schema"] = "m046-oracle-v4"
     expected["inputs"] = [
         {
             **record,

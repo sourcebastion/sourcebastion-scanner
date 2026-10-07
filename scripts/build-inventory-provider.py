@@ -24,7 +24,7 @@ def prepare(destination):
     if architecture is None or platform.system() != "Linux":
         raise ValueError("native-linux-required")
     source = Path(__file__).resolve().parents[1] / "cmd/inventory-provider"
-    names = ("go.mod", "go.sum", "main.go", "main_test.go", "toolchain.json")
+    names = ("go.mod", "go.sum", "main.go", "main_test.go", "toolchain.json", "gomod/main.go", "gomod/main_test.go")
     before = {name: digest(source / name) for name in names}
     pins = json.loads((source / "toolchain.json").read_text())
     destination.mkdir(parents=True, exist_ok=False)
@@ -65,6 +65,7 @@ def prepare(destination):
         "GOPROXY": "https://proxy.golang.org",
     }
     binary = destination / "sourcebastion-inventory-provider"
+    go_source_binary = destination / "sourcebastion-go-source"
     commands = [
         ("download", ["mod", "download"]),
         # Lazy module loading downloads build inputs but not every module's
@@ -75,6 +76,11 @@ def prepare(destination):
         ("tests", ["test", "-trimpath", "-count=1", "-p", "2", "-timeout", "90s", "-json", "./..."]),
         ("build", ["build", "-trimpath", "-buildvcs=false", "-p", "2", "-o", str(binary), "."]),
         ("buildinfo", ["version", "-m", str(binary)]),
+        (
+            "go-source-build",
+            ["build", "-trimpath", "-buildvcs=false", "-p", "2", "-o", str(go_source_binary), "./gomod"],
+        ),
+        ("go-source-buildinfo", ["version", "-m", str(go_source_binary)]),
         ("modules", ["list", "-m", "-json", "all"]),
     ]
     logs = {}
@@ -101,6 +107,8 @@ def prepare(destination):
         "source_files": before,
         "binary_sha256": digest(binary),
         "binary_bytes": binary.stat().st_size,
+        "go_source_binary_sha256": digest(go_source_binary),
+        "go_source_binary_bytes": go_source_binary.stat().st_size,
         "cgo_enabled": "0",
         "logs": logs,
     }

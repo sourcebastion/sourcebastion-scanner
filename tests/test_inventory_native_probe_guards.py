@@ -9,7 +9,13 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    "name", ["verify-inventory-discovery.py", "verify-inventory-foundation.py", "verify-inventory-composition.py"]
+    "name",
+    [
+        "verify-inventory-discovery.py",
+        "verify-inventory-foundation.py",
+        "verify-inventory-composition.py",
+        "verify-go-source.py",
+    ],
 )
 @pytest.mark.parametrize("mode", ["flag", "environment"])
 def test_optimized_interpreter_refuses_probe_receipt(name, mode, tmp_path):

@@ -1,0 +1,104 @@
+name: M046 Direct Alpine Feasibility
+
+on:
+  pull_request:
+    paths:
+      - evaluation/m046/**
+      - tests/test_m046_direct_alpine.py
+      - PYTHON_VERSION
+      - .github/workflows/m046-direct-alpine.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    name: Seven-wheel Alpine import and export (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: PYTHON_VERSION
+      - uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
+      - name: Verify finite runtime boundaries
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary=:all: -r evaluation/m046/requirements-static.txt -r evaluation/m046/requirements-export.txt
+          python -m pip install pytest==8.3.5
+          python -m pytest tests/test_m046_direct_alpine.py tests/test_m046_runtime_oci.py -q --junitxml="$RUNNER_TEMP/m046-direct-alpine-tests.xml"
+      - name: Build source-free immutable overlay and exercise actual native imports and export
+        run: |
+          sudo env DOCKER_CONFIG="$HOME/.docker" "$(command -v python)" -m evaluation.m046.direct_alpine \
+            --output "$RUNNER_TEMP/m046-direct-alpine"
+      - name: Package exact source and bounded runtime evidence
+        if: always()
+        run: |
+          sudo "$(command -v python)" -m evaluation.m046.pack_evidence \
+            --root "report=$RUNNER_TEMP/m046-direct-alpine/report.json" \
+            --root "context=$RUNNER_TEMP/m046-direct-alpine/context" \
+            --root "source=$RUNNER_TEMP/m046-direct-alpine/source" \
+            --root "probe=$RUNNER_TEMP/m046-direct-alpine/probe.stdout" \
+            --root "probe-stderr=$RUNNER_TEMP/m046-direct-alpine/probe.stderr" \
+            --root "oci-audit=$RUNNER_TEMP/m046-direct-alpine/oci-audit.stdout" \
+            --root "oci-stderr=$RUNNER_TEMP/m046-direct-alpine/oci-audit.stderr" \
+            --root "loaded-image=$RUNNER_TEMP/m046-direct-alpine/loaded-image.json" \
+            --root "image-build=$RUNNER_TEMP/m046-direct-alpine/image-build.stdout" \
+            --root "image-build-stderr=$RUNNER_TEMP/m046-direct-alpine/image-build.stderr" \
+            --root "oracle=$RUNNER_TEMP/m046-direct-alpine/oracle.json" \
+            --root "source-snapshot=$RUNNER_TEMP/m046-direct-alpine/source-snapshot.json" \
+            --root "watchdog=$RUNNER_TEMP/m046-direct-alpine/watchdog.json" \
+            --root "watchdog-stderr=$RUNNER_TEMP/m046-direct-alpine/watchdog.stderr" \
+            --root "container-id=$RUNNER_TEMP/m046-direct-alpine/container.id" \
+            --root "container-inspect=$RUNNER_TEMP/m046-direct-alpine/container-inspect.stdout" \
+            --root "ended-inspect=$RUNNER_TEMP/m046-direct-alpine/ended-inspect.stdout" \
+            --root "sources=$GITHUB_WORKSPACE/evaluation/m046" \
+            --root "workflow=$GITHUB_WORKSPACE/.github/workflows/m046-direct-alpine.yml" \
+            --root "tests=$GITHUB_WORKSPACE/tests/test_m046_direct_alpine.py" \
+            --root "test-results=$RUNNER_TEMP/m046-direct-alpine-tests.xml" \
+            --output "$RUNNER_TEMP/m046-direct-alpine.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: m046-direct-alpine-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-direct-alpine.tar.gz
+            ${{ runner.temp }}/m046-direct-alpine.tar.gz.sha256
+          retention-days: 7
+      - name: Gate separately retained audited OCI export
+        id: oci
+        if: always()
+        run: |
+          python - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'm046-direct-alpine'
+          path, checksum = root / 'runtime.oci.tar', root / 'runtime.oci.tar.sha256'
+          eligible = path.is_file() and not path.is_symlink() and checksum.is_file() and not checksum.is_symlink() and 0 < path.stat().st_size <= 2 * 1024**3
+          if eligible:
+              with path.open('rb') as stream:
+                  actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+              report = json.loads((root / 'report.json').read_text())
+              eligible = checksum.read_text() == actual + '  runtime.oci.tar\n' and report.get('oci_sha256') == actual and bool(report.get('image_cost', {}).get('verified_diff_ids'))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'eligible={str(eligible).lower()}\n')
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always() && steps.oci.outputs.eligible == 'true'
+        with:
+          name: m046-direct-alpine-oci-${{ matrix.arch }}
+          path: |
+            ${{ runner.temp }}/m046-direct-alpine/runtime.oci.tar
+            ${{ runner.temp }}/m046-direct-alpine/runtime.oci.tar.sha256
+          retention-days: 7

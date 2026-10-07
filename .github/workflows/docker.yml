@@ -105,9 +105,31 @@ jobs:
           persist-credentials: false
 
       - name: Install language runtimes
+        timeout-minutes: 5
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ruby php-cli
+          set -euo pipefail
+          missing=()
+          if [[ -x /usr/bin/ruby ]]; then
+            timeout --kill-after=5s 15s /usr/bin/ruby --version
+          else
+            missing+=(ruby)
+          fi
+          if [[ -x /usr/bin/php ]]; then
+            timeout --kill-after=5s 15s /usr/bin/php --version
+          else
+            missing+=(php-cli)
+          fi
+          if (( ${#missing[@]} )); then
+            apt_options=(-o Acquire::Retries=1 -o Acquire::http::Timeout=30
+              -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=30)
+            timeout --kill-after=10s 120s sudo -n env DEBIAN_FRONTEND=noninteractive \
+              apt-get "${apt_options[@]}" -o APT::Update::Error-Mode=any update
+            timeout --kill-after=10s 120s sudo -n env DEBIAN_FRONTEND=noninteractive \
+              apt-get "${apt_options[@]}" install -y --no-install-recommends "${missing[@]}"
+          fi
+          timeout --kill-after=5s 15s /usr/bin/ruby --version
+          timeout --kill-after=5s 15s /usr/bin/php --version
+          sha256sum /usr/bin/ruby /usr/bin/php
           # node is preinstalled on ubuntu-latest
 
       - name: Set up Python
@@ -179,10 +201,32 @@ jobs:
           pip install --no-cache-dir pytest pytest-cov pytest-xdist psutil jsonschema==4.26.0 referencing==0.37.0 attrs==26.1.0 rpds-py==2026.6.3 jsonschema-specifications==2025.9.1 typing-extensions==4.16.0
 
       - name: Install trusted host Node for inventory selector tests
+        timeout-minutes: 5
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends nodejs
-          /usr/bin/node --version
+          set -euo pipefail
+          if [[ ! -x /usr/bin/node ]]; then
+            # Admit only fixed runner tool locations, never checkout binaries.
+            candidate=$(command -v node || true)
+            candidate=$(readlink -f -- "$candidate" || true)
+            case "$candidate" in
+              /usr/local/bin/node|/opt/node*/bin/node|/opt/hostedtoolcache/node/*/x64/bin/node)
+                timeout --kill-after=5s 15s "$candidate" --version
+                sha256sum "$candidate"
+                # Refuse an existing file/link instead of replacing it.
+                sudo -n ln -s -- "$candidate" /usr/bin/node
+                ;;
+            esac
+          fi
+          if [[ ! -x /usr/bin/node ]]; then
+            apt_options=(-o Acquire::Retries=1 -o Acquire::http::Timeout=30
+              -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=30)
+            timeout --kill-after=10s 120s sudo -n env DEBIAN_FRONTEND=noninteractive \
+              apt-get "${apt_options[@]}" -o APT::Update::Error-Mode=any update
+            timeout --kill-after=10s 120s sudo -n env DEBIAN_FRONTEND=noninteractive \
+              apt-get "${apt_options[@]}" install -y --no-install-recommends nodejs
+          fi
+          timeout --kill-after=5s 15s /usr/bin/node --version
+          sha256sum /usr/bin/node
 
       - name: Run tests
         run: |

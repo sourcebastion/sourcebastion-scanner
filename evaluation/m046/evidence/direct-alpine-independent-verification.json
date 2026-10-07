@@ -1,0 +1,161 @@
+{
+  "head": "d98fbd0fb9c5563999a5c061a12fb68191fddd86",
+  "run": 37590730428,
+  "decision": "finite-native-seven-wheel-Alpine-feasibility-verified",
+  "architectures": [
+    {
+      "architecture": "amd64",
+      "test_count": 49,
+      "inner_entries": 174,
+      "exact_evaluation_files": 92,
+      "report_sha256": "32ee5f2c9c777842c542f9076725f35450bfd79e7b94d95b9ae451297f6b006d",
+      "probe_sha256": "8985dbbd0dac5308f52ebc12e75c1784429af2b34d076ea93b7f5bc9a97506d6",
+      "wheel_hashes": {
+        "rpds_py-2026.6.3-cp314-cp314-musllinux_1_2_x86_64.whl": "639c8929aa0afe81be836b04de888460d6bed38b9c54cfc18da8f6bfabf5af5d",
+        "referencing-0.37.0-py3-none-any.whl": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+        "jsonschema-4.26.0-py3-none-any.whl": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce",
+        "attrs-26.1.0-py3-none-any.whl": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+        "jsonschema_specifications-2025.9.1-py3-none-any.whl": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+        "packaging-25.0-py3-none-any.whl": "29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484",
+        "poetry_core-2.1.3-py3-none-any.whl": "2c704f05016698a54ca1d327f46ce2426d72eaca6ff614132c8477c292266771"
+      },
+      "runtime_python": "3.14.8",
+      "runtime_os": "NAME=\"Alpine Linux\"\nID=alpine\nVERSION_ID=3.23.6\nPRETTY_NAME=\"Alpine Linux v3.23\"\nHOME_URL=\"https://alpinelinux.org/\"\nBUG_REPORT_URL=\"https://gitlab.alpinelinux.org/alpine/aports/-/issues\"\n",
+      "uid": 65534,
+      "loaded_rpds": {
+        "/opt/m046/venv/lib/python3.14/site-packages/rpds/rpds.cpython-314-x86_64-linux-musl.so": "4b4b40027ed15074e57203731e3661a9615503296caa34ee4b6b8dfdd02535d2",
+        "/opt/m046/venv/lib/python3.14/site-packages/rpds_py.libs/libgcc_s-f685abf1.so.1": "ad9894a62fa7c3cb4d48e25e37ebebdd14c400c08c6877fbde04cd195a9174ab"
+      },
+      "actual_container_id": "7cd5f8cd81c2b3af250e313d7b6041e8788015168f8ec40634cf33f2fd5baa52",
+      "cleanup_confirmed": true,
+      "oci_sha256": "b0ada34dfaa6356f9ac0bc69a2f0a1d4c06d50b005ec378c59a87a7705c1dbfb",
+      "oci_zip_sha256": "4ce395a3ff921c8c9d30c611918c171873d3a1664ae0937f07f47216587e481c",
+      "image_cost": {
+        "status": "actual-compressed-layer-audit-only; signatures pending",
+        "architecture": "amd64",
+        "manifest_digest": "sha256:fd04ac06d05a6b9f812a3c2ff1f86c6403d160cb7cc666e9c13be28a7ec2f685",
+        "configuration_digest": "sha256:92bc99748dde4f136c60e3e312273cadce2f8bfdfd9123525f87bde2a959264b",
+        "baseline_layers": 13,
+        "added_layers": [
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:2c74599a1aa259a9b1d43348b1584375ff45aad3f025f4da40306907ba2a88f5",
+            "size": 1173494
+          }
+        ],
+        "added_compressed_bytes": 1173494,
+        "proposed_added_limit_bytes": 262144000,
+        "fits_proposed_limit": true,
+        "verified_blob_count": 16,
+        "archive_bytes": 224129024,
+        "verified_expanded_bytes": 783597568,
+        "verified_diff_ids": [
+          "sha256:e63b02c2b5c761df2cb95e657d744f27d95da4e051235a13c80b88cd68eab188",
+          "sha256:7c4134b6a3ae662dc75bf1e0cc28df07164d953f5697d59a9b97ffbce2036278",
+          "sha256:fea0728561719285049d54581e6de31e1d542ceb34d05307a20d108c4190fd9e",
+          "sha256:325206d0611343d6f488af992a0a8953f7c828c7c6e3ef913b8fa32be7bebbc6",
+          "sha256:7f51b5ca8e9b095625bf7364bd5c49dacf3c3cc79902584b9edd5ec0244518b5",
+          "sha256:f1a3b387af4ee6fff1592f0f19a2dd1a9f0e8a71b3680a6208dd49c1b4f67aaf",
+          "sha256:4a2d0c4e1d8acdeb683884ebc8d586b9b62547dedf47d44529cbc84ad20323be",
+          "sha256:04d5f082f7242b6f5989a33302bb278cef5f2d7231e8edfb3b93d113c710c517",
+          "sha256:6ba350ed2e6ecbf26c6059f735869ede9b8f4052e918a66df5fbfc16e52346bc",
+          "sha256:750016e06811f201836978b80d62043361a8d765af8b8e865684929d2403fd9f",
+          "sha256:2e9077da9130e175c120ff468a33b65edd9eef16b04cb804ef94fce8ef72b3be",
+          "sha256:a5a34fe15499ae9fef011689d33a62169085f72d5bcfe53b03e2f3e555d19dde",
+          "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+          "sha256:b1ce16d9f752ce13098ddd7bbaf43353230de80ffa6cd5c6e24a32ece6ec3968"
+        ],
+        "expanded_audit_limit_bytes": 4294967296,
+        "audit_wall_limit_seconds": 120
+      },
+      "actual_layer_code_files_verified": 255,
+      "export_audit": {
+        "status": "exact-synthetic-pin-identities-and-roots",
+        "identities": 1,
+        "occurrences": 2,
+        "canonical_inventory_sha256": "43873f7c871d464205e505c4bfefa579449d5eb5918fc8c2e1b4e7c5ae5d9a09"
+      }
+    },
+    {
+      "architecture": "arm64",
+      "test_count": 49,
+      "inner_entries": 174,
+      "exact_evaluation_files": 92,
+      "report_sha256": "e70b2c79014046ecaf0900b76d2538d8169c038a2b86affff416d7d2d4a2e70c",
+      "probe_sha256": "66fe53a4b2ffc7e13c2f127082644264afb5e05d3fb8b20d5d6ab4065880b759",
+      "wheel_hashes": {
+        "rpds_py-2026.6.3-cp314-cp314-musllinux_1_2_aarch64.whl": "4470ce197d4090875cf6affbf1f853338387428df97c4fb7b7106317b8214698",
+        "referencing-0.37.0-py3-none-any.whl": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+        "jsonschema-4.26.0-py3-none-any.whl": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce",
+        "attrs-26.1.0-py3-none-any.whl": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+        "jsonschema_specifications-2025.9.1-py3-none-any.whl": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+        "packaging-25.0-py3-none-any.whl": "29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484",
+        "poetry_core-2.1.3-py3-none-any.whl": "2c704f05016698a54ca1d327f46ce2426d72eaca6ff614132c8477c292266771"
+      },
+      "runtime_python": "3.14.8",
+      "runtime_os": "NAME=\"Alpine Linux\"\nID=alpine\nVERSION_ID=3.23.6\nPRETTY_NAME=\"Alpine Linux v3.23\"\nHOME_URL=\"https://alpinelinux.org/\"\nBUG_REPORT_URL=\"https://gitlab.alpinelinux.org/alpine/aports/-/issues\"\n",
+      "uid": 65534,
+      "loaded_rpds": {
+        "/opt/m046/venv/lib/python3.14/site-packages/rpds/rpds.cpython-314-aarch64-linux-musl.so": "2bf50752ad72b9c670833bd4520270734a229049798ee364dba4e1797ee12554",
+        "/opt/m046/venv/lib/python3.14/site-packages/rpds_py.libs/libgcc_s-0bf60adc.so.1": "f5f857e58a62c2d1ddb222cc2f3efb3f0f638c8106ae2b5e57b50e52baf0be99"
+      },
+      "actual_container_id": "cfbda9249865c36d48a748a55af27443a326372223c7f032b26f3fc5485ae7fd",
+      "cleanup_confirmed": true,
+      "oci_sha256": "77bf69a4dfb28739d076a27c4b52fc480fb01a3bf81dcade6b9dd42ef8b7d000",
+      "oci_zip_sha256": "7aa342d79c3d3bbf4e423b5f80d08907f1f988488806eef89e984ede07dc6462",
+      "image_cost": {
+        "status": "actual-compressed-layer-audit-only; signatures pending",
+        "architecture": "arm64",
+        "manifest_digest": "sha256:3979142858e3d40ebe40e424f865199cb9fa41c4cff3ebd0d53c06875b6fda43",
+        "configuration_digest": "sha256:6125eea5b49e2c9c1fbcc1e594ff4fc533ca7a559dbe653637b659bd07681ea8",
+        "baseline_layers": 13,
+        "added_layers": [
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:5c515a00219d7262a01a023839242b436cf50011d2e2038c1a28d0c4320fcb10",
+            "size": 1148132
+          }
+        ],
+        "added_compressed_bytes": 1148132,
+        "proposed_added_limit_bytes": 262144000,
+        "fits_proposed_limit": true,
+        "verified_blob_count": 16,
+        "archive_bytes": 220329472,
+        "verified_expanded_bytes": 777632768,
+        "verified_diff_ids": [
+          "sha256:18932007cc273c0541920263e57c02d40013c4730d7db35437a4ffcc31422eda",
+          "sha256:0633a929f4d47fb3d94891fd47ebe4490bb13f44c1417a2da225aac990a61745",
+          "sha256:b4346d7bb7d61346501da186ce6c32a3c2c347aa707d4461d3a4782f2ce635f2",
+          "sha256:063f19fff8782aca6c8c3c4a0bf64f5818f0acbe860d7a1c2085ca7a3ab5ca57",
+          "sha256:af3749c9066f6a3276c61a7389ae94325285bdf8ce0f8180cc079bbab2800727",
+          "sha256:19fd29780c6a6692897813497c191e8ac3666c3dd2de4d5078cb43e2cf97f8bd",
+          "sha256:050d3c4175d5c4bfe9f319fb5ab847ea4b25b6977d738d4636964939cd949b53",
+          "sha256:54dd24421919352b89d212c0d7917d3e39d0c6608835fbcdcfe81f8c4a6d2d4d",
+          "sha256:24dd8485099b7c771e81a13f979effc0cdfc8857ddcace9cec3f08f77afcab43",
+          "sha256:5ab2e90d36659d51204160192881d206ec9cdc3f10113684cf7a9419511d2fba",
+          "sha256:d57e43c21953cdc3e7e102ed64a6547960968d7b98dbd8ee668e3b0441c8f32e",
+          "sha256:1cf05c2baef5c9a12b4b81179945cac418cd1d875f09c9a2a02cc96b8ee547ea",
+          "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef",
+          "sha256:f7170ef58f8d5a8d4ed5e3c267d64084797180b3a284d717829132845c8bba55"
+        ],
+        "expanded_audit_limit_bytes": 4294967296,
+        "audit_wall_limit_seconds": 120
+      },
+      "actual_layer_code_files_verified": 255,
+      "export_audit": {
+        "status": "exact-synthetic-pin-identities-and-roots",
+        "identities": 1,
+        "occurrences": 2,
+        "canonical_inventory_sha256": "43873f7c871d464205e505c4bfefa579449d5eb5918fc8c2e1b4e7c5ae5d9a09"
+      }
+    }
+  ],
+  "scope_limits": [
+    "one source-bound two-root export only; not full corpus or combined pipeline resource acceptance",
+    "Docker inspection records configured policy; does not measure all kernel counters",
+    "native rpds extension and bundled libgcc exercised and byte-bound; not exhaustive lazy-loaded closure",
+    "not complete trace, engine, release, license, S04 or milestone acceptance",
+    "a61027a failed trial remains failed and separate"
+  ],
+  "local_reviewed_source_tests": "49 passed in 1.98s on Python3.13.5 diagnostic"
+}

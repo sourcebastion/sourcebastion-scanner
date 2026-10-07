@@ -20,7 +20,7 @@ from .static_locks import parse as parse_lock
 from .static_lock_records import render as render_lock
 from .static_requirements import Document, parse
 
-VERSION = "m046-static-inventory-prototype-v4"
+VERSION = "m046-static-inventory-prototype-v5"
 MANIFEST_FORMATS = {"pep621", "setup-cfg", "setup-python-static"}
 LOCK_FORMATS = {"pipfile-lock", "pylock", "poetry-lock", "uv-lock", "pdm-lock"}
 MAX_OCCURRENCES = 100000
@@ -56,6 +56,17 @@ def format_for(path, mapping):
     name = posixpath.basename(path)
     if name in OTHER_FORMATS:
         return OTHER_FORMATS[name]
+    if name.endswith(".py.lock"):
+        # PEP 723 script/lock association is not the admitted project uv subset.
+        # Removing Syft's declaration cataloger must not hide this known input.
+        return "uv-script-lock"
+    parent = posixpath.basename(posixpath.dirname(path)).lower()
+    if (
+        (name == "METADATA" and parent.endswith(".dist-info"))
+        or (name == "PKG-INFO" and parent.endswith(".egg-info"))
+        or name.lower().endswith(".egg-info")
+    ):
+        return "python-installed-metadata"
     if re.fullmatch(r"pylock(?:\.[^.]+)?\.toml", name):
         return "pylock"
     if posixpath.splitext(name)[1] in {".in", ".txt", ".pip"}:

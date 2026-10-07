@@ -44,6 +44,29 @@ def scan(root, *, mapping=None, limits=None):
         return evaluate(source, mapping=mapping)
 
 
+@pytest.mark.parametrize(
+    "path,fmt",
+    [
+        ("script.py.lock", "uv-script-lock"),
+        ("nested/script.py.lock", "uv-script-lock"),
+        ("foo-1.dist-info/METADATA", "python-installed-metadata"),
+        ("foo.egg-info/PKG-INFO", "python-installed-metadata"),
+        ("foo.EGG-INFO/PKG-INFO", "python-installed-metadata"),
+        ("foo.egg-info", "python-installed-metadata"),
+    ],
+)
+def test_known_python_inputs_without_frontend_adapter_are_explicitly_unsupported(tmp_path, path, fmt):
+    write(tmp_path, path, "uninterpreted synthetic input\n")
+    observed = scan(tmp_path)
+    assert observed["inventory_status"] == "partial"
+    assert observed["packages"] == []
+    inputs = observed["semantic_dimensions"]["inputs"]
+    assert len(inputs) == 1
+    assert inputs[0]["format"] == fmt
+    assert inputs[0]["disposition"] == "unsupported"
+    assert inputs[0]["reason"] == "parser-not-implemented"
+
+
 def test_repeated_include_is_deduplicated_without_losing_distinct_roots(tmp_path):
     write(tmp_path, "a/requirements.txt", "-r ../shared/base.config\n-r ../shared/base.config\n")
     write(tmp_path, "b/requirements.txt", "-r ../shared/base.config\n")

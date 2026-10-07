@@ -132,3 +132,10 @@ production ceiling. Traced timing is diagnostic; max-child RSS is not aggregate
 memory. See [contract.md](contract.md) for the proposed contract/budgets and missing
 performance/native acceptance. See [comparison.md](comparison.md) for measured
 results and the architecture decision's current status.
+
+## Substantive Syft candidate
+
+The actual custom-cataloger and same-library CPE control prototype is described
+in [extended-syft.md](extended-syft.md). It retains rich Python inventory with
+occurrence IDs and explicit graph/export losses. Evaluation only; no engine
+selection, resource acceptance or production integration.

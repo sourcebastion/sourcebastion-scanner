@@ -207,3 +207,12 @@ fixtures and six typed-lock cases match the independent rich oracle locally; oth
 claim supported semantic agreement. Native/process/network/write audits,
 overflow/performance distributions, SBOM validation, frozen-advisory matching,
 cache identity and production integration remain separate acceptance work.
+
+## Frontend v5 known-input accounting
+
+The extended-Syft experiment uses frontend v5. Known uv script locks (*.py.lock)
+and installed egg/dist metadata are explicitly unsupported by this frontend;
+they cannot become ignored empty complete inputs. The combined candidate retains
+Syft installed-package cataloging separately. Corpus/oracle v4 bytes and its
+64 cases remain unchanged; earlier v4 frontend evidence stays bound to its head.
+See [extended-syft.md](extended-syft.md) for ownership and acceptance limits.

@@ -1,4 +1,4 @@
-"""Four source-authored semantic fixtures; no whole-corpus or M046 acceptance."""
+"""Source-authored semantic fixtures; no whole-corpus or M046 acceptance."""
 
 from collections import Counter
 from copy import deepcopy
@@ -224,7 +224,7 @@ def verify():
                 "architecture": platform.machine(),
                 "source_modules": source_modules,
                 "cases": records,
-                "scope": "Four reviewed source cases, full record/coverage comparison and repeatability; no full64 corpus, controller custody, real matching, shared kernel resources or S03/M046 acceptance.",
+                "scope": f"{len(records)} reviewed source cases, full record/coverage comparison and repeatability; no full64 corpus, controller custody, real matching, shared kernel resources or S03/M046 acceptance.",
             },
             sort_keys=True,
         )

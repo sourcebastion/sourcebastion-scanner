@@ -545,6 +545,9 @@ def _compose(
             from .compose_metadata import extend as extend_metadata
 
             extend_metadata(extra)
+            from .compose_gradle import extend as extend_gradle
+
+            extend_gradle(extra)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(

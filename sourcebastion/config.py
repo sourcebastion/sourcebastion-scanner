@@ -105,8 +105,8 @@ class ScannerSettings(BaseModel):
     optional: an absent value keeps the component's default.
 
     `timeout` bounds the scanner's own analysis. `setup_timeout` bounds work
-    done before it that is not analysis -- a vulnerability database refresh,
-    say -- because those costs scale with network and database size rather
+    done before it that is not analysis -- vulnerability database validation
+    or refresh -- because those costs scale with network and database size rather
     than with the repository, and one number cannot bound both.
     """
 

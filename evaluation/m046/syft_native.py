@@ -86,7 +86,7 @@ def trace_admission(trace, binary, python=None):
                     who == pid
                     and call == "waitid"
                     and position < index < python_position
-                    and args.startswith(f"P_PIDFD, {descriptor}, {{")
+                    and re.match(rf"P_PIDFD,\s*{descriptor},\s*\{{", args)
                     and re.search(rf"\bsi_pid={child},", args)
                     and "si_status=0," in args
                     and "si_code=CLD_EXITED," in args

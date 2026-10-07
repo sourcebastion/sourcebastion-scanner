@@ -41,6 +41,14 @@ def test_exact_exit_only_reaped_go_pidfd_probe_is_reported_separately():
     assert result["nonthread_process_calls"] == ["clone"]
 
 
+def test_split_pidfd_waitid_retains_semantics_without_separator_space():
+    trace = pidfd_trace().replace(
+        "1 waitid(P_PIDFD, 12, {",
+        "1 waitid(P_PIDFD, 12,  <unfinished ...>\n1 <... waitid resumed>{",
+    )
+    assert trace_admission(trace, "/trusted/go", "/trusted/python")["pidfd_probe_children"] == ["2"]
+
+
 @pytest.mark.parametrize(
     "old,new",
     [

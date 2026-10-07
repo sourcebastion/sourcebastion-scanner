@@ -2739,12 +2739,1629 @@
         "export": "not-run",
         "matching": "not-run"
       }
+    },
+    {
+      "case": "rust-lock",
+      "fixture_files": [
+        {
+          "path": "Cargo.lock",
+          "utf8": "version=3\n[[package]]\nname=\"itoa\"\nversion=\"1.0.11\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n",
+          "sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "lock-input",
+            "source": {
+              "path": "Cargo.lock",
+              "source_sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9",
+              "locator": "lock-input",
+              "parser": "sourcebastion.cargo-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "Cargo.lock",
+              "source_sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9",
+              "locator": "package[0]",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "ecosystem": "cargo",
+            "name": "itoa",
+            "purl": "pkg:cargo/itoa@1.0.11",
+            "evidence_kind": "locked",
+            "selected_version": "1.0.11",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "c19b7c6f923b580ac259164a89f2577984ad5ab09ee9d583b888f934adbbe8d0",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:0",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "Cargo.lock",
+            "source_sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9",
+            "format": "cargo-lock",
+            "parser": "sourcebastion.cargo-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:0"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "rust-edges",
+      "fixture_files": [
+        {
+          "path": "Cargo.lock",
+          "utf8": "version=3\n[[package]]\nname=\"serde_json\"\nversion=\"1.0.128\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\ndependencies=[\"itoa\"]\n[[package]]\nname=\"itoa\"\nversion=\"1.0.11\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n",
+          "sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "lock-input",
+            "source": {
+              "path": "Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44",
+              "locator": "lock-input",
+              "parser": "sourcebastion.cargo-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44",
+              "locator": "package[0]",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "ecosystem": "cargo",
+            "name": "serde_json",
+            "purl": "pkg:cargo/serde_json@1.0.128",
+            "evidence_kind": "locked",
+            "selected_version": "1.0.128",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "c19b7c6f923b580ac259164a89f2577984ad5ab09ee9d583b888f934adbbe8d0",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:0",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44",
+              "locator": "package[1]",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "ecosystem": "cargo",
+            "name": "itoa",
+            "purl": "pkg:cargo/itoa@1.0.11",
+            "evidence_kind": "locked",
+            "selected_version": "1.0.11",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "c19b7c6f923b580ac259164a89f2577984ad5ab09ee9d583b888f934adbbe8d0",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:0",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "relationship:itoa",
+            "selector_id": "selector:itoa",
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "source": {
+              "path": "Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "unknown"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": [
+          {
+            "id": "selector:itoa",
+            "source": {
+              "path": "Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "ecosystem": "cargo",
+            "name": "itoa",
+            "declared_range": null,
+            "dialect": "cargo-lock-package-id-3-4",
+            "exact_version": "1.0.11",
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "requested",
+            "marker_semantics": "none",
+            "extras": [],
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unique-source-endpoint"
+          }
+        ]
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "Cargo.lock",
+            "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44",
+            "format": "cargo-lock",
+            "parser": "sourcebastion.cargo-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:0"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "rust-conflicting-roots",
+      "fixture_files": [
+        {
+          "path": "a/Cargo.lock",
+          "utf8": "version=3\n[[package]]\nname=\"itoa\"\nversion=\"1.0.11\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n",
+          "sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9"
+        },
+        {
+          "path": "b/Cargo.lock",
+          "utf8": "version=3\n[[package]]\nname=\"itoa\"\nversion=\"1.0.10\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\n",
+          "sha256": "8da921dcaa739f503490703a6efeb2a7725d9a4d979fee559a8ee198063eb9ce"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "lock-input",
+            "source": {
+              "path": "a/Cargo.lock",
+              "source_sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9",
+              "locator": "lock-input",
+              "parser": "sourcebastion.cargo-composition/1"
+            }
+          },
+          {
+            "id": "scope:1",
+            "kind": "lock-input",
+            "source": {
+              "path": "b/Cargo.lock",
+              "source_sha256": "8da921dcaa739f503490703a6efeb2a7725d9a4d979fee559a8ee198063eb9ce",
+              "locator": "lock-input",
+              "parser": "sourcebastion.cargo-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "a/Cargo.lock",
+              "source_sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9",
+              "locator": "package[0]",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "ecosystem": "cargo",
+            "name": "itoa",
+            "purl": "pkg:cargo/itoa@1.0.11",
+            "evidence_kind": "locked",
+            "selected_version": "1.0.11",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "c19b7c6f923b580ac259164a89f2577984ad5ab09ee9d583b888f934adbbe8d0",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:0",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "b/Cargo.lock",
+              "source_sha256": "8da921dcaa739f503490703a6efeb2a7725d9a4d979fee559a8ee198063eb9ce",
+              "locator": "package[0]",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "ecosystem": "cargo",
+            "name": "itoa",
+            "purl": "pkg:cargo/itoa@1.0.10",
+            "evidence_kind": "locked",
+            "selected_version": "1.0.10",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "c19b7c6f923b580ac259164a89f2577984ad5ab09ee9d583b888f934adbbe8d0",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:1",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "a/Cargo.lock",
+            "source_sha256": "b5e6f72b4c33514201b886531e4c58c0f709f15087835a7df55a1bd3cc1be5b9",
+            "format": "cargo-lock",
+            "parser": "sourcebastion.cargo-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:0"
+            ],
+            "installed_environment_ids": []
+          },
+          {
+            "source_path": "b/Cargo.lock",
+            "source_sha256": "8da921dcaa739f503490703a6efeb2a7725d9a4d979fee559a8ee198063eb9ce",
+            "format": "cargo-lock",
+            "parser": "sourcebastion.cargo-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:1"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "rust-manifest-range",
+      "fixture_files": [
+        {
+          "path": "Cargo.toml",
+          "utf8": "[package]\nname=\"fixture\"\nversion=\"0.1.0\"\n[dependencies]\nitoa=\"1\"\n",
+          "sha256": "57de19a76bd51a54bc6cdfa3d05e26c8c482874a68c4e3c26633b3df605c9169"
+        }
+      ],
+      "records": {
+        "roots": [
+          {
+            "id": "root:fixture",
+            "path": ".",
+            "kind": "project",
+            "source": {
+              "path": "Cargo.toml",
+              "source_sha256": "57de19a76bd51a54bc6cdfa3d05e26c8c482874a68c4e3c26633b3df605c9169",
+              "locator": "package",
+              "parser": "sourcebastion.cargo-composition/1"
+            }
+          }
+        ],
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "manifest-input",
+            "source": {
+              "path": "Cargo.toml",
+              "source_sha256": "57de19a76bd51a54bc6cdfa3d05e26c8c482874a68c4e3c26633b3df605c9169",
+              "locator": "manifest-input",
+              "parser": "sourcebastion.cargo-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:itoa",
+            "source": {
+              "path": "Cargo.toml",
+              "source_sha256": "57de19a76bd51a54bc6cdfa3d05e26c8c482874a68c4e3c26633b3df605c9169",
+              "locator": "dependencies.itoa",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "cargo",
+            "name": "itoa",
+            "declared_range": "1",
+            "exact_version": null,
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "root_id": "root:fixture",
+            "analysis_scope_id": "scope:0"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [
+          {
+            "id": "application:fixture",
+            "root_id": "root:fixture",
+            "source": {
+              "path": "Cargo.toml",
+              "source_sha256": "57de19a76bd51a54bc6cdfa3d05e26c8c482874a68c4e3c26633b3df605c9169",
+              "locator": "package",
+              "parser": "sourcebastion.cargo-composition/1"
+            },
+            "ecosystem": "cargo",
+            "name": "fixture",
+            "version": "0.1.0"
+          }
+        ],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "partial",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "Cargo.toml",
+            "source_sha256": "57de19a76bd51a54bc6cdfa3d05e26c8c482874a68c4e3c26633b3df605c9169",
+            "format": "cargo-manifest",
+            "parser": "sourcebastion.cargo-sources/1",
+            "disposition": "unsupported",
+            "reason": "unresolved-cargo-manifest-requirement",
+            "root_ids": [
+              "root:fixture"
+            ],
+            "analysis_scope_ids": [
+              "scope:0"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-npm-v3",
+      "fixture_files": [
+        {
+          "path": "package-lock.json",
+          "utf8": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/lodash\": {\"version\": \"4.17.21\"}}}",
+          "sha256": "53bd8c565512495aa104d40de394938ee3807f224a76a5575ba5fdc4aa8ba42f"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:input",
+            "kind": "lock-input",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "53bd8c565512495aa104d40de394938ee3807f224a76a5575ba5fdc4aa8ba42f",
+              "locator": "lock-input",
+              "parser": "sourcebastion.npm-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "53bd8c565512495aa104d40de394938ee3807f224a76a5575ba5fdc4aa8ba42f",
+              "locator": "/packages/node_modules~1lodash",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "lodash",
+            "purl": "pkg:npm/lodash@4.17.21",
+            "evidence_kind": "locked",
+            "selected_version": "4.17.21",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "unknown",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "package-lock.json",
+            "source_sha256": "53bd8c565512495aa104d40de394938ee3807f224a76a5575ba5fdc4aa8ba42f",
+            "format": "npm-lock",
+            "parser": "sourcebastion.npm-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:input"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-npm-edges",
+      "fixture_files": [
+        {
+          "path": "package-lock.json",
+          "utf8": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/debug\": {\"version\": \"4.3.7\", \"dependencies\": {\"ms\": \"^2.1.3\"}}, \"node_modules/ms\": {\"version\": \"2.1.3\"}}}",
+          "sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:input",
+            "kind": "lock-input",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe",
+              "locator": "lock-input",
+              "parser": "sourcebastion.npm-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe",
+              "locator": "/packages/node_modules~1debug",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "debug",
+            "purl": "pkg:npm/debug@4.3.7",
+            "evidence_kind": "locked",
+            "selected_version": "4.3.7",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "unknown",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe",
+              "locator": "/packages/node_modules~1ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "ms",
+            "purl": "pkg:npm/ms@2.1.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.1.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "unknown",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "relationship:ms",
+            "selector_id": "selector:ms",
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe",
+              "locator": "/packages/node_modules~1debug/dependencies/ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "runtime"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": [
+          {
+            "id": "selector:ms",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe",
+              "locator": "/packages/node_modules~1debug/dependencies/ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "ecosystem": "npm",
+            "name": "ms",
+            "declared_range": "^2.1.3",
+            "dialect": "npm-semver-7.8.5",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "requested",
+            "marker_semantics": "none",
+            "extras": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unique-source-endpoint"
+          }
+        ]
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "package-lock.json",
+            "source_sha256": "093d53563441c9015c4acd218713aad2b4f1bc059ed4ec2692b1e65472932dbe",
+            "format": "npm-lock",
+            "parser": "sourcebastion.npm-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:input"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-npm-dev",
+      "fixture_files": [
+        {
+          "path": "package-lock.json",
+          "utf8": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/mocha\": {\"version\": \"10.7.3\", \"dev\": true}}}",
+          "sha256": "15a9ddd02fd7632c2bc6d4aa5f51c09266d4234a8b9080f4ff750074fd062cc3"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:input",
+            "kind": "lock-input",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "15a9ddd02fd7632c2bc6d4aa5f51c09266d4234a8b9080f4ff750074fd062cc3",
+              "locator": "lock-input",
+              "parser": "sourcebastion.npm-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "15a9ddd02fd7632c2bc6d4aa5f51c09266d4234a8b9080f4ff750074fd062cc3",
+              "locator": "/packages/node_modules~1mocha",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "mocha",
+            "purl": "pkg:npm/mocha@10.7.3",
+            "evidence_kind": "locked",
+            "selected_version": "10.7.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "unknown",
+            "scopes": [
+              "development"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "package-lock.json",
+            "source_sha256": "15a9ddd02fd7632c2bc6d4aa5f51c09266d4234a8b9080f4ff750074fd062cc3",
+            "format": "npm-lock",
+            "parser": "sourcebastion.npm-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:input"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-npm-nested",
+      "fixture_files": [
+        {
+          "path": "package-lock.json",
+          "utf8": "{\"name\": \"fixture\", \"lockfileVersion\": 3, \"packages\": {\"node_modules/ms\": {\"version\": \"2.1.3\"}, \"node_modules/debug/node_modules/ms\": {\"version\": \"2.0.0\"}}}",
+          "sha256": "feae19e8df9aa94027748ba1e88570e7a60ee97f424c4acfd8a727b0967d3827"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:input",
+            "kind": "lock-input",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "feae19e8df9aa94027748ba1e88570e7a60ee97f424c4acfd8a727b0967d3827",
+              "locator": "lock-input",
+              "parser": "sourcebastion.npm-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "feae19e8df9aa94027748ba1e88570e7a60ee97f424c4acfd8a727b0967d3827",
+              "locator": "/packages/node_modules~1ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "ms",
+            "purl": "pkg:npm/ms@2.1.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.1.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "unknown",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "feae19e8df9aa94027748ba1e88570e7a60ee97f424c4acfd8a727b0967d3827",
+              "locator": "/packages/node_modules~1debug~1node_modules~1ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "ms",
+            "purl": "pkg:npm/ms@2.0.0",
+            "evidence_kind": "locked",
+            "selected_version": "2.0.0",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "unknown",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "package-lock.json",
+            "source_sha256": "feae19e8df9aa94027748ba1e88570e7a60ee97f424c4acfd8a727b0967d3827",
+            "format": "npm-lock",
+            "parser": "sourcebastion.npm-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:input"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-yarn",
+      "fixture_files": [
+        {
+          "path": "yarn.lock",
+          "utf8": "# yarn lockfile v1\n\nlodash@^4.17.21:\n  version \"4.17.21\"\n  resolved \"https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz\"\n",
+          "sha256": "54f540046f3850c449c8efc4a7c5d3c103c567a8fd6c02c69b1e3bcd1cea460c"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:input",
+            "kind": "lock-input",
+            "source": {
+              "path": "yarn.lock",
+              "source_sha256": "54f540046f3850c449c8efc4a7c5d3c103c567a8fd6c02c69b1e3bcd1cea460c",
+              "locator": "lock-input",
+              "parser": "sourcebastion.yarn-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:lodash",
+            "source": {
+              "path": "yarn.lock",
+              "source_sha256": "54f540046f3850c449c8efc4a7c5d3c103c567a8fd6c02c69b1e3bcd1cea460c",
+              "locator": "entry:sha256:b45492505106a49c5c8e3d1ccd879d55280093765f75ece6f39c19cd59971406",
+              "parser": "sourcebastion.yarn-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "lodash",
+            "purl": "pkg:npm/lodash@4.17.21",
+            "evidence_kind": "locked",
+            "selected_version": "4.17.21",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "c9cd788f653ebe369052218401627dd41906c240afbf8c4d6f87b0055890657a",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "yarn.lock",
+            "source_sha256": "54f540046f3850c449c8efc4a7c5d3c103c567a8fd6c02c69b1e3bcd1cea460c",
+            "format": "yarn-lock",
+            "parser": "sourcebastion.yarn-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:input"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-pnpm",
+      "fixture_files": [
+        {
+          "path": "pnpm-lock.yaml",
+          "utf8": "lockfileVersion: '9.0'\nimporters:\n  .:\n    dependencies:\n      lodash:\n        specifier: ^4.17.21\n        version: 4.17.21\npackages:\n  lodash@4.17.21: {}\nsnapshots:\n  lodash@4.17.21: {}\n",
+          "sha256": "deaddd1d7200f10371d9728e288503005241479cd52ae421109136f5bfa8c39b"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:input",
+            "kind": "lock-input",
+            "source": {
+              "path": "pnpm-lock.yaml",
+              "source_sha256": "deaddd1d7200f10371d9728e288503005241479cd52ae421109136f5bfa8c39b",
+              "locator": "documents[0]/importer:sha256:cdb4ee2aea69cc6a83331bbe96dc2caa9a299d21329efb0336fc02a82e1839a8",
+              "parser": "sourcebastion.pnpm-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:lodash",
+            "source": {
+              "path": "pnpm-lock.yaml",
+              "source_sha256": "deaddd1d7200f10371d9728e288503005241479cd52ae421109136f5bfa8c39b",
+              "locator": "documents[0]/importer:sha256:cdb4ee2aea69cc6a83331bbe96dc2caa9a299d21329efb0336fc02a82e1839a8/dependencies/lodash",
+              "parser": "sourcebastion.pnpm-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "npm",
+            "name": "lodash",
+            "declared_range": "^4.17.21",
+            "exact_version": "4.17.21",
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "root_id": null,
+            "analysis_scope_id": "scope:input"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:lodash",
+            "source": {
+              "path": "pnpm-lock.yaml",
+              "source_sha256": "deaddd1d7200f10371d9728e288503005241479cd52ae421109136f5bfa8c39b",
+              "locator": "documents[0]/snapshot:sha256:adaac4144887ebc2c1b682380ff385210f681fc58b4bc1ef3986148cf8dcd28a",
+              "parser": "sourcebastion.pnpm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "lodash",
+            "purl": "pkg:npm/lodash@4.17.21",
+            "evidence_kind": "locked",
+            "selected_version": "4.17.21",
+            "declared_range": "^4.17.21",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:input",
+            "directness": "direct",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pnpm-lock.yaml",
+            "source_sha256": "deaddd1d7200f10371d9728e288503005241479cd52ae421109136f5bfa8c39b",
+            "format": "pnpm-lock",
+            "parser": "sourcebastion.pnpm-sources/1",
+            "disposition": "unsupported",
+            "reason": "incomplete-pnpm-package-resolution",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:input"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-malformed",
+      "fixture_files": [
+        {
+          "path": "package-lock.json",
+          "utf8": "{\"packages\":",
+          "sha256": "e1fb9e58bd3d9eb12aea92b7a52a6709a510a0589bca6a0ea7a466e8301ba80f"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "package-lock.json",
+            "source_sha256": "e1fb9e58bd3d9eb12aea92b7a52a6709a510a0589bca6a0ea7a466e8301ba80f",
+            "format": "npm-lock",
+            "parser": "sourcebastion.npm-sources/1",
+            "disposition": "failed",
+            "reason": "invalid-npm-source-syntax",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "node-npm-complete",
+      "fixture_files": [
+        {
+          "path": "package-lock.json",
+          "utf8": "{\"name\": \"fixture\", \"version\": \"1.0.0\", \"lockfileVersion\": 3, \"requires\": true, \"packages\": {\"\": {\"name\": \"fixture\", \"version\": \"1.0.0\", \"dependencies\": {\"debug\": \"^4.3.7\"}}, \"node_modules/debug\": {\"version\": \"4.3.7\", \"resolved\": \"https://packages.invalid/debug.tgz\", \"dependencies\": {\"ms\": \"^2.1.3\"}}, \"node_modules/ms\": {\"version\": \"2.1.3\", \"resolved\": \"https://packages.invalid/ms.tgz\"}}}",
+          "sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+        },
+        {
+          "path": "package.json",
+          "utf8": "{\"name\": \"fixture\", \"version\": \"1.0.0\", \"dependencies\": {\"debug\": \"^4.3.7\"}}",
+          "sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+        }
+      ],
+      "records": {
+        "roots": [
+          {
+            "id": "root:fixture",
+            "path": ".",
+            "kind": "project",
+            "source": {
+              "path": "package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be",
+              "locator": "/name",
+              "parser": "sourcebastion.npm-composition/1"
+            }
+          }
+        ],
+        "analysis_scopes": [
+          {
+            "id": "scope:manifest",
+            "kind": "manifest-input",
+            "source": {
+              "path": "package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be",
+              "locator": "manifest-input",
+              "parser": "sourcebastion.npm-composition/1"
+            }
+          },
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+              "locator": "lock-input",
+              "parser": "sourcebastion.npm-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:manifest",
+            "source": {
+              "path": "package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be",
+              "locator": "/dependencies/debug",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "npm",
+            "name": "debug",
+            "declared_range": "^4.3.7",
+            "exact_version": null,
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "root_id": "root:fixture",
+            "analysis_scope_id": "scope:manifest"
+          },
+          {
+            "id": "declaration:lock",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+              "locator": "/packages//dependencies/debug",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "npm",
+            "name": "debug",
+            "declared_range": "^4.3.7",
+            "exact_version": null,
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "root_id": "root:fixture",
+            "analysis_scope_id": "scope:lock"
+          }
+        ],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:manifest",
+            "source": {
+              "path": "package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be",
+              "locator": "/dependencies/debug",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "debug",
+            "purl": "pkg:npm/debug",
+            "evidence_kind": "declared",
+            "selected_version": null,
+            "declared_range": "^4.3.7",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": "root:fixture",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:manifest",
+            "directness": "direct",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:debug",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+              "locator": "/packages/node_modules~1debug",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "debug",
+            "purl": "pkg:npm/debug@4.3.7",
+            "evidence_kind": "locked",
+            "selected_version": "4.3.7",
+            "declared_range": "^4.3.7",
+            "hashes": [],
+            "registry_source_sha256": "bbe7fe2be8e53782ab31bd0dc81d24ea7891b9b9137bcf517c4ede7504fda1ce",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": "root:fixture",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "direct",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:ms",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+              "locator": "/packages/node_modules~1ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "ms",
+            "purl": "pkg:npm/ms@2.1.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.1.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "ea74ed1a8d7264bf899e462717834286e101c04e1c62997779b984bae11d1f3d",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": "root:fixture",
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "transitive",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "relationship:ms",
+            "selector_id": "selector:ms",
+            "parent_id": "occurrence:debug",
+            "child_id": "occurrence:ms",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+              "locator": "/packages/node_modules~1debug/dependencies/ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "runtime"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "applications": [
+          {
+            "id": "application:fixture",
+            "root_id": "root:fixture",
+            "source": {
+              "path": "package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be",
+              "locator": "/name",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "ecosystem": "npm",
+            "name": "fixture",
+            "version": "1.0.0"
+          }
+        ],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": [
+          {
+            "id": "selector:ms",
+            "source": {
+              "path": "package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+              "locator": "/packages/node_modules~1debug/dependencies/ms",
+              "parser": "sourcebastion.npm-composition/1"
+            },
+            "parent_id": "occurrence:debug",
+            "child_id": "occurrence:ms",
+            "ecosystem": "npm",
+            "name": "ms",
+            "declared_range": "^2.1.3",
+            "dialect": "npm-semver-7.8.5",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "requested",
+            "marker_semantics": "none",
+            "extras": [],
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unique-source-endpoint"
+          }
+        ]
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "partial",
+        "version_resolution": "partial",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "package-lock.json",
+            "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+            "format": "npm-lock",
+            "parser": "sourcebastion.npm-sources/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [
+              "root:fixture"
+            ],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          },
+          {
+            "source_path": "package.json",
+            "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be",
+            "format": "npm-manifest",
+            "parser": "sourcebastion.npm-sources/1",
+            "disposition": "unresolved",
+            "reason": "no-selected-version",
+            "root_ids": [
+              "root:fixture"
+            ],
+            "analysis_scope_ids": [
+              "scope:manifest"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
     }
   ],
   "additional_source_authorities": {
     "java-gradle-lock": {
       "format": "https://docs.gradle.org/current/userguide/dependency_locking.html",
       "adjudication": "Original fixture GAV/configuration and exact source line/hash retained. Lock-input scope does not establish a project root; activation/directness remain unknown and no dependency edges are inferred. Prior source_adjudication_sha256 applies to original four cases only."
+    },
+    "cargo-original-four": {
+      "manifest_vs_lock": "https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html",
+      "version_requirements": "https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html",
+      "adjudication": "Original four Rust fixture source bytes unchanged. Registry lock entries provide exact selected versions, not roots/installed contexts/directness/activation. Lock source order and dependency selector are explicit; unique itoa endpoint evidences one source edge. Manifest itoa=1 is a range, kept as unresolved declaration with application identity; no selected package fabricated. Registry URI SHA identifies literal asserted source, not authenticity or artifact bytes. Missing checksum remains empty hashes. Graph stays partial; no complete closure or build execution claim."
+    },
+    "node-original-eight": {
+      "package_lock": "https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/",
+      "package_json": "https://docs.npmjs.com/cli/v11/configuring-npm/package-json/",
+      "adjudication": "Original minimal lock fixtures have top-level name but no explicit packages empty-key application; retain no root/borrowed reachability/directness. Explicit entry paths keep nested ms versions distinct. Source debug dependency selects ancestor node_modules/ms; range verifies explicit endpoint, not a name-only join. Development scope follows explicit dev flag. Original manifest-only range expectation remains unchanged. Complete npm fixture shares the explicit matching application and dependency-table identity, retains unresolved manifest declaration separately from selected lock occurrences, and assigns direct/transitive roots only through explicit root selector and evidenced lock edge. Malformed npm JSON is failed. Yarn classic explicit descriptor/version/resolved URL retains one locked package in unknown analysis context. pnpm9 explicit importer/version/snapshot retains one direct source-selected package and declaration while missing package resolution is explicit partial coverage; no application root or installed environment inferred. Graph remains partial/unknown; installed/activation unknown.",
+      "yarn_classic": "https://github.com/yarnpkg/website/blob/master/lang/en/docs/yarn-lock.md",
+      "pnpm_lock9": "https://github.com/pnpm/spec/blob/master/lockfile/9.0.md"
     }
   }
 }

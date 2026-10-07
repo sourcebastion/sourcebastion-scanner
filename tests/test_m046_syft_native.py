@@ -21,6 +21,123 @@ def test_runtime_threads_are_distinct_from_trusted_interpreter_process():
     assert trace_admission(trace, "/trusted/go", "/trusted/python")["network_attempts"] == 0
 
 
+def terminal_thread_trace():
+    return "\n".join(
+        [
+            '1 execve("/trusted/go", [], []) = 0',
+            "1 clone(flags=CLONE_VM|CLONE_THREAD|CLONE_SIGHAND) = 2",
+            "2 clone3({flags=CLONE_VM|CLONE_THREAD|CLONE_SIGHAND}, 88) = 3",
+            "3 exit_group(0 <unfinished ...>",
+            "3 +++ exited with 0 +++",
+        ]
+    )
+
+
+def test_only_explicit_successful_go_thread_terminal_exit_is_discharged():
+    result = trace_admission(terminal_thread_trace(), "/trusted/go")
+    assert result["terminal_exit_groups"] == ["3"]
+    with pytest.raises(ValueError, match="incomplete-process-trace"):
+        syft_native.trace_calls(terminal_thread_trace())
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("3 +++ exited with 0 +++", ""),
+        ("3 +++ exited with 0 +++", "3 +++ exited with 1 +++"),
+        ("3 +++ exited with 0 +++", "3 +++ killed by SIGKILL +++"),
+        ("3 +++ exited with 0 +++", "+++ exited with 0 +++"),
+        ("3 +++ exited with 0 +++", "4 +++ exited with 0 +++"),
+        ("3 +++ exited with 0 +++", "3 +++ exited with 0 +++\n3 +++ exited with 0 +++"),
+        ("3 +++ exited with 0 +++", '3 +++ exited with 0 +++\n3 openat(AT_FDCWD, "/source", O_RDONLY) = 4'),
+        ("3 +++ exited with 0 +++", "3 +++ exited with 0 +++\n2 clone(flags=CLONE_THREAD) = 3"),
+        ("3 exit_group(0", "3 exit_group(1"),
+        ("3 exit_group(0", '3 openat(AT_FDCWD, "/source", O_RDONLY'),
+        ("3 exit_group(0", "3 socket(AF_INET, SOCK_STREAM, 0"),
+        ("3 exit_group(0", "3 clone(flags=CLONE_THREAD"),
+        ("3 exit_group(0", "9 exit_group(0"),
+        ("3 exit_group(0", "1 exit_group(0"),
+        ('execve("/trusted/go", [], []) = 0', 'execve("/trusted/go", [], []) = -1 EACCES'),
+        ("CLONE_VM|CLONE_THREAD|CLONE_SIGHAND}, 88) = 3", "CLONE_VM|CLONE_THREAD|CLONE_SIGHAND}, 88) = -1 EPERM"),
+        ("CLONE_VM|CLONE_THREAD|CLONE_SIGHAND}, 88) = 3", "CLONE_VM|CLONE_VFORK|SIGCHLD}, 88) = 3"),
+        ("CLONE_VM|CLONE_THREAD|CLONE_SIGHAND}, 88) = 3", "CLONE_THREAD}, 88) = 3"),
+    ],
+)
+def test_terminal_marker_cannot_excuse_uncertain_or_unrelated_calls(old, new):
+    with pytest.raises(ValueError):
+        trace_admission(terminal_thread_trace().replace(old, new), "/trusted/go")
+
+
+@pytest.mark.parametrize(
+    "line", ["7 ???( <unfinished ...>", "7 syscall_0xffff(0) = -1 ENOSYS", "strace: detached", "7 openat("]
+)
+def test_unknown_or_truncated_trace_line_is_never_silently_ignored(line):
+    with pytest.raises(ValueError, match="undecoded-process-trace"):
+        trace_admission(terminal_thread_trace() + "\n" + line, "/trusted/go")
+
+
+def test_completed_calls_and_explicit_signal_and_exit_markers_remain_admissible():
+    trace = terminal_thread_trace().replace("3 exit_group(0 <unfinished ...>", "3 exit_group(0) = ?")
+    trace += "\n1 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED} ---\n1 +++ exited with 0 +++"
+    assert trace_admission(trace, "/trusted/go")["terminal_exit_groups"] == []
+
+
+def test_thread_ancestry_must_be_known_before_unfinished_exit():
+    trace = terminal_thread_trace().replace(
+        "2 clone3({flags=CLONE_VM|CLONE_THREAD|CLONE_SIGHAND}, 88) = 3\n3 exit_group(0 <unfinished ...>",
+        "3 exit_group(0 <unfinished ...>\n2 clone3({flags=CLONE_VM|CLONE_THREAD|CLONE_SIGHAND}, 88) = 3",
+    )
+    with pytest.raises(ValueError, match="reused-process-trace"):
+        trace_admission(trace, "/trusted/go")
+
+
+def test_unknown_terminal_pid_and_pid_zero_are_refused():
+    for extra in ("9 +++ exited with 0 +++", "0 exit_group(0) = ?"):
+        with pytest.raises(ValueError):
+            trace_admission(terminal_thread_trace() + "\n" + extra, "/trusted/go")
+
+
+def test_original_failed_tail_is_refused_even_if_terminal_evidence_is_added():
+    trace = terminal_thread_trace().replace(
+        "3 +++ exited with 0 +++", "7 ???( <unfinished ...>\n3 +++ exited with 0 +++"
+    )
+    with pytest.raises(ValueError, match="undecoded-process-trace"):
+        trace_admission(trace, "/trusted/go")
+
+
+def test_native_admission_requires_terminal_markers_for_all_observed_and_spawned_pids():
+    trace = terminal_thread_trace() + "\n2 +++ exited with 0 +++\n1 +++ exited with 0 +++"
+    assert trace_admission(trace, "/trusted/go", require_complete=True)["terminal_markers_required"]
+    for pid in ("1", "2", "3"):
+        with pytest.raises(ValueError):
+            trace_admission(trace.replace(f"{pid} +++ exited with 0 +++", ""), "/trusted/go", require_complete=True)
+    with pytest.raises(ValueError, match="incomplete-terminal-process-trace"):
+        trace_admission('1 execve("/trusted/go", [], []) = 0', "/trusted/go", require_complete=True)
+
+
+def test_native_admission_requires_terminal_markers_for_unobserved_spawned_child():
+    trace = '1 execve("/trusted/go", [], []) = 0\n1 clone(flags=CLONE_VM|CLONE_THREAD|CLONE_SIGHAND) = 2\n1 +++ exited with 0 +++'
+    with pytest.raises(ValueError, match="incomplete-terminal-process-trace"):
+        trace_admission(trace, "/trusted/go", require_complete=True)
+    assert trace_admission(trace + "\n2 +++ exited with 0 +++", "/trusted/go", require_complete=True)
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        '9 openat(AT_FDCWD, "/source", O_RDONLY) = 4\n9 +++ exited with 0 +++',
+        "9 --- SIGCHLD {si_signo=SIGCHLD} ---",
+        "9 --- SIGCHLD {si_signo=SIGCHLD} ---\n9 +++ exited with 0 +++",
+        "9 clone(flags=CLONE_VM|CLONE_THREAD|CLONE_SIGHAND) = 10\n9 +++ exited with 0 +++\n10 +++ exited with 0 +++",
+        '9 openat(AT_FDCWD, "/source", O_RDONLY) = 4\n1 clone(flags=CLONE_VM|CLONE_THREAD|CLONE_SIGHAND) = 9\n9 +++ exited with 0 +++',
+    ],
+)
+def test_orphan_pid_or_spawn_tree_cannot_establish_complete_native_trace(extra):
+    trace = '1 execve("/trusted/go", [], []) = 0\n' + extra + "\n1 +++ exited with 0 +++"
+    with pytest.raises(ValueError, match="(?:incomplete-terminal|reused)-process-trace"):
+        trace_admission(trace, "/trusted/go", require_complete=True)
+
+
 def pidfd_trace():
     return "\n".join(
         [
@@ -47,6 +164,18 @@ def test_split_pidfd_waitid_retains_semantics_without_separator_space():
         "1 waitid(P_PIDFD, 12,  <unfinished ...>\n1 <... waitid resumed>{",
     )
     assert trace_admission(trace, "/trusted/go", "/trusted/python")["pidfd_probe_children"] == ["2"]
+
+
+def test_vfork_probe_child_can_exit_before_parent_creation_resumes():
+    trace = pidfd_trace().replace("2 exit_group(0) = ?", "2 exit_group(0) = ?\n2 +++ exited with 0 +++")
+    assert trace_admission(trace, "/trusted/go", "/trusted/python")["pidfd_probe_children"] == ["2"]
+
+
+def test_new_creation_after_prior_child_exit_cannot_reuse_pid():
+    trace = pidfd_trace().replace("2 exit_group(0) = ?", "2 exit_group(0) = ?\n2 +++ exited with 0 +++")
+    trace += "\n1 clone(flags=CLONE_THREAD) = 2"
+    with pytest.raises(ValueError, match="reused-process-trace"):
+        trace_admission(trace, "/trusted/go", "/trusted/python")
 
 
 @pytest.mark.parametrize(

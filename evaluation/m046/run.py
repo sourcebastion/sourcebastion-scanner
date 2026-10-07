@@ -317,7 +317,7 @@ def sandbox(source, scratch, tracer, command):
         [
             str(tracer),
             "-f",
-            "-qq",
+            "-q",
             "-s",
             "4096",
             "-e",

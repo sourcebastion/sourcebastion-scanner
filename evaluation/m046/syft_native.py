@@ -17,40 +17,113 @@ from .static_native import NETWORK_SYSCALLS, SUPPORTED_MANIFESTS, runtime_identi
 CONTROLS = {"python-requirements", "node-npm-complete", "go-module", "java-gradle-lock"}
 
 
-def trace_calls(trace):
+def trace_calls(trace, *, terminal_binary=None, terminal_exit_groups=None, require_complete=False):
     calls, pending = [], {}
-    for line in trace.splitlines():
+    ended, spawned, go_threads, observed = set(), set(), set(), {}
+    children = {}
+    first_exec = None
+    for line_number, line in enumerate(trace.splitlines()):
+        if not line.strip():
+            continue
         prefix = re.match(r"^\s*(?:(\d+)\s+|\[pid\s+(\d+)\]\s+)?(.*)$", line)
         pid, body = prefix[1] or prefix[2], prefix[3]
+        if pid == "0" or pid in ended:
+            raise ValueError("syft-post-terminal-process-trace")
+        terminal = re.fullmatch(r"\+\+\+ exited with (\d+) \+\+\+", body)
+        if terminal:
+            if pid is None or pid not in set(observed) | spawned or terminal[1] != "0":
+                raise ValueError("syft-invalid-terminal-process-trace")
+            unfinished = pending.pop(pid, None)
+            if unfinished is not None:
+                if (
+                    terminal_binary is None
+                    or pid == first_exec
+                    or pid not in go_threads
+                    or unfinished[:3] != ("exit_group", "0", True)
+                ):
+                    raise ValueError("syft-incomplete-process-trace")
+                if terminal_exit_groups is not None:
+                    terminal_exit_groups.append(pid)
+            ended.add(pid)
+            continue
+        if re.fullmatch(r"--- SIG[A-Z0-9]+(?: \{.*\})? ---", body):
+            observed.setdefault(pid, line_number)
+            continue
         resumed = re.match(r"<\.\.\. ([a-z][a-z0-9_]*) resumed>(.*)$", body)
         if resumed:
             start = pending.pop(pid, None)
             if start is None or start[0] != resumed[1]:
                 raise ValueError("syft-incomplete-process-trace")
             name, arguments = start[0], start[1] + resumed[2]
+            call_started = start[3]
         else:
             start = re.match(r"([a-z][a-z0-9_]*)\((.*)$", body)
-            if start is None:
-                continue
+            if start is None or start[1].startswith("syscall_"):
+                raise ValueError("syft-undecoded-process-trace")
+            if pid in pending:
+                raise ValueError("syft-incomplete-process-trace")
             name, arguments = start[1], start[2]
+            observed.setdefault(pid, line_number)
+            call_started = line_number
             if arguments.endswith("<unfinished ...>"):
                 if pid in pending:
                     raise ValueError("syft-incomplete-process-trace")
-                pending[pid] = (name, arguments.removesuffix("<unfinished ...>").rstrip())
+                pending[pid] = (
+                    name,
+                    arguments.removesuffix("<unfinished ...>").rstrip(),
+                    pid in go_threads and pid != first_exec,
+                    line_number,
+                )
                 continue
+        if not re.search(r"\)\s*= (?:\?|[-0-9].*)$", arguments):
+            raise ValueError("syft-undecoded-process-trace")
+        if name == "execve" and first_exec is None:
+            first_exec = pid
+            filename, _end = json.JSONDecoder().raw_decode(arguments)
+            if pid is not None and filename == str(terminal_binary) and re.search(r"\)\s*= 0$", arguments):
+                go_threads.add(pid)
+        if name in {"clone", "clone3", "fork", "vfork"}:
+            child = re.search(r"\)\s*= ([1-9]\d*)$", arguments)
+            if child:
+                # A vfork child may exit before its parent's creation call
+                # resumes. Only that already-started creation can account for
+                # a previously unassigned child; later PID reuse fails.
+                prior_child_activity = child[1] in observed and not (call_started < observed[child[1]] < line_number)
+                if prior_child_activity or child[1] in spawned or child[1] == first_exec:
+                    raise ValueError("syft-reused-process-trace")
+                spawned.add(child[1])
+                children.setdefault(pid, []).append(child[1])
+                if pid in go_threads and all(
+                    flag in arguments for flag in ("CLONE_THREAD", "CLONE_VM", "CLONE_SIGHAND")
+                ):
+                    go_threads.add(child[1])
         calls.append((pid, name, arguments))
     if pending:
         raise ValueError("syft-incomplete-process-trace")
+    if require_complete:
+        reachable, frontier = {first_exec}, [first_exec]
+        while frontier:
+            for child in children.get(frontier.pop(), []):
+                if child not in reachable:
+                    reachable.add(child)
+                    frontier.append(child)
+        if None in observed or first_exec is None or set(observed) | spawned != ended or ended != reachable:
+            raise ValueError("syft-incomplete-terminal-process-trace")
     return calls
 
 
-def trace_admission(trace, binary, python=None):
-    invocations = trace_calls(trace)
+def trace_admission(trace, binary, python=None, *, require_complete=False):
+    terminal_exit_groups = []
+    invocations = trace_calls(
+        trace, terminal_binary=binary, terminal_exit_groups=terminal_exit_groups, require_complete=require_complete
+    )
     executions, process_calls, probes, go_threads = [], [], [], set()
     for position, (pid, name, arguments) in enumerate(invocations):
         if name in NETWORK_SYSCALLS or name == "execveat":
             raise ValueError("syft-network-or-untrusted-process-attempt")
         if name == "execve":
+            if not re.search(r"\)\s*= 0$", arguments):
+                raise ValueError("syft-unsuccessful-trusted-exec")
             filename, _end = json.JSONDecoder().raw_decode(arguments)
             executions.append(filename)
             if filename == str(binary) and len(executions) == 1:
@@ -111,6 +184,8 @@ def trace_admission(trace, binary, python=None):
         "executions": executions,
         "nonthread_process_calls": process_calls,
         "pidfd_probe_children": probes,
+        "terminal_exit_groups": terminal_exit_groups,
+        "terminal_markers_required": require_complete,
         "network_attempts": 0,
     }
 
@@ -305,7 +380,10 @@ def run(output, tracer, binary, preparation_manifest):
             content = (scratch / "stdout.log").read_bytes()
             document = json.loads(content)
             admission = trace_admission(
-                (scratch / "trace.log").read_text(), binary, sys.executable if mode == "extended" else None
+                (scratch / "trace.log").read_text(),
+                binary,
+                sys.executable if mode == "extended" else None,
+                require_complete=True,
             )
             record = {
                 "fixture": fixture["id"],

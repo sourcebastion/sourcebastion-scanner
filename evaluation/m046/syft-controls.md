@@ -72,3 +72,16 @@ Raw archives keep their 64 MiB per-file/1 GiB total bounds. The
 larger compiled binary uploads separately; audit its native ELF/hash/size against
 the preparation manifest and verify all archived source/inner hashes. Successful
 CI is evidence collection, not independent acceptance or milestone closure.
+
+The native correctness tracer retains explicit process-exit markers (`strace -q`).
+Its parser refuses undecoded lines, including `???`/unknown syscall records, and
+incomplete calls by default. One narrow admission handles a nonreturning
+`exit_group(0)` from an already proven Go CLONE_THREAD descendant: a later explicit
+exit-0 marker for that same PID must discharge it, and the PID is reported in
+`terminal_exit_groups`. Failed/missing/killed/duplicate exits, calls after exit,
+PID reuse and unfinished file/network/clone/probe calls remain refused. This
+cannot retrospectively accept the earlier AMD64 trace whose markers were suppressed.
+Native evaluation also requires successful terminal markers for every observed
+or spawned PID, including the trusted executable/interpreter. The parser does
+not maintain a syscall-name allowlist; syntactically decoded syscall names remain
+subject to the existing process/network and separate file-operation audits.

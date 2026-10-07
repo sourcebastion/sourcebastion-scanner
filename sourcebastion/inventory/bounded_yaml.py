@@ -28,6 +28,8 @@ def load_documents(content, *, check):
                 raise InputRefusal("unsupported-yaml-alias-or-anchor")
             if getattr(event, "tag", None) is not None:
                 raise InputRefusal("unsupported-yaml-tag")
+            if isinstance(event, ScalarEvent) and any(0xD800 <= ord(char) <= 0xDFFF for char in event.value):
+                raise InputRefusal("invalid-yaml-unicode")
             if isinstance(event, DocumentStartEvent):
                 documents += 1
                 if documents > 32:

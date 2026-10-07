@@ -5,7 +5,8 @@ existing descriptor-bound discovery. It reads every document, including the
 separate environment/config and project documents. It never invokes pnpm,
 loads project hooks, installs packages, fetches registries or chooses this
 worker's platform. YAML is data only: aliases, anchors, tags, merge keys,
-duplicate keys and complex map keys are refused before consumption. The
+duplicate keys, unpaired escaped Unicode and complex map keys are refused
+before consumption. The
 existing source cap, deadline and shared semantic ledger bound parsing;
 32 documents, depth 32 and two million YAML nodes are additional ceilings.
 

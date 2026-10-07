@@ -206,3 +206,16 @@ def test_incomplete_package_resolution_never_reports_complete_inventory(tmp_path
     assert result.stages.inventory == "partial"
     assert result.coverage.inputs[0].reason == "incomplete-pnpm-package-resolution"
     assert {value.name for value in result.occurrences} == {"alpha", "beta"}
+
+
+def test_escaped_invalid_unicode_is_local_file_refusal_not_uncaught_encoding(tmp_path):
+    (tmp_path / "pnpm-lock.yaml").write_bytes(
+        b'lockfileVersion: "9.0"\npackages:\n  alpha@1.0.0:\n    resolution: {tarball: "https://example.invalid/\\uD800"}\n'
+    )
+    (tmp_path / "requirements.txt").write_text("pip==26.0.1\n")
+    result = run(tmp_path)
+    assert result.stages.inventory == "partial"
+    assert [value.name for value in result.occurrences] == ["pip"]
+    assert (
+        next(value for value in result.coverage.inputs if value.format == "pnpm-lock").reason == "invalid-yaml-unicode"
+    )

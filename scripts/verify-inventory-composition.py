@@ -650,6 +650,19 @@ def main():
     assert result.coverage.inputs[0].reason == "incomplete-pnpm-package-resolution"
     semantic.append(record)
 
+    result, record = record_case(
+        "pnpm-invalid-unicode-refused",
+        {
+            "pnpm-lock.yaml": 'lockfileVersion: "9.0"\npackages:\n  alpha@1.0.0:\n    resolution: {tarball: "https://example.invalid/\\uD800"}\n',
+            "requirements.txt": "pip==26.0.1\n",
+        },
+    )
+    assert result.stages.inventory == "partial" and [value.name for value in result.occurrences] == ["pip"]
+    assert (
+        next(value for value in result.coverage.inputs if value.format == "pnpm-lock").reason == "invalid-yaml-unicode"
+    )
+    semantic.append(record)
+
     corpus = json.loads(Path("tests/fixtures/inventory/corpus.json").read_text())
     assert len(corpus) == 64
     fixtures = []

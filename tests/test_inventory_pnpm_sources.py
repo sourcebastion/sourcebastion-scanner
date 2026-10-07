@@ -154,3 +154,16 @@ def test_registry_and_tarball_resolution_alternatives_are_supported():
     result = read(content)
     assert result.disposition == "parsed"
     assert result.documents[0].packages[0].source_key is not None
+
+
+@pytest.mark.parametrize("field", ["url", "peer-key"])
+def test_unpaired_escaped_unicode_has_typed_refusal_before_hashing(field):
+    content = (
+        b'lockfileVersion: "9.0"\npackages:\n  alpha@1.0.0:\n    resolution:\n'
+        b'      tarball: "https://example.invalid/\\uD800"\nsnapshots:\n  alpha@1.0.0: {}\n'
+        if field == "url"
+        else b'lockfileVersion: "9.0"\npackages:\n  alpha@1.0.0:\n    resolution: {integrity: sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}\nsnapshots:\n  "alpha@1.0.0(peer@\\uD800)": {}\n'
+    )
+    result = read(content)
+    assert result.disposition == "failed" and result.reason == "invalid-yaml-unicode"
+    assert not result.documents

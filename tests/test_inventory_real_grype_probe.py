@@ -116,3 +116,14 @@ def test_advisory_alias_requires_exact_structured_id_and_namespace(probe):
     assert not probe.known_advisory(match, aliases)
     match["vulnerability"]["description"] = json.dumps(sorted(aliases))
     assert not probe.known_advisory(match, aliases)
+
+
+def test_advisory_aggregate_byte_ceiling(probe, tmp_path, monkeypatch):
+    (tmp_path / "snapshot.json").write_bytes(b"{}")
+    (tmp_path / "6").mkdir()
+    (tmp_path / "6/vulnerability.db").write_bytes(b"database")
+    monkeypatch.setattr(probe, "ADVISORY_BYTES", 10)
+    assert sum(row["bytes"] for row in probe.advisory_binding(tmp_path, time.monotonic() + 5)["files"].values()) == 10
+    (tmp_path / "extra").write_bytes(b"x")
+    with pytest.raises(ValueError, match="unsafe-file"):
+        probe.advisory_binding(tmp_path, time.monotonic() + 5)

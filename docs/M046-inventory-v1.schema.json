@@ -487,6 +487,208 @@
       "title": "Declaration",
       "type": "object"
     },
+    "DependencySelector": {
+      "additionalProperties": false,
+      "description": "Located lock selector, including those without an unambiguous endpoint.\n\nA resolved selector evidences a source edge, never installed reachability.\nThe adapter proves range/dialect selection within the same lock input.",
+      "properties": {
+        "activation": {
+          "default": "unknown",
+          "enum": [
+            "active",
+            "inactive",
+            "unknown"
+          ],
+          "title": "Activation",
+          "type": "string"
+        },
+        "child_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Child Id"
+        },
+        "declared_range": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Range"
+        },
+        "dialect": {
+          "default": "pep440",
+          "enum": [
+            "pep440",
+            "poetry-core-2.1.3"
+          ],
+          "title": "Dialect",
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "resolved",
+            "unresolved"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "ecosystem": {
+          "const": "pypi",
+          "default": "pypi",
+          "title": "Ecosystem",
+          "type": "string"
+        },
+        "exact_version": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exact Version"
+        },
+        "extra_selection": {
+          "default": "requested",
+          "enum": [
+            "requested",
+            "variant-exact"
+          ],
+          "title": "Extra Selection",
+          "type": "string"
+        },
+        "extras": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Extras",
+          "type": "array"
+        },
+        "groups": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Groups",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marker"
+        },
+        "marker_semantics": {
+          "default": "pep508",
+          "enum": [
+            "pep508",
+            "relative-to-lock-python"
+          ],
+          "title": "Marker Semantics",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Name",
+          "type": "string"
+        },
+        "parent_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Parent Id",
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        },
+        "registry_source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registry Source Sha256"
+        },
+        "scopes": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Scopes",
+          "type": "array"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "parent_id",
+        "name",
+        "disposition",
+        "reason"
+      ],
+      "title": "DependencySelector",
+      "type": "object"
+    },
     "Environment": {
       "additionalProperties": false,
       "properties": {
@@ -1181,6 +1383,18 @@
           "default": null,
           "title": "Installed Environment Id"
         },
+        "lock_optional": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lock Optional"
+        },
         "marker": {
           "anyOf": [
             {
@@ -1225,6 +1439,19 @@
             }
           ],
           "title": "Purl"
+        },
+        "registry_source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registry Source Sha256"
         },
         "root_id": {
           "anyOf": [
@@ -1501,6 +1728,20 @@
           "title": "Scopes",
           "type": "array"
         },
+        "selector_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selector Id"
+        },
         "source": {
           "$ref": "#/$defs/Locator"
         }
@@ -1628,6 +1869,15 @@
       },
       "maxItems": 100000,
       "title": "Declarations",
+      "type": "array"
+    },
+    "dependency_selectors": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DependencySelector"
+      },
+      "maxItems": 500000,
+      "title": "Dependency Selectors",
       "type": "array"
     },
     "environment": {

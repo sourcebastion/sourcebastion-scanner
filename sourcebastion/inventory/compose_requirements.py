@@ -495,6 +495,9 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             roots=[],
             applications=[],
             applicability=[],
+            relationships=[],
+            dependency_selectors=[],
+            graph="unknown",
             root_contexts=defaultdict(set),
             adapted_inputs=set(),
             enumerated=False,
@@ -509,6 +512,9 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             from .compose_manifests import extend
 
             extend(extra)
+            from .compose_locks import extend as extend_locks
+
+            extend_locks(extra)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(
@@ -542,10 +548,11 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
             environment_sha256=environment.sha256,
             roots=tuple(extra.roots),
             installed_environments=(),
-            relationships=(),
+            relationships=tuple(extra.relationships),
             applications=tuple(extra.applications),
             losses=(),
             applicability=tuple(extra.applicability),
+            dependency_selectors=tuple(extra.dependency_selectors),
             analysis_scopes=tuple(scopes),
             declarations=tuple(declarations),
             input_references=tuple(references),
@@ -554,7 +561,7 @@ def _compose(source, *, source_sha256, producer, environment=None, config=None, 
                 discovery=discovery_fidelity,
                 enumeration=enumeration,
                 version_resolution=version_fidelity,
-                graph="unknown",
+                graph=extra.graph,
                 environment="unknown",
                 inputs=covered,
                 refusal_codes=tuple(sorted(global_refusals)),

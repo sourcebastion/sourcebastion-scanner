@@ -354,6 +354,9 @@ class Occurrence(Record):
     selected_version: Name | None
     declared_range: Text | None = None
     hashes: tuple[ContentHash, ...] = Field(default=(), max_length=4096)
+    # Asserted registry URI identity, not authentication or an artifact digest.
+    registry_source_sha256: SHA256 | None = None
+    lock_optional: bool | None = None
     provider_references: tuple[ProviderReference, ...] = Field(default=(), max_length=256)
     # Binding is structural. Adapters prove that these declarations jointly
     # justify a selected version; constraints are never packages or edges.
@@ -373,6 +376,10 @@ class Occurrence(Record):
         expected = package_purl(self.ecosystem, self.name, self.selected_version)
         if self.purl is not None and self.purl != expected:
             raise ValueError("contradictory-package-identity")
+        if self.evidence_kind != "locked" and (
+            self.registry_source_sha256 is not None or self.lock_optional is not None
+        ):
+            raise ValueError("lock-metadata-requires-locked-evidence")
         if self.evidence_kind != "installed" and self.installed_environment_id is not None:
             raise ValueError("source-declaration-is-not-installed")
         if self.evidence_kind == "installed" and self.root_id is not None:
@@ -380,8 +387,46 @@ class Occurrence(Record):
         return self
 
 
+class DependencySelector(Record):
+    """Located lock selector, including those without an unambiguous endpoint.
+
+    A resolved selector evidences a source edge, never installed reachability.
+    The adapter proves range/dialect selection within the same lock input.
+    """
+
+    id: ID
+    source: Locator
+    parent_id: ID
+    child_id: ID | None = None
+    ecosystem: Literal["pypi"] = "pypi"
+    name: Name
+    declared_range: Text | None = None
+    dialect: Literal["pep440", "poetry-core-2.1.3"] = "pep440"
+    exact_version: Name | None = None
+    registry_source_sha256: SHA256 | None = None
+    marker: Text | None = None
+    extra_selection: Literal["requested", "variant-exact"] = "requested"
+    marker_semantics: Literal["pep508", "relative-to-lock-python"] = "pep508"
+    extras: tuple[Name, ...] = Field(default=(), max_length=256)
+    scopes: tuple[Name, ...] = Field(default=(), max_length=256)
+    groups: tuple[Name, ...] = Field(default=(), max_length=256)
+    activation: Activation = "unknown"
+    disposition: Literal["resolved", "unresolved"]
+    reason: Reason
+
+    @model_validator(mode="after")
+    def consistent_selection(self):
+        package_purl("pypi", self.name, self.exact_version)
+        if (self.child_id is not None) != (self.disposition == "resolved"):
+            raise ValueError("contradictory-selector-resolution")
+        if self.marker_semantics == "relative-to-lock-python" and self.activation != "unknown":
+            raise ValueError("relative-marker-cannot-prove-activation")
+        return self
+
+
 class Relationship(Record):
     id: ID
+    selector_id: ID | None = None
     parent_id: ID
     child_id: ID
     source: Locator
@@ -519,6 +564,7 @@ class Inventory(Record):
     declarations: tuple[Declaration, ...] = Field(default=(), max_length=100000)
     input_references: tuple[InputReference, ...] = Field(default=(), max_length=100000)
     applicability: tuple[Applicability, ...] = Field(default=(), max_length=100000)
+    dependency_selectors: tuple[DependencySelector, ...] = Field(default=(), max_length=500000)
     coverage: Coverage
     stages: StageStates
 
@@ -542,6 +588,7 @@ class Inventory(Record):
             ("declaration", self.declarations),
             ("input-reference", self.input_references),
             ("applicability", self.applicability),
+            ("selector", self.dependency_selectors),
         ):
             ids = {row.id for row in records}
             if len(ids) != len(records) or any(not key.startswith(kind + ":sha256:") for key in ids):
@@ -567,6 +614,7 @@ class Inventory(Record):
             self.declarations,
             self.input_references,
             self.applicability,
+            self.dependency_selectors,
         ):
             for record in records:
                 covered = inputs.get(record.source.path)
@@ -634,12 +682,68 @@ class Inventory(Record):
             ):
                 if key is not None and key not in indexes[kind]:
                     raise ValueError("unbound-occurrence-context")
+        occurrence_index = {row.id: row for row in self.occurrences}
+        selector_index = {row.id: row for row in self.dependency_selectors}
+        for selector in self.dependency_selectors:
+            parent = occurrence_index.get(selector.parent_id)
+            child = occurrence_index.get(selector.child_id) if selector.child_id is not None else None
+            if parent is None or (selector.child_id is not None and child is None):
+                raise ValueError("unbound-selector-endpoint")
+            if (
+                parent.evidence_kind != "locked"
+                or parent.ecosystem != "pypi"
+                or parent.source.path != selector.source.path
+                or parent.groups != selector.groups
+                or parent.scopes != selector.scopes
+            ):
+                raise ValueError("selector-requires-same-lock-parent")
+            if child is not None and (
+                child.selected_version is None
+                or child.name != selector.name
+                or child.ecosystem != selector.ecosystem
+                or child.evidence_kind != "locked"
+                or child.source.path != parent.source.path
+                or child.analysis_scope_id != parent.analysis_scope_id
+                or child.groups != selector.groups
+                or child.scopes != selector.scopes
+                or (selector.extra_selection == "variant-exact" and child.extras != selector.extras)
+                or (
+                    selector.exact_version is not None
+                    and Version(child.selected_version) != Version(selector.exact_version)
+                )
+                or (
+                    selector.registry_source_sha256 is not None
+                    and child.registry_source_sha256 != selector.registry_source_sha256
+                )
+            ):
+                raise ValueError("contradictory-selector-endpoint")
+        selector_edge_counts = dict.fromkeys(selector_index, 0)
         for relationship in self.relationships:
             if (
                 relationship.parent_id not in indexes["occurrence"]
                 or relationship.child_id not in indexes["occurrence"]
             ):
                 raise ValueError("unbound-relationship-endpoint")
+            if relationship.selector_id is not None:
+                selector = selector_index.get(relationship.selector_id)
+                if selector is None or (
+                    selector.disposition != "resolved"
+                    or relationship.parent_id != selector.parent_id
+                    or relationship.child_id != selector.child_id
+                    or relationship.source != selector.source
+                    or relationship.marker != selector.marker
+                    or relationship.extras != selector.extras
+                    or relationship.scopes != selector.scopes
+                    or relationship.activation != selector.activation
+                    or relationship.evidence_status != "evidenced"
+                ):
+                    raise ValueError("contradictory-relationship-selector")
+                selector_edge_counts[relationship.selector_id] += 1
+        if any(
+            selector_edge_counts[row.id] != (1 if row.disposition == "resolved" else 0)
+            for row in self.dependency_selectors
+        ):
+            raise ValueError("selector-requires-exactly-one-evidenced-edge")
         if any(app.root_id not in indexes["root"] for app in self.applications):
             raise ValueError("unbound-application-root")
         for loss in self.losses:
@@ -647,6 +751,10 @@ class Inventory(Record):
                 loss.relationship_id is not None and loss.relationship_id not in indexes["relationship"]
             ):
                 raise ValueError("unbound-projection-loss")
+        if self.coverage.graph == "complete" and any(
+            row.disposition == "unresolved" for row in self.dependency_selectors
+        ):
+            raise ValueError("unresolved-selector-cannot-prove-complete-graph")
         if self.coverage.version_resolution == "complete" and any(
             row.selected_version is None for row in self.occurrences
         ):
@@ -663,7 +771,7 @@ class Inventory(Record):
             )
         ):
             raise ValueError("incomplete-coverage-cannot-be-promoted")
-        if self.stages.inventory == "failed" and (self.occurrences or self.relationships):
+        if self.stages.inventory == "failed" and (self.occurrences or self.relationships or self.dependency_selectors):
             raise ValueError("failed-inventory-cannot-admit-graph")
         return self
 
@@ -744,6 +852,7 @@ def canonical_bytes(inventory, *, max_bytes=64 * 1024 * 1024, max_nodes=2000000)
         "declarations",
         "input_references",
         "applicability",
+        "dependency_selectors",
     ):
         data[field].sort(key=lambda row: row["id"])
     for row in data["occurrences"]:

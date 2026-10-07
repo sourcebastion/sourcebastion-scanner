@@ -1,0 +1,76 @@
+{
+  "schema_version": "m046.real-grype-native-fixture-proposal/2",
+  "status": "source-authored proposal; independent review required before new driver execution",
+  "files": [
+    {
+      "path": "one/dependencies.pip",
+      "utf8": "requests==2.19.1\n",
+      "sha256": "8caa32834ed25cd885f19ce1d36b90db608bda455c450a79f38f1442a0cc8381"
+    },
+    {
+      "path": ".deps/requirements.txt",
+      "utf8": "requests==2.19.1; python_version < \"4\"\n",
+      "sha256": "4d5f9affb3eb8f4396ab6bc6041864e792abade9d7995318da2373382587d77f"
+    },
+    {
+      "path": "range/requirements.in",
+      "utf8": "requests>=2.19,<3\n",
+      "sha256": "21921964be785eadeba67b3a319febfdc5c81f839a00952ae41fb94ea65a9da8"
+    }
+  ],
+  "expected": {
+    "selected": [
+      {
+        "path": "one/dependencies.pip",
+        "line": 1,
+        "name": "requests",
+        "version": "2.19.1",
+        "activation": "active"
+      },
+      {
+        "path": ".deps/requirements.txt",
+        "line": 1,
+        "name": "requests",
+        "version": "2.19.1",
+        "marker": "python_version < \"4\"",
+        "activation": "unknown"
+      }
+    ],
+    "unselected": [
+      {
+        "path": "range/requirements.in",
+        "line": 1,
+        "name": "requests",
+        "declared_range": ">=2.19,<3"
+      }
+    ],
+    "root_ownership": "unknown",
+    "installed_ownership": "unknown",
+    "directness": "unknown",
+    "graph": "unknown",
+    "canonical_edges": 0,
+    "exported_components": 2,
+    "must_match_advisory": "GHSA-x84v-xcm2-53pg",
+    "advisory_primary_source": "https://github.com/advisories/GHSA-x84v-xcm2-53pg",
+    "matching_policy": "Known advisory must appear on each selected exact occurrence ID via vulnerability or relatedVulnerabilities exact ID+namespace. Additional advisories allowed. Retain complete original stdout bytes/SHA and semantic original match object equality, no purl/name joins; versionless occurrence never eligible.",
+    "advisory_aliases": [
+      {
+        "id": "GHSA-x84v-xcm2-53pg",
+        "namespace": "github:language:python"
+      },
+      {
+        "id": "CVE-2018-18074",
+        "namespace": "nvd:cpe"
+      }
+    ]
+  },
+  "discovery_config": {
+    "mappings": [
+      [
+        "one/dependencies.pip",
+        "pip-requirements"
+      ]
+    ],
+    "purpose": "Explicit reviewed mapping witness; generic .pip is already supported automatically."
+  }
+}

@@ -51,6 +51,7 @@ class ArtifactStore:
         self.check = check
         self.root = Path(os.path.abspath(root))
         self._files = {}
+        self._pending = {}
         self._names = set()
         self._reserved = 0
         self._control_reserved = False
@@ -60,6 +61,7 @@ class ArtifactStore:
             "inventory.json": self.limits.inventory_bytes,
             "sbom.cdx.json": self.limits.sbom_bytes,
             "grype.json": self.limits.diagnostic_file_bytes,
+            "grype.stderr": self.limits.diagnostic_file_bytes,
             "recovery.json": self.limits.diagnostic_file_bytes,
             "execution.json": min(65536, self.limits.diagnostic_file_bytes),
         }
@@ -111,7 +113,9 @@ class ArtifactStore:
         try:
             self.check()
             self._directory()
-            for name, (descriptor, expected, _fact) in self._files.items():
+            rows = [(name, descriptor, expected) for name, (descriptor, expected, _fact) in self._files.items()]
+            rows += [(name, row.fd, row.expected) for name, row in self._pending.items()]
+            for name, descriptor, expected in rows:
                 self.check()
                 if (
                     _identity(os.fstat(descriptor)) != expected
@@ -123,16 +127,24 @@ class ArtifactStore:
             raise InputRefusal(self._refusal) from None
 
     def put(self, name, content):
-        """Retain one complete fixed-name byte artifact, exclusively and once."""
-        if name not in self._ceilings or type(content) is not bytes:
+        """Retain one complete byte artifact through the shared stream path."""
+        if type(content) is not bytes:
+            raise ValueError("invalid-artifact-write")
+        writer = self.writer(name, maximum=len(content))
+        writer.write(content)
+        return writer.finish()
+
+    def writer(self, name, *, maximum):
+        """Reserve a stream's full ceiling before opening or buffering output."""
+        if type(name) is not str or name not in self._ceilings or type(maximum) is not int or maximum < 0:
             raise ValueError("invalid-artifact-write")
         self._guard()
         if name in self._names:
             raise ValueError("artifact-already-attempted")
-        if len(content) > self._ceilings[name] or self._reserved + len(content) > self.limits.diagnostic_job_bytes:
+        if maximum > self._ceilings[name] or self._reserved + maximum > self.limits.diagnostic_job_bytes:
             self._refusal = "artifact-retention-budget-exceeded"
             raise InputRefusal(self._refusal)
-        self._reserved += len(content)
+        self._reserved += maximum
         descriptor = None
         try:
             descriptor = os.open(
@@ -148,42 +160,15 @@ class ArtifactStore:
                 or info.st_dev != os.fstat(self.fd).st_dev
             ):
                 raise InputRefusal("unsafe-artifact-file")
-            # Our exclusive creation changes directory timestamps. Rebind only
-            # its metadata, retaining device/inode/mode/owner/group authority.
             current = _identity(os.fstat(self.fd))
             if current[:5] != self._metadata[:5]:
                 raise InputRefusal("changed-artifact-root")
             self._metadata = current
-            self._guard()
-            view = memoryview(content)
-            offset = 0
-            while offset < len(view):
-                self._guard()
-                written = os.write(descriptor, view[offset : offset + 65536])
-                if written <= 0:
-                    raise InputRefusal("incomplete-artifact-write")
-                offset += written
-            self._guard()
-            os.fsync(descriptor)
-            expected = _identity(os.fstat(descriptor))
-            if (
-                expected[:5] != _identity(info)[:5]
-                or expected[5] != len(content)
-                or expected[-1] != 1
-                or _identity(os.stat(name, dir_fd=self.fd, follow_symlinks=False)) != expected
-            ):
-                raise InputRefusal("changed-artifact-file")
-            held = descriptor
-            self._files[name] = (held, expected, None)
+            writer = ArtifactWriter(self, name, descriptor, maximum, _identity(info))
+            self._pending[name] = writer
             descriptor = None
             self._guard()
-            os.fsync(self.fd)
-            self._guard()
-            fact = ArtifactFact(name, hashlib.sha256(content).hexdigest(), len(content))
-            self._verify_content(held, fact)
-            self._guard()
-            self._files[name] = (held, expected, fact)
-            return fact
+            return writer
         except (OSError, InputRefusal) as exc:
             self._refusal = exc.reason if isinstance(exc, InputRefusal) else "artifact-write-failed"
             raise InputRefusal(self._refusal) from None
@@ -259,6 +244,8 @@ class ArtifactStore:
     def validate(self):
         try:
             self._guard()
+            if self._pending:
+                raise InputRefusal("unfinished-artifact-stream")
             for descriptor, _expected, fact in self._files.values():
                 if fact is not None:
                     self._verify_content(descriptor, fact)
@@ -285,7 +272,8 @@ class ArtifactStore:
     def close(self):
         if not self._closed:
             self._closed = True
-            for descriptor, _expected, _fact in self._files.values():
+            descriptors = {row[0] for row in self._files.values()} | {row.fd for row in self._pending.values()}
+            for descriptor in descriptors:
                 os.close(descriptor)
             os.close(self.fd)
 
@@ -294,3 +282,83 @@ class ArtifactStore:
 
     def __exit__(self, *_args):
         self.close()
+
+
+class ArtifactWriter:
+    """One store-owned bounded stream; partial bytes never become a fact.
+
+    Only ArtifactStore creates these writers. The store retains descriptors on
+    every exit and closes them at its own close; abandoning a writer never
+    removes a file or releases its full reservation.
+    """
+
+    def __init__(self, store, name, descriptor, maximum, expected):
+        self.store, self.name, self.fd = store, name, descriptor
+        self.maximum, self.expected = maximum, expected
+        self.written = 0
+        self._digest = hashlib.sha256()
+        self._finished = False
+
+    def _active(self):
+        if self._finished or self.store._pending.get(self.name) is not self:
+            raise ValueError("artifact-stream-not-active")
+        self.store._guard()
+
+    def write(self, content):
+        """Write bounded chunks, retaining the available prefix on overflow."""
+        if type(content) is not bytes:
+            raise ValueError("invalid-artifact-stream-bytes")
+        self._active()
+        try:
+            view = memoryview(content)
+            available = self.maximum - self.written
+            overflow = len(view) > available
+            view = view[:available]
+            offset = 0
+            while offset < len(view):
+                self.store._guard()
+                written = os.write(self.fd, view[offset : offset + 65536])
+                if written <= 0:
+                    raise InputRefusal("incomplete-artifact-write")
+                self._digest.update(view[offset : offset + written])
+                offset += written
+                self.written += written
+                current = _identity(os.fstat(self.fd))
+                if current[:5] != self.expected[:5] or current[-1] != 1 or current[5] != self.written:
+                    raise InputRefusal("changed-artifact-file")
+                self.expected = current
+                self.store._guard()
+            if overflow:
+                raise InputRefusal("artifact-stream-budget-exceeded")
+        except (OSError, InputRefusal) as exc:
+            self.store._refusal = exc.reason if isinstance(exc, InputRefusal) else "artifact-write-failed"
+            raise InputRefusal(self.store._refusal) from None
+        except BaseException:
+            self.store._refusal = "artifact-write-interrupted"
+            raise
+
+    def finish(self):
+        """Sync and rehash complete held bytes before publishing their fact."""
+        self._active()
+        try:
+            os.fsync(self.fd)
+            self.store._guard()
+            fact = ArtifactFact(self.name, self._digest.hexdigest(), self.written)
+            self.store._verify_content(self.fd, fact)
+            self.store._guard()
+            os.fsync(self.store.fd)
+            self.store._guard()
+            self.store._files[self.name] = (self.fd, self.expected, fact)
+            del self.store._pending[self.name]
+            self._finished = True
+            return fact
+        except (OSError, InputRefusal) as exc:
+            if self.name in self.store._files:
+                self.store._files[self.name] = (self.fd, self.expected, None)
+            self.store._refusal = exc.reason if isinstance(exc, InputRefusal) else "artifact-write-failed"
+            raise InputRefusal(self.store._refusal) from None
+        except BaseException:
+            if self.name in self.store._files:
+                self.store._files[self.name] = (self.fd, self.expected, None)
+            self.store._refusal = "artifact-write-interrupted"
+            raise

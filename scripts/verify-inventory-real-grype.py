@@ -198,7 +198,8 @@ def required_advisories(bindings, matches, expected):
         for group in groups:
             aliases = {(row["id"], row["namespace"]) for row in group}
             ordinals = [
-                binding.ordinal for binding in bindings
+                binding.ordinal
+                for binding in bindings
                 if binding.occurrence_id == occurrence_id and known_advisory(matches[binding.ordinal], aliases)
             ]
             if not aliases or not ordinals:
@@ -214,6 +215,9 @@ def verify():
         raise RuntimeError("real-grype-proof-root-refused")
     from sourcebastion.inventory import contract
     from sourcebastion.inventory.compose_source import compose_source
+    from sourcebastion.inventory.artifacts import ArtifactStore
+    from sourcebastion.inventory.budget import PipelineBudget
+    from sourcebastion.inventory.process_capture import _capture
     from sourcebastion.inventory.contract import Producer, canonical_bytes
     from sourcebastion.inventory.cyclonedx import export
     from sourcebastion.inventory.inputs import Source
@@ -304,6 +308,7 @@ def verify():
         )
         scan_start = time.monotonic()
         with Source("/fixture") as source:
+            budget = PipelineBudget(source, config=config, deadline=source.deadline)
             expected_files = {row["path"]: row for row in fixture["files"]}
             entries = tuple(source.discover())
             assert all(entry.kind in {"file", "directory"} for entry in entries)
@@ -311,7 +316,9 @@ def verify():
             for path, row in expected_files.items():
                 data = source.read(path)
                 assert data.content == row["utf8"].encode() and data.sha256 == row["sha256"]
-            value = compose_source(source, source_sha256=sha(render(expected_files)), producer=producer, config=config)
+            value = compose_source(
+                source, source_sha256=sha(render(expected_files)), producer=producer, config=config, budget=budget
+            )
             before = canonical_bytes(value)
             (OUTPUT / "inventory.json").write_bytes(before)
             assert (
@@ -359,23 +366,44 @@ def verify():
                 len(selected) == 4
                 and len({by_path[w["path"]].analysis_scope_id for w in fixture["expected"]["selected"]}) == 4
             )
-            artifact = export(value, deadline=source.deadline, check=source.check)
+            artifact = export(value, deadline=budget.deadline, check=budget.check)
             document = json.loads(artifact.content)
             assert {row["bom-ref"] for row in document["components"]} == selected
             assert len(document["components"]) == 4 and not document.get("dependencies")
             sbom_path = OUTPUT / "inventory.cdx.json"
             sbom_path.write_bytes(artifact.content)
-            execution = capture(
-                prefix + ["sbom:" + str(sbom_path), "-o", "json", "-q"],
-                environment=environment,
-                cwd=private / "cwd",
-                stdout=OUTPUT / "grype.json",
-                stderr=OUTPUT / "grype.stderr",
-                deadline=source.deadline,
-                check=source.check,
-            )
+            capture_root = OUTPUT / "capture"
+            capture_root.mkdir(mode=0o700)
+            command = prefix + ["sbom:" + str(sbom_path), "-o", "json", "-q"]
+            with ArtifactStore(
+                capture_root,
+                limits=value.limits.model_copy(update={"diagnostic_file_bytes": STDOUT_BYTES}),
+                check=budget.check,
+            ) as store:
+                captured = _capture(
+                    command,
+                    source=source,
+                    config=config,
+                    budget=budget,
+                    store=store,
+                    environment=environment,
+                    cwd=private / "cwd",
+                )
+                assert captured.returncode == 0
+                execution = {
+                    "argv": command,
+                    "exit_code": captured.returncode,
+                    "captured_bytes": {"stdout": captured.stdout.bytes, "stderr": captured.stderr.bytes},
+                    "capture_policy": "installed-streaming-shared-source-ledger/1",
+                    "retention_reserved_bytes": store.reserved_bytes,
+                    "lifecycle": captured.lifecycle,
+                }
+                for name in ("grype.json", "grype.stderr"):
+                    with (OUTPUT / name).open("xb") as target:
+                        target.write((capture_root / name).read_bytes())
+                store.validate()
             raw = (OUTPUT / "grype.json").read_bytes()
-            result = recover(value, artifact, raw, consumer=consumer, deadline=source.deadline, check=source.check)
+            result = recover(value, artifact, raw, consumer=consumer, deadline=budget.deadline, check=budget.check)
             assert result.original_output == raw and result.output_sha256 == sha(raw)
             matches = json.loads(raw)["matches"]
             required_evidence = required_advisories(result.matches, matches, required)
@@ -396,7 +424,7 @@ def verify():
             assert FIXTURE.read_bytes() == fixture_raw and PINS.read_bytes() == pins_raw
             assert Path(".github/scanner-versions.json").read_bytes() == scanner_pins_raw
             source.validate()
-            source.check()
+            budget.check()
             receipt = {
                 "schema_version": "sourcebastion.real-grype-native-proof/1",
                 "status": "native-real-grype-finite-passed",
@@ -414,6 +442,7 @@ def verify():
                 "source_wall_seconds": time.monotonic() - scan_start,
                 "source_deadline_seconds": source.limits.wall_seconds,
                 "execution": execution,
+                "source_semantic_checks": {"consumed": budget.consumed, "maximum": budget.maximum},
                 "inventory_sha256": sha(before),
                 "sbom_sha256": artifact.sha256,
                 "grype_stdout_sha256": sha(raw),

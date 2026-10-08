@@ -69,10 +69,16 @@ def sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
-def anchor(collection, row):
-    # Never bind by equal package name/purl. Ambiguous source anchors refuse;
-    # extending to such fixtures requires a separately reviewed binding rule.
-    return render({key: row[key] for key in ("source", *ANCHOR_FIELDS.get(collection, ()))})
+def anchor(collection, row, aliases=None):
+    # Never bind by equal package name/purl. Grouped lock edges additionally
+    # bind the parent through an already uniquely source-bound occurrence.
+    value = {key: row[key] for key in ("source", *ANCHOR_FIELDS.get(collection, ()))}
+    if collection in {"dependency_selectors", "relationships"}:
+        try:
+            value["parent_id"] = row["parent_id"] if aliases is None else aliases[row["parent_id"]]
+        except KeyError:
+            raise ValueError("expectation-unbound-source-anchor") from None
+    return render(value)
 
 
 def normalize(row, aliases):
@@ -118,7 +124,7 @@ def compare(expected, actual):
             by_anchor[key] = label
         seen = set()
         for row in observed:
-            key = anchor(collection, row)
+            key = anchor(collection, row, aliases)
             if key not in by_anchor or key in seen or row["id"] in aliases:
                 raise ValueError("expectation-unbound-source-anchor")
             seen.add(key)
@@ -399,7 +405,7 @@ def verify(binary, preparation, *, progress=None):
                 "go_runtime": go_receipt,
                 "cooperative_budget_scope": "Existing reference/adapter semantic sites share one ledger per fixture Source across repeats. Serialization/schema validation are deadline-guarded but not wholly semantic-charged; no whole-job/kernel-resource or test-preparation accounting claim.",
                 "cases": records,
-                "scope": f"{len(records)} reviewed source cases, full record/coverage comparison and repeatability; no full64 corpus, controller custody, real matching, shared kernel resources or S03/M046 acceptance.",
+                "scope": f"{len(records)} reviewed original source cases, full record/coverage comparison and repeatability; no controller custody, real matching, shared kernel resources or S03/M046 acceptance.",
             },
             sort_keys=True,
         )

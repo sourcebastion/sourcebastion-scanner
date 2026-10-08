@@ -164,6 +164,7 @@ def main():
             )
     configuration_raw = (output / "consumer-config.json").read_bytes()
     assert sha(configuration_raw) == receipt["consumer"]["config_sha256"]
+    assert json.loads(configuration_raw)["environment"]["GOMAXPROCS"] == "2"
     assert json.loads(configuration_raw)["yaml_sha256"] == sha((output / "grype.yaml").read_bytes())
     for fact in receipt["artifacts"]:
         raw_fact = (output / fact["name"]).read_bytes()

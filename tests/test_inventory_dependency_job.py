@@ -152,6 +152,16 @@ def test_prelaunch_cancellation_records_no_runtime_or_composition_success(tmp_pa
     assert not list(output.iterdir())
 
 
+def test_fixed_go_scheduling_reaches_every_child_and_retained_configuration(tmp_path, monkeypatch):
+    monkeypatch.setenv("GOMAXPROCS", "999")
+    result, receipt, output, captures, _deadline = exercise(tmp_path, monkeypatch)
+    assert result.finalized and len(captures) == 3
+    assert all(values["environment"].get("GOMAXPROCS") == "2" for _command, values in captures)
+    raw = (output / "consumer-config.json").read_bytes()
+    assert json.loads(raw)["environment"]["GOMAXPROCS"] == "2"
+    assert receipt["consumer"]["config_sha256"] == hashlib.sha256(raw).hexdigest()
+
+
 @pytest.mark.parametrize(
     "failure,stage",
     [("late-runtime-change", "finalization"), ("status-path", "runtime_admission"), ("analysis-path", "recovery")],

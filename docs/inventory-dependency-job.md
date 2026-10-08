@@ -38,6 +38,9 @@ child JSON cannot provide that authority.
 
 The consumer receives a fixed explicit configuration, minimal private
 environment/cwd/home, stdin disabled and only an explicit generated SBOM path.
+The fixed environment sets `GOMAXPROCS=2` for every version/status/analysis
+invocation. This Go scheduling policy is separate from the parent CPU quota
+and aggregate CPU-time enforcement; a parent environment cannot override it.
 Network, update, install, resolution and project execution are not requested;
 the parent must enforce actual offline operation. Version and status streams
 reserve at most64KiB each. Analysis stdout uses the configured diagnostic-file
@@ -67,9 +70,12 @@ nonrefundable reservations, semantic usage and artifact hashes/sizes. Its
 finalized child facts; it is never a parent-accepted vulnerability scan.
 Public reason strings omit exception text, raw stderr and customer paths.
 
-Current unit evidence uses tiny prepared native-header fixtures and explicit
+Unit evidence uses tiny prepared native-header fixtures and explicit
 mock capture documents. They are not actual Grype/advisory execution, full
 kernel or lifecycle evidence, installed/native qualification, release
 packaging, platform negotiated transport or M046 completion. The existing
-legacy scanner and M036 inner protocol remain unchanged. Fixed CLI/host
-launcher and actual native job evidence are subsequent gates.
+legacy scanner and M036 inner protocol remain unchanged. The separate
+`scripts/verify-inventory-dependency-job.py` requires installed native execution
+of a source-authored fixture with retained configuration and exact recovery;
+its current-head CI artifacts need independent review. Fixed CLI/host launch,
+kernel enforcement and release/development acceptance remain subsequent gates.

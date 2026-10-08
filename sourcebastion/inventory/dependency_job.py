@@ -149,6 +149,7 @@ def _run_dependency(
                 "HOME": str(private / "home"),
                 "XDG_CONFIG_HOME": str(private / "config-home"),
                 "LC_ALL": "C",
+                "GOMAXPROCS": "2",
                 "GRYPE_DB_CACHE_DIR": str(ADVISORIES),
                 "GRYPE_DB_AUTO_UPDATE": "false",
                 "GRYPE_CHECK_FOR_APP_UPDATE": "false",

@@ -3,7 +3,7 @@
   "status": "draft source-authored finite expectations; independent review required before candidate execution; not whole S03 acceptance",
   "historical_oracle_sha256": "d0d126aea56d38be463ac1aca67104bb870f51cc852324339ba778c18a9a7dae",
   "source_adjudication_sha256": "c058f6ce5193c09c768ffc533af18c93884f26a2a73b8add9a6d759e4a60a689",
-  "identity_policy": "Expected id labels are aliases bound by unique complete source Locator plus collection-specific record kind, never package name/purl equality. Resolve reference IDs only through these bindings; exact full record fields and contextual multisets required. Duplicate/ambiguous anchors refuse rather than merge. All collections including empty ones must match. Only explicitly set-valued ID reference lists ignore order; all source locations/ranges/contexts remain exact. Order-insensitive ID lists are exactly selection_declaration_ids, root_ids, analysis_scope_ids and installed_environment_ids; sorting retains duplicate entries. No other array normalization is allowed.",
+  "identity_policy": "Expected id labels are aliases bound by unique complete source Locator plus collection-specific record kind, never package name/purl equality. Resolve reference IDs only through these bindings; exact full record fields and contextual multisets required. Duplicate/ambiguous anchors refuse rather than merge. All collections including empty ones must match. Only explicitly set-valued ID reference lists ignore order; all source locations/ranges/contexts remain exact. Order-insensitive ID lists are exactly selection_declaration_ids, root_ids, analysis_scope_ids and installed_environment_ids; sorting retains duplicate entries. No other array normalization is allowed. Grouped lock selectors and relationships additionally bind their parent through the already uniquely source-bound occurrence alias; parent package name/purl never substitutes for that binding.",
   "controller_policy": "Require fixture source hashes, explicit source-free preserve-alternatives environment, schema_version, producer/config/registry identity and numerical limits separately; these fixture expectations do not prove controller custody. Export/matching stays not-run during composition.",
   "cases": [
     {
@@ -6197,6 +6197,2652 @@
         "export": "not-run",
         "matching": "not-run"
       }
+    },
+    {
+      "case": "python-pipfile",
+      "fixture_files": [
+        {
+          "path": "Pipfile.lock",
+          "utf8": "{\"_meta\": {\"pipfile-spec\": 6}, \"default\": {\"requests\": {\"version\": \"==2.32.3\"}}, \"develop\": {\"pytest\": {\"version\": \"==8.3.3\"}}}",
+          "sha256": "1b95d73db28ba2f4c7b12b26c09b55adfc71d33f16026f6d6515eb977b438924"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "Pipfile.lock",
+              "source_sha256": "1b95d73db28ba2f4c7b12b26c09b55adfc71d33f16026f6d6515eb977b438924",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "Pipfile.lock",
+              "source_sha256": "1b95d73db28ba2f4c7b12b26c09b55adfc71d33f16026f6d6515eb977b438924",
+              "locator": "/default/requests",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.32.3",
+            "declared_range": "==2.32.3",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "Pipfile.lock",
+              "source_sha256": "1b95d73db28ba2f4c7b12b26c09b55adfc71d33f16026f6d6515eb977b438924",
+              "locator": "/develop/pytest",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "pytest",
+            "purl": "pkg:pypi/pytest@8.3.3",
+            "evidence_kind": "locked",
+            "selected_version": "8.3.3",
+            "declared_range": "==8.3.3",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "development"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "Pipfile.lock",
+            "source_sha256": "1b95d73db28ba2f4c7b12b26c09b55adfc71d33f16026f6d6515eb977b438924",
+            "format": "python-pipfile-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "unsupported",
+            "reason": "missing-lock-source",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pipfile-complete",
+      "fixture_files": [
+        {
+          "path": "Pipfile.lock",
+          "utf8": "{\"_meta\": {\"pipfile-spec\": 6, \"hash\": {\"sha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}, \"requires\": {}, \"sources\": [{\"name\": \"pypi\", \"url\": \"https://pypi.org/simple\", \"verify_ssl\": true}]}, \"default\": {\"requests\": {\"version\": \"==2.32.3\", \"hashes\": [\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"], \"index\": \"pypi\"}}, \"develop\": {\"pytest\": {\"version\": \"==8.3.3\", \"hashes\": [\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"], \"index\": \"pypi\"}}}",
+          "sha256": "ecade002b96f8e0ecd5f22f8b53544232ac83362436a18970337e657032cdd5f"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "Pipfile.lock",
+              "source_sha256": "ecade002b96f8e0ecd5f22f8b53544232ac83362436a18970337e657032cdd5f",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "Pipfile.lock",
+              "source_sha256": "ecade002b96f8e0ecd5f22f8b53544232ac83362436a18970337e657032cdd5f",
+              "locator": "/default/requests",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.32.3",
+            "declared_range": "==2.32.3",
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "Pipfile.lock",
+              "source_sha256": "ecade002b96f8e0ecd5f22f8b53544232ac83362436a18970337e657032cdd5f",
+              "locator": "/develop/pytest",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "pytest",
+            "purl": "pkg:pypi/pytest@8.3.3",
+            "evidence_kind": "locked",
+            "selected_version": "8.3.3",
+            "declared_range": "==8.3.3",
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "development"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "Pipfile.lock",
+            "source_sha256": "ecade002b96f8e0ecd5f22f8b53544232ac83362436a18970337e657032cdd5f",
+            "format": "python-pipfile-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-uv",
+      "fixture_files": [
+        {
+          "path": "uv.lock",
+          "utf8": "version=1\nrevision=3\nrequires-python=\">=3.12\"\n[[package]]\nname=\"requests\"\nversion=\"2.32.3\"\nsource={registry=\"https://pypi.org/simple\"}\n",
+          "sha256": "b6607401adeeb0763b5230d8f53b670f56428d9d41d3818dff5eaf071c54f213"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "b6607401adeeb0763b5230d8f53b670f56428d9d41d3818dff5eaf071c54f213",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "b6607401adeeb0763b5230d8f53b670f56428d9d41d3818dff5eaf071c54f213",
+              "locator": "package[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.32.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [
+          {
+            "id": "applicability:0",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "b6607401adeeb0763b5230d8f53b670f56428d9d41d3818dff5eaf071c54f213",
+              "locator": "requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          }
+        ],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "uv.lock",
+            "source_sha256": "b6607401adeeb0763b5230d8f53b670f56428d9d41d3818dff5eaf071c54f213",
+            "format": "python-uv-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "unsupported",
+            "reason": "missing-lock-source",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pdm",
+      "fixture_files": [
+        {
+          "path": "pdm.lock",
+          "utf8": "[metadata]\nlock_version=\"4.5.0\"\ngroups=[\"default\"]\nstrategy=[\"inherit_metadata\"]\n[[package]]\nname=\"requests\"\nversion=\"2.32.3\"\nrequires_python=\">=3.8\"\ngroups=[\"default\"]\nfiles=[]\n",
+          "sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb",
+              "locator": "package[0].groups[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.32.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "default"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [
+          {
+            "id": "applicability:0",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb",
+              "locator": "package[0].requires_python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.8",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:1",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb",
+              "locator": "package[0].groups[0].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.8",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:0"
+          },
+          {
+            "id": "applicability:2",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb",
+              "locator": "package[0].groups[0].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "default",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:0"
+          }
+        ],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pdm.lock",
+            "source_sha256": "45707e4e4edbbe993d88fd67d34ef5957d21901d3dddef64d6a37e6f2d2fafcb",
+            "format": "python-pdm-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "unsupported",
+            "reason": "missing-lock-source",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-poetry-graph",
+      "fixture_files": [
+        {
+          "path": "poetry.lock",
+          "utf8": "[metadata]\nlock-version=\"2.1\"\npython-versions=\">=3.12\"\ncontent-hash=\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"\n[[package]]\nname=\"parent\"\nversion=\"1\"\noptional=false\npython-versions=\">=3.12\"\ngroups=[\"main\",\"test\"]\nmarkers={main=\"os_name == 'posix'\"}\nfiles=[{file=\"parent-1-py3-none-any.whl\",hash=\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]\n[package.dependencies]\nfoo=\">=1,<2\"\n[[package]]\nname=\"foo\"\nversion=\"1\"\noptional=false\npython-versions=\">=3.12\"\ngroups=[\"main\",\"test\"]\nfiles=[{file=\"foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\n",
+          "sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].groups[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "parent",
+            "purl": "pkg:pypi/parent@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": false,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "main"
+            ],
+            "marker": "os_name == \"posix\"",
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].groups[1]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "parent",
+            "purl": "pkg:pypi/parent@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": false,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:2",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[1].groups[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "foo",
+            "purl": "pkg:pypi/foo@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": false,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "main"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:3",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[1].groups[1]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "foo",
+            "purl": "pkg:pypi/foo@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": false,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "relationship:0",
+            "selector_id": "selector:0",
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:2",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].dependencies.foo",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "group"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "relationship:1",
+            "selector_id": "selector:1",
+            "parent_id": "occurrence:1",
+            "child_id": "occurrence:3",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].dependencies.foo",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "group"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "applications": [],
+        "losses": [],
+        "applicability": [
+          {
+            "id": "applicability:0",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "metadata.python-versions",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "poetry-core-2.1.3",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:1",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].python-versions",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "poetry-core-2.1.3",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:2",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[1].python-versions",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "poetry-core-2.1.3",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:3",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].groups[0].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "poetry-core-2.1.3",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:0"
+          },
+          {
+            "id": "applicability:4",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].groups[0].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "main",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:0"
+          },
+          {
+            "id": "applicability:5",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].groups[1].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "poetry-core-2.1.3",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:1"
+          },
+          {
+            "id": "applicability:6",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].groups[1].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "test",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:1"
+          },
+          {
+            "id": "applicability:7",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[1].groups[0].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "poetry-core-2.1.3",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:2"
+          },
+          {
+            "id": "applicability:8",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[1].groups[0].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "main",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:2"
+          },
+          {
+            "id": "applicability:9",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[1].groups[1].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "poetry-core-2.1.3",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:3"
+          },
+          {
+            "id": "applicability:10",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[1].groups[1].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "test",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:3"
+          }
+        ],
+        "dependency_selectors": [
+          {
+            "id": "selector:0",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].dependencies.foo",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:2",
+            "ecosystem": "pypi",
+            "name": "foo",
+            "declared_range": ">=1,<2",
+            "dialect": "poetry-core-2.1.3",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "requested",
+            "marker_semantics": "pep508",
+            "extras": [],
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "main"
+            ],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          },
+          {
+            "id": "selector:1",
+            "source": {
+              "path": "poetry.lock",
+              "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+              "locator": "package[0].dependencies.foo",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:1",
+            "child_id": "occurrence:3",
+            "ecosystem": "pypi",
+            "name": "foo",
+            "declared_range": ">=1,<2",
+            "dialect": "poetry-core-2.1.3",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "requested",
+            "marker_semantics": "pep508",
+            "extras": [],
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          }
+        ]
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "poetry.lock",
+            "source_sha256": "1a542fc31cdfe90a9ae19968ceced2382a9815f3a7128dbf3bfaf347799f0ac7",
+            "format": "python-poetry-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pdm-graph",
+      "fixture_files": [
+        {
+          "path": "pdm.lock",
+          "utf8": "[metadata]\nlock_version=\"4.5.0\"\ngroups=[\"default\",\"test\"]\nstrategy=[\"inherit_metadata\"]\ncontent_hash=\"sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"\ntargets=[{requires_python=\">=3.12\"}]\n[[package]]\nname=\"parent\"\nversion=\"1\"\nrequires_python=\">=3.12\"\ngroups=[\"default\",\"test\"]\nfiles=[{file=\"parent-1-py3-none-any.whl\",hash=\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]\ndependencies=[\"foo[test]>=1,<2\"]\n[[package]]\nname=\"foo\"\nversion=\"1\"\nrequires_python=\">=3.12\"\ngroups=[\"default\",\"test\"]\nextras=[\"test\"]\nfiles=[{file=\"foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\ndependencies=[\"foo==1\"]\n[[package]]\nname=\"foo\"\nversion=\"1\"\nrequires_python=\">=3.12\"\ngroups=[\"default\",\"test\"]\nfiles=[{file=\"foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\n",
+          "sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].groups[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "parent",
+            "purl": "pkg:pypi/parent@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "default"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].groups[1]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "parent",
+            "purl": "pkg:pypi/parent@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:2",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].groups[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "foo",
+            "purl": "pkg:pypi/foo@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "default"
+            ],
+            "marker": null,
+            "extras": [
+              "test"
+            ],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:3",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].groups[1]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "foo",
+            "purl": "pkg:pypi/foo@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "marker": null,
+            "extras": [
+              "test"
+            ],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:4",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[2].groups[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "foo",
+            "purl": "pkg:pypi/foo@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "default"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:5",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[2].groups[1]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "foo",
+            "purl": "pkg:pypi/foo@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "relationship:0",
+            "selector_id": "selector:0",
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:2",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "group"
+            ],
+            "marker": null,
+            "extras": [
+              "test"
+            ],
+            "activation": "unknown"
+          },
+          {
+            "id": "relationship:1",
+            "selector_id": "selector:1",
+            "parent_id": "occurrence:1",
+            "child_id": "occurrence:3",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "group"
+            ],
+            "marker": null,
+            "extras": [
+              "test"
+            ],
+            "activation": "unknown"
+          },
+          {
+            "id": "relationship:2",
+            "selector_id": "selector:2",
+            "parent_id": "occurrence:2",
+            "child_id": "occurrence:4",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "group"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "relationship:3",
+            "selector_id": "selector:3",
+            "parent_id": "occurrence:3",
+            "child_id": "occurrence:5",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "group"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "applications": [],
+        "losses": [],
+        "applicability": [
+          {
+            "id": "applicability:0",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "metadata.targets[0].requires_python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:1",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].requires_python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:2",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].requires_python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:3",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[2].requires_python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          },
+          {
+            "id": "applicability:4",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].groups[0].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:0"
+          },
+          {
+            "id": "applicability:5",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].groups[0].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "default",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:0"
+          },
+          {
+            "id": "applicability:6",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].groups[1].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:1"
+          },
+          {
+            "id": "applicability:7",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].groups[1].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "test",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:1"
+          },
+          {
+            "id": "applicability:8",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].groups[0].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:2"
+          },
+          {
+            "id": "applicability:9",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].groups[0].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "default",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:2"
+          },
+          {
+            "id": "applicability:10",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].groups[1].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:3"
+          },
+          {
+            "id": "applicability:11",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].groups[1].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "test",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:3"
+          },
+          {
+            "id": "applicability:12",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[2].groups[0].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:4"
+          },
+          {
+            "id": "applicability:13",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[2].groups[0].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "default",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:4"
+          },
+          {
+            "id": "applicability:14",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[2].groups[1].requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:5"
+          },
+          {
+            "id": "applicability:15",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[2].groups[1].group",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "group",
+            "dialect": "group-name",
+            "expression": "test",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": "occurrence:5"
+          }
+        ],
+        "dependency_selectors": [
+          {
+            "id": "selector:0",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:2",
+            "ecosystem": "pypi",
+            "name": "foo",
+            "declared_range": ">=1,<2",
+            "dialect": "pep440",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "variant-exact",
+            "marker_semantics": "pep508",
+            "extras": [
+              "test"
+            ],
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "default"
+            ],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          },
+          {
+            "id": "selector:1",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:1",
+            "child_id": "occurrence:3",
+            "ecosystem": "pypi",
+            "name": "foo",
+            "declared_range": ">=1,<2",
+            "dialect": "pep440",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "variant-exact",
+            "marker_semantics": "pep508",
+            "extras": [
+              "test"
+            ],
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          },
+          {
+            "id": "selector:2",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:2",
+            "child_id": "occurrence:4",
+            "ecosystem": "pypi",
+            "name": "foo",
+            "declared_range": "==1",
+            "dialect": "pep440",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "variant-exact",
+            "marker_semantics": "pep508",
+            "extras": [],
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "default"
+            ],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          },
+          {
+            "id": "selector:3",
+            "source": {
+              "path": "pdm.lock",
+              "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+              "locator": "package[1].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:3",
+            "child_id": "occurrence:5",
+            "ecosystem": "pypi",
+            "name": "foo",
+            "declared_range": "==1",
+            "dialect": "pep440",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "variant-exact",
+            "marker_semantics": "pep508",
+            "extras": [],
+            "scopes": [
+              "group"
+            ],
+            "groups": [
+              "test"
+            ],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          }
+        ]
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pdm.lock",
+            "source_sha256": "940759440df04189d8f2e7f40ccbc62af3669224fff175d5300478d454ba6218",
+            "format": "python-pdm-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-uv-graph",
+      "fixture_files": [
+        {
+          "path": "uv.lock",
+          "utf8": "version=1\nrevision=3\nrequires-python=\">=3.12\"\n[[package]]\nname=\"parent\"\nversion=\"1\"\nsource={registry=\"https://pypi.org/simple\"}\nwheels=[{url=\"https://packages.invalid/parent-1-py3-none-any.whl\",hash=\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]\ndependencies=[{name=\"foo\",marker=\"python_version < '3.14'\",extra=[\"test\"]}]\n[[package]]\nname=\"foo\"\nversion=\"1\"\nsource={registry=\"https://pypi.org/simple\"}\nwheels=[{url=\"https://packages.invalid/foo-1-py3-none-any.whl\",hash=\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}]\n",
+          "sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9",
+              "locator": "package[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "parent",
+            "purl": "pkg:pypi/parent@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9",
+              "locator": "package[1]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "foo",
+            "purl": "pkg:pypi/foo@1",
+            "evidence_kind": "locked",
+            "selected_version": "1",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": "5a06749b2297be54ac5699f6f2761716adc5001a2d5f8b915ab2172922dd5706",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "relationship:0",
+            "selector_id": "selector:0",
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "unknown"
+            ],
+            "marker": "python_version < \"3.14\"",
+            "extras": [
+              "test"
+            ],
+            "activation": "unknown"
+          }
+        ],
+        "applications": [],
+        "losses": [],
+        "applicability": [
+          {
+            "id": "applicability:0",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9",
+              "locator": "requires-python",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "kind": "python-version",
+            "dialect": "pep440",
+            "expression": ">=3.12",
+            "root_id": null,
+            "analysis_scope_id": "scope:lock",
+            "occurrence_id": null
+          }
+        ],
+        "dependency_selectors": [
+          {
+            "id": "selector:0",
+            "source": {
+              "path": "uv.lock",
+              "source_sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9",
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "ecosystem": "pypi",
+            "name": "foo",
+            "declared_range": null,
+            "dialect": "pep440",
+            "exact_version": null,
+            "registry_source_sha256": null,
+            "marker": "python_version < \"3.14\"",
+            "extra_selection": "requested",
+            "marker_semantics": "relative-to-lock-python",
+            "extras": [
+              "test"
+            ],
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          }
+        ]
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "uv.lock",
+            "source_sha256": "127834e18e4d17f789de6e922ea451e7a4d008a14fd8d24f6b51f43c073b85b9",
+            "format": "python-uv-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pylock",
+      "fixture_files": [
+        {
+          "path": "pylock.toml",
+          "utf8": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"requests\"\nversion=\"2.32.3\"\n",
+          "sha256": "4b2170324a24d5544a0b4506348cb73c49caf3944607f56db01bf0e65162f443"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "pylock.toml",
+              "source_sha256": "4b2170324a24d5544a0b4506348cb73c49caf3944607f56db01bf0e65162f443",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "pylock.toml",
+              "source_sha256": "4b2170324a24d5544a0b4506348cb73c49caf3944607f56db01bf0e65162f443",
+              "locator": "packages[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.32.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pylock.toml",
+            "source_sha256": "4b2170324a24d5544a0b4506348cb73c49caf3944607f56db01bf0e65162f443",
+            "format": "python-pylock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "unsupported",
+            "reason": "missing-lock-source",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pylock-variant",
+      "fixture_files": [
+        {
+          "path": "pylock.dev.toml",
+          "utf8": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"pytest\"\nversion=\"8.3.3\"\n",
+          "sha256": "29c4debfb9581b2109f7ad0d93eb3063c5390e06440d25b38fbad41ef4e01956"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "pylock.dev.toml",
+              "source_sha256": "29c4debfb9581b2109f7ad0d93eb3063c5390e06440d25b38fbad41ef4e01956",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "pylock.dev.toml",
+              "source_sha256": "29c4debfb9581b2109f7ad0d93eb3063c5390e06440d25b38fbad41ef4e01956",
+              "locator": "packages[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "pytest",
+            "purl": "pkg:pypi/pytest@8.3.3",
+            "evidence_kind": "locked",
+            "selected_version": "8.3.3",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pylock.dev.toml",
+            "source_sha256": "29c4debfb9581b2109f7ad0d93eb3063c5390e06440d25b38fbad41ef4e01956",
+            "format": "python-pylock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "unsupported",
+            "reason": "missing-lock-source",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-long-options",
+      "fixture_files": [
+        {
+          "path": "constraints.txt",
+          "utf8": "requests==2.32.3\n",
+          "sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5"
+        },
+        {
+          "path": "locks/base.pip",
+          "utf8": "requests>=2.31,<3\n",
+          "sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+        },
+        {
+          "path": "requirements.txt",
+          "utf8": "--requirement=locks/base.pip\n--constraint constraints.txt\n",
+          "sha256": "44b288bd56fd1ffdfbd481d7cfcbaddbd79965ae63e62228b13cc776c92fb65c"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:origin",
+            "kind": "requirements-origin",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "44b288bd56fd1ffdfbd481d7cfcbaddbd79965ae63e62228b13cc776c92fb65c",
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:requirement",
+            "source": {
+              "path": "locks/base.pip",
+              "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "kind": "requirement",
+            "ecosystem": "pypi",
+            "name": "requests",
+            "declared_range": ">=2.31,<3",
+            "exact_version": null,
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [],
+            "groups": [],
+            "root_id": null,
+            "analysis_scope_id": "scope:origin"
+          },
+          {
+            "id": "declaration:constraint",
+            "source": {
+              "path": "constraints.txt",
+              "source_sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "kind": "constraint",
+            "ecosystem": "pypi",
+            "name": "requests",
+            "declared_range": "==2.32.3",
+            "exact_version": "2.32.3",
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [],
+            "groups": [],
+            "root_id": null,
+            "analysis_scope_id": "scope:origin"
+          }
+        ],
+        "input_references": [
+          {
+            "id": "reference:include",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "44b288bd56fd1ffdfbd481d7cfcbaddbd79965ae63e62228b13cc776c92fb65c",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "analysis_scope_id": "scope:origin",
+            "kind": "include",
+            "role": "requirement",
+            "target_path": "locks/base.pip",
+            "target_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a",
+            "disposition": "parsed",
+            "reason": "static-input"
+          },
+          {
+            "id": "reference:constraint",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "44b288bd56fd1ffdfbd481d7cfcbaddbd79965ae63e62228b13cc776c92fb65c",
+              "locator": "line:2",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "analysis_scope_id": "scope:origin",
+            "kind": "constraint",
+            "role": "constraint",
+            "target_path": "constraints.txt",
+            "target_sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5",
+            "disposition": "parsed",
+            "reason": "static-input"
+          }
+        ],
+        "occurrences": [
+          {
+            "id": "occurrence:requirement",
+            "source": {
+              "path": "locks/base.pip",
+              "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "declared",
+            "selected_version": "2.32.3",
+            "declared_range": ">=2.31,<3",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [
+              "declaration:requirement",
+              "declaration:constraint"
+            ],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:origin",
+            "directness": "unknown",
+            "scopes": [],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "active"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "constraints.txt",
+            "source_sha256": "4b8183101fd19f071771805a42a31fbb234a7961921fdb8b783a279755a1b5d5",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          },
+          {
+            "source_path": "locks/base.pip",
+            "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          },
+          {
+            "source_path": "requirements.txt",
+            "source_sha256": "44b288bd56fd1ffdfbd481d7cfcbaddbd79965ae63e62228b13cc776c92fb65c",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": [],
+        "schema_version": "sourcebastion.inventory-coverage/1"
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pylock-complete",
+      "fixture_files": [
+        {
+          "path": "pylock.toml",
+          "utf8": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"requests\"\nversion=\"2.32.3\"\ndependencies=[{name=\"urllib3\",version=\"2.2.2\"}]\nwheels=[{name=\"requests-2.32.3-py3-none-any.whl\",url=\"https://packages.invalid/requests.whl\",hashes={sha256=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}]\n[[packages]]\nname=\"urllib3\"\nversion=\"2.2.2\"\nwheels=[{name=\"urllib3-2.2.2-py3-none-any.whl\",url=\"https://packages.invalid/urllib3.whl\",hashes={sha256=\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"}}]\n",
+          "sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "pylock.toml",
+              "source_sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "pylock.toml",
+              "source_sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589",
+              "locator": "packages[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "requests",
+            "purl": "pkg:pypi/requests@2.32.3",
+            "evidence_kind": "locked",
+            "selected_version": "2.32.3",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          },
+          {
+            "id": "occurrence:1",
+            "source": {
+              "path": "pylock.toml",
+              "source_sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589",
+              "locator": "packages[1]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "urllib3",
+            "purl": "pkg:pypi/urllib3@2.2.2",
+            "evidence_kind": "locked",
+            "selected_version": "2.2.2",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "relationship:0",
+            "selector_id": "selector:0",
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "source": {
+              "path": "pylock.toml",
+              "source_sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589",
+              "locator": "packages[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "evidence_status": "evidenced",
+            "scopes": [
+              "unknown"
+            ],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": [
+          {
+            "id": "selector:0",
+            "source": {
+              "path": "pylock.toml",
+              "source_sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589",
+              "locator": "packages[0].dependencies[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "parent_id": "occurrence:0",
+            "child_id": "occurrence:1",
+            "ecosystem": "pypi",
+            "name": "urllib3",
+            "declared_range": "==2.2.2",
+            "dialect": "pep440",
+            "exact_version": "2.2.2",
+            "registry_source_sha256": null,
+            "marker": null,
+            "extra_selection": "requested",
+            "marker_semantics": "pep508",
+            "extras": [],
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "activation": "unknown",
+            "disposition": "resolved",
+            "reason": "unambiguous-lock-selection"
+          }
+        ]
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "partial",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pylock.toml",
+            "source_sha256": "588fd0e82c936c9260ea6f3c82311f8a90da93a027e5d6cfd1a809ed0e115589",
+            "format": "python-pylock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-pylock-variant-complete",
+      "fixture_files": [
+        {
+          "path": "pylock.dev.toml",
+          "utf8": "lock-version=\"1.0\"\ncreated-by=\"fixture\"\n[[packages]]\nname=\"pytest\"\nversion=\"8.3.3\"\nwheels=[{name=\"pytest-8.3.3-py3-none-any.whl\",url=\"https://packages.invalid/pytest.whl\",hashes={sha256=\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"}}]\n",
+          "sha256": "9f78a66dd20e198c4b0cec14bf8b5837068d16bde78ae7509e872066a30a86a1"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "pylock.dev.toml",
+              "source_sha256": "9f78a66dd20e198c4b0cec14bf8b5837068d16bde78ae7509e872066a30a86a1",
+              "locator": "lock-input",
+              "parser": "sourcebastion.lock-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [
+          {
+            "id": "occurrence:0",
+            "source": {
+              "path": "pylock.dev.toml",
+              "source_sha256": "9f78a66dd20e198c4b0cec14bf8b5837068d16bde78ae7509e872066a30a86a1",
+              "locator": "packages[0]",
+              "parser": "sourcebastion.lock-composition/1"
+            },
+            "ecosystem": "pypi",
+            "name": "pytest",
+            "purl": "pkg:pypi/pytest@8.3.3",
+            "evidence_kind": "locked",
+            "selected_version": "8.3.3",
+            "declared_range": null,
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "kind": "artifact"
+              }
+            ],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:lock",
+            "directness": "unknown",
+            "scopes": [
+              "unknown"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "complete",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "pylock.dev.toml",
+            "source_sha256": "9f78a66dd20e198c4b0cec14bf8b5837068d16bde78ae7509e872066a30a86a1",
+            "format": "python-pylock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "parsed",
+            "reason": "static-input",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:lock"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "complete",
+        "export": "not-run",
+        "matching": "not-run"
+      }
     }
   ],
   "additional_source_authorities": {
@@ -6231,6 +8877,17 @@
       "adjudication": "Seven original corpus fixtures, unchanged bytes/symlink literals. Malformed requirement and invalid literal poetry content hash select no dependencies. Local include escape retains a refused reference with no admitted outside target, not its untrusted raw path. Cyclic requirements use the lexicographic source SCC origin and retain one parsed and one refused cycle reference with unresolved inputs. No dependency edges or selected packages are fabricated. A lone constraint is a declaration, not a dependency occurrence; enumeration stays partial and both contextual inputs unresolved with no-required-dependency-declaration; inventory remains partial despite syntactically parsed inputs. Symlinks are refused without following either an outside sentinel or a cycle: explicit unsupported-symlink coverage, no source hash or parser invented. Vacuous complete version-resolution does not imply complete inventory. Historical64 oracle and prior45 full canonical expectations unchanged. Initial expectations were source-authored before execution. Failed trials led to independently reviewed corrections: sentinel identity excludes read-updated atime; Poetry coverage uses the registry format namespace; constraint-only coverage follows the existing no-required-dependency-declaration branch. Earlier failures remain evidence; corrected expectations require independent review before the next candidate.",
       "requirements_constraints": "https://pip.pypa.io/en/stable/user_guide/#constraints-files",
       "requirements_format": "https://pip.pypa.io/en/stable/reference/requirements-file-format/"
+    },
+    "python-locks-and-long-options": {
+      "adjudication": "Twelve unchanged original corpus fixtures. Full locked occurrence hashes, groups, optional flags, registry assertions and located compatibility/group assertions remain evidence, not installed/project ownership or active environment. Fragment locks keep partial discovery/enumeration and selected-version completeness separately. Missing-source takes priority over missing-metadata in Pipfile fragments. Poetry/PDM grouped selectors bind a uniquely located parent and same-group child; PDM additionally preserves requested extras as exact variant identity. UV markers stay relative to lock Python and cannot prove host activation. Pylock explicit versions bind exact selector versions. Source edges imply partial graph coverage only. Long-form requirement/constraint options retain explicit references and selection declarations; constraints are not occurrences. All 12 full canonical cases are source-authored from retained historical assertions plus static adapter/contract review before any new candidate execution; independent review required.",
+      "source_review_basis": [
+        "sourcebastion/inventory/python_locks.py",
+        "sourcebastion/inventory/python_lock_formats.py",
+        "sourcebastion/inventory/compose_locks.py",
+        "sourcebastion/inventory/compose_requirements.py",
+        "sourcebastion/inventory/discovery.py",
+        "sourcebastion/inventory/contract.py"
+      ]
     }
   }
 }

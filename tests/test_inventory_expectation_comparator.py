@@ -221,3 +221,34 @@ def test_global_guards_cannot_attribute_failure_to_the_last_fixture():
     exec(compile(clear, "<proof-global-case-reset>", "exec"), namespace)
     assert namespace["progress"] == {}
     assert "case" not in PROBE["failure_record"](AssertionError(), namespace["progress"].get("case"))
+
+
+@pytest.mark.parametrize("name", ["python-poetry-graph", "python-pdm-graph"])
+@pytest.mark.parametrize("collection", ["relationships", "dependency_selectors"])
+@pytest.mark.parametrize("damage", ["duplicate-parent", "unknown-parent", "same-package-other-group"])
+def test_grouped_lock_edges_require_the_unique_source_bound_parent(name, collection, damage):
+    case = next(case for case in CASES if case["case"] == name)
+    actual = observed(case)
+    first, second = actual[collection][:2]
+    assert first["source"] == second["source"]
+    if damage == "unknown-parent":
+        second["parent_id"] = "private-path-must-not-bind"
+    elif damage == "duplicate-parent":
+        second["parent_id"] = first["parent_id"]
+    else:
+        first["parent_id"], second["parent_id"] = second["parent_id"], first["parent_id"]
+    with pytest.raises(ValueError):
+        compare(case, actual)
+
+
+@pytest.mark.parametrize("name", ["python-poetry-graph", "python-pdm-graph", "python-uv-graph", "python-pylock-complete"])
+@pytest.mark.parametrize("collection", ["relationships", "dependency_selectors", "applicability"])
+def test_lock_graph_missing_evidence_cannot_pass(name, collection):
+    case = next(case for case in CASES if case["case"] == name)
+    actual = observed(case)
+    if not actual[collection]:
+        assert name == "python-pylock-complete" and collection == "applicability"
+        return
+    actual[collection].pop()
+    with pytest.raises(ValueError, match="expectation-record-count-mismatch"):
+        compare(case, actual)

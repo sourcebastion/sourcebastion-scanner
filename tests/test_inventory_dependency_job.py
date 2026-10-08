@@ -37,7 +37,7 @@ def exercise(tmp_path, monkeypatch, *, failure=None, deadline=None, cancelled=No
         def change_binary_during_last_artifact_guard(store):
             nonlocal final_guards
             result = original_validate(store)
-            if len(store.facts) == 10:
+            if any(fact.name == "recovery.json" for fact in store.facts):
                 final_guards += 1
                 if final_guards == 2:
                     _binary.chmod(0o700)
@@ -120,6 +120,12 @@ def test_fixed_controller_preserves_canonical_states_and_separates_parent_author
         raw = (output / fact["name"]).read_bytes()
         assert len(raw) == fact["bytes"] and hashlib.sha256(raw).hexdigest() == fact["sha256"]
     assert not (output / "execution.json").exists()
+    configuration_raw = (output / "consumer-config.json").read_bytes()
+    assert receipt["consumer"]["config_sha256"] == hashlib.sha256(configuration_raw).hexdigest()
+    configuration = json.loads(configuration_raw)
+    assert configuration["yaml_sha256"] == hashlib.sha256((output / "grype.yaml").read_bytes()).hexdigest()
+    assert configuration["environment"] == captures[-1][1]["environment"]
+    assert configuration["cwd"] == str(captures[-1][1]["cwd"])
 
 
 @pytest.mark.parametrize(

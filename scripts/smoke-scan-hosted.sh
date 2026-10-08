@@ -14,7 +14,7 @@ mkdir -m 700 "$work/source" "$work/database" "$work/output"
 # Advisory preparation never receives a checkout or any provider credentials.
 docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
   -v "$work/database:/database" --entrypoint python "$image" \
-  -m sourcebastion.grype_database /database
+  -c 'import os,runpy,sys; os.umask(0o077); sys.argv=["sourcebastion.grype_database","/database"]; runpy.run_module("sourcebastion.grype_database",run_name="__main__")'
 database="$(readlink -f "$work/database/current")"
 
 # Separate canonical SBOM/real-Grype evidence reuses this source-free generation.
@@ -47,6 +47,24 @@ docker run --rm --init --no-healthcheck --user "$(id -u):$(id -g)" \
   -v "$root:/src:ro" -v "$work/canonical-source:/fixture:ro" \
   -v "$database:/advisories:ro" -v "$canonical_output:/out" \
   -w /src --entrypoint python "$image" scripts/verify-inventory-real-grype.py
+
+# Separate inactive fixed-controller evidence; expected generation facts are
+# prepared by the trusted CI parent without project input or credentials.
+# The actual controller includes runtime/status/hash/analysis in one150s ledger.
+# Docker resource flags alone do not establish aggregate120CPU or host custody.
+dependency_output="${SOURCEBASTION_NATIVE_DEPENDENCY_JOB_OUTPUT:-$work/dependency-output}"
+mkdir -m 700 "$work/dependency-preparation" "$dependency_output"
+python3 "$root/scripts/prepare-inventory-dependency-job.py" \
+  "$database" "$work/dependency-preparation"
+docker run --rm --init --no-healthcheck --user "$(id -u):$(id -g)" \
+  --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+  --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+  --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+  -e PYTHONPATH= -e HOME=/tmp -e PYTHONDONTWRITEBYTECODE=1 \
+  -v "$root:/src:ro" -v "$work/canonical-source:/fixture:ro" \
+  -v "$database:/advisories:ro" -v "$work/dependency-preparation:/preparation:ro" \
+  -v "$dependency_output:/out" -w /src --entrypoint python "$image" \
+  scripts/verify-inventory-dependency-job.py
 
 cp "$root/tests/fixtures/scanners/deps/"*.json "$work/source/"
 cp "$root/tests/fixtures/scanners/iac/main.tf.fixture" "$work/source/main.tf"

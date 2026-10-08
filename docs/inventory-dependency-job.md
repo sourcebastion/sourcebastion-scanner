@@ -44,6 +44,9 @@ reserve at most64KiB each. Analysis stdout uses the configured diagnostic-file
 ceiling and stderr at most64KiB. Every full stream ceiling and the64KiB control
 record count toward the same nonrefundable256MiB artifact allowance. Config,
 inventory, SBOM, raw reports and recovered context remain exclusive held files.
+`consumer-config.json` retains the exact explicit environment/cwd and YAML hash
+used to calculate the consumer configuration identity, including ephemeral
+private paths. Parent readers can reconstruct that hash after scratch cleanup.
 
 The version/status commands must match preparation facts. The separately bound
 snapshot must agree with the actual valid database status.

@@ -67,6 +67,7 @@ class ArtifactStore:
             "grype-status.json": min(65536, self.limits.diagnostic_file_bytes),
             "grype-status.stderr": min(65536, self.limits.diagnostic_file_bytes),
             "grype.yaml": min(4096, self.limits.diagnostic_file_bytes),
+            "consumer-config.json": min(16384, self.limits.diagnostic_file_bytes),
             "recovery.json": self.limits.diagnostic_file_bytes,
             "execution.json": min(65536, self.limits.diagnostic_file_bytes),
         }

@@ -159,8 +159,11 @@ def _run_dependency(
             configuration = {
                 "yaml_sha256": _sha(raw_config),
                 "environment": consumer_environment,
+                "cwd": str(private / "cwd"),
                 "source_policy": "explicit-sbom-only",
             }
+            configuration_raw = _render(configuration)
+            store.put("consumer-config.json", configuration_raw)
             prefix = [f"/proc/self/fd/{binding.binary}", "--config", str(store.root / "grype.yaml")]
 
             def invoke(args, *, name, maximum):
@@ -206,7 +209,7 @@ def _run_dependency(
             consumer = Consumer(
                 binary_sha256=runtime.binary_sha256,
                 version=runtime.version,
-                config_sha256=_sha(_render(configuration)),
+                config_sha256=_sha(configuration_raw),
                 advisory_snapshot_sha256=runtime.advisory_sha256,
                 advisory_schema=runtime.advisory_schema,
                 advisory_built=runtime.advisory_built,

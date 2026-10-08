@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import runpy
+import time
 
 import pytest
 
@@ -128,3 +129,95 @@ def test_only_the_four_explicit_id_lists_ignore_order():
     actual["occurrences"][0]["extras"].reverse()
     with pytest.raises(ValueError, match="expectation-record-fields-mismatch"):
         compare(case, actual)
+
+
+@pytest.mark.parametrize("name", ["symlink-escape", "symlink-cycle"])
+def test_authored_symlink_fixture_is_bound_and_outside_sentinel_is_guarded(tmp_path, name):
+    case = next(row for row in CASES if row["case"] == name)
+    historical = {"files": {}, "symlinks": case["fixture_symlinks"]}
+    root, identity, unchanged = PROBE["fixture_source"](case, historical, tmp_path)
+    assert root == tmp_path / "source" and len(identity) == 64
+    time.sleep(1.1)
+    unchanged()
+    unchanged()
+    (tmp_path / "outside.txt").write_bytes(b"changed")
+    with pytest.raises(AssertionError):
+        unchanged()
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "python-include-cycle",
+        "python-include-escape",
+        "symlink-cycle",
+        "symlink-escape",
+        "python-malformed",
+        "python-poetry",
+        "python-constraint-only",
+    ],
+)
+def test_negative_fixture_cannot_be_promoted_to_complete_inventory(name):
+    case = next(row for row in CASES if row["case"] == name)
+    actual = observed(case)
+    actual["stages"]["inventory"] = "complete"
+    with pytest.raises(ValueError, match="expectation-stages-mismatch"):
+        compare(case, actual)
+
+
+def test_refused_escape_cannot_acquire_outside_target_authority():
+    case = next(row for row in CASES if row["case"] == "python-include-escape")
+    actual = observed(case)
+    actual["input_references"][0]["target_path"] = "outside.txt"
+    with pytest.raises(ValueError, match="expectation-record-fields-mismatch"):
+        compare(case, actual)
+
+
+@pytest.mark.parametrize("name", ["python-constraint-only", "a", "a" * 80])
+def test_proof_failure_reports_bounded_reviewed_fixture_identity(name):
+    assert PROBE["fixture_case_id"](name) == name
+    assert PROBE["failure_record"](ValueError("private-repository-token"), name) == {
+        "status": "native-source-expectations-failed", "reason": "ValueError", "case": name,
+    }
+
+
+@pytest.mark.parametrize("name", [None, True, 1, "", "A", "-a", "a" * 81, "a/b", "a\\b", "a\n", "\u00e9", "a\u2028b"])
+def test_proof_failure_omits_invalid_or_unavailable_fixture_identity(name):
+    with pytest.raises(ValueError, match="invalid-fixture-case-id"):
+        PROBE["fixture_case_id"](name)
+    assert PROBE["failure_record"](RuntimeError("private-repository-token"), name) == {
+        "status": "native-source-expectations-failed", "reason": "RuntimeError",
+    }
+
+
+@pytest.mark.parametrize("case", [{}, {"case": "private/path"}, {"case": None}, None, []])
+def test_malformed_fixture_cannot_report_the_previous_case(case):
+    progress = {}
+    assert PROBE["begin_fixture"]({"case": "python-constraint-only"}, progress) == "python-constraint-only"
+    with pytest.raises((KeyError, TypeError, ValueError)) as caught:
+        PROBE["begin_fixture"](case, progress)
+    assert "case" not in progress
+    assert "case" not in PROBE["failure_record"](caught.value, progress.get("case"))
+
+
+def test_fixture_identity_rejects_str_subclasses():
+    class PrivateCase(str):
+        pass
+
+    with pytest.raises(ValueError, match="invalid-fixture-case-id"):
+        PROBE["fixture_case_id"](PrivateCase("python-constraint-only"))
+
+
+def test_global_guards_cannot_attribute_failure_to_the_last_fixture():
+    import ast
+
+    tree = ast.parse((Path(__file__).parents[1] / "scripts/verify-inventory-expectations.py").read_text())
+    verify = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "verify")
+    loop_index = next(index for index, node in enumerate(verify.body) if isinstance(node, ast.For))
+    final_guard = verify.body[loop_index + 2]
+    assert isinstance(final_guard, ast.Assert) and "modules(installed)" in ast.unparse(final_guard)
+    clear = ast.Module(body=[verify.body[loop_index + 1]], type_ignores=[])
+    namespace = {"progress": {"case": "python-constraint-only"}}
+    exec(compile(clear, "<proof-global-case-reset>", "exec"), namespace)
+    assert namespace["progress"] == {}
+    assert "case" not in PROBE["failure_record"](AssertionError(), namespace["progress"].get("case"))

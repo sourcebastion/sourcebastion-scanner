@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import stat
 import sys
 import tempfile
@@ -216,7 +217,83 @@ def bind_go_runtime(binary, preparation):
     return runtime, receipt, unchanged
 
 
-def verify(binary, preparation):
+def fixture_source(case, historical, directory):
+    """Materialize only source-authored fixtures, never a customer checkout."""
+    files = {row["path"]: row["utf8"] for row in case["fixture_files"]}
+    links = case.get("fixture_symlinks", {})
+    assert files == historical["files"] and links == historical["symlinks"]
+    root = Path(directory)
+    sentinel = None
+    if links:
+        allowed = {
+            "symlink-escape": {"requirements.txt": "../outside.txt"},
+            "symlink-cycle": {"a": "b", "b": "a"},
+        }
+        assert links == allowed[case["case"]] and not files
+        root = root / "source"
+        root.mkdir()
+        sentinel = root.parent / "outside.txt"
+        sentinel.write_bytes(b"outside-sentinel==9.9.9\n")
+    for row in case["fixture_files"]:
+        path = Path(row["path"])
+        assert not path.is_absolute() and ".." not in path.parts
+        content = row["utf8"].encode()
+        assert sha(content) == row["sha256"]
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+    for name, target in links.items():
+        (root / name).symlink_to(target)
+    def stable_identity(path):
+        metadata = path.lstat()
+        # Reading the sentinel may update atime. That observation does not
+        # change its bytes, ownership, inode or modification timestamps.
+        return tuple(getattr(metadata, field) for field in (
+            "st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns"
+        ))
+
+    sentinel_identity = stable_identity(sentinel) if sentinel else None
+
+    def unchanged():
+        if links:
+            assert {p.name for p in root.iterdir()} == set(links)
+            assert all(
+                (root / name).is_symlink() and os.readlink(root / name) == target for name, target in links.items()
+            )
+            assert stable_identity(sentinel) == sentinel_identity
+            assert sentinel.read_bytes() == b"outside-sentinel==9.9.9\n"
+
+    # Preserve prior ordinary-fixture identities. Symlink literals are part
+    # of the new fixture identities; no outside file is admitted as source.
+    identity = {"files": files, "symlinks": links} if links else files
+    return root, sha(render(identity)), unchanged
+
+
+def fixture_case_id(name):
+    if type(name) is not str or re.fullmatch(r"[a-z][a-z0-9-]{0,79}", name) is None:
+        raise ValueError("invalid-fixture-case-id")
+    return name
+
+
+def begin_fixture(case, progress=None):
+    if progress is not None:
+        progress.pop("case", None)
+    name = fixture_case_id(case["case"])
+    if progress is not None:
+        progress["case"] = name
+    return name
+
+
+def failure_record(error, case=None):
+    record = {"status": "native-source-expectations-failed", "reason": type(error).__name__}
+    try:
+        record["case"] = fixture_case_id(case)
+    except ValueError:
+        pass
+    return record
+
+
+def verify(binary, preparation, *, progress=None):
     if sys.flags.optimize:
         raise RuntimeError("optimized-probe-runtime-refused")
     from sourcebastion.inventory import contract
@@ -258,22 +335,11 @@ def verify(binary, preparation):
     records = []
     names = set()
     for case in expectations["cases"]:
-        assert case["case"] not in names
-        names.add(case["case"])
-        files = {row["path"]: row["utf8"] for row in case["fixture_files"]}
-        assert files == historical[case["case"]]["files"]
-        assert not historical[case["case"]]["symlinks"]
-        source_sha256 = sha(render(files))
+        case_name = begin_fixture(case, progress)
+        assert case_name not in names
+        names.add(case_name)
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            for row in case["fixture_files"]:
-                path = Path(row["path"])
-                assert not path.is_absolute() and ".." not in path.parts
-                content = row["utf8"].encode()
-                assert sha(content) == row["sha256"]
-                target = root / path
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(content)
+            root, source_sha256, fixture_unchanged = fixture_source(case, historical[case["case"]], directory)
             with Source(root) as source:
                 budget = PipelineBudget(source, config=config, deadline=source.deadline)
                 value = compose_source(source, source_sha256=source_sha256, producer=producer, config=config, go_runtime=go_runtime, budget=budget)
@@ -304,6 +370,8 @@ def verify(binary, preparation):
                 budget.guard()
                 assert 0 <= after_composition <= budget.consumed <= budget.maximum == config.semantic_checks
                 assert budget.refusal_reason is None
+                fixture_unchanged()
+            fixture_unchanged()
             records.append({
                 "case": case["case"], "inventory_sha256": sha(encoded),
                 "cooperative_budget": {
@@ -314,6 +382,8 @@ def verify(binary, preparation):
                     "deadline_policy": "one-per-case-Source-deadline-shared-across-both-compositions-and-validation",
                 },
             })
+    if progress is not None:
+        progress.pop("case", None)
     assert modules(installed) == modules(checkout) == source_modules
     assert EXPECTATIONS.read_bytes() == raw and CORPUS.read_bytes() == corpus_raw
     go_unchanged()
@@ -337,6 +407,7 @@ def verify(binary, preparation):
 
 
 if __name__ == "__main__":
+    progress = {}
     try:
         if sys.flags.optimize:
             raise RuntimeError("optimized-probe-runtime-refused")
@@ -344,7 +415,7 @@ if __name__ == "__main__":
         parser.add_argument("--go-binary", required=True, type=Path)
         parser.add_argument("--go-preparation", required=True, type=Path)
         arguments = parser.parse_args()
-        verify(arguments.go_binary, arguments.go_preparation)
+        verify(arguments.go_binary, arguments.go_preparation, progress=progress)
     except Exception as error:
-        print(json.dumps({"status": "native-source-expectations-failed", "reason": type(error).__name__}))
+        print(json.dumps(failure_record(error, progress.get("case"))))
         raise

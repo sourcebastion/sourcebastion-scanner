@@ -5673,6 +5673,530 @@
         "export": "not-run",
         "matching": "not-run"
       }
+    },
+    {
+      "case": "python-poetry",
+      "fixture_files": [
+        {
+          "path": "poetry.lock",
+          "utf8": "[[package]]\nname=\"requests\"\nversion=\"2.32.3\"\ndescription=\"\"\noptional=false\npython-versions=\">=3.8\"\nfiles=[]\n[metadata]\nlock-version=\"2.0\"\npython-versions=\">=3.8\"\ncontent-hash=\"fixture\"\n",
+          "sha256": "972c46eb0e0a24f1ddf62c5045636469b19acc287decb7235d25500d358502be"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "poetry.lock",
+            "source_sha256": "972c46eb0e0a24f1ddf62c5045636469b19acc287decb7235d25500d358502be",
+            "format": "python-poetry-lock",
+            "parser": "sourcebastion.python-locks/1",
+            "disposition": "failed",
+            "reason": "invalid-lock-metadata-hash",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-malformed",
+      "fixture_files": [
+        {
+          "path": "requirements.txt",
+          "utf8": "requests===\nnot valid @@@ dependency\n",
+          "sha256": "2016457e61c51dd923edeca3b20f12a6da837819edc286114b9375cc8d831326"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "requirements.txt",
+            "source_sha256": "2016457e61c51dd923edeca3b20f12a6da837819edc286114b9375cc8d831326",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "failed",
+            "reason": "invalid-requirement",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "symlink-escape",
+      "fixture_files": [],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "requirements.txt",
+            "source_sha256": null,
+            "format": "pip-requirements",
+            "parser": null,
+            "disposition": "unsupported",
+            "reason": "unsupported-symlink",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      },
+      "fixture_symlinks": {
+        "requirements.txt": "../outside.txt"
+      }
+    },
+    {
+      "case": "symlink-cycle",
+      "fixture_files": [],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "a",
+            "source_sha256": null,
+            "format": null,
+            "parser": null,
+            "disposition": "unsupported",
+            "reason": "unsupported-symlink",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          },
+          {
+            "source_path": "b",
+            "source_sha256": null,
+            "format": null,
+            "parser": null,
+            "disposition": "unsupported",
+            "reason": "unsupported-symlink",
+            "root_ids": [],
+            "analysis_scope_ids": [],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      },
+      "fixture_symlinks": {
+        "a": "b",
+        "b": "a"
+      }
+    },
+    {
+      "case": "python-include-escape",
+      "fixture_files": [
+        {
+          "path": "requirements.txt",
+          "utf8": "-r ../outside.txt\n",
+          "sha256": "7de3e3512c23e73db34b520ebf47a0c8f03815e2c6e6d1bd34c280dd1dd370d4"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:origin",
+            "kind": "requirements-origin",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "7de3e3512c23e73db34b520ebf47a0c8f03815e2c6e6d1bd34c280dd1dd370d4",
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [
+          {
+            "id": "reference:refused",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "7de3e3512c23e73db34b520ebf47a0c8f03815e2c6e6d1bd34c280dd1dd370d4",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "analysis_scope_id": "scope:origin",
+            "kind": "include",
+            "role": "requirement",
+            "target_path": null,
+            "target_sha256": null,
+            "disposition": "failed",
+            "reason": "outside-source"
+          }
+        ],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "requirements.txt",
+            "source_sha256": "7de3e3512c23e73db34b520ebf47a0c8f03815e2c6e6d1bd34c280dd1dd370d4",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "failed",
+            "reason": "outside-source",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": [
+          "outside-source"
+        ]
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-include-cycle",
+      "fixture_files": [
+        {
+          "path": "other.txt",
+          "utf8": "-r requirements.txt\n",
+          "sha256": "69075054c6d3bf5e0104bbc5d72895f380f050216a76ee8978dc4fbfd62f95e8"
+        },
+        {
+          "path": "requirements.txt",
+          "utf8": "-r other.txt\n",
+          "sha256": "f4389885fa005be5ca862fe0203ce1c4c2e998d80e25acea3fbe699b985713cc"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:origin",
+            "kind": "requirements-origin",
+            "source": {
+              "path": "other.txt",
+              "source_sha256": "69075054c6d3bf5e0104bbc5d72895f380f050216a76ee8978dc4fbfd62f95e8",
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [],
+        "input_references": [
+          {
+            "id": "reference:other.txt",
+            "source": {
+              "path": "other.txt",
+              "source_sha256": "69075054c6d3bf5e0104bbc5d72895f380f050216a76ee8978dc4fbfd62f95e8",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "analysis_scope_id": "scope:origin",
+            "kind": "include",
+            "role": "requirement",
+            "target_path": "requirements.txt",
+            "target_sha256": "f4389885fa005be5ca862fe0203ce1c4c2e998d80e25acea3fbe699b985713cc",
+            "disposition": "parsed",
+            "reason": "static-input"
+          },
+          {
+            "id": "reference:requirements.txt",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "f4389885fa005be5ca862fe0203ce1c4c2e998d80e25acea3fbe699b985713cc",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "analysis_scope_id": "scope:origin",
+            "kind": "include",
+            "role": "requirement",
+            "target_path": "other.txt",
+            "target_sha256": "69075054c6d3bf5e0104bbc5d72895f380f050216a76ee8978dc4fbfd62f95e8",
+            "disposition": "failed",
+            "reason": "include-cycle"
+          }
+        ],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "partial",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "other.txt",
+            "source_sha256": "69075054c6d3bf5e0104bbc5d72895f380f050216a76ee8978dc4fbfd62f95e8",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "unresolved",
+            "reason": "include-cycle",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          },
+          {
+            "source_path": "requirements.txt",
+            "source_sha256": "f4389885fa005be5ca862fe0203ce1c4c2e998d80e25acea3fbe699b985713cc",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "unresolved",
+            "reason": "include-cycle",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": [
+          "include-cycle"
+        ]
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
+    },
+    {
+      "case": "python-constraint-only",
+      "fixture_files": [
+        {
+          "path": "constraints.txt",
+          "utf8": "urllib3==2.2.2\n",
+          "sha256": "aaffcb0f96ad04e7a604f49f76bc861f5bcd9afc1ea763c825e3f07788185d9c"
+        },
+        {
+          "path": "requirements.txt",
+          "utf8": "-c constraints.txt\n",
+          "sha256": "dd08b85f6c0466bf7cb4185de7da91a603e6f6e2af958fdcd977b42029a83932"
+        }
+      ],
+      "records": {
+        "roots": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:origin",
+            "kind": "requirements-origin",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "dd08b85f6c0466bf7cb4185de7da91a603e6f6e2af958fdcd977b42029a83932",
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1"
+            }
+          }
+        ],
+        "installed_environments": [],
+        "declarations": [
+          {
+            "id": "declaration:constraint",
+            "source": {
+              "path": "constraints.txt",
+              "source_sha256": "aaffcb0f96ad04e7a604f49f76bc861f5bcd9afc1ea763c825e3f07788185d9c",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "kind": "constraint",
+            "ecosystem": "pypi",
+            "name": "urllib3",
+            "declared_range": "==2.2.2",
+            "exact_version": "2.2.2",
+            "marker": null,
+            "extras": [],
+            "hashes": [],
+            "scopes": [],
+            "groups": [],
+            "root_id": null,
+            "analysis_scope_id": "scope:origin"
+          }
+        ],
+        "input_references": [
+          {
+            "id": "reference:constraint",
+            "source": {
+              "path": "requirements.txt",
+              "source_sha256": "dd08b85f6c0466bf7cb4185de7da91a603e6f6e2af958fdcd977b42029a83932",
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1"
+            },
+            "analysis_scope_id": "scope:origin",
+            "kind": "constraint",
+            "role": "constraint",
+            "target_path": "constraints.txt",
+            "target_sha256": "aaffcb0f96ad04e7a604f49f76bc861f5bcd9afc1ea763c825e3f07788185d9c",
+            "disposition": "parsed",
+            "reason": "static-input"
+          }
+        ],
+        "occurrences": [],
+        "relationships": [],
+        "applications": [],
+        "losses": [],
+        "applicability": [],
+        "dependency_selectors": []
+      },
+      "coverage": {
+        "schema_version": "sourcebastion.inventory-coverage/1",
+        "discovery": "complete",
+        "enumeration": "partial",
+        "version_resolution": "complete",
+        "graph": "unknown",
+        "environment": "unknown",
+        "inputs": [
+          {
+            "source_path": "constraints.txt",
+            "source_sha256": "aaffcb0f96ad04e7a604f49f76bc861f5bcd9afc1ea763c825e3f07788185d9c",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "unresolved",
+            "reason": "no-required-dependency-declaration",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          },
+          {
+            "source_path": "requirements.txt",
+            "source_sha256": "dd08b85f6c0466bf7cb4185de7da91a603e6f6e2af958fdcd977b42029a83932",
+            "format": "pip-requirements",
+            "parser": "sourcebastion.pip-requirements/1",
+            "disposition": "unresolved",
+            "reason": "no-required-dependency-declaration",
+            "root_ids": [],
+            "analysis_scope_ids": [
+              "scope:origin"
+            ],
+            "installed_environment_ids": []
+          }
+        ],
+        "refusal_codes": []
+      },
+      "stages": {
+        "inventory": "partial",
+        "export": "not-run",
+        "matching": "not-run"
+      }
     }
   ],
   "additional_source_authorities": {
@@ -5702,6 +6226,11 @@
       "pep621": "https://packaging.python.org/en/latest/specifications/pyproject-toml/",
       "setuptools_declarative": "https://setuptools.pypa.io/en/latest/userguide/declarative_config.html",
       "adjudication": "Five unchanged original source fixtures assert exact static dependencies and locations. Explicit PEP621 name/version binds project root and application; setup.cfg/setup.py name without version does not fabricate application identity or root. Runtime requirements are direct source declarations, not installed ownership or resolved edges. Optional test group remains an explicit applicability record with unknown activation under preserve-alternatives. Dynamic setup.py containing a Path.write_text statement is not executed: conservative static metadata admission refuses it as unsupported dynamic-metadata with empty records and honest partial inventory. Vacuous complete version-resolution of an empty unsupported case does not imply complete inventory. Prior40 and original64 unchanged."
+    },
+    "python-negative-and-constraint-only": {
+      "adjudication": "Seven original corpus fixtures, unchanged bytes/symlink literals. Malformed requirement and invalid literal poetry content hash select no dependencies. Local include escape retains a refused reference with no admitted outside target, not its untrusted raw path. Cyclic requirements use the lexicographic source SCC origin and retain one parsed and one refused cycle reference with unresolved inputs. No dependency edges or selected packages are fabricated. A lone constraint is a declaration, not a dependency occurrence; enumeration stays partial and both contextual inputs unresolved with no-required-dependency-declaration; inventory remains partial despite syntactically parsed inputs. Symlinks are refused without following either an outside sentinel or a cycle: explicit unsupported-symlink coverage, no source hash or parser invented. Vacuous complete version-resolution does not imply complete inventory. Historical64 oracle and prior45 full canonical expectations unchanged. Initial expectations were source-authored before execution. Failed trials led to independently reviewed corrections: sentinel identity excludes read-updated atime; Poetry coverage uses the registry format namespace; constraint-only coverage follows the existing no-required-dependency-declaration branch. Earlier failures remain evidence; corrected expectations require independent review before the next candidate.",
+      "requirements_constraints": "https://pip.pypa.io/en/stable/user_guide/#constraints-files",
+      "requirements_format": "https://pip.pypa.io/en/stable/reference/requirements-file-format/"
     }
   }
 }

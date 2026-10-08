@@ -26,7 +26,22 @@ class Capture:
     lifecycle: str = "leader-reaped-only"
 
 
-def _capture(command, *, source, config, budget, store, environment, cwd, cancelled=None):
+def _capture(
+    command,
+    *,
+    source,
+    config,
+    budget,
+    store,
+    environment,
+    cwd,
+    cancelled=None,
+    stdout_name="grype.json",
+    stderr_name="grype.stderr",
+    stdout_maximum=None,
+    stderr_maximum=None,
+    pass_fds=(),
+):
     """Capture one trusted invocation without a fresh deadline or allowance.
 
     Exit zero establishes only the process exit code, not an admitted Grype
@@ -48,8 +63,15 @@ def _capture(command, *, source, config, budget, store, environment, cwd, cancel
             raise InputRefusal("consumer-capture-cancelled")
 
     tick()
-    out = store.writer("grype.json", maximum=store.limits.diagnostic_file_bytes)
-    err = store.writer("grype.stderr", maximum=min(256 * 1024, store.limits.diagnostic_file_bytes))
+    if type(pass_fds) is not tuple or any(type(value) is not int or value < 0 for value in pass_fds):
+        raise TypeError("trusted-consumer-descriptors-required")
+    out = store.writer(
+        stdout_name, maximum=store.limits.diagnostic_file_bytes if stdout_maximum is None else stdout_maximum
+    )
+    err = store.writer(
+        stderr_name,
+        maximum=min(256 * 1024, store.limits.diagnostic_file_bytes) if stderr_maximum is None else stderr_maximum,
+    )
     process = None
     try:
         tick()
@@ -63,6 +85,7 @@ def _capture(command, *, source, config, budget, store, environment, cwd, cancel
                 cwd=cwd,
                 start_new_session=True,
                 close_fds=True,
+                pass_fds=pass_fds,
             )
             for pipe, writer in ((process.stdout, out), (process.stderr, err)):
                 os.set_blocking(pipe.fileno(), False)

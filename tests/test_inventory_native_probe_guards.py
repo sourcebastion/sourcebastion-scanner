@@ -21,6 +21,7 @@ import pytest
         "verify-inventory-matching.py",
         "verify-inventory-expectations.py",
         "verify-inventory-real-grype.py",
+        "verify-inventory-dependency-job.py",
     ],
 )
 @pytest.mark.parametrize("mode", ["flag", "environment"])

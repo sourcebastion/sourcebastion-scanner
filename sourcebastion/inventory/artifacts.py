@@ -62,6 +62,12 @@ class ArtifactStore:
             "sbom.cdx.json": self.limits.sbom_bytes,
             "grype.json": self.limits.diagnostic_file_bytes,
             "grype.stderr": self.limits.diagnostic_file_bytes,
+            "grype-version.json": min(65536, self.limits.diagnostic_file_bytes),
+            "grype-version.stderr": min(65536, self.limits.diagnostic_file_bytes),
+            "grype-status.json": min(65536, self.limits.diagnostic_file_bytes),
+            "grype-status.stderr": min(65536, self.limits.diagnostic_file_bytes),
+            "grype.yaml": min(4096, self.limits.diagnostic_file_bytes),
+            "consumer-config.json": min(16384, self.limits.diagnostic_file_bytes),
             "recovery.json": self.limits.diagnostic_file_bytes,
             "execution.json": min(65536, self.limits.diagnostic_file_bytes),
         }
@@ -194,6 +200,32 @@ class ArtifactStore:
             raise InputRefusal(self._refusal)
         self._reserved += 65536
         self._control_reserved = True
+
+    def read(self, name):
+        """Read finalized held bytes with the original bound size and digest."""
+        self._guard()
+        if name not in self._files or self._files[name][2] is None:
+            raise ValueError("finalized-artifact-required")
+        descriptor, _expected, fact = self._files[name]
+        digest, chunks, offset = hashlib.sha256(), [], 0
+        try:
+            while offset < fact.bytes:
+                self._guard()
+                raw = os.pread(descriptor, min(65536, fact.bytes - offset), offset)
+                if not raw:
+                    raise InputRefusal("changed-artifact-content")
+                chunks.append(raw)
+                digest.update(raw)
+                offset += len(raw)
+            self._guard()
+            if os.pread(descriptor, 1, offset) or digest.hexdigest() != fact.sha256:
+                raise InputRefusal("changed-artifact-content")
+            result = b"".join(chunks)
+            self._guard()
+            return result
+        except (InputRefusal, OSError) as error:
+            self._refusal = error.reason if isinstance(error, InputRefusal) else "unavailable-artifact"
+            raise InputRefusal(self._refusal) from None
 
     def require_source_separation(self, source):
         """Refuse nested held roots even through symlinked path ancestors.

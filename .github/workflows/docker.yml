@@ -604,6 +604,7 @@ jobs:
         env:
           SOURCEBASTION_NATIVE_GRYPE_PROOF_OUTPUT: ${{ github.workspace }}/inventory-real-grype-proof
           SOURCEBASTION_NATIVE_DEPENDENCY_JOB_OUTPUT: ${{ github.workspace }}/inventory-dependency-job-proof
+          SOURCEBASTION_NATIVE_ENTRYPOINT_OUTPUT: ${{ github.workspace }}/inventory-entrypoint-proof
         run: bash scripts/smoke-scan-hosted.sh sourcebastion:standard-rule-test
 
       - name: Upload finite canonical real-Grype evidence
@@ -620,6 +621,14 @@ jobs:
         with:
           name: inventory-dependency-job-${{ matrix.arch }}
           path: inventory-dependency-job-proof/
+          if-no-files-found: ignore
+
+      - name: Upload finite installed entrypoint evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-entrypoint-${{ matrix.arch }}
+          path: inventory-entrypoint-proof/
           if-no-files-found: ignore
 
 

@@ -66,6 +66,16 @@ docker run --rm --init --no-healthcheck --user "$(id -u):$(id -g)" \
   -v "$dependency_output:/out" -w /src --entrypoint python "$image" \
   scripts/verify-inventory-dependency-job.py
 
+# Separate actual installed private entrypoint proof. The CI driver owns each
+# fresh container, bounds external receipt capture and retains first failures.
+# This finite fixture does not qualify production kernel/custody/admission.
+entrypoint_output="${SOURCEBASTION_NATIVE_ENTRYPOINT_OUTPUT:-$work/entrypoint-output}"
+mkdir -m 700 "$entrypoint_output"
+python3 "$root/scripts/run-inventory-entrypoint-proof.py" \
+  --image "$image" --checkout "$root" --source "$work/canonical-source" \
+  --advisories "$database" --preparation "$work/dependency-preparation" \
+  --output "$entrypoint_output"
+
 cp "$root/tests/fixtures/scanners/deps/"*.json "$work/source/"
 cp "$root/tests/fixtures/scanners/iac/main.tf.fixture" "$work/source/main.tf"
 printf 'requests==2.19.1\n' > "$work/source/requirements.txt"

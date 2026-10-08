@@ -61,3 +61,21 @@ image and mounts, admitted source/record, plan and negotiated capability, actual
 kernel2CPU/2GiB/noSwap/PID256/aggregate120CPU/wall limits, network-attempt and
 all-descendant cleanup evidence. Missing parent evidence refuses hosted result
 acceptance. Unit mocks are not a native entrypoint, kernel or release proof.
+
+The finite native CI proof uses the unchanged reviewed real-Grype fixture and
+source-free maintained advisory preparation. It resolves one immutable local
+image ID for preparation, direct installed `-I -m` execution and verification.
+It separately compares all own-package wheel payloads with the checkout and
+binds this entrypoint outside the96-file map. That map does not qualify the
+third-party/interpreter runtime closure or release.
+
+The driver admits a fresh CID before starting each proof container, bounds
+stdout/stderr capture and Docker client waits, retains the first failure, and
+attempts removal only for its exact admitted CID. Unknown creation ownership
+refuses the proof. Host-written control uses the admission-time150s absolute
+deadline and a read-only mount. Before/after source metadata/bytes, actual
+Docker inspect output, clock namespace observations, receipt/artifact hashes,
+original source-bound advisory groups and pure export/recovery replay are
+retained. Requested Docker flags and successful finite cleanup do not prove
+kernel aggregate120CPU enforcement, peak/OOM/PID/network-attempt facts,
+controller-death handling or production all-descendant/custody acceptance.

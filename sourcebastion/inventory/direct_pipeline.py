@@ -15,7 +15,7 @@ from .compose_source import compose_source
 from .contract import Producer, canonical_bytes
 from .cyclonedx import export
 from .inputs import InputRefusal
-from .matching import recover
+from .matching import Consumer, recover
 
 VERSION = "sourcebastion.direct-pipeline/1"
 
@@ -56,6 +56,12 @@ def run_direct(
     own. Matching failure is recorded and does not fail the pipeline: a scan
     that produced a valid inventory still has one when the matcher does not
     answer, which is the separation this slice exists to keep.
+
+    A successful match adds `matching_identity` to the receipt: the consumer,
+    its advisory snapshot, and `recover`'s joint digest binding those to the
+    inventory, the exported SBOM and the output. The advisory snapshot decides
+    which advisories exist, so provenance that omits it cannot support a reuse
+    decision. A failed or absent match records no identity.
     """
     if type(budget) is not PipelineBudget or type(store) is not ArtifactStore:
         raise TypeError("controller-budget-and-artifact-store-required")
@@ -73,7 +79,7 @@ def run_direct(
     store.reserve_control()
     stages = {key: "not_run" for key in ("composition", "inventory", "export", "source_validation", "finalization")}
     reason, inventory_state, environment_sha = None, None, None
-    matching_state, artifact, value = "not_run", None, None
+    matching_state, matching_identity, artifact, value = "not_run", None, None, None
     stage = "composition"
     try:
         budget.check()
@@ -130,7 +136,24 @@ def run_direct(
             # The store already reserves a slot for the consumer's report.
             store.put("grype.json", recovery.original_output)
             matching_state = recovery.matching
+            # What the findings were matched against, bound to what was
+            # matched. The advisory snapshot decides which advisories exist,
+            # so a reuse decision made without it is made against unknown
+            # data; `identity_sha256` is `recover`'s joint digest over the
+            # inventory, the exported SBOM, the consumer's output and this
+            # consumer, so none of the four can be swapped under the others.
+            # The artifact facts already carry the three artifact digests.
+            matching_identity = {
+                "identity_sha256": recovery.identity_sha256,
+                "consumer": Consumer.model_validate(consumer).model_dump(mode="json"),
+                "matches": len(recovery.matches),
+            }
         except (InputRefusal, ValueError, OSError):
+            # The identity is assigned only after the report is retained, so it
+            # is still absent here, and deliberately: the consumer is a
+            # controller assertion, and recording it after a failure would read
+            # as provenance for advisories never established against this
+            # inventory.
             matching_state = "failed"
     receipt = {
         "schema_version": VERSION,
@@ -142,6 +165,7 @@ def run_direct(
         "inventory_state": inventory_state,
         "stages": stages,
         "matching": matching_state,
+        "matching_identity": matching_identity,
         "kernel_admission": "not_observed",
         "reason": reason,
         "semantic_checks": {"consumed_at_receipt_preparation": budget.consumed, "maximum": budget.maximum},

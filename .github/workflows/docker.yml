@@ -617,10 +617,9 @@ jobs:
             --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
             --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            -v "$RUNNER_TEMP/inventory-provider/sourcebastion-go-source:/go-source:ro" \
             -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
             sourcebastion:standard-rule-test scripts/verify-go-source.py \
-              --binary /go-source --preparation /provider-manifest.json > inventory-go-source-native.json
+              --binary /usr/local/bin/sourcebastion-go-source --preparation /provider-manifest.json > inventory-go-source-native.json
 
       - name: Verify source-authored canonical expectations
         id: inventory_expectations
@@ -628,11 +627,10 @@ jobs:
           docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
             --user 65534:65534 --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
             -e PYTHONPATH= -v "$PWD:/repo:ro" -w /repo \
-            -v "$RUNNER_TEMP/inventory-provider/sourcebastion-go-source:/go-source:ro" \
             -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
             --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
             sourcebastion:standard-rule-test scripts/verify-inventory-expectations.py \
-              --go-binary /go-source --go-preparation /provider-manifest.json --upgrade-report > inventory-source-expectations-native.json
+              --go-binary /usr/local/bin/sourcebastion-go-source --go-preparation /provider-manifest.json --upgrade-report > inventory-source-expectations-native.json
 
       - name: Compare upgrades with the independent base oracle
         env:
@@ -666,6 +664,9 @@ jobs:
       - name: Measure native production adapter workloads in fresh cgroups
         run: |
           for repeat in 1 2 3; do
+            python3 scripts/run-inventory-resource-proof.py --image sourcebastion:standard-rule-test \
+              --checkout "$PWD" --workload corpus --provider "$RUNNER_TEMP/inventory-provider" \
+              --output "inventory-resources-corpus-$repeat"
             for arm in flat-1000 flat-10000 flat-100000 flat-100001 graph expansion; do
               python3 scripts/run-inventory-resource-proof.py --image sourcebastion:standard-rule-test \
                 --checkout "$PWD" --workload stress --arm "$arm" \

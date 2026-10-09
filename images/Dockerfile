@@ -5,6 +5,14 @@ FROM python:${PYTHON_VERSION}-alpine3.23@sha256:e7cff362a12454395f8dc99607c21a60
 
 FROM checkmarx/kics@sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602 AS kics
 
+# Native static helper preparation is separate from all customer source.
+FROM python-base AS inventory-go
+WORKDIR /app
+COPY cmd/inventory-provider/ /app/cmd/inventory-provider/
+COPY scripts/build-inventory-go.py /app/scripts/build-inventory-go.py
+COPY LICENSE /app/LICENSE
+RUN python scripts/build-inventory-go.py --output /inventory-go
+
 # Based on the smallest published (micro) image: Alpine and a copied virtualenv.
 # Wheel-only dependency installs need no compiler or development headers.
 FROM python-base AS builder
@@ -45,6 +53,9 @@ ENV PYTHONUNBUFFERED=1 \
 RUN --mount=from=scanners,source=/tmp/inventory-node,target=/tmp/inventory-node \
     apk add --no-cache git openssh-client ca-certificates bash libffi openssl libstdc++ /tmp/inventory-node/*.apk
 COPY .github/inventory-runtime-pins.json /usr/local/share/sourcebastion/inventory-runtime-pins.json
+COPY --from=inventory-go /inventory-go/sourcebastion-go-source /usr/local/bin/sourcebastion-go-source
+COPY --from=inventory-go /inventory-go/manifest.json /usr/local/share/sourcebastion/inventory-go.json
+COPY --from=inventory-go /inventory-go/notices/ /usr/local/share/sourcebastion/inventory-go-notices/
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=scanners /usr/local/bin/gitleaks /usr/local/bin/grype /usr/local/bin/
 COPY --from=scanners /usr/local/share/sast-rules /usr/local/share/sast-rules

@@ -55,6 +55,20 @@ def main():
         for filename, digest in manifest["files"].items():
             if sha((installed / "vendor" / name / filename).read_bytes()) != digest:
                 raise ValueError("inventory-vendored-parser-hash-mismatch")
+    go = json.loads(Path("/usr/local/share/sourcebastion/inventory-go.json").read_text())
+    go_pins = json.loads((root / "cmd/inventory-provider/toolchain.json").read_text())
+    if (go["architecture"] != architecture or go["cgo_enabled"] != "0" or go["go_version"] != go_pins["version"]
+            or go["go_archive_sha256"] != go_pins[f"linux_{architecture}_sha256"]):
+        raise ValueError("installed-go-preparation-pin-mismatch")
+    for name, digest in go["source_files"].items():
+        if sha((root / "cmd/inventory-provider" / name).read_bytes()) != digest:
+            raise ValueError("installed-go-source-identity-mismatch")
+    binary = Path("/usr/local/bin/sourcebastion-go-source")
+    if binary.stat().st_size != go["binary_bytes"] or sha(binary.read_bytes()) != go["binary_sha256"]:
+        raise ValueError("installed-go-binary-digest-mismatch")
+    for name, digest in go["notices"].items():
+        if sha((Path("/usr/local/share/sourcebastion/inventory-go-notices") / name).read_bytes()) != digest:
+            raise ValueError("installed-go-license-notice-mismatch")
     identities = ["PYTHON_VERSION", "images/Dockerfile", ".github/inventory-runtime-pins.json", ".github/scanner-versions.json",
                   ".github/semgrep-artifacts.json", "cmd/inventory-provider/go.mod", "cmd/inventory-provider/go.sum",
                   "cmd/inventory-provider/toolchain.json", "evaluation/m046/cyclonedx-schemas/pins.json",
@@ -64,6 +78,7 @@ def main():
         "schema_version": "m046.installed-inventory-packaging/1", "status": "passed", "architecture": architecture,
         "python": platform.python_version(), "node": node_version, "registry_version": registry.VERSION,
         "registry_sha256": registry.REGISTRY_SHA256, "installed_modules": source_files,
+        "go": go,
         "pin_files": {name: sha((root / name).read_bytes()) for name in identities},
         "runtime_distributions": {dist.metadata["Name"]: dist.version for dist in metadata.distributions()},
         "scope": "Installed module/pin/version closure only; separate verified wheel/APK preparation, OCI/resources, native real matching and distribution-license review remain required.",

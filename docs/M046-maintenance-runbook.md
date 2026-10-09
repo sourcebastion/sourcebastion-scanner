@@ -28,7 +28,7 @@ package/finding parity was waived by the owner on 2026-10-09.
 | Node and npm | Native signed Alpine APKs, pinned versions and SHA256 in `inventory-runtime-pins.json`; build preparation hashes bytes, APK signatures stay enabled, installed versions checked offline |
 | Parser code and registry | Exact installed path/hash map, registry `VERSION` and `REGISTRY_SHA256`; source bytes and custom configuration digest are separate |
 | Vendored npm-semver and Yarn | Version/source/archive manifests and exact file hashes, retained ISC/BSD notices; no project `npm install` |
-| Maintained Go helper and restricted provider | `cmd/inventory-provider/toolchain.json`, go.mod/go.sum, all seven helper source hashes; trusted preparation verifies archives/modules/tests and static native binaries; mounted proof binaries are not a claim that every executable ships in the image |
+| Maintained Go helper and restricted provider | `cmd/inventory-provider/toolchain.json`, go.mod/go.sum, all seven helper source hashes; static Go source helper is installed in the image with preparation manifest and Go/x-mod/SourceBastion notices; restricted-provider comparison binary remains separately prepared/mounted |
 | Grype | `.github/scanner-versions.json`, verified native archive hash, held executable identity and offline version/status/analysis; no per-scan refresh |
 | Advisory data | Existing externally prepared, verified snapshot and all admitted file hashes, schema/build identity; generation is prepared separately and reused read-only |
 | CycloneDX schema | Pinned official 1.6 schema closure in `evaluation/m046/cyclonedx-schemas/`; schema validation is separate from successful export/matching |

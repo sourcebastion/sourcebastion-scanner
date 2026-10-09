@@ -106,7 +106,7 @@ def run(args):
             options += ["-v", str(args.provider.resolve()) + ":/prepared:ro"]
         # No project command is accepted here. The workload is a reviewed
         # installed-engine proof script fixed by this trusted maintainer CLI.
-        command = ["python3", "scripts/verify-inventory-expectations.py", "--go-binary", "/prepared/sourcebastion-go-source",
+        command = ["python3", "scripts/verify-inventory-expectations.py", "--go-binary", "/usr/local/bin/sourcebastion-go-source",
                    "--go-preparation", "/prepared/manifest.json", "--upgrade-report"]
         if args.workload == "stress":
             command = ["python3", "scripts/verify-inventory-stress.py", "--arm", args.arm]

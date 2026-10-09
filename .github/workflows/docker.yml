@@ -330,31 +330,19 @@ jobs:
             exit 0
           fi
           changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if [ -z "$changed" ]; then
-            echo "image_affecting=true" >> "$GITHUB_OUTPUT"
-            echo "Empty diff; building rather than assuming."
-            exit 0
-          fi
-          # Only paths that provably cannot reach the image. docs/ is in
-          # .dockerignore, so it is excluded from the build context outright.
-          #
-          # Root markdown is NOT here: setup.py reads README.md for
-          # long_description, so markdown does feed packaging metadata. Nor are
-          # scripts/, rules/, evaluation/ or .github/workflows/ -- the verify
-          # scripts run against the built image, rules ship in it, evaluation/
-          # holds the pinned schemas and fixtures the proofs read, and a
-          # workflow change must re-run itself.
-          affecting=false
-          while IFS= read -r file; do
-            [ -n "$file" ] || continue
-            case "$file" in
-              docs/*|.github/ISSUE_TEMPLATE/*) ;;
-              *) affecting=true; echo "  image-affecting: $file" ;;
-            esac
-          done <<< "$changed"
+          echo "Changed paths:"
+          echo "$changed" | sed 's/^/  /'
+          # The decision lives in scripts/classify-changed-paths.py, with
+          # tests/test_classify_changed_paths.py covering it -- including a
+          # commit that touches both documentation and code, which must build.
+          # Inline shell in YAML is not testable and this gates the native
+          # proofs.
+          affecting="$(printf '%s\n' "$changed" | python3 scripts/classify-changed-paths.py)"
           echo "image_affecting=$affecting" >> "$GITHUB_OUTPUT"
           if [ "$affecting" = false ]; then
             echo "Documentation-only change; skipping the native image builds."
+          else
+            echo "Change can affect the image; building."
           fi
 
   build-scanner:

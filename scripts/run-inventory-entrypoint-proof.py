@@ -271,6 +271,10 @@ def _run(args, proof):
         if code != 0 or resources["status"] != "passed":
             raise ValueError("finite-ci-entrypoint-resource-gate-failed")
         shutil.copyfile(resource_output / "workload.json", proof / "entrypoint.stdout")
+        # The verifier asserts the child wrote nothing to stderr. Without this
+        # copy that assertion reads a file no one creates, so it can never
+        # fail -- a vacuous check in place of a real one.
+        shutil.copyfile(resource_output / "workload.stderr", proof / "entrypoint.stderr")
         actual = {"container_id": resources["container_id"], "exit_code": resources["exit_code"],
                   "remove_exit_code": 0 if resources["removed"] else 1}
         observations["container_id"] = actual["container_id"]

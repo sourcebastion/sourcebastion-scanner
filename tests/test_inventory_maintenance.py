@@ -242,3 +242,103 @@ def test_resource_driver_removes_only_owned_container_on_failure(tmp_path, monke
     assert removals == [("rm", "--force", cid)]
     receipt = json.loads((args.output / "resources.json").read_text())
     assert receipt["status"] == "failed" and receipt["removed"] == (failure != "cleanup")
+
+
+def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returncode=0):
+    """Drive the resource proof to the output-capture step with a stub Docker."""
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    functions = runpy.run_path(str(ROOT / "scripts/run-inventory-resource-proof.py"))
+    execute = functions["run"]
+    scope = execute.__globals__
+    args_holder = {}
+    monkeypatch.setattr(scope["platform"], "system", lambda: "Linux")
+    monkeypatch.setattr(scope["platform"], "machine", lambda: "x86_64")
+    cid, image = "c" * 64, "sha256:" + "a" * 64
+
+    def docker(*args, **_kwargs):
+        if args[:2] == ("image", "inspect"):
+            return json.dumps([{"Id": image, "Architecture": "amd64", "Os": "linux"}]).encode()
+        if args[0] == "create":
+            Path(args[args.index("--cidfile") + 1]).write_text(cid)
+        if args[0] == "inspect":
+            return json.dumps([{"Image": image, "State": {"Running": True, "Pid": 123}}]).encode()
+        return b""
+
+    class Logs:
+        """Stands in for `docker logs`, writing exactly what the test chose."""
+
+        returncode = logs_returncode
+
+        def __init__(self, _command, stdout=None, stderr=None):
+            stdout.write(logs_bytes)
+            stdout.flush()
+
+        def poll(self):
+            return self.returncode
+
+        def wait(self, timeout=None):
+            return self.returncode
+
+        def kill(self):
+            pass
+
+    monkeypatch.setitem(scope, "docker", docker)
+    monkeypatch.setitem(scope, "cgroup", lambda _pid: tmp_path / "cgroup")
+    monkeypatch.setitem(scope, "limits", lambda _root: None)
+    monkeypatch.setattr(scope["subprocess"], "Popen", Logs)
+    sample = {key: resource_record()[key] for key in ("cpu_usec", "memory_peak", "swap_peak", "pids_peak", "oom_kill")}
+    seen = []
+
+    def observe(_root):
+        # The pre-work call writes the gate file, standing in for a container
+        # that has already finished, so the wait loop's /proc inspection (which
+        # cannot be stubbed on a non-Linux host) is never reached. The loop
+        # itself is covered by the cpu-ceiling test above.
+        seen.append(1)
+        if len(seen) >= 1:
+            gate = args_holder["args"].output / "gate"
+            if not (gate / "exit").exists():
+                (gate / "exit").write_text("0")
+        return dict(sample)
+
+    monkeypatch.setitem(scope, "observe", observe)
+    original_read = scope["read"]
+
+    def read(path):
+        text = str(path)
+        if text.startswith("/proc/"):
+            return "124" if text.endswith("/children") else "State:\tT"
+        if text.endswith("/gate/exit"):
+            return "0"
+        return original_read(path)
+
+    monkeypatch.setitem(scope, "read", read)
+    args = SimpleNamespace(image="example", output=tmp_path / "proof", checkout=ROOT,
+                           provider=None, workload="stress", arm="flat-1000")
+    args_holder["args"] = args
+    return execute, args
+
+
+def test_a_workload_that_produced_no_output_is_not_a_passed_resource_proof(tmp_path, monkeypatch):
+    """A clean cgroup measurement of a workload that emitted nothing attests
+    nothing. Observed in native CI: the receipt recorded `status: passed` with
+    `workload_sha256` set to the digest of the empty string, and the failure
+    only surfaced three layers downstream in the entrypoint verifier."""
+    execute, args = _driver(tmp_path, monkeypatch, logs_bytes=b"")
+
+    assert execute(args) == 1
+    receipt = json.loads((args.output / "resources.json").read_text())
+    assert receipt["status"] == "failed"
+    assert receipt["reason"] == "resource-workload-output-empty"
+    assert "workload_sha256" not in receipt, "no digest of nothing may be retained as evidence"
+
+
+def test_a_workload_that_produced_output_still_passes(tmp_path, monkeypatch):
+    """Guards the test above: the refusal must be about emptiness, not about
+    the stubbed driver failing for some other reason."""
+    execute, args = _driver(tmp_path, monkeypatch, logs_bytes=b'{"arm": "flat-1000"}\n')
+
+    assert execute(args) == 0
+    receipt = json.loads((args.output / "resources.json").read_text())
+    assert receipt["status"] == "passed"
+    assert receipt["workload_sha256"] == hashlib.sha256(b'{"arm": "flat-1000"}\n').hexdigest()

@@ -185,6 +185,12 @@ def run(args):
                 if process.poll() is None:
                     process.kill()
                 process.wait(timeout=5)
+        # A clean cgroup measurement of a workload that emitted nothing attests
+        # nothing, and the digest of empty bytes must never be retained as
+        # evidence that something ran. Every admitted workload -- corpus,
+        # stress and entrypoint -- reports on stdout, including when it refuses.
+        if (args.output / "workload.json").stat().st_size == 0:
+            raise ValueError("resource-workload-output-empty")
         receipt["workload_sha256"] = hashlib.sha256((args.output / "workload.json").read_bytes()).hexdigest()
     except Exception as error:
         code = str(error)

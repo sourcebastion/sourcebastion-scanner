@@ -1,10 +1,16 @@
 # M046 S04 acceptance ledger
 
-Status: S04 is open. The export, matching, import and identity work is
-implemented and has local and hosted executable evidence; native resource
-acceptance remains open and is the only S04 acceptance item still open.
-S03, which S04 depends on, is complete: issue 91 is closed and its adapters
-are on `main`.
+Status: **every acceptance criterion S04 states is met**, with executable
+evidence, and all of its implementation is on `main`. S03, which S04 depends
+on, is complete.
+
+This is not a claim that the native resource questions are answered. They are
+real and still open -- they are simply not S04's. S04's acceptance sentence
+lists five criteria and names none of them;
+[S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94)
+owns bounds, cancellation, child cleanup and numerical performance outcomes,
+and depends on S04-S06. Reading S04's closure as those items being settled
+would be exactly the overstatement this ledger exists to prevent.
 
 Tracking: [S04 #92](https://github.com/sourcebastion/sourcebastion-scanner/issues/92).
 Canonical scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
@@ -28,7 +34,7 @@ acceptance.
 | No scan-time registry downloads, dependency installs or project execution | implemented, merged | `tests/test_inventory_network_denied_equivalence.py`; [#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147) |
 | Engine/config/registry identity in result provenance, with the advisory snapshot | implemented, merged | the receipt's `producer` and `matching_identity`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | M036 cache/baseline compatibility keys bound to inventory semantics | implemented, merged | platform `incremental_compatibility.INVENTORY_IDENTITY_FIELDS` and `scanner_identity.INVENTORY_IDENTITY_FEATURE`; platform [#402](https://github.com/sourcebastion/sourcebastion-platform/pull/402) |
-| Native resource acceptance | **open** | needs hosted jobs; see below |
+| Native resource acceptance | **not an S04 criterion; owned by S07** | S04's acceptance sentence does not list it. [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94) owns bounds, cancellation, child cleanup and numerical performance outcomes, and depends on S04-S06 |
 | S03 dependency | satisfied | [S03 #91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91) closed; [#148](https://github.com/sourcebastion/sourcebastion-scanner/pull/148) and [#149](https://github.com/sourcebastion/sourcebastion-scanner/pull/149) merged |
 
 Every implemented row above is on `main` as of 2026-10-09:
@@ -44,6 +50,22 @@ Every implemented row above is on `main` as of 2026-10-09:
 What remains open is open for reasons no merge addresses: native resource
 acceptance needs the hosted jobs, SPDX export is unexercised by choice, and
 S04 depends on S03.
+
+## The five criteria S04 states
+
+> Acceptance: standards validation and real-binary matching pass; the pip
+> custom-input regression produces its four expected advisories under frozen
+> test data; equivalent network-denied inputs produce equivalent
+> inventories/findings; incomplete inventory and matching failure stay
+> separately visible.
+
+| Criterion | Evidence |
+| --- | --- |
+| Standards validation passes | `.github/workflows/docker.yml` generates the SBOM in the built image and validates it on the host against the pinned official 1.6 schemas, on AMD64 and ARM64 |
+| Real-binary matching passes | The native proof reports `native-real-grype-finite-passed` on both architectures against the verified advisory snapshot |
+| The pip regression yields its four advisories under frozen data | The proof receipt binds all four GHSA/CVE alias groups to each distinct pip occurrence with `known_advisory_on_each_selected_id` true |
+| Equivalent network-denied inputs yield equivalent inventories and findings | `tests/test_inventory_network_denied_equivalence.py`, covering both the inventory and the findings halves |
+| Incomplete inventory and matching failure stay separately visible | The receipt reports `inventory_state`, per-stage `stages`, `matching` and `matching_identity` independently; a refused matcher leaves the inventory and SBOM intact with `reason` null |
 
 ## Executable evidence held locally
 
@@ -140,7 +162,10 @@ not an SBOM-parity one, which is why it moved to #154.
 Native resource acceptance is open and cannot be closed from a developer
 checkout: aggregate CPU-time enforcement, complete kernel traces, same-UID
 administrator fencing and AMD64/ARM64 resource behaviour need the hosted jobs.
-The real-Grype proof is a finite integration proof and says so itself.
+The real-Grype proof is a finite integration proof and says so itself. These
+belong to [S07](https://github.com/sourcebastion/sourcebastion-scanner/issues/94),
+which assembles the milestone ledger; they are not S04 criteria, and S04
+closing does not answer them.
 
 Also open, and broader than S04: production controller custody, advisory
 database publisher signatures, whole-milestone acceptance, and release or

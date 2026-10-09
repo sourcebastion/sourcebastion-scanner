@@ -13,6 +13,23 @@ def sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
+def installed_apks(raw):
+    if not raw or len(raw) > 16 * 1024**2:
+        raise ValueError("installed-apk-metadata-bound")
+    packages = {}
+    for block in raw.decode("utf-8").split("\n\n"):
+        if not block.strip():
+            continue
+        names = [line[2:] for line in block.splitlines() if line.startswith("P:")]
+        versions = [line[2:] for line in block.splitlines() if line.startswith("V:")]
+        if len(names) != 1 or len(versions) != 1 or not names[0] or not versions[0] or names[0] in packages:
+            raise ValueError("installed-apk-metadata-invalid")
+        packages[names[0]] = versions[0]
+    if not packages:
+        raise ValueError("installed-apk-metadata-empty")
+    return packages
+
+
 def main():
     if sys.flags.optimize:
         raise ValueError("optimized-packaging-proof-refused")
@@ -41,11 +58,14 @@ def main():
     node_version = subprocess.run(["/usr/bin/node", "--version"], check=True, capture_output=True, timeout=5).stdout.decode().strip()
     if node_version != pins["node_version"]:
         raise ValueError("inventory-node-pin-mismatch")
-    # APK signature checking remains enabled at installation, in addition to
-    # the preparation SHA256 check. Check actual package versions offline.
+    # APK3's info applet opens repository indexes even for installed package
+    # queries, and -v reports descriptions rather than the old version format.
+    # Read the installed database directly; no repository command is needed.
+    with Path("/lib/apk/db/installed").open("rb") as stream:
+        installed_raw = stream.read(16 * 1024**2 + 1)
+    apk_versions = installed_apks(installed_raw)
     for name, row in pins["packages"].items():
-        observed = subprocess.run(["/sbin/apk", "info", "-v", name], check=True, capture_output=True, timeout=5).stdout.decode().strip()
-        if observed != name + "-" + row["version"]:
+        if apk_versions.get(name) != row["version"]:
             raise ValueError("inventory-apk-version-mismatch")
     for filename, digest in json.loads((root / ".github/python-locks/manifest.json").read_text())["files"].items():
         if sha((root / ".github/python-locks" / filename).read_bytes()) != digest:
@@ -79,6 +99,7 @@ def main():
         "python": platform.python_version(), "node": node_version, "registry_version": registry.VERSION,
         "registry_sha256": registry.REGISTRY_SHA256, "installed_modules": source_files,
         "go": go,
+        "installed_apk_database_sha256": sha(installed_raw), "installed_apk_versions": apk_versions,
         "pin_files": {name: sha((root / name).read_bytes()) for name in identities},
         "runtime_distributions": {dist.metadata["Name"]: dist.version for dist in metadata.distributions()},
         "scope": "Installed module/pin/version closure only; separate verified wheel/APK preparation, OCI/resources, native real matching and distribution-license review remain required.",

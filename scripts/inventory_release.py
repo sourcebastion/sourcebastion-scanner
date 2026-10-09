@@ -1,6 +1,7 @@
 """Frozen numeric release gates. Receipts are evidence inputs, not attestations."""
 
 import hashlib
+import gzip
 import json
 import math
 from pathlib import Path
@@ -98,10 +99,28 @@ def oci_layers(path, architecture):
         layers = manifest["layers"]
         if not layers or len(layers) > 256:
             raise ValueError("oci-layer-count-invalid")
-        for layer in layers:
+        rootfs = config.get("rootfs", {})
+        diff_ids = rootfs.get("diff_ids", [])
+        if rootfs.get("type") != "layers" or len(diff_ids) != len(layers):
+            raise ValueError("oci-rootfs-layer-closure-mismatch")
+        expanded_bytes = 0
+        for layer, expected in zip(layers, diff_ids):
             if layer["mediaType"] not in {"application/vnd.oci.image.layer.v1.tar+gzip", "application/vnd.docker.image.rootfs.diff.tar.gzip"}:
                 raise ValueError("oci-compressed-layer-required")
             blob(layer)
+            # A manifest could otherwise reference tiny arbitrary blobs under
+            # the same tested config. Bind compressed bytes to its actual
+            # rootfs diff IDs by streaming decompression, without extraction.
+            calculated = hashlib.sha256()
+            member = members["blobs/sha256/" + layer["digest"][7:]]
+            with archive.extractfile(member) as stream, gzip.GzipFile(fileobj=stream) as decoded:
+                while chunk := decoded.read(1024**2):
+                    expanded_bytes += len(chunk)
+                    if expanded_bytes > 8 * 1024**3:
+                        raise ValueError("oci-expanded-image-bound")
+                    calculated.update(chunk)
+            if "sha256:" + calculated.hexdigest() != expected:
+                raise ValueError("oci-rootfs-diff-id-mismatch")
         return {"manifest_digest": descriptor["digest"], "config_digest": manifest["config"]["digest"], "architecture": architecture,
                 "layers": [{"digest": layer["digest"], "size": layer["size"]} for layer in layers]}
 

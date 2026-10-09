@@ -117,6 +117,8 @@ def delta(before, after):
 
 
 def corpus_diff(baseline, candidate):
+    if type(baseline) is not dict or type(candidate) is not dict:
+        raise ValueError("upgrade-evidence-document-required")
     if baseline.get("schema_version") != "m046.canonical-source-expectations/1":
         raise ValueError("upgrade-baseline-must-be-independent-oracle")
     if candidate.get("schema_version") != "m046.canonical-source-expectations-proof/1":

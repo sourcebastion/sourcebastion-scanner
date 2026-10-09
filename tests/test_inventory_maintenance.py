@@ -135,7 +135,9 @@ def oci(tmp_path, *, corrupt=False):
         blobs["blobs/sha256/" + digest] = raw
         return {"digest": "sha256:" + digest, "size": len(raw), "mediaType": media_type}
     layer = descriptor(gzip.compress(b"verified compressed layer"), "application/vnd.oci.image.layer.v1.tar+gzip")
-    config = descriptor(b'{"os":"linux","architecture":"arm64"}', "application/vnd.oci.image.config.v1+json")
+    config = descriptor(json.dumps({"os": "linux", "architecture": "arm64", "rootfs": {
+        "type": "layers", "diff_ids": ["sha256:" + hashlib.sha256(b"verified compressed layer").hexdigest()]
+    }}).encode(), "application/vnd.oci.image.config.v1+json")
     manifest = descriptor(json.dumps({"schemaVersion": 2, "config": config, "layers": [layer]}).encode(), "application/vnd.oci.image.manifest.v1+json")
     blobs["index.json"] = json.dumps({"schemaVersion": 2, "manifests": [manifest]}).encode()
     if corrupt:
@@ -191,6 +193,15 @@ def test_download_hash_failure_never_succeeds(tmp_path, monkeypatch):
     monkeypatch.setattr(function.__globals__["platform"], "machine", lambda: "x86_64")
     with pytest.raises(ValueError, match="digest-mismatch"):
         function(ROOT / ".github/inventory-runtime-pins.json", tmp_path / "downloads")
+
+
+def test_offline_packaging_reads_installed_apk_data_without_repository_queries():
+    functions = runpy.run_path(str(ROOT / "scripts/verify-inventory-packaging.py"))
+    raw = b"C:checksum\nP:nodejs\nV:24.18.1-r0\nA:aarch64\nF:usr/bin\nR:node\n\nP:npm\nV:11.11.0-r0\n"
+    assert functions["installed_apks"](raw) == {"nodejs": "24.18.1-r0", "npm": "11.11.0-r0"}
+    for refused in (b"", b"P:nodejs\n", raw + b"\nP:nodejs\nV:24.18.1-r0\n", b"P:nodejs\nP:npm\nV:1\n"):
+        with pytest.raises(ValueError):
+            functions["installed_apks"](refused)
 
 
 @pytest.mark.parametrize("failure", ["cpu", "create-timeout", "cleanup"])

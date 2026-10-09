@@ -28,6 +28,42 @@ def test_exact_canonical_roundtrip_and_typed_projection():
     assert projected.inventory_sha256 == hashlib.sha256(raw).hexdigest()
 
 
+def test_current_nuget_producer_keeps_occurrences_and_selectors_through_storage_projection(tmp_path):
+    """S03's newer contract must survive the S05 reader, without purl joins."""
+    from tests.test_inventory_nuget_composition import package, run, write
+
+    for name in ("one", "two"):
+        root = tmp_path / name
+        root.mkdir()
+        write(
+            root,
+            {
+                "net8.0": {
+                    "Parent": package(dependencies={"Child": "[2.0.0,3.0.0)"}),
+                    "Child": package("2.1.0", kind="Transitive"),
+                }
+            },
+        )
+    original = run(tmp_path)
+    raw = canonical_bytes(original)
+    value = read(raw)
+    projected = project_rows(value, max_rows=100, max_bytes=1024**2, check=lambda: None)
+    occurrences = [json.loads(row.detail) for row in projected.rows if row.table == "occurrence"]
+    selectors = [
+        json.loads(row.detail) for row in projected.rows if row.table == "evidence" and row.key[0] == "selector"
+    ]
+    assert len(occurrences) == len({row["id"] for row in occurrences}) == 4
+    assert len({row["purl"] for row in occurrences}) == 2
+    assert {row["analysis_scope_id"] for row in occurrences} == {
+        item.analysis_scope_id for item in original.occurrences
+    }
+    assert sorted(selectors, key=lambda row: row["id"]) == sorted(
+        [item.model_dump(mode="json") for item in original.dependency_selectors], key=lambda row: row["id"]
+    )
+    assert len(selectors) == 2 and all(row["dialect"] == "nuget-release-range-1" for row in selectors)
+    assert canonical_bytes(value) == raw and value.coverage.graph == original.coverage.graph == "partial"
+
+
 def test_digest_mismatch_refuses_before_decoder(monkeypatch):
     monkeypatch.setattr(reader.json, "loads", lambda *a, **k: pytest.fail("decoder reached"))
     with pytest.raises(reader.CanonicalReaderError, match="^canonical_inventory_digest_mismatch$"):

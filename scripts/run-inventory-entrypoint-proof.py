@@ -10,6 +10,8 @@ import selectors
 import signal
 import stat
 import subprocess
+import shutil
+import sys
 import time
 
 MAX_CAPTURE = 65536
@@ -253,11 +255,24 @@ def _run(args, proof):
         remaining = observations["absolute_deadline"] - time.monotonic()
         if remaining <= 0:
             raise TimeoutError("finite-ci-admission-deadline")
-        actual = owned_container(
-            run, proof, "entrypoint", options + child_options,
-            image, ["-I", "-m", "sourcebastion.inventory_entrypoint"], seconds=remaining,
-            absolute_deadline=observations["absolute_deadline"],
-        )
+        # The full composition/export/real-matching job now runs under the
+        # same finite host cgroup observer as the release stress arms. The
+        # controller's original absolute deadline is preserved in job.json.
+        resource_output = proof / "entrypoint-resources"
+        code = run([
+            sys.executable, str(Path(__file__).with_name("run-inventory-resource-proof.py")),
+            "--image", image, "--checkout", str(args.checkout), "--workload", "entrypoint",
+            "--source", str(args.source), "--advisories", str(args.advisories),
+            "--preparation", str(args.preparation), "--control", str(control),
+            "--artifacts", str(output), "--output", str(resource_output),
+        ], "entrypoint-resource-driver", seconds=remaining + 25)
+        resources = bounded_json(resource_output / "resources.json")
+        observations["resources"] = resources
+        if code != 0 or resources["status"] != "passed":
+            raise ValueError("finite-ci-entrypoint-resource-gate-failed")
+        shutil.copyfile(resource_output / "workload.json", proof / "entrypoint.stdout")
+        actual = {"container_id": resources["container_id"], "exit_code": resources["exit_code"],
+                  "remove_exit_code": 0 if resources["removed"] else 1}
         observations["container_id"] = actual["container_id"]
         observations["entry_exit_code"] = actual["exit_code"]
         observations["container_remove_exit_code"] = actual["remove_exit_code"]

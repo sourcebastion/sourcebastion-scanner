@@ -370,6 +370,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
@@ -397,6 +398,13 @@ jobs:
           cache-to: type=gha,scope=scanner-${{ matrix.arch }},mode=max
           platforms: linux/${{ matrix.arch }}
 
+      - name: Retain candidate compressed layers before proof outputs enter the build context
+        env:
+          IMAGE_ARCH: ${{ matrix.arch }}
+        run: |
+          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+            --output "type=oci,dest=$RUNNER_TEMP/inventory-candidate.oci.tar" -f images/Dockerfile .
+
       - name: Record image size
         env:
           IMAGE_ARCH: ${{ matrix.arch }}
@@ -416,6 +424,22 @@ jobs:
         run: |
           scripts/assert-image-version.sh sourcebastion:standard-rule-test
           scripts/assert-image-runtime.sh sourcebastion:standard-rule-test
+
+      - name: Verify installed inventory runtime pins offline
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
+            -v "$PWD:/repo:ro" -w /repo \
+            sourcebastion:standard-rule-test scripts/verify-inventory-packaging.py > inventory-packaging-native.json
+
+      - name: Retain installed inventory packaging proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-packaging-${{ matrix.arch }}
+          path: inventory-packaging-native.json
+          if-no-files-found: error
 
       - name: Run rule fixture tests in standard image
         run: |
@@ -608,7 +632,59 @@ jobs:
             -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
             --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
             sourcebastion:standard-rule-test scripts/verify-inventory-expectations.py \
-              --go-binary /go-source --go-preparation /provider-manifest.json > inventory-source-expectations-native.json
+              --go-binary /go-source --go-preparation /provider-manifest.json --upgrade-report > inventory-source-expectations-native.json
+
+      - name: Compare upgrades with the independent base oracle
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.sha }}
+        run: |
+          git show "$BASE_SHA:evaluation/m046/canonical-source-expectations-v1.json" > inventory-base-oracle.json
+          status=0
+          python3 scripts/verify-inventory-upgrade.py --baseline evaluation/m046/canonical-source-expectations-v1.json \
+            --candidate inventory-source-expectations-native.json --output inventory-current-oracle-diff.json || status=1
+          python3 scripts/verify-inventory-upgrade.py --baseline inventory-base-oracle.json \
+            --candidate inventory-source-expectations-native.json --output inventory-upgrade-diff.json || status=1
+          exit "$status"
+
+      - name: Enforce added compressed release layers
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.sha }}
+          IMAGE_ARCH: ${{ matrix.arch }}
+        run: |
+          base_dir="$RUNNER_TEMP/inventory-image-base"
+          mkdir "$base_dir"
+          git archive "$BASE_SHA" | tar -x -C "$base_dir"
+          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+            --output "type=oci,dest=$RUNNER_TEMP/inventory-base.oci.tar" \
+            -f "$base_dir/images/Dockerfile" "$base_dir"
+          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+            --load --tag sourcebastion:inventory-upgrade-base -f "$base_dir/images/Dockerfile" "$base_dir"
+          python3 scripts/verify-inventory-release-size.py --architecture "$IMAGE_ARCH" \
+            --baseline "$RUNNER_TEMP/inventory-base.oci.tar" --candidate "$RUNNER_TEMP/inventory-candidate.oci.tar" \
+            --candidate-image image-inspect.json --output inventory-compressed-growth.json
+
+      - name: Measure native production adapter workloads in fresh cgroups
+        run: |
+          for repeat in 1 2 3; do
+            for arm in flat-1000 flat-10000 flat-100000 flat-100001 graph expansion; do
+              python3 scripts/run-inventory-resource-proof.py --image sourcebastion:standard-rule-test \
+                --checkout "$PWD" --workload stress --arm "$arm" \
+                --output "inventory-resources-$arm-$repeat"
+            done
+          done
+
+      - name: Retain upgrade differences and host resource observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-maintenance-${{ matrix.arch }}
+          path: |
+            inventory-base-oracle.json
+            inventory-upgrade-diff.json
+            inventory-current-oracle-diff.json
+            inventory-compressed-growth.json
+            inventory-resources-*/
+          if-no-files-found: error
 
       - name: Retain source-authored expectation proof
         if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_expectations.outcome)
@@ -670,6 +746,8 @@ jobs:
           SOURCEBASTION_NATIVE_GRYPE_PROOF_OUTPUT: ${{ github.workspace }}/inventory-real-grype-proof
           SOURCEBASTION_NATIVE_DEPENDENCY_JOB_OUTPUT: ${{ github.workspace }}/inventory-dependency-job-proof
           SOURCEBASTION_NATIVE_ENTRYPOINT_OUTPUT: ${{ github.workspace }}/inventory-entrypoint-proof
+          SOURCEBASTION_UPGRADE_BASE_IMAGE: sourcebastion:inventory-upgrade-base
+          SOURCEBASTION_UPGRADE_BASE_CHECKOUT: ${{ runner.temp }}/inventory-image-base
         run: bash scripts/smoke-scan-hosted.sh sourcebastion:standard-rule-test
 
       - name: Upload finite canonical real-Grype evidence

@@ -14,7 +14,8 @@
             "requirements-origin",
             "manifest-input",
             "lock-input",
-            "provider-directory"
+            "provider-directory",
+            "imported-sbom-input"
           ],
           "title": "Kind",
           "type": "string"
@@ -1332,7 +1333,8 @@
           "enum": [
             "declared",
             "locked",
-            "installed"
+            "installed",
+            "imported"
           ],
           "title": "Evidence Kind",
           "type": "string"

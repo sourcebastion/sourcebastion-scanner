@@ -64,9 +64,25 @@ different contexts already do. Joining them would assert that the built
 artifact and the declared dependency are the same thing, which the bytes do not
 establish.
 
+## What is implemented
+
+`inventory.imported_sbom.admit` is the gate: bounded decode, allowlisted
+`CycloneDX` / `1.6` with no version coercion, a component ceiling, an 8 MiB
+import cap separate from the export cap, and `inputs.relative_path` for a
+source-bound artifact. It returns an `ImportedBom` -- digest, specification,
+component count and binding -- and charges the caller's ledger.
+
+It opens no file: a caller reading from source does so through `inputs.Source`,
+which refuses symlinks against a pinned root descriptor, and passes the bytes.
+
 ## What this does not establish
 
-No importer, no schema allowlist constant, no caps chosen, no tests. This
-document constrains an implementation; it does not stand in for one, and S04
-acceptance is not advanced by it. The export, matching and real-Grype proofs
-are unchanged, and whole-pipeline ledger and resource acceptance remain open.
+Admission produces no occurrences. Projecting an imported component into the
+canonical model is a separate question with its own evidence rules -- the
+no-merge-by-purl constraint above is the hard part, not the parsing -- and
+answering it inside the gate would give the gate the property this slice
+forbids. No route invokes the module, and nothing writes an imported
+identity into result provenance or the compatibility inputs yet.
+
+The export, matching and real-Grype proofs are unchanged. Native resource
+acceptance remains open.

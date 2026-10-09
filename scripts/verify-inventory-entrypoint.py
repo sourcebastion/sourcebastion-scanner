@@ -121,7 +121,9 @@ def installed_bindings():
         raw = read(actual, 2 * 1024**2)
         assert raw == read(WORK / name, 2 * 1024**2)
         payloads[name] = dict(sha256=sha(raw), bytes=len(raw))
-    assert len(payloads) == 137
+    # The reviewed distribution payload set, checked before the module count
+    # below; 138 includes `imported_sbom.py`.
+    assert len(payloads) == 138
     expected = {
         "sourcebastion/" + path.relative_to(WORK / "sourcebastion").as_posix()
         for path in (WORK / "sourcebastion").rglob("*")

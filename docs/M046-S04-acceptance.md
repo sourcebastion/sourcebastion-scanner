@@ -1,0 +1,109 @@
+# M046 S04 acceptance ledger
+
+Status: S04 is open. The export, matching, import and identity work is
+implemented and has local and hosted executable evidence; native resource
+acceptance and the S03 dependency remain open, and neither can be closed from
+a developer checkout.
+
+Tracking: [S04 #92](https://github.com/sourcebastion/sourcebastion-scanner/issues/92).
+Canonical scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
+
+This file records what the slice establishes and what it does not. It is not a
+release, deployment or milestone closure, and it claims no product-route
+acceptance.
+
+## What S04 asks for, and where each part stands
+
+| S04 requirement | State | Evidence |
+| --- | --- | --- |
+| Validated CycloneDX from the local inventory, pinned and consumer-compatible | implemented | [`docs/inventory-cyclonedx.md`](inventory-cyclonedx.md); offline validation against the pinned official 1.6 schemas in `evaluation/m046/cyclonedx-schemas` |
+| Purls, evidenced relationships, source/environment identity, provenance, explicit coverage and fidelity preserved | implemented | `tests/test_inventory_cyclonedx.py`; canonical inventory stays authoritative and separately bound by SHA-256 |
+| Real Grype binary against the verified advisory snapshot | implemented | [`docs/inventory-real-grype-proof.md`](inventory-real-grype-proof.md); native AMD64 and ARM64 hosted smoke jobs in `.github/workflows/docker.yml` |
+| SBOM/export status separate from matching status; a valid inventory survives matching failure | implemented | `inventory.direct_pipeline`; `tests/test_inventory_direct_pipeline.py` |
+| Finding identity, severity, deduplication and source locations preserved | implemented | `inventory.matching.recover`; exact artifact IDs, never joined by name or purl |
+| Bounded schema/size/path handling and optional import of local build SBOMs | implemented | [`docs/inventory-imported-sbom.md`](inventory-imported-sbom.md); `inventory.imported_sbom` |
+| Imported artifacts cannot silently replace discovery | implemented | `project` holds no composed inventory; a real `uv.lock` composition and an import of the same purl stay two occurrences |
+| No scan-time registry downloads, dependency installs or project execution | implemented | `tests/test_inventory_network_denied_equivalence.py` |
+| Engine/config/registry identity in result provenance, with the advisory snapshot | implemented | the receipt's `producer` and `matching_identity` |
+| M036 cache/baseline compatibility keys bound to inventory semantics | implemented, platform side | platform `incremental_compatibility.INVENTORY_IDENTITY_FIELDS` and `scanner_identity.INVENTORY_IDENTITY_FEATURE` |
+| Native resource acceptance | **open** | needs hosted jobs; see below |
+| S03 dependency | **open** | S03 is not merged |
+
+## Executable evidence held locally
+
+Run from the scanner checkout:
+
+```sh
+rtk proxy .venv/bin/python -m pytest tests/ -k inventory -q
+```
+
+This host has **105 pre-existing failures** unrelated to S04: npm, yarn and
+pnpm composition and the vendored Node helper expectations, across six files,
+plus the Go-binding errors. They fail on pristine `main`. Every S04 change in
+this ledger was measured against that baseline immediately before and after,
+and the failure set was identical each time; the only delta was the new tests
+passing.
+
+## Separation of statuses
+
+The receipt reports `inventory_state`, per-stage `stages`, `matching` and
+`matching_identity` independently. A matcher that refuses, times out or returns
+a report this inventory cannot account for leaves the composed inventory and
+the exported SBOM exactly as they are: `matching` reads `failed`, `reason`
+stays null, and the pipeline finalizes. An incomplete inventory and a failed
+match are therefore separately visible, which is the property S04 asks for
+rather than a description of one.
+
+## Identity
+
+Result provenance carries the composition engine's code digest, its format
+registry digest and its discovery configuration digest through `producer`, and
+the consumer's binary, config and version together with the advisory
+snapshot's digest, schema and build through `matching_identity`. The latter
+also carries `recover`'s joint digest over the inventory, the exported SBOM,
+the consumer output and the consumer, so none of the four can be swapped under
+the others. The three artifact digests are not repeated there; the artifact
+facts already carry them.
+
+A failed or absent match records no identity. The consumer is a controller
+assertion, and recording it after a failure would read as provenance for
+advisories never established against this inventory.
+
+On the platform side, `INVENTORY_IDENTITY_FIELDS` extends a Grype component's
+compatibility key with the inventory engine, registry and configuration
+digests, admitted only for a scanner declaring the `local-inventory-v1`
+feature. Changing inventory semantics therefore invalidates reuse built
+without them rather than silently reusing it.
+
+## Imported build SBOMs
+
+`imported_sbom.admit` is the gate and produces no occurrences.
+`imported_sbom.project` builds them, carrying `evidence_kind="imported"` and an
+`imported-sbom-input` analysis scope naming the admitted document. Both
+contract literals widen additively; nothing in the engine branches on either
+field.
+
+An import never merges into discovery, and that is a property of the shape:
+`project` holds no composed inventory to merge into. Where a component's purl
+and its `name`/`version` fields disagree, neither is adopted and the row is
+skipped and counted, so an import cannot assert a version its own bytes
+contradict.
+
+Relationships are not projected, and no route invokes the module. The identity
+rule above is defined for imports and not yet enforced for them: no imported
+identity reaches result provenance or the compatibility inputs.
+
+## What this does not establish
+
+Native resource acceptance is open and cannot be closed from a developer
+checkout: aggregate CPU-time enforcement, complete kernel traces, same-UID
+administrator fencing and AMD64/ARM64 resource behaviour need the hosted jobs.
+The real-Grype proof is a finite integration proof and says so itself.
+
+Also open: production controller custody, advisory database publisher
+signatures, whole-milestone acceptance, and release or deployment readiness.
+Findings may be compared across architectures only under equal advisory
+snapshot identity.
+
+S04 depends on S03, which is not merged. This ledger is a record of the slice's
+state, not a claim that the slice is accepted.

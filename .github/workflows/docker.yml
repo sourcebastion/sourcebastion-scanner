@@ -286,12 +286,85 @@ jobs:
   # BUILD STAGE
   # ============================================
 
+  # Decides whether this change can affect the scanner image. Deliberately a
+  # denylist: a change is image-affecting unless *every* changed file matches a
+  # documentation pattern. An allowlist of source paths would fail open --
+  # forget to list a new directory and the native proofs silently stop running,
+  # on exactly the jobs that catch packaging regressions. Forgetting to list a
+  # documentation pattern only costs an unnecessary build.
+  #
+  # `docs/` and markdown are also in .dockerignore, so a documentation-only
+  # change provably cannot alter the image rather than merely appearing not to.
+  changes:
+    name: Classify changed paths
+    if: github.event_name == 'pull_request' || inputs.build_images == true
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    outputs:
+      image_affecting: ${{ steps.classify.outputs.image_affecting }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Classify changed paths
+        id: classify
+        env:
+          # A manual or release invocation names no diff, so it always builds.
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" != "pull_request" ]; then
+            echo "image_affecting=true" >> "$GITHUB_OUTPUT"
+            echo "Not a pull request; building."
+            exit 0
+          fi
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null \
+            || ! git cat-file -e "$HEAD_SHA^{commit}" 2>/dev/null; then
+            echo "image_affecting=true" >> "$GITHUB_OUTPUT"
+            echo "Could not resolve the diff endpoints; building."
+            exit 0
+          fi
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          if [ -z "$changed" ]; then
+            echo "image_affecting=true" >> "$GITHUB_OUTPUT"
+            echo "Empty diff; building rather than assuming."
+            exit 0
+          fi
+          # Only paths that provably cannot reach the image. docs/ is in
+          # .dockerignore, so it is excluded from the build context outright.
+          #
+          # Root markdown is NOT here: setup.py reads README.md for
+          # long_description, so markdown does feed packaging metadata. Nor are
+          # scripts/, rules/, evaluation/ or .github/workflows/ -- the verify
+          # scripts run against the built image, rules ship in it, evaluation/
+          # holds the pinned schemas and fixtures the proofs read, and a
+          # workflow change must re-run itself.
+          affecting=false
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            case "$file" in
+              docs/*|.github/ISSUE_TEMPLATE/*) ;;
+              *) affecting=true; echo "  image-affecting: $file" ;;
+            esac
+          done <<< "$changed"
+          echo "image_affecting=$affecting" >> "$GITHUB_OUTPUT"
+          if [ "$affecting" = false ]; then
+            echo "Documentation-only change; skipping the native image builds."
+          fi
+
   build-scanner:
     name: Build scanner (${{ matrix.arch }})
-    if: github.event_name == 'pull_request' || inputs.build_images == true
+    if: |
+      (github.event_name == 'pull_request' || inputs.build_images == true)
+      && needs.changes.outputs.image_affecting == 'true'
     timeout-minutes: 60
     runs-on: ${{ matrix.runner }}
-    needs: [lint-python, test-unit]
+    needs: [lint-python, test-unit, changes]
     strategy:
       fail-fast: false
       matrix:
@@ -635,10 +708,29 @@ jobs:
   build-docker-standard:
     name: Build Standard Docker Image
     if: always() && (github.event_name == 'pull_request' || inputs.build_images == true)
-    needs: build-scanner
+    needs: [build-scanner, changes]
     runs-on: ubuntu-latest
     steps:
+      # Still fail-closed. A skip is accepted only when the classifier
+      # explicitly said this change cannot affect the image; an unexplained
+      # skip, a cancellation or a failure all fail this required check.
       - name: Require both native image builds and scanner checks
         env:
           BUILD_RESULT: ${{ needs.build-scanner.result }}
-        run: test "$BUILD_RESULT" = success
+          IMAGE_AFFECTING: ${{ needs.changes.outputs.image_affecting }}
+          CHANGES_RESULT: ${{ needs.changes.result }}
+        run: |
+          set -euo pipefail
+          if [ "$BUILD_RESULT" = success ]; then
+            echo "Both native image builds succeeded."
+            exit 0
+          fi
+          if [ "$CHANGES_RESULT" = success ] \
+            && [ "$IMAGE_AFFECTING" = false ] \
+            && [ "$BUILD_RESULT" = skipped ]; then
+            echo "Documentation-only change; native image builds correctly skipped."
+            exit 0
+          fi
+          echo "Native image builds did not succeed (result: $BUILD_RESULT," \
+            "classifier: $CHANGES_RESULT, image_affecting: $IMAGE_AFFECTING)."
+          exit 1

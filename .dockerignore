@@ -25,3 +25,15 @@ dist/
 .gitlab-ci.yml
 resume/
 rules/*/tests/
+
+# docs/ cannot reach the image: the runtime stage copies only the installed
+# venv, the scanner binaries and rules/. Excluding it here makes that true by
+# construction, keeps documentation churn from busting the builder cache, and
+# is what lets Docker Validation skip the native builds for a docs-only change.
+#
+# Markdown is deliberately NOT excluded wholesale. setup.py reads README.md for
+# long_description, so dropping it from the context breaks `pip install .` in
+# the builder, and that same read means a README change does alter packaging
+# metadata. Root markdown therefore stays in the context, and the classifier
+# treats it as image-affecting.
+docs/

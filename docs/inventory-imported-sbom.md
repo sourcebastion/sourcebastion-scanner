@@ -99,8 +99,17 @@ own bytes contradict. The comparison is of identity and not of spelling:
 percent-encoding, the purl type's case, qualifiers and a subpath are all legal
 and cost nothing. Qualifiers and the subpath are then dropped, because the
 canonical model cannot state them and an import must not promote its extra
-fields into canonical claims. Every skip is counted on the result, so an
-incomplete projection is visible rather than silently smaller.
+fields into canonical claims.
+
+A component that restates one already projected is collapsed. The canonical
+model refuses duplicate record ids, so carrying both would hand a caller
+something no `Inventory` can hold, and an untrusted document may well repeat
+itself. A differing version is a second occurrence, not a restatement.
+
+Skips and duplicates are counted separately on the result and never summed:
+one says the model could not state a component, the other says it was already
+stated. Either way an incomplete projection is visible rather than silently
+smaller.
 
 ## What this does not establish
 

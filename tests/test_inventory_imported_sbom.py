@@ -399,3 +399,68 @@ def test_a_purl_disagreeing_about_identity_costs_the_row(purl):
 
     assert projection.occurrences == ()
     assert projection.skipped == 1
+
+
+def test_the_same_component_twice_is_one_occurrence_and_is_counted():
+    """The canonical model refuses duplicate record ids, so two identical rows
+    are something no Inventory can hold. One statement made twice is one
+    occurrence, and the restatement is visible rather than discarded."""
+    component = {"type": "library", "name": "pip", "version": "26.0.1",
+                 "purl": "pkg:pypi/pip@26.0.1"}
+    projection = project(
+        document(components=[component, dict(component)]),
+        limits=LIMITS,
+        check=lambda: None,
+    )
+
+    (row,) = projection.occurrences
+    assert row.name == "pip"
+    assert projection.duplicates == 1
+    assert projection.skipped == 0, "a restatement is not an unstatable component"
+    assert projection.admitted.components == 2
+
+
+def test_projected_occurrence_ids_are_unique_so_an_inventory_can_hold_them():
+    components = [
+        {"type": "library", "name": "pip", "version": "26.0.1",
+         "purl": "pkg:pypi/pip@26.0.1"},
+        {"type": "library", "name": "pip", "version": "26.0.1",
+         "purl": "pkg:pypi/pip@26.0.1", "author": "ignored-by-the-contract"},
+        {"type": "library", "name": "left-pad", "version": "1.3.0",
+         "purl": "pkg:npm/left-pad@1.3.0"},
+    ]
+    projection = project(document(components=components), limits=LIMITS, check=lambda: None)
+
+    identifiers = [row.id for row in projection.occurrences]
+    assert len(identifiers) == len(set(identifiers)) == 2
+    assert projection.duplicates == 1
+
+
+def test_a_differing_version_is_a_second_occurrence_and_not_a_duplicate():
+    projection = project(
+        document(
+            components=[
+                {"type": "library", "name": "pip", "version": "26.0.1",
+                 "purl": "pkg:pypi/pip@26.0.1"},
+                {"type": "library", "name": "pip", "version": "26.0.2",
+                 "purl": "pkg:pypi/pip@26.0.2"},
+            ]
+        ),
+        limits=LIMITS,
+        check=lambda: None,
+    )
+
+    assert {row.selected_version for row in projection.occurrences} == {"26.0.1", "26.0.2"}
+    assert projection.duplicates == 0
+
+
+def test_duplicate_record_ids_are_what_the_canonical_model_refuses():
+    """The reason duplicates are collapsed rather than carried: this is the
+    error a caller would hit holding two identical projected occurrences."""
+    from pydantic import ValidationError
+
+    from tests.test_inventory_contract import inventory, occurrence
+
+    row = occurrence()
+    with pytest.raises(ValidationError, match="duplicate-or-mistyped-record-id"):
+        inventory(occurrences=(row, row))

@@ -60,12 +60,18 @@ class ImportedBom:
 
 @dataclass(frozen=True)
 class ImportedProjection:
-    """Imported occurrences, held apart from anything discovery composed."""
+    """Imported occurrences, held apart from anything discovery composed.
+
+    `skipped` counts components the canonical model cannot state. `duplicates`
+    counts components that restate one already projected; they are two
+    separate facts about an incomplete projection and are never summed.
+    """
 
     admitted: "ImportedBom"
     scope: object
     occurrences: tuple
     skipped: int
+    duplicates: int = 0
 
 
 def _decode(raw, limits, check):
@@ -215,7 +221,7 @@ def project(raw, *, limits, check, path=None, source_sha256=None):
         kind="imported-sbom-input",
         source=locator,
     )
-    occurrences, skipped = [], 0
+    occurrences, seen, skipped, duplicates = [], set(), 0, 0
     for component in document.get("components", []):
         check()
         if type(component) is not dict:
@@ -245,20 +251,27 @@ def project(raw, *, limits, check, path=None, source_sha256=None):
                 analysis_scope_id=scope.id,
                 activation="unknown",
             )
-            occurrences.append(
-                Occurrence(
-                    id=identifier(
-                        "occurrence", {**values, "source": locator.model_dump()}
-                    ),
-                    **values,
-                )
+            row = Occurrence(
+                id=identifier("occurrence", {**values, "source": locator.model_dump()}),
+                **values,
             )
         except ValueError:
             skipped += 1
+            continue
+        if row.id in seen:
+            # The same component stated twice is one occurrence, not two. The
+            # canonical model refuses duplicate record ids, so emitting both
+            # would hand a caller something no Inventory can hold -- and a
+            # document is untrusted input that may well repeat itself.
+            duplicates += 1
+            continue
+        seen.add(row.id)
+        occurrences.append(row)
     check()
     return ImportedProjection(
         admitted=admitted,
         scope=scope,
         occurrences=tuple(occurrences),
         skipped=skipped,
+        duplicates=duplicates,
     )

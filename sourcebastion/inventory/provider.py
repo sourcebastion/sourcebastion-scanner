@@ -13,7 +13,7 @@ import hashlib
 import json
 import math
 import re
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import Field, ValidationError, model_validator
 
@@ -99,13 +99,13 @@ class ProviderBinding(Record):
 class ProviderCandidate(Record):
     raw_id: Name
     cataloger: Name
-    metadata_type: Name | None
+    metadata_type: Optional[Name]
     role: Literal["lock-candidate", "declaration-candidate", "package-metadata", "installed-candidate"]
     identity_status: Literal["versioned-observation", "version-unreported", "unassessed"]
-    ecosystem: Literal["pypi", "npm", "golang", "cargo", "maven", "nuget", "gem", "composer"] | None = None
-    name: Name | None = None
-    observed_version: Name | None = None
-    purl: Text | None = None
+    ecosystem: Optional[Literal["pypi", "npm", "golang", "cargo", "maven", "nuget", "gem", "composer"]] = None
+    name: Optional[Name] = None
+    observed_version: Optional[Name] = None
+    purl: Optional[Text] = None
     bindings: tuple[ProviderBinding, ...] = Field(min_length=1, max_length=256)
     reference: ProviderReference
     canonical_semantics: Literal["unassessed"] = "unassessed"

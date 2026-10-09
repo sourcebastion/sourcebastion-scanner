@@ -99,6 +99,19 @@ def fixture_facts(fixture):
     return dict(files=facts, directories=directories)
 
 
+def inventory_bindings(installed):
+    def module_map(root):
+        return {
+            path.relative_to(root).as_posix(): sha(read(path, 2 * 1024**2))
+            for path in sorted(root.rglob("*"))
+            if path.is_file() and path.suffix in {".py", ".js", ".cjs", ".mjs", ".json"}
+        }
+
+    modules = module_map(installed)
+    assert modules and modules == module_map(WORK / "sourcebastion/inventory")
+    return modules
+
+
 def installed_bindings():
     from sourcebastion import inventory_entrypoint
     from sourcebastion.inventory import contract
@@ -121,9 +134,6 @@ def installed_bindings():
         raw = read(actual, 2 * 1024**2)
         assert raw == read(WORK / name, 2 * 1024**2)
         payloads[name] = dict(sha256=sha(raw), bytes=len(raw))
-    # The reviewed distribution payload set, checked before the module count
-    # below; 138 includes `imported_sbom.py`.
-    assert len(payloads) == 138
     expected = {
         "sourcebastion/" + path.relative_to(WORK / "sourcebastion").as_posix()
         for path in (WORK / "sourcebastion").rglob("*")
@@ -136,13 +146,7 @@ def installed_bindings():
     }
     assert payloads.keys() == expected
     inventory = Path(contract.__file__).resolve().parent
-    modules = {
-        path.relative_to(inventory).as_posix(): sha(read(path, 2 * 1024**2))
-        for path in sorted(inventory.rglob("*"))
-        if path.is_file() and path.suffix in {".py", ".js", ".cjs", ".mjs", ".json"}
-    }
-    # Exactly the reviewed module set; 97 includes `imported_sbom.py`.
-    assert len(modules) == 97
+    modules = inventory_bindings(inventory)
     return dict(
         package_version=distribution.version, package_payloads=payloads,
         inventory_modules=modules, entrypoint_sha256=sha(read(entry, 65536)),

@@ -12,7 +12,7 @@ import binascii
 import hashlib
 import json
 import re
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 from urllib.parse import quote
 
 from packaging.utils import canonicalize_name
@@ -188,10 +188,10 @@ class InstalledEnvironment(Record):
 class Environment(Record):
     schema_version: Literal["sourcebastion.environment/1"] = "sourcebastion.environment/1"
     policy: Literal["preserve-alternatives", "explicit-target"] = "preserve-alternatives"
-    python_implementation: Name | None = None
-    python_version: Name | None = None
-    platform: Name | None = None
-    architecture: Name | None = None
+    python_implementation: Optional[Name] = None
+    python_version: Optional[Name] = None
+    platform: Optional[Name] = None
+    architecture: Optional[Name] = None
     # Additional named marker inputs are data only. Adapters may evaluate only
     # when every variable used in an expression is explicitly supplied.
     marker_inputs: tuple[tuple[Name, Text], ...] = Field(default=(), max_length=32)
@@ -286,15 +286,15 @@ class Declaration(Record):
     kind: Literal["requirement", "constraint"]
     ecosystem: Ecosystem
     name: Name
-    declared_range: Text | None = None
-    exact_version: Name | None = None
-    marker: Text | None = None
+    declared_range: Optional[Text] = None
+    exact_version: Optional[Name] = None
+    marker: Optional[Text] = None
     extras: tuple[Name, ...] = Field(default=(), max_length=256)
     hashes: tuple[ContentHash, ...] = Field(default=(), max_length=4096)
     scopes: tuple[Name, ...] = Field(default=(), max_length=256)
     groups: tuple[Name, ...] = Field(default=(), max_length=256)
-    root_id: ID | None = None
-    analysis_scope_id: ID | None = None
+    root_id: Optional[ID] = None
+    analysis_scope_id: Optional[ID] = None
 
     @model_validator(mode="after")
     def source_identity(self):
@@ -313,8 +313,8 @@ class InputReference(Record):
     analysis_scope_id: ID
     kind: Literal["include", "constraint"]
     role: Literal["requirement", "constraint"]
-    target_path: Text | None
-    target_sha256: SHA256 | None
+    target_path: Optional[Text]
+    target_sha256: Optional[SHA256]
     disposition: Literal["discovered", "parsed", "ignored", "unsupported", "failed", "bounded-omission", "unresolved"]
     reason: Reason
 
@@ -337,9 +337,9 @@ class Applicability(Record):
     kind: Literal["python-version", "marker", "group"]
     dialect: Literal["pep440", "pep508", "poetry-core-2.1.3", "group-name"]
     expression: Text
-    root_id: ID | None = None
-    analysis_scope_id: ID | None = None
-    occurrence_id: ID | None = None
+    root_id: Optional[ID] = None
+    analysis_scope_id: Optional[ID] = None
+    occurrence_id: Optional[ID] = None
 
     @model_validator(mode="after")
     def compatible_dialect(self):
@@ -358,29 +358,26 @@ class Occurrence(Record):
     source: Locator
     ecosystem: Ecosystem
     name: Name
-    purl: Text | None
-    #: How this occurrence was evidenced. `imported` is a build SBOM a
-    #: controller supplied: it is kept distinct so a reader can tell a built
-    #: dependency from a declared one, and so an import can never be mistaken
-    #: for something discovery found in the source.
+    purl: Optional[Text]
+    #: Imported build SBOM evidence remains distinct from source discovery.
     evidence_kind: Literal["declared", "locked", "installed", "imported"]
-    selected_version: Name | None
-    declared_range: Text | None = None
+    selected_version: Optional[Name]
+    declared_range: Optional[Text] = None
     hashes: tuple[ContentHash, ...] = Field(default=(), max_length=4096)
     # Asserted registry URI identity, not authentication or an artifact digest.
-    registry_source_sha256: SHA256 | None = None
-    lock_optional: bool | None = None
+    registry_source_sha256: Optional[SHA256] = None
+    lock_optional: Optional[bool] = None
     provider_references: tuple[ProviderReference, ...] = Field(default=(), max_length=256)
     # Binding is structural. Adapters prove that these declarations jointly
     # justify a selected version; constraints are never packages or edges.
     selection_declaration_ids: tuple[ID, ...] = Field(default=(), max_length=4096)
-    root_id: ID | None = None
-    installed_environment_id: ID | None = None
-    analysis_scope_id: ID | None = None
+    root_id: Optional[ID] = None
+    installed_environment_id: Optional[ID] = None
+    analysis_scope_id: Optional[ID] = None
     directness: Literal["direct", "transitive", "unknown"] = "unknown"
     scopes: tuple[Name, ...] = Field(default=(), max_length=256)
     groups: tuple[Name, ...] = Field(default=(), max_length=256)
-    marker: Text | None = None
+    marker: Optional[Text] = None
     extras: tuple[Name, ...] = Field(default=(), max_length=256)
     activation: Activation = "unknown"
 
@@ -410,14 +407,14 @@ class DependencySelector(Record):
     id: ID
     source: Locator
     parent_id: ID
-    child_id: ID | None = None
-    ecosystem: Literal["pypi", "npm", "cargo"] = "pypi"
+    child_id: Optional[ID] = None
+    ecosystem: Literal["pypi", "npm", "cargo", "nuget"] = "pypi"
     name: Name
-    declared_range: Text | None = None
-    dialect: Literal["pep440", "poetry-core-2.1.3", "npm-semver-7.8.5", "cargo-lock-package-id-3-4"] = "pep440"
-    exact_version: Name | None = None
-    registry_source_sha256: SHA256 | None = None
-    marker: Text | None = None
+    declared_range: Optional[Text] = None
+    dialect: Literal["pep440", "poetry-core-2.1.3", "npm-semver-7.8.5", "cargo-lock-package-id-3-4", "nuget-release-range-1"] = "pep440"
+    exact_version: Optional[Name] = None
+    registry_source_sha256: Optional[SHA256] = None
+    marker: Optional[Text] = None
     extra_selection: Literal["requested", "variant-exact"] = "requested"
     marker_semantics: Literal["pep508", "relative-to-lock-python", "none"] = "pep508"
     extras: tuple[Name, ...] = Field(default=(), max_length=256)
@@ -434,9 +431,11 @@ class DependencySelector(Record):
             raise ValueError("contradictory-selector-ecosystem-dialect")
         if (self.ecosystem == "cargo") != (self.dialect == "cargo-lock-package-id-3-4"):
             raise ValueError("contradictory-selector-ecosystem-dialect")
+        if (self.ecosystem == "nuget") != (self.dialect == "nuget-release-range-1"):
+            raise ValueError("contradictory-selector-ecosystem-dialect")
         if self.ecosystem == "cargo" and self.declared_range is not None:
             raise ValueError("cargo-lock-selector-is-not-a-range")
-        if self.ecosystem in {"npm", "cargo"} and (
+        if self.ecosystem in {"npm", "cargo", "nuget"} and (
             self.marker is not None
             or self.extras
             or self.groups
@@ -448,6 +447,8 @@ class DependencySelector(Record):
                 "npm-selector-cannot-borrow-python-context"
                 if self.ecosystem == "npm"
                 else "cargo-selector-cannot-borrow-python-context"
+                if self.ecosystem == "cargo"
+                else "nuget-selector-cannot-borrow-python-context"
             )
         if (self.child_id is not None) != (self.disposition == "resolved"):
             raise ValueError("contradictory-selector-resolution")
@@ -460,13 +461,13 @@ class DependencySelector(Record):
 
 class Relationship(Record):
     id: ID
-    selector_id: ID | None = None
+    selector_id: Optional[ID] = None
     parent_id: ID
     child_id: ID
     source: Locator
     evidence_status: Literal["evidenced", "unassessed"]
     scopes: tuple[Name, ...] = Field(default=(), max_length=256)
-    marker: Text | None = None
+    marker: Optional[Text] = None
     extras: tuple[Name, ...] = Field(default=(), max_length=256)
     activation: Activation = "unknown"
 
@@ -477,7 +478,7 @@ class Application(Record):
     source: Locator
     ecosystem: Ecosystem
     name: Name
-    version: Name | None
+    version: Optional[Name]
 
 
 class ProjectionLoss(Record):
@@ -485,15 +486,15 @@ class ProjectionLoss(Record):
     source: Locator
     dimension: Literal["identity", "version", "graph", "environment", "scope"]
     reason: Reason
-    occurrence_id: ID | None = None
-    relationship_id: ID | None = None
+    occurrence_id: Optional[ID] = None
+    relationship_id: Optional[ID] = None
 
 
 class InputCoverage(Record):
     source_path: Text
-    source_sha256: SHA256 | None
-    format: Name | None
-    parser: Name | None
+    source_sha256: Optional[SHA256]
+    format: Optional[Name]
+    parser: Optional[Name]
     disposition: Literal["discovered", "parsed", "ignored", "unsupported", "failed", "bounded-omission", "unresolved"]
     reason: Reason
     # Contexts assert only evidenced ownership/analysis, never completeness of
@@ -728,7 +729,7 @@ class Inventory(Record):
                 or parent.ecosystem != selector.ecosystem
                 or parent.source.path != selector.source.path
                 or (
-                    selector.ecosystem == "pypi"
+                    selector.ecosystem in {"pypi", "nuget"}
                     and (parent.groups != selector.groups or parent.scopes != selector.scopes)
                 )
             ):
@@ -741,7 +742,7 @@ class Inventory(Record):
                 or child.source.path != parent.source.path
                 or child.analysis_scope_id != parent.analysis_scope_id
                 or (
-                    selector.ecosystem == "pypi"
+                    selector.ecosystem in {"pypi", "nuget"}
                     and (child.groups != selector.groups or child.scopes != selector.scopes)
                 )
                 or (selector.extra_selection == "variant-exact" and child.extras != selector.extras)

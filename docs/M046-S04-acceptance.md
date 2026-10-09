@@ -2,8 +2,8 @@
 
 Status: S04 is open. The export, matching, import and identity work is
 implemented and has local and hosted executable evidence; native resource
-acceptance and the S03 dependency remain open, and neither can be closed from
-a developer checkout.
+acceptance remains open. S03 acceptance is tracked separately on scanner
+issue 91; this ledger does not decide that dependency’s status.
 
 Tracking: [S04 #92](https://github.com/sourcebastion/sourcebastion-scanner/issues/92).
 Canonical scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
@@ -28,7 +28,7 @@ acceptance.
 | Engine/config/registry identity in result provenance, with the advisory snapshot | implemented, merged | the receipt's `producer` and `matching_identity`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | M036 cache/baseline compatibility keys bound to inventory semantics | implemented, merged | platform `incremental_compatibility.INVENTORY_IDENTITY_FIELDS` and `scanner_identity.INVENTORY_IDENTITY_FEATURE`; platform [#402](https://github.com/sourcebastion/sourcebastion-platform/pull/402) |
 | Native resource acceptance | **open** | needs hosted jobs; see below |
-| S03 dependency | **open** | S03 is not merged |
+| S03 dependency | tracked separately | [S03 #91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91) records its acceptance status and evidence |
 
 Every implemented row above is on `main` as of 2026-10-09:
 [#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147)
@@ -133,5 +133,6 @@ signatures, whole-milestone acceptance, and release or deployment readiness.
 Findings may be compared across architectures only under equal advisory
 snapshot identity.
 
-S04 depends on S03, which is not merged. This ledger is a record of the slice's
-state, not a claim that the slice is accepted.
+S04 depends on S03; [issue 91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91)
+records that dependency’s current acceptance status. This ledger is a record
+of S04’s state, not a claim that S04 is accepted.

@@ -4875,11 +4875,54 @@
       ],
       "records": {
         "roots": [],
-        "analysis_scopes": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:nuget-net8",
+            "kind": "lock-input",
+            "source": {
+              "path": "packages.lock.json",
+              "source_sha256": "1ec46b33777e8b40ec810dd97a57b3db8ae0ecad32551baf00f2c67d36d3cbf4",
+              "locator": "/dependencies/net8.0",
+              "parser": "sourcebastion.nuget-composition/1"
+            }
+          }
+        ],
         "installed_environments": [],
         "declarations": [],
         "input_references": [],
-        "occurrences": [],
+        "occurrences": [
+          {
+            "id": "occurrence:nuget-newtonsoft",
+            "source": {
+              "path": "packages.lock.json",
+              "source_sha256": "1ec46b33777e8b40ec810dd97a57b3db8ae0ecad32551baf00f2c67d36d3cbf4",
+              "locator": "/dependencies/net8.0/Newtonsoft.Json",
+              "parser": "sourcebastion.nuget-composition/1"
+            },
+            "ecosystem": "nuget",
+            "name": "newtonsoft.json",
+            "purl": "pkg:nuget/newtonsoft.json@13.0.3",
+            "evidence_kind": "locked",
+            "selected_version": "13.0.3",
+            "declared_range": "[13.0.3, )",
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:nuget-net8",
+            "directness": "direct",
+            "scopes": [
+              "net8.0"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
         "relationships": [],
         "applications": [],
         "losses": [],
@@ -4891,18 +4934,20 @@
         "discovery": "partial",
         "enumeration": "partial",
         "version_resolution": "complete",
-        "graph": "unknown",
+        "graph": "partial",
         "environment": "unknown",
         "inputs": [
           {
             "source_path": "packages.lock.json",
             "source_sha256": "1ec46b33777e8b40ec810dd97a57b3db8ae0ecad32551baf00f2c67d36d3cbf4",
             "format": "nuget-lock",
-            "parser": null,
+            "parser": "sourcebastion.nuget-source/1",
             "disposition": "unsupported",
-            "reason": "unsupported-format-adapter",
+            "reason": "unassessed-nuget-content-hash",
             "root_ids": [],
-            "analysis_scope_ids": [],
+            "analysis_scope_ids": [
+              "scope:nuget-net8"
+            ],
             "installed_environment_ids": []
           }
         ],
@@ -4925,11 +4970,52 @@
       ],
       "records": {
         "roots": [],
-        "analysis_scopes": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:ruby-lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "Gemfile.lock",
+              "source_sha256": "4e4e1019ec30afd00ab829fac1c459f12617db402f9617b3934437d71ddefebe",
+              "locator": "lock-input",
+              "parser": "sourcebastion.secondary-lock-composition/1"
+            }
+          }
+        ],
         "installed_environments": [],
         "declarations": [],
         "input_references": [],
-        "occurrences": [],
+        "occurrences": [
+          {
+            "id": "occurrence:ruby-lock",
+            "source": {
+              "path": "Gemfile.lock",
+              "source_sha256": "4e4e1019ec30afd00ab829fac1c459f12617db402f9617b3934437d71ddefebe",
+              "locator": "line:4",
+              "parser": "sourcebastion.secondary-lock-composition/1"
+            },
+            "ecosystem": "gem",
+            "name": "rack",
+            "purl": "pkg:gem/rack@3.1.7",
+            "evidence_kind": "locked",
+            "selected_version": "3.1.7",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": "11e71a88cf52f0dd7a2fd3d5d85c08e64c1c8019d7a6855156b9ad0d7e5001b2",
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:ruby-lock",
+            "directness": "unknown",
+            "scopes": [],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
         "relationships": [],
         "applications": [],
         "losses": [],
@@ -4938,8 +5024,8 @@
       },
       "coverage": {
         "schema_version": "sourcebastion.inventory-coverage/1",
-        "discovery": "partial",
-        "enumeration": "partial",
+        "discovery": "complete",
+        "enumeration": "complete",
         "version_resolution": "complete",
         "graph": "unknown",
         "environment": "unknown",
@@ -4948,18 +5034,20 @@
             "source_path": "Gemfile.lock",
             "source_sha256": "4e4e1019ec30afd00ab829fac1c459f12617db402f9617b3934437d71ddefebe",
             "format": "bundler-lock",
-            "parser": null,
-            "disposition": "unsupported",
-            "reason": "unsupported-format-adapter",
+            "parser": "sourcebastion.secondary-locks/1",
+            "disposition": "parsed",
+            "reason": "static-bundler-lock",
             "root_ids": [],
-            "analysis_scope_ids": [],
+            "analysis_scope_ids": [
+              "scope:ruby-lock"
+            ],
             "installed_environment_ids": []
           }
         ],
         "refusal_codes": []
       },
       "stages": {
-        "inventory": "partial",
+        "inventory": "complete",
         "export": "not-run",
         "matching": "not-run"
       }
@@ -4975,11 +5063,54 @@
       ],
       "records": {
         "roots": [],
-        "analysis_scopes": [],
+        "analysis_scopes": [
+          {
+            "id": "scope:php-lock",
+            "kind": "lock-input",
+            "source": {
+              "path": "composer.lock",
+              "source_sha256": "e800d938ddbfe068f395664c383d2bffe1c2caa2f919b4e801fcaf35271df0ce",
+              "locator": "lock-input",
+              "parser": "sourcebastion.secondary-lock-composition/1"
+            }
+          }
+        ],
         "installed_environments": [],
         "declarations": [],
         "input_references": [],
-        "occurrences": [],
+        "occurrences": [
+          {
+            "id": "occurrence:php-lock",
+            "source": {
+              "path": "composer.lock",
+              "source_sha256": "e800d938ddbfe068f395664c383d2bffe1c2caa2f919b4e801fcaf35271df0ce",
+              "locator": "/packages/0",
+              "parser": "sourcebastion.secondary-lock-composition/1"
+            },
+            "ecosystem": "composer",
+            "name": "psr/log",
+            "purl": "pkg:composer/psr/log@3.0.2",
+            "evidence_kind": "locked",
+            "selected_version": "3.0.2",
+            "declared_range": null,
+            "hashes": [],
+            "registry_source_sha256": null,
+            "lock_optional": null,
+            "provider_references": [],
+            "selection_declaration_ids": [],
+            "root_id": null,
+            "installed_environment_id": null,
+            "analysis_scope_id": "scope:php-lock",
+            "directness": "unknown",
+            "scopes": [
+              "runtime"
+            ],
+            "groups": [],
+            "marker": null,
+            "extras": [],
+            "activation": "unknown"
+          }
+        ],
         "relationships": [],
         "applications": [],
         "losses": [],
@@ -4998,11 +5129,13 @@
             "source_path": "composer.lock",
             "source_sha256": "e800d938ddbfe068f395664c383d2bffe1c2caa2f919b4e801fcaf35271df0ce",
             "format": "composer-lock",
-            "parser": null,
+            "parser": "sourcebastion.secondary-locks/1",
             "disposition": "unsupported",
-            "reason": "unsupported-format-adapter",
+            "reason": "unassessed-composer-manifest-binding",
             "root_ids": [],
-            "analysis_scope_ids": [],
+            "analysis_scope_ids": [
+              "scope:php-lock"
+            ],
             "installed_environment_ids": []
           }
         ],

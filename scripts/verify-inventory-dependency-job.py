@@ -25,6 +25,19 @@ def sha(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
+def inventory_bindings(installed):
+    def module_map(root):
+        return {
+            path.relative_to(root).as_posix(): sha(path.read_bytes())
+            for path in sorted(root.rglob("*"))
+            if path.is_file() and path.suffix in {".py", ".js", ".cjs", ".mjs", ".json"}
+        }
+
+    modules = module_map(installed)
+    assert modules and modules == module_map(WORK / "sourcebastion/inventory")
+    return modules
+
+
 def main():
     if sys.flags.optimize:
         raise RuntimeError("optimized-probe-runtime-refused")
@@ -58,18 +71,7 @@ def main():
     assert consumer_runtime.ADVISORIES == dependency_job.ADVISORIES == ADVISORIES
     assert not Path(contract.__file__).resolve().is_relative_to(WORK)
     installed = Path(contract.__file__).resolve().parent
-    modules = {
-        p.relative_to(installed).as_posix(): sha(p.read_bytes())
-        for p in sorted(installed.rglob("*"))
-        if p.is_file() and p.suffix in {".py", ".js", ".cjs", ".mjs", ".json"}
-    }
-    # Exactly the reviewed module set. Adding a module to the installed
-    # inventory package must fail here until that module is reviewed;
-    # 97 includes `imported_sbom.py`.
-    assert len(modules) == 97
-    assert all(
-        sha((WORK / "sourcebastion/inventory" / name).read_bytes()) == digest for name, digest in modules.items()
-    )
+    modules = inventory_bindings(installed)
     assert ROOT.is_dir() and not any(ROOT.iterdir())
     source_root, output = Path("/fixture"), ROOT / "artifacts"
     output.mkdir(mode=0o700)

@@ -13,6 +13,8 @@ imported occurrences separately and decides what to do with them.
 No route invokes this. It performs no network access and runs no tool.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import hashlib
 import json

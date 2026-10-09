@@ -18,6 +18,7 @@ acceptance.
 | --- | --- | --- |
 | Validated CycloneDX from the local inventory, pinned and consumer-compatible | implemented | [`docs/inventory-cyclonedx.md`](inventory-cyclonedx.md); offline validation against the pinned official 1.6 schemas in `evaluation/m046/cyclonedx-schemas` |
 | Purls, evidenced relationships, source/environment identity, provenance, explicit coverage and fidelity preserved | implemented | `tests/test_inventory_cyclonedx.py`; canonical inventory stays authoritative and separately bound by SHA-256 |
+| SPDX export, additive, with losses documented rather than equivalence claimed | **not implemented, by choice** | S04 makes it additive; no SPDX engine is selected, and no SPDX artifact is emitted or claimed anywhere. Nothing to document losses against yet |
 | Real Grype binary against the verified advisory snapshot | implemented | [`docs/inventory-real-grype-proof.md`](inventory-real-grype-proof.md); native AMD64 and ARM64 hosted smoke jobs in `.github/workflows/docker.yml` |
 | SBOM/export status separate from matching status; a valid inventory survives matching failure | implemented, in review | `inventory.direct_pipeline`; `tests/test_inventory_direct_pipeline.py`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | Finding identity, severity, deduplication and source locations preserved | implemented | `inventory.matching.recover`; exact artifact IDs, never joined by name or purl |
@@ -103,6 +104,16 @@ contradict.
 Relationships are not projected, and no route invokes the module. The identity
 rule above is defined for imports and not yet enforced for them: no imported
 identity reaches result provenance or the compatibility inputs.
+
+## SPDX
+
+S04 makes SPDX export additive and conditional: permitted only if the selected
+engine preserves the canonical contract, and required to document its losses
+rather than claim equivalence with CycloneDX. No engine has been selected, no
+SPDX artifact is emitted, and no SPDX capability is advertised. The condition
+is therefore unmet and the requirement unexercised, which is a different thing
+from being satisfied. Any future SPDX path owes a loss table before it is
+offered as an alternative to the CycloneDX export.
 
 ## What this does not establish
 

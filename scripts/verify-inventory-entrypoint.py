@@ -139,7 +139,8 @@ def installed_bindings():
         for path in sorted(inventory.rglob("*"))
         if path.is_file() and path.suffix in {".py", ".js", ".cjs", ".mjs", ".json"}
     }
-    assert len(modules) == 96
+    # Exactly the reviewed module set; 97 includes `imported_sbom.py`.
+    assert len(modules) == 97
     return dict(
         package_version=distribution.version, package_payloads=payloads,
         inventory_modules=modules, entrypoint_sha256=sha(read(entry, 65536)),

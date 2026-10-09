@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 
 import pytest
 
@@ -336,3 +337,230 @@ def test_descriptor_ancestry_refuses_ignored_source_output_through_aliases(tmp_p
             with pytest.raises(InputRefusal, match="source-artifact-roots-overlap"):
                 run(source, budget, config, store)
             assert not list(output.iterdir()) and not source.cache and store.reserved_bytes == 0
+
+
+def _report(value):
+    """A controller-admitted Grype report for this inventory's occurrences."""
+    from tests.test_inventory_matching import report
+
+    return json.dumps(report(value.occurrences), indent=2).encode()
+
+
+def _matching_consumer():
+    from tests.test_inventory_matching import consumer
+
+    return consumer()
+
+
+def test_matching_charges_the_same_ledger_as_composition_and_export(tmp_path):
+    """One semantic counter across every stage, not one per stage."""
+    from sourcebastion.inventory.contract import Inventory
+
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            without = run(source, budget, config, store)
+    baseline = json.loads(without.receipt)["semantic_checks"][
+        "consumed_at_receipt_preparation"
+    ]
+    composed = Inventory.model_validate_json((output / "inventory.json").read_bytes())
+
+    second = tmp_path / "second"
+    second.mkdir()
+    root, output = roots(second)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            result = run_direct(
+                source,
+                budget=budget,
+                config=config,
+                producer=producer(config),
+                source_sha256="b" * 64,
+                store=store,
+                consumer=_matching_consumer(),
+                report=_report(composed),
+            )
+
+    receipt = json.loads(result.receipt)
+    assert receipt["matching"] == "succeeded"
+    assert receipt["semantic_checks"]["consumed_at_receipt_preparation"] > baseline
+
+
+def test_a_matcher_that_refuses_leaves_the_inventory_and_sbom_intact(tmp_path):
+    """S04 keeps the two statuses apart: a valid inventory survives a failed
+    match, because the scan did record what it found."""
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            result = run_direct(
+                source,
+                budget=budget,
+                config=config,
+                producer=producer(config),
+                source_sha256="b" * 64,
+                store=store,
+                consumer=_matching_consumer(),
+                report=b'{"matches": [], "source": {"type": "sbom-file"}',
+            )
+
+    receipt = json.loads(result.receipt)
+    assert receipt["matching"] == "failed"
+    assert receipt["reason"] is None and result.finalized
+    assert receipt["stages"]["export"] == "succeeded"
+    names = {fact["name"] for fact in receipt["artifacts"]}
+    assert {"inventory.json", "sbom.cdx.json"} <= names
+    assert "grype.json" not in names
+
+
+def test_a_consumer_without_a_report_is_refused(tmp_path):
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            with pytest.raises(ValueError, match="supplied-together"):
+                run_direct(
+                    source,
+                    budget=budget,
+                    config=config,
+                    producer=producer(config),
+                    source_sha256="b" * 64,
+                    store=store,
+                    consumer=_matching_consumer(),
+                )
+
+
+def _matched(tmp_path, *, report=None, consumer=None, requirements="pip==26.0.1\n"):
+    """Run the pipeline twice: once to compose, once with a real report."""
+    from sourcebastion.inventory.contract import Inventory
+
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text(requirements)
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            run(source, budget, config, store)
+    composed = Inventory.model_validate_json((output / "inventory.json").read_bytes())
+
+    raw = _report(composed) if report is None else report
+    second = tmp_path / "matched"
+    second.mkdir()
+    root, output = roots(second)
+    (root / "requirements.in").write_text(requirements)
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            result = run_direct(
+                source,
+                budget=budget,
+                config=config,
+                producer=producer(config),
+                source_sha256="b" * 64,
+                store=store,
+                consumer=_matching_consumer() if consumer is None else consumer,
+                report=raw,
+            )
+    return json.loads(result.receipt), composed, raw
+
+
+def test_result_provenance_names_the_advisory_snapshot_the_findings_came_from(tmp_path):
+    """S04 asks for engine/config/registry identity in result provenance
+    together with the advisory snapshot. The producer carried the first three;
+    without the consumer, a reuse decision is made against unknown advisories."""
+    receipt, _composed, raw = _matched(tmp_path)
+    expected = _matching_consumer().model_dump(mode="json")
+
+    assert receipt["matching"] == "succeeded"
+    identity = receipt["matching_identity"]
+    assert identity["consumer"] == expected
+    for field in ("advisory_snapshot_sha256", "advisory_schema", "advisory_built"):
+        assert identity["consumer"][field] == expected[field], field
+    assert re.fullmatch(r"[0-9a-f]{64}", identity["identity_sha256"])
+    assert identity["matches"] == len(json.loads(raw)["matches"])
+    assert identity["matches"] > 0, "a report with no matches proves nothing here"
+
+
+def test_the_matching_identity_binds_the_inventory_the_sbom_and_the_output(tmp_path):
+    """`recover`'s joint digest, so none of the four can be swapped under the
+    others: equal inputs agree, and a different inventory does not."""
+    again = tmp_path / "again"
+    again.mkdir()
+    first, _composed, _raw = _matched(tmp_path)
+    second, _composed, _raw = _matched(again)
+
+    assert (
+        first["matching_identity"]["identity_sha256"]
+        == second["matching_identity"]["identity_sha256"]
+    )
+
+    other = tmp_path / "other"
+    other.mkdir()
+    changed, _composed, _raw = _matched(other, requirements="pip==26.0.1\npackaging==26.3\n")
+
+    assert changed["matching"] == "succeeded"
+    assert (
+        changed["matching_identity"]["identity_sha256"]
+        != first["matching_identity"]["identity_sha256"]
+    ), "a different inventory must not reuse the same matching identity"
+
+
+def test_a_consumer_contradicting_the_report_matches_nothing(tmp_path):
+    """The snapshot is asserted by the controller and checked against the
+    report. A mismatch is a failed match, not a match under a wrong snapshot."""
+    drifted = dict(_matching_consumer(), advisory_built="2020-01-01T00:00:00Z")
+    receipt, _composed, _raw = _matched(tmp_path, consumer=drifted)
+
+    assert receipt["matching"] == "failed"
+    assert receipt["matching_identity"] is None
+    assert receipt["reason"] is None and receipt["stages"]["export"] == "succeeded"
+
+
+def test_the_artifact_facts_already_carry_the_three_artifact_digests(tmp_path):
+    """The identity does not repeat them: the receipt would say the same thing
+    twice, and two copies can disagree."""
+    receipt, _composed, _raw = _matched(tmp_path)
+
+    facts = {fact["name"]: fact["sha256"] for fact in receipt["artifacts"]}
+    assert {"inventory.json", "sbom.cdx.json", "grype.json"} <= set(facts)
+    assert all(re.fullmatch(r"[0-9a-f]{64}", digest) for digest in facts.values())
+    assert not set(receipt["matching_identity"]) & {
+        "inventory_sha256",
+        "sbom_sha256",
+        "output_sha256",
+    }
+
+
+def test_a_failed_match_records_no_advisory_provenance(tmp_path):
+    """The consumer is a controller assertion. Recording it after a failure
+    would read as provenance for advisories never established against this
+    inventory."""
+    receipt, _composed, _raw = _matched(
+        tmp_path, report=b'{"matches": [], "source": {"type": "sbom-file"}'
+    )
+
+    assert receipt["matching"] == "failed"
+    assert receipt["matching_identity"] is None
+
+
+def test_a_pipeline_without_a_matcher_claims_no_advisory_provenance(tmp_path):
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            result = run(source, budget, config, store)
+
+    receipt = json.loads(result.receipt)
+    assert receipt["matching"] == "not_run"
+    assert receipt["matching_identity"] is None

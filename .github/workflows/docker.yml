@@ -702,23 +702,18 @@ jobs:
       # Still fail-closed. A skip is accepted only when the classifier
       # explicitly said this change cannot affect the image; an unexplained
       # skip, a cancellation or a failure all fail this required check.
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Behaviour lives in the script, with
+      # tests/test_require_native_image_builds.py executing it across every
+      # result combination. This is the only thing between a merge and the
+      # jobs that exercise the installed image.
       - name: Require both native image builds and scanner checks
         env:
           BUILD_RESULT: ${{ needs.build-scanner.result }}
           IMAGE_AFFECTING: ${{ needs.changes.outputs.image_affecting }}
           CHANGES_RESULT: ${{ needs.changes.result }}
-        run: |
-          set -euo pipefail
-          if [ "$BUILD_RESULT" = success ]; then
-            echo "Both native image builds succeeded."
-            exit 0
-          fi
-          if [ "$CHANGES_RESULT" = success ] \
-            && [ "$IMAGE_AFFECTING" = false ] \
-            && [ "$BUILD_RESULT" = skipped ]; then
-            echo "Documentation-only change; native image builds correctly skipped."
-            exit 0
-          fi
-          echo "Native image builds did not succeed (result: $BUILD_RESULT," \
-            "classifier: $CHANGES_RESULT, image_affecting: $IMAGE_AFFECTING)."
-          exit 1
+        run: scripts/require-native-image-builds.sh

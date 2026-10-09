@@ -286,12 +286,73 @@ jobs:
   # BUILD STAGE
   # ============================================
 
+  # Decides whether this change can affect the scanner image. Deliberately a
+  # denylist: a change is image-affecting unless *every* changed file matches a
+  # documentation pattern. An allowlist of source paths would fail open --
+  # forget to list a new directory and the native proofs silently stop running,
+  # on exactly the jobs that catch packaging regressions. Forgetting to list a
+  # documentation pattern only costs an unnecessary build.
+  #
+  # `docs/` and markdown are also in .dockerignore, so a documentation-only
+  # change provably cannot alter the image rather than merely appearing not to.
+  changes:
+    name: Classify changed paths
+    if: github.event_name == 'pull_request' || inputs.build_images == true
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    outputs:
+      image_affecting: ${{ steps.classify.outputs.image_affecting }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Classify changed paths
+        id: classify
+        env:
+          # A manual or release invocation names no diff, so it always builds.
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" != "pull_request" ]; then
+            echo "image_affecting=true" >> "$GITHUB_OUTPUT"
+            echo "Not a pull request; building."
+            exit 0
+          fi
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null \
+            || ! git cat-file -e "$HEAD_SHA^{commit}" 2>/dev/null; then
+            echo "image_affecting=true" >> "$GITHUB_OUTPUT"
+            echo "Could not resolve the diff endpoints; building."
+            exit 0
+          fi
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          echo "Changed paths:"
+          echo "$changed" | sed 's/^/  /'
+          # The decision lives in scripts/classify-changed-paths.py, with
+          # tests/test_classify_changed_paths.py covering it -- including a
+          # commit that touches both documentation and code, which must build.
+          # Inline shell in YAML is not testable and this gates the native
+          # proofs.
+          affecting="$(printf '%s\n' "$changed" | python3 scripts/classify-changed-paths.py)"
+          echo "image_affecting=$affecting" >> "$GITHUB_OUTPUT"
+          if [ "$affecting" = false ]; then
+            echo "Documentation-only change; skipping the native image builds."
+          else
+            echo "Change can affect the image; building."
+          fi
+
   build-scanner:
     name: Build scanner (${{ matrix.arch }})
-    if: github.event_name == 'pull_request' || inputs.build_images == true
+    if: |
+      (github.event_name == 'pull_request' || inputs.build_images == true)
+      && needs.changes.outputs.image_affecting == 'true'
     timeout-minutes: 60
     runs-on: ${{ matrix.runner }}
-    needs: [lint-python, test-unit]
+    needs: [lint-python, test-unit, changes]
     strategy:
       fail-fast: false
       matrix:
@@ -635,10 +696,24 @@ jobs:
   build-docker-standard:
     name: Build Standard Docker Image
     if: always() && (github.event_name == 'pull_request' || inputs.build_images == true)
-    needs: build-scanner
+    needs: [build-scanner, changes]
     runs-on: ubuntu-latest
     steps:
+      # Still fail-closed. A skip is accepted only when the classifier
+      # explicitly said this change cannot affect the image; an unexplained
+      # skip, a cancellation or a failure all fail this required check.
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Behaviour lives in the script, with
+      # tests/test_require_native_image_builds.py executing it across every
+      # result combination. This is the only thing between a merge and the
+      # jobs that exercise the installed image.
       - name: Require both native image builds and scanner checks
         env:
           BUILD_RESULT: ${{ needs.build-scanner.result }}
-        run: test "$BUILD_RESULT" = success
+          IMAGE_AFFECTING: ${{ needs.changes.outputs.image_affecting }}
+          CHANGES_RESULT: ${{ needs.changes.result }}
+        run: scripts/require-native-image-builds.sh

@@ -172,7 +172,11 @@ def test_release_and_merge_exercise_are_fail_closed():
     assert release['verify-scanner-artifacts']['uses'] == './.github/workflows/scanner-integrity.yml'
     verify = workflow('scanner-integrity.yml')
     assert verify['on']['pull_request']['branches'] == ['main']
-    assert set(verify['on']) == {'pull_request', 'workflow_dispatch', 'workflow_call'}
+    # Closed set on purpose: artifact verification must not gain an
+    # unreviewed trigger. `merge_group` is admitted because a merge queue is
+    # a pre-merge gate exactly like a pull request, and a required check that
+    # cannot report there would stall every merge.
+    assert set(verify['on']) == {'pull_request', 'merge_group', 'workflow_dispatch', 'workflow_call'}
     assert verify['permissions'] == {'contents': 'read'}
     assert all('continue-on-error' not in s for s in verify['jobs']['verify']['steps'])
     update = workflow('scanner-artifact-update.yml')

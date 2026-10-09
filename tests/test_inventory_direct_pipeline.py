@@ -439,12 +439,12 @@ def test_a_consumer_without_a_report_is_refused(tmp_path):
                 )
 
 
-def _matched(tmp_path, *, report=None, consumer=None):
+def _matched(tmp_path, *, report=None, consumer=None, requirements="pip==26.0.1\n"):
     """Run the pipeline twice: once to compose, once with a real report."""
     from sourcebastion.inventory.contract import Inventory
 
     root, output = roots(tmp_path)
-    (root / "requirements.in").write_text("pip==26.0.1\n")
+    (root / "requirements.in").write_text(requirements)
     config = DiscoveryConfig()
     with Source(root) as source:
         budget = PipelineBudget(source, config=config, deadline=source.deadline)
@@ -456,7 +456,7 @@ def _matched(tmp_path, *, report=None, consumer=None):
     second = tmp_path / "matched"
     second.mkdir()
     root, output = roots(second)
-    (root / "requirements.in").write_text("pip==26.0.1\n")
+    (root / "requirements.in").write_text(requirements)
     with Source(root) as source:
         budget = PipelineBudget(source, config=config, deadline=source.deadline)
         with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
@@ -492,11 +492,10 @@ def test_result_provenance_names_the_advisory_snapshot_the_findings_came_from(tm
 
 def test_the_matching_identity_binds_the_inventory_the_sbom_and_the_output(tmp_path):
     """`recover`'s joint digest, so none of the four can be swapped under the
-    others. Two runs over the same source and report agree; a different
-    advisory snapshot does not."""
-    first, composed, raw = _matched(tmp_path)
+    others: equal inputs agree, and a different inventory does not."""
     again = tmp_path / "again"
     again.mkdir()
+    first, _composed, _raw = _matched(tmp_path)
     second, _composed, _raw = _matched(again)
 
     assert (
@@ -504,15 +503,26 @@ def test_the_matching_identity_binds_the_inventory_the_sbom_and_the_output(tmp_p
         == second["matching_identity"]["identity_sha256"]
     )
 
-    drifted = tmp_path / "drifted"
-    drifted.mkdir()
-    changed, _composed, _raw = _matched(
-        drifted, consumer=dict(_matching_consumer(), advisory_built="2020-01-01T00:00:00Z")
-    )
-    assert changed["matching"] == "failed", (
-        "a consumer whose advisory snapshot contradicts the report must not match"
-    )
-    assert changed["matching_identity"] is None
+    other = tmp_path / "other"
+    other.mkdir()
+    changed, _composed, _raw = _matched(other, requirements="pip==26.0.1\npackaging==26.3\n")
+
+    assert changed["matching"] == "succeeded"
+    assert (
+        changed["matching_identity"]["identity_sha256"]
+        != first["matching_identity"]["identity_sha256"]
+    ), "a different inventory must not reuse the same matching identity"
+
+
+def test_a_consumer_contradicting_the_report_matches_nothing(tmp_path):
+    """The snapshot is asserted by the controller and checked against the
+    report. A mismatch is a failed match, not a match under a wrong snapshot."""
+    drifted = dict(_matching_consumer(), advisory_built="2020-01-01T00:00:00Z")
+    receipt, _composed, _raw = _matched(tmp_path, consumer=drifted)
+
+    assert receipt["matching"] == "failed"
+    assert receipt["matching_identity"] is None
+    assert receipt["reason"] is None and receipt["stages"]["export"] == "succeeded"
 
 
 def test_the_artifact_facts_already_carry_the_three_artifact_digests(tmp_path):

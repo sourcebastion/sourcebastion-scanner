@@ -12,17 +12,17 @@ The full source-authored expectation set covers 64 unchanged historical inputs.
 
 Before acceptance:
 
-1. Preserve or explicitly disposition legacy ecosystem package coverage. The
-   original Java/.NET/Ruby/PHP fixtures now retain their explicit locked package
-   evidence, but broader native/source/provider cases need their boundaries
-   reviewed. Do not silently relabel a finite conservative subset as universal
-   preservation.
+1. Use the documented supported subsets and explicit unsupported dispositions
+   as the ecosystem acceptance boundary. The owner confirmed on 2026-10-09
+   that legacy scanner coverage parity is not required because the scanner has
+   no users. Ruby/PHP acceptance covers the bounded Bundler/Composer subsets;
+   broader native/source/provider support is future work, not a parity gate.
 2. Verify full source-authored record, package/version, evidenced-edge and
    disposition agreement in installed native AMD64 and ARM64 builds at the
    exact proposed head. Local Linux unit tests alone do not satisfy this gate.
 3. Review the complete adapter support matrix and canonical contract against
    S03's multi-root, conditional/alternative, conflict and flat-lock demo.
-4. Record independent review/acceptance on scanner issue 91. S04 actual matching,
+4. Record the acceptance review and evidence on scanner issue 91. S04 actual matching,
    S05 persistence, S06 release resources and S07 live acceptance remain
    separate obligations; completing S03 does not activate the customer route.
 

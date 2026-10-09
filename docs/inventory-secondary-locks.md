@@ -28,7 +28,10 @@ Different source files retain distinct analysis scopes and occurrence IDs even
 when purls agree. These packages assert locked source evidence, not installed
 state or an authenticated registry artifact. Existing manifest/provider and
 legacy scanning paths remain separate; this finite subset does not establish
-universal legacy ecosystem parity or close S03.
+universal ecosystem support. The owner’s 2026-10-09 scope decision removes
+legacy scanner parity as a requirement; acceptance uses the documented subsets
+and explicit unsupported dispositions. Native evidence and the complete S03
+acceptance review remain separate gates.
 
 The reader boundaries follow the upstream
 [Bundler lock parser](https://github.com/rubygems/rubygems/blob/master/lib/bundler/lockfile_parser.rb)

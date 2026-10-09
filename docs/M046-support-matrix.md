@@ -49,10 +49,12 @@ installed-wheel proof; fresh native AMD64/ARM64 checks are still required. This
 finite corpus does not establish arbitrary-format coverage, numeric host/kernel
 budgets, production compatibility or S03/M046 acceptance.
 
-Before the new dependency route replaces the legacy path, review preservation
-of legacy package/finding coverage, including the unsupported canonical formats
-above. Implement and test the necessary typed adapters, or obtain an explicit
-reviewed scope decision for a behavioral difference. Provider output alone and
-healthy deployment cannot satisfy that gate. Production routing, matching
-admission, platform ingestion/artifact access, release performance and human
-development acceptance remain separate open work.
+Scope decision (2026-10-09): the owner confirmed that the scanner has no users
+and legacy package/finding parity is not an acceptance requirement. S03 uses
+the documented supported subsets and explicit unsupported dispositions.
+Additional Ruby/PHP source, platform and version forms are future coverage
+work; they do not block acceptance of the current subsets. This decision does
+not permit guessed versions, invented edges or complete coverage claims for
+unsupported inputs. Production routing, matching admission, platform
+ingestion/artifact access, release performance and human development
+acceptance remain separate open work.

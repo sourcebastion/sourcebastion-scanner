@@ -8,6 +8,10 @@ on:
   pull_request:
     branches:
       - main
+  # The merge queue is the last gate before a commit lands, so it runs the same
+  # validation a pull request does. Without this trigger the queue would never
+  # see these checks report and would stall every merge.
+  merge_group:
   workflow_dispatch:
     inputs:
       build_images:
@@ -297,7 +301,7 @@ jobs:
   # change provably cannot alter the image rather than merely appearing not to.
   changes:
     name: Classify changed paths
-    if: github.event_name == 'pull_request' || inputs.build_images == true
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.build_images == true
     timeout-minutes: 5
     runs-on: ubuntu-latest
     outputs:
@@ -348,7 +352,7 @@ jobs:
   build-scanner:
     name: Build scanner (${{ matrix.arch }})
     if: |
-      (github.event_name == 'pull_request' || inputs.build_images == true)
+      (github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.build_images == true)
       && needs.changes.outputs.image_affecting == 'true'
     timeout-minutes: 60
     runs-on: ${{ matrix.runner }}
@@ -695,7 +699,7 @@ jobs:
 
   build-docker-standard:
     name: Build Standard Docker Image
-    if: always() && (github.event_name == 'pull_request' || inputs.build_images == true)
+    if: always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.build_images == true)
     needs: [build-scanner, changes]
     runs-on: ubuntu-latest
     steps:

@@ -15,6 +15,7 @@ from .compose_source import compose_source
 from .contract import Producer, canonical_bytes
 from .cyclonedx import export
 from .inputs import InputRefusal
+from .matching import recover
 
 VERSION = "sourcebastion.direct-pipeline/1"
 
@@ -27,7 +28,19 @@ class DirectResult:
     finalized: bool
 
 
-def run_direct(source, *, budget, config, producer, source_sha256, store, environment=None, go_runtime=None):
+def run_direct(
+    source,
+    *,
+    budget,
+    config,
+    producer,
+    source_sha256,
+    store,
+    environment=None,
+    go_runtime=None,
+    consumer=None,
+    report=None,
+):
     """Compose, freeze and export using the caller's admission-time ledger.
 
     Every invocation is single-use through the exclusive store. A failed stage
@@ -35,6 +48,14 @@ def run_direct(source, *, budget, config, producer, source_sha256, store, enviro
     time/work to publish a success receipt; the returned bounded failure record
     lets an outer controller report failure. Its 64KiB reservation precedes
     analysis; a refused reservation raises without allocating a control record.
+
+    `consumer` and `report` are supplied together by a controller that has
+    already executed Grype against the exported SBOM; this module never runs a
+    consumer. Recovery then charges the same ledger as composition and export,
+    so one semantic counter spans the stages rather than each stage keeping its
+    own. Matching failure is recorded and does not fail the pipeline: a scan
+    that produced a valid inventory still has one when the matcher does not
+    answer, which is the separation this slice exists to keep.
     """
     if type(budget) is not PipelineBudget or type(store) is not ArtifactStore:
         raise TypeError("controller-budget-and-artifact-store-required")
@@ -47,9 +68,12 @@ def run_direct(source, *, budget, config, producer, source_sha256, store, enviro
     if type(source_sha256) is not str or not re.fullmatch(r"[a-f0-9]{64}", source_sha256):
         raise ValueError("invalid-controller-source-digest")
     producer = Producer.model_validate(producer)
+    if (consumer is None) != (report is None):
+        raise ValueError("matching-consumer-and-report-are-supplied-together")
     store.reserve_control()
     stages = {key: "not_run" for key in ("composition", "inventory", "export", "source_validation", "finalization")}
     reason, inventory_state, environment_sha = None, None, None
+    matching_state, artifact, value = "not_run", None, None
     stage = "composition"
     try:
         budget.check()
@@ -87,6 +111,27 @@ def run_direct(source, *, budget, config, producer, source_sha256, store, enviro
         # No exception text, local path or customer content becomes public.
         stages[stage] = "failed"
         reason = "direct-pipeline-stage-failed"
+    if reason is None and report is not None:
+        # Its own boundary on purpose. A matcher that refuses, times out or
+        # returns a report this inventory cannot account for leaves the
+        # composed inventory and the exported SBOM exactly as they are: the
+        # pipeline recorded what it found, and says separately that nothing
+        # was matched against it. Charging the shared ledger keeps one
+        # semantic counter across every stage.
+        try:
+            recovery = recover(
+                value,
+                artifact,
+                report,
+                consumer=consumer,
+                deadline=budget.deadline,
+                check=budget.check,
+            )
+            # The store already reserves a slot for the consumer's report.
+            store.put("grype.json", recovery.original_output)
+            matching_state = recovery.matching
+        except (InputRefusal, ValueError, OSError):
+            matching_state = "failed"
     receipt = {
         "schema_version": VERSION,
         "authority": "child-artifact-facts-only",
@@ -96,7 +141,7 @@ def run_direct(source, *, budget, config, producer, source_sha256, store, enviro
         "environment_sha256": environment_sha,
         "inventory_state": inventory_state,
         "stages": stages,
-        "matching": "not_run",
+        "matching": matching_state,
         "kernel_admission": "not_observed",
         "reason": reason,
         "semantic_checks": {"consumed_at_receipt_preparation": budget.consumed, "maximum": budget.maximum},

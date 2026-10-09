@@ -336,3 +336,103 @@ def test_descriptor_ancestry_refuses_ignored_source_output_through_aliases(tmp_p
             with pytest.raises(InputRefusal, match="source-artifact-roots-overlap"):
                 run(source, budget, config, store)
             assert not list(output.iterdir()) and not source.cache and store.reserved_bytes == 0
+
+
+def _report(value, consumer_version="0.119.0"):
+    """A controller-admitted Grype report for this inventory's occurrences."""
+    from tests.test_inventory_matching import report
+
+    return json.dumps(report(value.occurrences), indent=2).encode()
+
+
+def _matching_consumer():
+    from tests.test_inventory_matching import consumer
+
+    return consumer()
+
+
+def test_matching_charges_the_same_ledger_as_composition_and_export(tmp_path):
+    """One semantic counter across every stage, not one per stage."""
+    from sourcebastion.inventory.contract import Inventory
+
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            without = run(source, budget, config, store)
+    baseline = json.loads(without.receipt)["semantic_checks"][
+        "consumed_at_receipt_preparation"
+    ]
+    composed = Inventory.model_validate_json((output / "inventory.json").read_bytes())
+
+    second = tmp_path / "second"
+    second.mkdir()
+    root, output = roots(second)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            result = run_direct(
+                source,
+                budget=budget,
+                config=config,
+                producer=producer(config),
+                source_sha256="b" * 64,
+                store=store,
+                consumer=_matching_consumer(),
+                report=_report(composed),
+            )
+
+    receipt = json.loads(result.receipt)
+    assert receipt["matching"] == "succeeded"
+    assert receipt["semantic_checks"]["consumed_at_receipt_preparation"] > baseline
+
+
+def test_a_matcher_that_refuses_leaves_the_inventory_and_sbom_intact(tmp_path):
+    """S04 keeps the two statuses apart: a valid inventory survives a failed
+    match, because the scan did record what it found."""
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            result = run_direct(
+                source,
+                budget=budget,
+                config=config,
+                producer=producer(config),
+                source_sha256="b" * 64,
+                store=store,
+                consumer=_matching_consumer(),
+                report=b'{"matches": [], "source": {"type": "sbom-file"}',
+            )
+
+    receipt = json.loads(result.receipt)
+    assert receipt["matching"] == "failed"
+    assert receipt["reason"] is None and result.finalized
+    assert receipt["stages"]["export"] == "succeeded"
+    names = {fact["name"] for fact in receipt["artifacts"]}
+    assert {"inventory.json", "sbom.cdx.json"} <= names
+    assert "grype.json" not in names
+
+
+def test_a_consumer_without_a_report_is_refused(tmp_path):
+    root, output = roots(tmp_path)
+    (root / "requirements.in").write_text("pip==26.0.1\n")
+    config = DiscoveryConfig()
+    with Source(root) as source:
+        budget = PipelineBudget(source, config=config, deadline=source.deadline)
+        with ArtifactStore(output, limits=InventoryLimits(), check=budget.check) as store:
+            with pytest.raises(ValueError, match="supplied-together"):
+                run_direct(
+                    source,
+                    budget=budget,
+                    config=config,
+                    producer=producer(config),
+                    source_sha256="b" * 64,
+                    store=store,
+                    consumer=_matching_consumer(),
+                )

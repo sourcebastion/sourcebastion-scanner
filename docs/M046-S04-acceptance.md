@@ -20,27 +20,29 @@ acceptance.
 | Purls, evidenced relationships, source/environment identity, provenance, explicit coverage and fidelity preserved | implemented | `tests/test_inventory_cyclonedx.py`; canonical inventory stays authoritative and separately bound by SHA-256 |
 | SPDX export, additive, with losses documented rather than equivalence claimed | **not implemented, by choice** | S04 makes it additive; no SPDX engine is selected, and no SPDX artifact is emitted or claimed anywhere. Nothing to document losses against yet |
 | Real Grype binary against the verified advisory snapshot | implemented | [`docs/inventory-real-grype-proof.md`](inventory-real-grype-proof.md); native AMD64 and ARM64 hosted smoke jobs in `.github/workflows/docker.yml` |
-| SBOM/export status separate from matching status; a valid inventory survives matching failure | implemented, in review | `inventory.direct_pipeline`; `tests/test_inventory_direct_pipeline.py`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
+| SBOM/export status separate from matching status; a valid inventory survives matching failure | implemented, merged | `inventory.direct_pipeline`; `tests/test_inventory_direct_pipeline.py`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | Finding identity, severity, deduplication and source locations preserved | implemented | `inventory.matching.recover`; exact artifact IDs, never joined by name or purl |
 | Bounded schema/size/path handling and optional import of local build SBOMs | implemented, merged | [`docs/inventory-imported-sbom.md`](inventory-imported-sbom.md); `inventory.imported_sbom`; [#150](https://github.com/sourcebastion/sourcebastion-scanner/pull/150) |
 | Imported artifacts cannot silently replace discovery | implemented, merged | `project` holds no composed inventory; a real `uv.lock` composition and an import of the same purl stay two occurrences |
 | No scan-time registry downloads, dependency installs or project execution | implemented, merged | `tests/test_inventory_network_denied_equivalence.py`; [#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147) |
-| Engine/config/registry identity in result provenance, with the advisory snapshot | implemented, in review | the receipt's `producer` and `matching_identity`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
+| Engine/config/registry identity in result provenance, with the advisory snapshot | implemented, merged | the receipt's `producer` and `matching_identity`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | M036 cache/baseline compatibility keys bound to inventory semantics | implemented, merged | platform `incremental_compatibility.INVENTORY_IDENTITY_FIELDS` and `scanner_identity.INVENTORY_IDENTITY_FEATURE`; platform [#402](https://github.com/sourcebastion/sourcebastion-platform/pull/402) |
 | Native resource acceptance | **open** | needs hosted jobs; see below |
 | S03 dependency | **open** | S03 is not merged |
 
-Merged as of 2026-10-09: the network-denied equivalence proof
-([#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147)) and
-the imported-SBOM gate and projection
-([#150](https://github.com/sourcebastion/sourcebastion-scanner/pull/150)) on
-scanner `main`, and the compatibility-key change
-([platform #402](https://github.com/sourcebastion/sourcebastion-platform/pull/402))
-on platform `main`.
+Every implemented row above is on `main` as of 2026-10-09:
+[#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147)
+(network-denied equivalence),
+[#150](https://github.com/sourcebastion/sourcebastion-scanner/pull/150)
+(imported-SBOM gate and projection) and
+[#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151)
+(pipeline matching and advisory-snapshot provenance) on scanner `main`, and
+[platform #402](https://github.com/sourcebastion/sourcebastion-platform/pull/402)
+(compatibility keys) on platform `main`.
 
-Still in review: the pipeline matching and advisory-snapshot provenance work in
-[#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151), which
-covers the two rows marked *in review* above. Update those rows when it merges.
+What remains open is open for reasons no merge addresses: native resource
+acceptance needs the hosted jobs, SPDX export is unexercised by choice, and
+S04 depends on S03.
 
 ## Executable evidence held locally
 

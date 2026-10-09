@@ -17,6 +17,7 @@ from sourcebastion.inventory.compose_source import compose_source
 from sourcebastion.inventory.contract import InventoryLimits, Producer
 from sourcebastion.inventory.imported_sbom import (
     FORMAT,
+    MAX_COMPONENTS,
     MAX_IMPORT_BYTES,
     SPECIFICATIONS,
     ImportedBom,
@@ -464,3 +465,25 @@ def test_duplicate_record_ids_are_what_the_canonical_model_refuses():
     row = occurrence()
     with pytest.raises(ValidationError, match="duplicate-or-mistyped-record-id"):
         inventory(occurrences=(row, row))
+
+
+def test_the_component_ceiling_is_the_lower_of_the_module_and_the_limits():
+    """The byte ceiling already takes the lower of the two. A caller with room
+    for fewer occurrences must not be handed a projection that exceeds it."""
+    component = {"type": "library", "name": "pip", "version": "26.0.1",
+                 "purl": "pkg:pypi/pip@26.0.1"}
+    narrow = InventoryLimits(occurrences=2)
+    raw = document(components=[component, dict(component), dict(component)])
+
+    with pytest.raises(ValueError, match="invalid-imported-sbom-components"):
+        admit(raw, limits=narrow, check=lambda: None)
+    with pytest.raises(ValueError, match="invalid-imported-sbom-components"):
+        project(raw, limits=narrow, check=lambda: None)
+
+    admitted = admit(document(components=[component, dict(component)]), limits=narrow, check=lambda: None)
+    assert admitted.components == 2
+
+
+def test_the_module_ceiling_still_applies_under_permissive_limits():
+    assert MAX_COMPONENTS == InventoryLimits().occurrences
+    assert min(MAX_COMPONENTS, InventoryLimits().occurrences) == MAX_COMPONENTS

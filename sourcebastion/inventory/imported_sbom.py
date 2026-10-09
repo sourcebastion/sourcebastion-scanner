@@ -37,6 +37,10 @@ SPECIFICATIONS = frozenset({"1.6"})
 #: untrusted input, and a build SBOM large enough to exhaust the export budget
 #: must not be able to consume it.
 MAX_IMPORT_BYTES = 8 * 1024 * 1024
+#: The module's own component ceiling. The effective one is the lower of this
+#: and `limits.occurrences`, the same way the byte ceiling is the lower of
+#: `MAX_IMPORT_BYTES` and `limits.sbom_bytes`: a caller that configured room
+#: for fewer occurrences must not be handed a projection that exceeds it.
 MAX_COMPONENTS = 100000
 
 
@@ -146,7 +150,7 @@ def _admit(raw, *, limits, check, path=None):
         # asserting things its bytes do not say.
         raise ValueError("unsupported-imported-sbom-specification")
     components = value.get("components", [])
-    if type(components) is not list or len(components) > MAX_COMPONENTS:
+    if type(components) is not list or len(components) > min(MAX_COMPONENTS, limits.occurrences):
         raise ValueError("invalid-imported-sbom-components")
     check()
     return (

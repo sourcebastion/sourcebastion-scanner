@@ -67,9 +67,12 @@ establish.
 ## What is implemented
 
 `inventory.imported_sbom.admit` is the gate: bounded decode, allowlisted
-`CycloneDX` / `1.6` with no version coercion, a component ceiling, an 8 MiB
-import cap separate from the export cap, and `inputs.relative_path` for a
-source-bound artifact. It returns an `ImportedBom` -- digest, specification,
+`CycloneDX` / `1.6` with no version coercion, an 8 MiB import cap separate
+from the export cap, and `inputs.relative_path` for a source-bound artifact.
+Both ceilings take the lower of the module's own and the caller's limits -- the
+byte cap against `limits.sbom_bytes` and the component cap against
+`limits.occurrences` -- so a caller with room for fewer occurrences is never
+handed a projection that exceeds it. It returns an `ImportedBom` -- digest, specification,
 component count and binding -- charges the caller's ledger, and produces no
 occurrences.
 

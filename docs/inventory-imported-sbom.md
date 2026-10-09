@@ -1,11 +1,11 @@
 # Imported local build SBOM handling
 
-This defines how a source- or artifact-bound local build SBOM may be admitted.
-Nothing implements it yet: `inventory.cyclonedx` exports and does not accept an
-imported BOM, and no general imported-BOM validator exists. The definition is
-written first because the constraints decide the shape, and because an importer
-that is designed after the fact tends to acquire the one property this slice
-forbids.
+This defines how a source- or artifact-bound local build SBOM may be admitted,
+and how an admitted one is projected into occurrences. `inventory.cyclonedx`
+still only exports; the import path is `inventory.imported_sbom`. The definition
+was written before the implementation because the constraints decide the shape,
+and because an importer designed after the fact tends to acquire the one
+property this slice forbids.
 
 ## The constraint that drives the rest
 
@@ -70,19 +70,50 @@ establish.
 `CycloneDX` / `1.6` with no version coercion, a component ceiling, an 8 MiB
 import cap separate from the export cap, and `inputs.relative_path` for a
 source-bound artifact. It returns an `ImportedBom` -- digest, specification,
-component count and binding -- and charges the caller's ledger.
+component count and binding -- charges the caller's ledger, and produces no
+occurrences.
 
 It opens no file: a caller reading from source does so through `inputs.Source`,
 which refuses symlinks against a pinned root descriptor, and passes the bytes.
 
+`inventory.imported_sbom.project` is the import proper. It runs the same gate,
+then builds occurrences and returns an `ImportedProjection` -- the admitted
+facts, one `AnalysisScope` and the occurrences, held apart from anything
+composition produced. Nothing in it reads or mutates a composed `Inventory`, so
+the no-merge constraint is a property of the shape rather than a rule a caller
+has to remember.
+
+Each occurrence carries `evidence_kind="imported"`, a new value in the canonical
+contract, and names an `imported-sbom-input` analysis scope whose locator is the
+admitted document rather than a parsed source input. Both are additive: nothing
+in the engine branches on either field, composers only set them, so a reader
+that knows neither value still reads every other row correctly.
+
+A component is projected only where the canonical model can state it. The
+ecosystem comes from the purl's type, restricted to the eight the contract
+knows; a component without a usable ecosystem, name or version is skipped. The
+document states identity twice, in the purl and in the `name`/`version` fields,
+and where those disagree neither is adopted and the row is skipped -- rewriting
+the purl to agree with the fields would make the import assert a version its
+own bytes contradict. The comparison is of identity and not of spelling:
+percent-encoding, the purl type's case, qualifiers and a subpath are all legal
+and cost nothing. Qualifiers and the subpath are then dropped, because the
+canonical model cannot state them and an import must not promote its extra
+fields into canonical claims. Every skip is counted on the result, so an
+incomplete projection is visible rather than silently smaller.
+
 ## What this does not establish
 
-Admission produces no occurrences. Projecting an imported component into the
-canonical model is a separate question with its own evidence rules -- the
-no-merge-by-purl constraint above is the hard part, not the parsing -- and
-answering it inside the gate would give the gate the property this slice
-forbids. No route invokes the module, and nothing writes an imported
-identity into result provenance or the compatibility inputs yet.
+No route invokes the module, and nothing writes an imported identity into
+result provenance or the M046 compatibility inputs yet -- the identity rule
+above is defined and unenforced. A projection is returned to its caller and
+never merged with a composed inventory by this module; what a caller does with
+both sets, and how coverage should read when an import is present, is not
+settled here.
+
+Relationships are not projected. CycloneDX `dependencies` carry edges, and
+admitting them as evidenced local relationships is a separate question from
+admitting components.
 
 The export, matching and real-Grype proofs are unchanged. Native resource
 acceptance remains open.

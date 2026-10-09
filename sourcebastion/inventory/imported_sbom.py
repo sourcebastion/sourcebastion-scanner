@@ -4,12 +4,11 @@ The contract is `docs/inventory-imported-sbom.md`. This module is the gate it
 describes: it decides whether a supplied document may be admitted at all, and
 records what was admitted. It deliberately stops there.
 
-Admission produces no occurrences and touches no inventory. Projecting an
-imported component into the canonical model is a separate question with its own
-evidence rules -- an import must not merge by name or purl into something
-discovery found -- and answering it here would give the gate the one property
-the slice forbids. A caller holding an `ImportedBom` has a validated document
-and its identity, nothing more.
+`admit` is the gate alone and produces no occurrences. `project` is the import
+proper: it admits, then builds occurrences carrying `evidence_kind="imported"`
+so a reader can always tell a built dependency from a declared one. It never
+merges by name or purl into anything discovery found -- a caller holds the
+imported occurrences separately and decides what to do with them.
 
 No route invokes this. It performs no network access and runs no tool.
 """
@@ -17,7 +16,15 @@ No route invokes this. It performs no network access and runs no tool.
 from dataclasses import dataclass
 import hashlib
 import json
+from urllib.parse import unquote
 
+from .contract import (
+    AnalysisScope,
+    Locator,
+    Occurrence,
+    identifier,
+    package_purl,
+)
 from .inputs import InputRefusal, relative_path
 
 VERSION = "sourcebastion.imported-sbom/1"
@@ -49,6 +56,16 @@ class ImportedBom:
             raise ValueError("invalid-import-binding")
         if (self.path is None) != (self.binding == "controller"):
             raise ValueError("invalid-import-binding")
+
+
+@dataclass(frozen=True)
+class ImportedProjection:
+    """Imported occurrences, held apart from anything discovery composed."""
+
+    admitted: "ImportedBom"
+    scope: object
+    occurrences: tuple
+    skipped: int
 
 
 def _decode(raw, limits, check):
@@ -97,6 +114,11 @@ def _decode(raw, limits, check):
 
 
 def admit(raw, *, limits, check, path=None):
+    """Validate one document and return what was admitted, nothing more."""
+    return _admit(raw, limits=limits, check=check, path=path)[0]
+
+
+def _admit(raw, *, limits, check, path=None):
     """Validate one document and return what was admitted.
 
     `path` names the artifact inside the admitted source; its absence means the
@@ -121,10 +143,122 @@ def admit(raw, *, limits, check, path=None):
     if type(components) is not list or len(components) > MAX_COMPONENTS:
         raise ValueError("invalid-imported-sbom-components")
     check()
-    return ImportedBom(
-        sha256=hashlib.sha256(raw).hexdigest(),
-        specification=specification,
-        components=len(components),
-        binding="source" if confined is not None else "controller",
-        path=confined,
+    return (
+        ImportedBom(
+            sha256=hashlib.sha256(raw).hexdigest(),
+            specification=specification,
+            components=len(components),
+            binding="source" if confined is not None else "controller",
+            path=confined,
+        ),
+        value,
+    )
+
+#: Only what the canonical model can state about a component. CycloneDX
+#: carries more, and an import that quietly promoted its extra fields into
+#: canonical claims would be asserting what the bytes do not establish.
+_ECOSYSTEMS = {
+    "pypi": "pypi",
+    "npm": "npm",
+    "golang": "golang",
+    "cargo": "cargo",
+    "maven": "maven",
+    "nuget": "nuget",
+    "gem": "gem",
+    "composer": "composer",
+}
+
+
+def _ecosystem(purl):
+    if type(purl) is not str or not purl.startswith("pkg:"):
+        return None
+    return _ECOSYSTEMS.get(purl[4:].split("/", 1)[0].split("@", 1)[0].lower())
+
+
+def _asserted(purl):
+    """What a supplied purl states about identity, and nothing else.
+
+    Qualifiers and the subpath are dropped because the canonical model cannot
+    state them, and percent-encoding and the type's case are normalised so the
+    same identity written two legal ways compares equal. What survives is only
+    the type, namespace, name and version -- the part the derived purl also
+    states, so the two can be held against each other.
+    """
+    bare = purl.split("#", 1)[0].split("?", 1)[0]
+    type_name, _, rest = bare[4:].partition("/")
+    return "pkg:" + type_name.lower() + "/" + unquote(rest)
+
+
+def project(raw, *, limits, check, path=None, source_sha256=None):
+    """Admit a document and build its occurrences, separately from discovery.
+
+    Returns the admitted facts and the occurrences the document supports. A
+    component without a usable purl ecosystem, name or version is skipped
+    rather than guessed at: the count of what was skipped is on the result, so
+    an incomplete projection is visible instead of silently smaller.
+
+    Nothing here consults or mutates a composed inventory. Equal purls between
+    an import and discovery stay separate occurrences, because the built
+    artifact and the declared dependency are not established to be the same
+    thing.
+    """
+    admitted, document = _admit(raw, limits=limits, check=check, path=path)
+    digest = source_sha256 if source_sha256 is not None else admitted.sha256
+    locator = Locator(
+        path=admitted.path if admitted.path is not None else "(controller-supplied)",
+        source_sha256=digest,
+        locator="imported-sbom",
+        parser=VERSION,
+    )
+    scope = AnalysisScope(
+        id=identifier("scope", locator.model_dump()),
+        kind="imported-sbom-input",
+        source=locator,
+    )
+    occurrences, skipped = [], 0
+    for component in document.get("components", []):
+        check()
+        if type(component) is not dict:
+            skipped += 1
+            continue
+        supplied = component.get("purl")
+        ecosystem = _ecosystem(supplied)
+        name, version = component.get("name"), component.get("version")
+        if ecosystem is None or type(name) is not str or type(version) is not str:
+            skipped += 1
+            continue
+        try:
+            purl = package_purl(ecosystem, name, version)
+            # The document states identity twice. Where the two disagree,
+            # neither is adopted: rewriting the purl to agree with the fields
+            # would make the import assert a version its bytes contradict.
+            if _asserted(supplied) != _asserted(purl):
+                skipped += 1
+                continue
+            values = dict(
+                source=locator,
+                ecosystem=ecosystem,
+                name=name,
+                purl=purl,
+                evidence_kind="imported",
+                selected_version=version,
+                analysis_scope_id=scope.id,
+                activation="unknown",
+            )
+            occurrences.append(
+                Occurrence(
+                    id=identifier(
+                        "occurrence", {**values, "source": locator.model_dump()}
+                    ),
+                    **values,
+                )
+            )
+        except ValueError:
+            skipped += 1
+    check()
+    return ImportedProjection(
+        admitted=admitted,
+        scope=scope,
+        occurrences=tuple(occurrences),
+        skipped=skipped,
     )

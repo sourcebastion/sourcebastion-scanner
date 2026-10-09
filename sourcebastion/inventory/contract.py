@@ -166,7 +166,16 @@ class Root(Record):
 
 class AnalysisScope(Record):
     id: ID
-    kind: Literal["requirements-origin", "manifest-input", "lock-input", "provider-directory"]
+    #: `imported-sbom-input` is a controller-supplied build SBOM. It names the
+    #: admitted document rather than a source input discovery parsed, so an
+    #: imported occurrence can never be read as something found in the tree.
+    kind: Literal[
+        "requirements-origin",
+        "manifest-input",
+        "lock-input",
+        "provider-directory",
+        "imported-sbom-input",
+    ]
     source: Locator
 
 
@@ -350,7 +359,8 @@ class Occurrence(Record):
     ecosystem: Ecosystem
     name: Name
     purl: Optional[Text]
-    evidence_kind: Literal["declared", "locked", "installed"]
+    #: Imported build SBOM evidence remains distinct from source discovery.
+    evidence_kind: Literal["declared", "locked", "installed", "imported"]
     selected_version: Optional[Name]
     declared_range: Optional[Text] = None
     hashes: tuple[ContentHash, ...] = Field(default=(), max_length=4096)

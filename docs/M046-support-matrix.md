@@ -44,10 +44,12 @@ boundary; it does not establish preservation of the legacy matcher’s packages
 or findings for a future replacement route.
 
 The original 64 fixtures have full source-authored record, reference, coverage
-and stage expectations. The last 12 expectations passed the reviewed local
-installed-wheel proof; fresh native AMD64/ARM64 checks are still required. This
-finite corpus does not establish arbitrary-format coverage, numeric host/kernel
-budgets, production compatibility or S03/M046 acceptance.
+and stage expectations. Native AMD64 and ARM64 run 37895511556 passed all 64
+cases with identical canonical inventory digests and exact installed/check-out
+module hashes. Final integration checks and the S03 acceptance decision are
+recorded on scanner issue 91. This finite corpus does not establish arbitrary
+format coverage, numeric host/kernel budgets, production compatibility or
+whole-milestone acceptance.
 
 Scope decision (2026-10-09): the owner confirmed that the scanner has no users
 and legacy package/finding parity is not an acceptance requirement. S03 uses

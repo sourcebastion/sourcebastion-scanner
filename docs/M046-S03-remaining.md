@@ -1,7 +1,8 @@
-# M046 S03 acceptance work
+# M046 S03 acceptance boundary
 
-S03 remains open. Work continues in an isolated checkout; the public scanner
-route and other agents' implementation branches are unchanged.
+Scanner issue 91 is the authoritative acceptance status and evidence record.
+The public scanner route remains legacy; S03 implements the internal canonical
+source composition API.
 
 Implemented foundations include strict canonical records and reproducible
 serialization, content-bound requirements/constraints, static Python metadata
@@ -10,7 +11,7 @@ installed Python metadata evidence, conservative NuGet v1/v2 composition and
 limited Bundler/Composer locked package enumeration.
 The full source-authored expectation set covers 64 unchanged historical inputs.
 
-Before acceptance:
+Acceptance checklist:
 
 1. Use the documented supported subsets and explicit unsupported dispositions
    as the ecosystem acceptance boundary. The owner confirmed on 2026-10-09

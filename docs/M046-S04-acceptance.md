@@ -2,8 +2,9 @@
 
 Status: S04 is open. The export, matching, import and identity work is
 implemented and has local and hosted executable evidence; native resource
-acceptance remains open. S03 acceptance is tracked separately on scanner
-issue 91; this ledger does not decide that dependency’s status.
+acceptance remains open and is the only S04 acceptance item still open.
+S03, which S04 depends on, is complete: issue 91 is closed and its adapters
+are on `main`.
 
 Tracking: [S04 #92](https://github.com/sourcebastion/sourcebastion-scanner/issues/92).
 Canonical scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
@@ -28,7 +29,7 @@ acceptance.
 | Engine/config/registry identity in result provenance, with the advisory snapshot | implemented, merged | the receipt's `producer` and `matching_identity`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | M036 cache/baseline compatibility keys bound to inventory semantics | implemented, merged | platform `incremental_compatibility.INVENTORY_IDENTITY_FIELDS` and `scanner_identity.INVENTORY_IDENTITY_FEATURE`; platform [#402](https://github.com/sourcebastion/sourcebastion-platform/pull/402) |
 | Native resource acceptance | **open** | needs hosted jobs; see below |
-| S03 dependency | tracked separately | [S03 #91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91) records its acceptance status and evidence |
+| S03 dependency | satisfied | [S03 #91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91) closed; [#148](https://github.com/sourcebastion/sourcebastion-scanner/pull/148) and [#149](https://github.com/sourcebastion/sourcebastion-scanner/pull/149) merged |
 
 Every implemented row above is on `main` as of 2026-10-09:
 [#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147)
@@ -54,7 +55,8 @@ rtk proxy .venv/bin/python -m pytest tests/ -k inventory -q
 
 This host has **105 pre-existing failures** unrelated to S04: npm, yarn and
 pnpm composition and the vendored Node helper expectations, across six files,
-plus the Go-binding errors. They fail on pristine `main`. Every S04 change in
+plus the Go-binding errors. Re-measured on `main` after S03 merged: the same
+105, in the same six files, with 1,398 passing. They fail on pristine `main`. Every S04 change in
 this ledger was measured against that baseline immediately before and after,
 and the failure set was identical each time; the only delta was the new tests
 passing.
@@ -133,6 +135,8 @@ signatures, whole-milestone acceptance, and release or deployment readiness.
 Findings may be compared across architectures only under equal advisory
 snapshot identity.
 
-S04 depends on S03; [issue 91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91)
-records that dependency’s current acceptance status. This ledger is a record
-of S04’s state, not a claim that S04 is accepted.
+S04's dependency on S03 is satisfied:
+[issue 91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91)
+is closed and its ecosystem adapters are on `main`. That removes the
+dependency, not the open native gate above. This ledger is a record of S04's
+state, not a claim that S04 is accepted.

@@ -15,7 +15,9 @@ Fixture mapping is discovered from inline comments:
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -86,11 +88,48 @@ def all_rules() -> list[tuple[str, Path]]:
     return cases
 
 
-def validate_rule(rule_yaml: Path) -> list[str]:
-    empty_target = Path(tempfile.gettempdir()) / "sourcebastion_empty_target"
-    empty_target.mkdir(exist_ok=True)
-    _, errors = run_semgrep(rule_yaml, empty_target)
+def empty_target_dir() -> Path:
+    """Created once by the caller; workers must not race on mkdir."""
+    target = Path(tempfile.gettempdir()) / "sourcebastion_empty_target"
+    target.mkdir(exist_ok=True)
+    return target
+
+
+def validate_rule(rule_yaml: Path, empty_target: Path | None = None) -> list[str]:
+    _, errors = run_semgrep(rule_yaml, empty_target or empty_target_dir())
     return errors
+
+
+def check_rule(language: str, rule_yaml: Path, empty_target: Path) -> tuple[str | None, str | None]:
+    """Verify one rule. Returns (ok_line, failure); exactly one is not None.
+
+    Pure with respect to the process: it reads files and runs semgrep, and
+    touches no shared state, which is what lets rules be checked concurrently.
+    The semgrep calls stay per-rule rather than batched, because rule X's
+    true-positive fixture must be matched by rule X and not by rule Y.
+    """
+    rule_id = load_rule_id(rule_yaml)
+    errors = validate_rule(rule_yaml, empty_target)
+    if errors:
+        return None, f"{rule_yaml}: invalid rule config: {errors[:2]}"
+
+    tp, tn = fixtures_for_rule(rule_yaml, language)
+    if tp is None:
+        return None, f"{rule_yaml}: no true-positive fixture references {rule_id}"
+    if tn is None:
+        return None, f"{rule_yaml}: no true-negative fixture references {rule_id}"
+
+    tp_count, tp_errors = run_semgrep(rule_yaml, tp)
+    tn_count, tn_errors = run_semgrep(rule_yaml, tn)
+    if tp_errors:
+        return None, f"{rule_yaml} -> {tp}: semgrep errors: {tp_errors[:2]}"
+    if tn_errors:
+        return None, f"{rule_yaml} -> {tn}: semgrep errors: {tn_errors[:2]}"
+    if tp_count < 1:
+        return None, f"{rule_yaml} -> {tp}: TRUE POSITIVE produced 0 findings"
+    if tn_count != 0:
+        return None, f"{rule_yaml} -> {tn}: TRUE NEGATIVE produced {tn_count} findings"
+    return f"OK {language}/{rule_yaml.name}: tp={tp_count} tn={tn_count}", None
 
 
 def main() -> int:
@@ -99,6 +138,12 @@ def main() -> int:
         "--allow-missing-semgrep",
         action="store_true",
         help="Exit 0 when semgrep is missing (for images intentionally built without semgrep).",
+    )
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=None,
+        help="Concurrent rule checks; defaults to the CPU count.",
     )
     args = parser.parse_args()
 
@@ -110,39 +155,26 @@ def main() -> int:
         print(f"ERROR: {msg}", file=sys.stderr)
         return 2
 
-    failures: list[str] = []
+    rules = all_rules()
+    empty_target = empty_target_dir()
+    # Each rule costs three semgrep process starts -- config validation, the
+    # true positive and the true negative -- and semgrep's startup dominates a
+    # single tiny fixture, so the wall clock was ~3x the rule count in
+    # serialized process launches. The checks are independent, so they run
+    # concurrently. Threads, not processes: the work is subprocess-bound and
+    # the GIL is released while each semgrep runs.
+    workers = max(1, min(args.jobs or (os.cpu_count() or 1), len(rules) or 1))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        outcomes = list(pool.map(lambda item: check_rule(*item, empty_target), rules))
+
+    # Emitted in rule order regardless of completion order, so output and the
+    # failure list stay identical to the serialized version and reviewable.
+    failures = [failure for _ok, failure in outcomes if failure is not None]
     passed = 0
-    for language, rule_yaml in all_rules():
-        rule_id = load_rule_id(rule_yaml)
-        errors = validate_rule(rule_yaml)
-        if errors:
-            failures.append(f"{rule_yaml}: invalid rule config: {errors[:2]}")
-            continue
-
-        tp, tn = fixtures_for_rule(rule_yaml, language)
-        if tp is None:
-            failures.append(f"{rule_yaml}: no true-positive fixture references {rule_id}")
-            continue
-        if tn is None:
-            failures.append(f"{rule_yaml}: no true-negative fixture references {rule_id}")
-            continue
-
-        tp_count, tp_errors = run_semgrep(rule_yaml, tp)
-        tn_count, tn_errors = run_semgrep(rule_yaml, tn)
-        if tp_errors:
-            failures.append(f"{rule_yaml} -> {tp}: semgrep errors: {tp_errors[:2]}")
-            continue
-        if tn_errors:
-            failures.append(f"{rule_yaml} -> {tn}: semgrep errors: {tn_errors[:2]}")
-            continue
-        if tp_count < 1:
-            failures.append(f"{rule_yaml} -> {tp}: TRUE POSITIVE produced 0 findings")
-            continue
-        if tn_count != 0:
-            failures.append(f"{rule_yaml} -> {tn}: TRUE NEGATIVE produced {tn_count} findings")
-            continue
-        passed += 1
-        print(f"OK {language}/{rule_yaml.name}: tp={tp_count} tn={tn_count}")
+    for ok, _failure in outcomes:
+        if ok is not None:
+            passed += 1
+            print(ok)
 
     if failures:
         print("\nRule fixture verification failed:", file=sys.stderr)

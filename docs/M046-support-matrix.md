@@ -19,7 +19,8 @@ acceptance must identify the exact code, registry, configuration and helpers.
 | Go module metadata | Maintained `x/mod/modfile` source parsing requires the separately prepared trusted helper | `require` versions are minimum-version declarations, not selected versions; `go.sum` is checksum history | Module selection and package edges remain unresolved; no project commands or registry resolution |
 | Cargo manifests and registry locks | Static declarations and admitted registry/sparse lock entries retain distinct contexts | Manifest ranges remain unresolved; supported lock entries retain exact versions | Source package-ID selectors only; local/git/workspace ambiguity does not become a registry edge |
 | Modern Gradle dependency locks | Supported conservative coordinate/configuration entries | Exact asserted lock versions | Flat lock entries do not establish package edges or project ownership |
-| Maven POM, NuGet, Bundler, Composer | Recognized inputs; canonical source adapters are currently unsupported | No selected canonical package records are admitted | No canonical edges admitted |
+| NuGet `packages.lock.json` v1/v2 | Conservative package entries remain distinct per framework/RID table; project references and v3 aliases remain unsupported | Explicit locked versions and independently validated SHA512 hashes; missing hashes retain partial coverage | Same-table named endpoints with reviewed numeric release ranges; floating/prerelease ranges and RID fallback remain unresolved |
+| Maven POM, `packages.config`, Bundler, Composer | Recognized inputs; canonical source adapters are currently unsupported | No selected canonical package records are admitted | No canonical edges admitted |
 
 `coverage.discovery`, `enumeration`, `version_resolution`, `graph` and
 `environment` are independent. Complete selected-version coverage over zero
@@ -32,9 +33,10 @@ nullable unless their own source evidence establishes them.
 The bounded restricted provider can retain observations for additional formats,
 including Java, .NET, Ruby and PHP. Those observations are separate evidence;
 they are not silently promoted to canonical packages, ownership or graph
-semantics. The new canonical source expectations for the original .NET/Ruby/PHP fixtures
-explicitly expect unsupported inputs and zero canonical occurrences; the
-historical oracle remains unchanged. That characterizes the current
+semantics. The original .NET fixture now retains its explicit locked package,
+with partial coverage for the invalid fixture hash. Ruby/PHP canonical source
+expectations still expect unsupported inputs and zero canonical occurrences;
+the historical oracle and all original source bytes remain unchanged. That characterizes the current
 boundary; it does not establish preservation of the legacy matcher’s packages
 or findings for a future replacement route.
 

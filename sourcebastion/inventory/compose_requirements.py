@@ -557,6 +557,9 @@ def _compose(
             from .compose_gradle import extend as extend_gradle
 
             extend_gradle(extra)
+            from .compose_nuget import extend as extend_nuget
+
+            extend_nuget(extra)
         source.validate()
         covered = tuple(
             inputs[path].model_copy(

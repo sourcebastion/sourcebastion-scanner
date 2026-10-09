@@ -398,10 +398,10 @@ class DependencySelector(Record):
     source: Locator
     parent_id: ID
     child_id: ID | None = None
-    ecosystem: Literal["pypi", "npm", "cargo"] = "pypi"
+    ecosystem: Literal["pypi", "npm", "cargo", "nuget"] = "pypi"
     name: Name
     declared_range: Text | None = None
-    dialect: Literal["pep440", "poetry-core-2.1.3", "npm-semver-7.8.5", "cargo-lock-package-id-3-4"] = "pep440"
+    dialect: Literal["pep440", "poetry-core-2.1.3", "npm-semver-7.8.5", "cargo-lock-package-id-3-4", "nuget-release-range-1"] = "pep440"
     exact_version: Name | None = None
     registry_source_sha256: SHA256 | None = None
     marker: Text | None = None
@@ -421,9 +421,11 @@ class DependencySelector(Record):
             raise ValueError("contradictory-selector-ecosystem-dialect")
         if (self.ecosystem == "cargo") != (self.dialect == "cargo-lock-package-id-3-4"):
             raise ValueError("contradictory-selector-ecosystem-dialect")
+        if (self.ecosystem == "nuget") != (self.dialect == "nuget-release-range-1"):
+            raise ValueError("contradictory-selector-ecosystem-dialect")
         if self.ecosystem == "cargo" and self.declared_range is not None:
             raise ValueError("cargo-lock-selector-is-not-a-range")
-        if self.ecosystem in {"npm", "cargo"} and (
+        if self.ecosystem in {"npm", "cargo", "nuget"} and (
             self.marker is not None
             or self.extras
             or self.groups
@@ -435,6 +437,8 @@ class DependencySelector(Record):
                 "npm-selector-cannot-borrow-python-context"
                 if self.ecosystem == "npm"
                 else "cargo-selector-cannot-borrow-python-context"
+                if self.ecosystem == "cargo"
+                else "nuget-selector-cannot-borrow-python-context"
             )
         if (self.child_id is not None) != (self.disposition == "resolved"):
             raise ValueError("contradictory-selector-resolution")
@@ -715,7 +719,7 @@ class Inventory(Record):
                 or parent.ecosystem != selector.ecosystem
                 or parent.source.path != selector.source.path
                 or (
-                    selector.ecosystem == "pypi"
+                    selector.ecosystem in {"pypi", "nuget"}
                     and (parent.groups != selector.groups or parent.scopes != selector.scopes)
                 )
             ):
@@ -728,7 +732,7 @@ class Inventory(Record):
                 or child.source.path != parent.source.path
                 or child.analysis_scope_id != parent.analysis_scope_id
                 or (
-                    selector.ecosystem == "pypi"
+                    selector.ecosystem in {"pypi", "nuget"}
                     and (child.groups != selector.groups or child.scopes != selector.scopes)
                 )
                 or (selector.extra_selection == "variant-exact" and child.extras != selector.extras)

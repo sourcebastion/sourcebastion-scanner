@@ -99,7 +99,10 @@ An import never merges into discovery, and that is a property of the shape:
 `project` holds no composed inventory to merge into. Where a component's purl
 and its `name`/`version` fields disagree, neither is adopted and the row is
 skipped and counted, so an import cannot assert a version its own bytes
-contradict.
+contradict. A component restating one already projected is collapsed, because
+the canonical model refuses duplicate record ids. Skips and duplicates are
+counted separately and never summed: one says the model could not state a
+component, the other says it was already stated.
 
 Relationships are not projected, and no route invokes the module. The identity
 rule above is defined for imports and not yet enforced for them: no imported

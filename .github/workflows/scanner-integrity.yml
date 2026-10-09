@@ -3,6 +3,9 @@ name: Scanner artifact integrity
 on:
   pull_request:
     branches: [main]
+  # Required checks must also report in the merge queue,
+  # or the queue stalls waiting for them.
+  merge_group:
   workflow_dispatch:
   workflow_call:
 

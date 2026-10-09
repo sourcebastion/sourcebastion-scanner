@@ -24,17 +24,22 @@ def test_pr_and_release_checks_include_every_image_variant():
         'type': 'boolean', 'default': 'false',
     }
     images = validation['jobs']['build-scanner']
-    # Images build on every pull request and on release validation, and may be
-    # skipped only on the path classifier's explicit signal. Both halves are
-    # required: dropping the first would stop building on PRs, and dropping the
-    # second would let any skip through.
-    assert "github.event_name == 'pull_request' || inputs.build_images == true" in images['if']
+    # Images build on every pull request, in the merge queue and on release
+    # validation, and may be skipped only on the path classifier's explicit
+    # signal. Asserted as separate properties rather than one literal string,
+    # so adding an admitted event does not read as weakening the guard.
+    for admitted in (
+        "github.event_name == 'pull_request'",
+        "github.event_name == 'merge_group'",
+        'inputs.build_images == true',
+    ):
+        assert admitted in images['if'], admitted
     assert "needs.changes.outputs.image_affecting == 'true'" in images['if']
     assert 'changes' in images['needs']
     # The classifier itself must run wherever the builds would, or its signal
     # is missing exactly when it is needed.
     classifier = validation['jobs']['changes']
-    assert classifier['if'] == "github.event_name == 'pull_request' || inputs.build_images == true"
+    assert classifier['if'] == images['if'].split('\n')[0].strip().lstrip('(').rstrip(')')
     assert classifier['outputs']['image_affecting']
     matrix = images['strategy']['matrix']['include']
     assert {item['arch'] for item in matrix} == {'amd64', 'arm64'}

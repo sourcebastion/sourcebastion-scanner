@@ -19,15 +19,26 @@ acceptance.
 | Validated CycloneDX from the local inventory, pinned and consumer-compatible | implemented | [`docs/inventory-cyclonedx.md`](inventory-cyclonedx.md); offline validation against the pinned official 1.6 schemas in `evaluation/m046/cyclonedx-schemas` |
 | Purls, evidenced relationships, source/environment identity, provenance, explicit coverage and fidelity preserved | implemented | `tests/test_inventory_cyclonedx.py`; canonical inventory stays authoritative and separately bound by SHA-256 |
 | Real Grype binary against the verified advisory snapshot | implemented | [`docs/inventory-real-grype-proof.md`](inventory-real-grype-proof.md); native AMD64 and ARM64 hosted smoke jobs in `.github/workflows/docker.yml` |
-| SBOM/export status separate from matching status; a valid inventory survives matching failure | implemented | `inventory.direct_pipeline`; `tests/test_inventory_direct_pipeline.py` |
+| SBOM/export status separate from matching status; a valid inventory survives matching failure | implemented, in review | `inventory.direct_pipeline`; `tests/test_inventory_direct_pipeline.py`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | Finding identity, severity, deduplication and source locations preserved | implemented | `inventory.matching.recover`; exact artifact IDs, never joined by name or purl |
-| Bounded schema/size/path handling and optional import of local build SBOMs | implemented | [`docs/inventory-imported-sbom.md`](inventory-imported-sbom.md); `inventory.imported_sbom` |
-| Imported artifacts cannot silently replace discovery | implemented | `project` holds no composed inventory; a real `uv.lock` composition and an import of the same purl stay two occurrences |
-| No scan-time registry downloads, dependency installs or project execution | implemented | `tests/test_inventory_network_denied_equivalence.py` |
-| Engine/config/registry identity in result provenance, with the advisory snapshot | implemented | the receipt's `producer` and `matching_identity` |
-| M036 cache/baseline compatibility keys bound to inventory semantics | implemented, platform side | platform `incremental_compatibility.INVENTORY_IDENTITY_FIELDS` and `scanner_identity.INVENTORY_IDENTITY_FEATURE` |
+| Bounded schema/size/path handling and optional import of local build SBOMs | implemented, in review | [`docs/inventory-imported-sbom.md`](inventory-imported-sbom.md); `inventory.imported_sbom`; [#150](https://github.com/sourcebastion/sourcebastion-scanner/pull/150) |
+| Imported artifacts cannot silently replace discovery | implemented, in review | `project` holds no composed inventory; a real `uv.lock` composition and an import of the same purl stay two occurrences |
+| No scan-time registry downloads, dependency installs or project execution | implemented, in review | `tests/test_inventory_network_denied_equivalence.py`; [#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147) |
+| Engine/config/registry identity in result provenance, with the advisory snapshot | implemented, in review | the receipt's `producer` and `matching_identity`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
+| M036 cache/baseline compatibility keys bound to inventory semantics | implemented, in review | platform `incremental_compatibility.INVENTORY_IDENTITY_FIELDS` and `scanner_identity.INVENTORY_IDENTITY_FEATURE`; platform [#402](https://github.com/sourcebastion/sourcebastion-platform/pull/402) |
 | Native resource acceptance | **open** | needs hosted jobs; see below |
 | S03 dependency | **open** | S03 is not merged |
+
+Three rows above are not yet on `main`: the pipeline matching and identity work
+is in [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151),
+the imported-SBOM gate and projection in
+[#150](https://github.com/sourcebastion/sourcebastion-scanner/pull/150), and
+the network-denied equivalence proof in
+[#147](https://github.com/sourcebastion/sourcebastion-scanner/pull/147). The
+compatibility-key change is in platform
+[#402](https://github.com/sourcebastion/sourcebastion-platform/pull/402). This
+ledger describes the slice's implemented state, not the state of `main`; update
+it as each merges.
 
 ## Executable evidence held locally
 

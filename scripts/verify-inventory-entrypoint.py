@@ -121,7 +121,9 @@ def installed_bindings():
         raw = read(actual, 2 * 1024**2)
         assert raw == read(WORK / name, 2 * 1024**2)
         payloads[name] = dict(sha256=sha(raw), bytes=len(raw))
-    assert len(payloads) == 137
+    # The reviewed distribution payload set, checked before the module count
+    # below; 138 includes `imported_sbom.py`.
+    assert len(payloads) == 138
     expected = {
         "sourcebastion/" + path.relative_to(WORK / "sourcebastion").as_posix()
         for path in (WORK / "sourcebastion").rglob("*")
@@ -139,7 +141,8 @@ def installed_bindings():
         for path in sorted(inventory.rglob("*"))
         if path.is_file() and path.suffix in {".py", ".js", ".cjs", ".mjs", ".json"}
     }
-    assert len(modules) == 96
+    # Exactly the reviewed module set; 97 includes `imported_sbom.py`.
+    assert len(modules) == 97
     return dict(
         package_version=distribution.version, package_payloads=payloads,
         inventory_modules=modules, entrypoint_sha256=sha(read(entry, 65536)),

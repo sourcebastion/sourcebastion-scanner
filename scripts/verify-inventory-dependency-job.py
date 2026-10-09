@@ -63,7 +63,10 @@ def main():
         for p in sorted(installed.rglob("*"))
         if p.is_file() and p.suffix in {".py", ".js", ".cjs", ".mjs", ".json"}
     }
-    assert len(modules) == 96
+    # Exactly the reviewed module set. Adding a module to the installed
+    # inventory package must fail here until that module is reviewed;
+    # 97 includes `imported_sbom.py`.
+    assert len(modules) == 97
     assert all(
         sha((WORK / "sourcebastion/inventory" / name).read_bytes()) == digest for name, digest in modules.items()
     )

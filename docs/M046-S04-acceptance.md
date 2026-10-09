@@ -19,7 +19,7 @@ acceptance.
 | --- | --- | --- |
 | Validated CycloneDX from the local inventory, pinned and consumer-compatible | implemented | [`docs/inventory-cyclonedx.md`](inventory-cyclonedx.md); offline validation against the pinned official 1.6 schemas in `evaluation/m046/cyclonedx-schemas` |
 | Purls, evidenced relationships, source/environment identity, provenance, explicit coverage and fidelity preserved | implemented | `tests/test_inventory_cyclonedx.py`; canonical inventory stays authoritative and separately bound by SHA-256 |
-| SPDX export, additive, with losses documented rather than equivalence claimed | **not implemented, by choice** | S04 makes it additive; no SPDX engine is selected, and no SPDX artifact is emitted or claimed anywhere. Nothing to document losses against yet |
+| ~~SPDX export~~ | **removed from S04 scope** | Tracked on [#154](https://github.com/sourcebastion/sourcebastion-scanner/issues/154); `ROADMAP.md` PLAN-10 already lists SPDX format as out of scope |
 | Real Grype binary against the verified advisory snapshot | implemented | [`docs/inventory-real-grype-proof.md`](inventory-real-grype-proof.md); native AMD64 and ARM64 hosted smoke jobs in `.github/workflows/docker.yml` |
 | SBOM/export status separate from matching status; a valid inventory survives matching failure | implemented, merged | `inventory.direct_pipeline`; `tests/test_inventory_direct_pipeline.py`; [#151](https://github.com/sourcebastion/sourcebastion-scanner/pull/151) |
 | Finding identity, severity, deduplication and source locations preserved | implemented | `inventory.matching.recover`; exact artifact IDs, never joined by name or purl |
@@ -113,15 +113,27 @@ Relationships are not projected, and no route invokes the module. The identity
 rule above is defined for imports and not yet enforced for them: no imported
 identity reaches result provenance or the compatibility inputs.
 
-## SPDX
+## SPDX, removed from this slice
 
-S04 makes SPDX export additive and conditional: permitted only if the selected
-engine preserves the canonical contract, and required to document its losses
-rather than claim equivalence with CycloneDX. No engine has been selected, no
-SPDX artifact is emitted, and no SPDX capability is advertised. The condition
-is therefore unmet and the requirement unexercised, which is a different thing
-from being satisfied. Any future SPDX path owes a loss table before it is
-offered as an alternative to the CycloneDX export.
+S04 originally carried a clause permitting additive SPDX export if a selected
+engine preserved the canonical contract. That clause is **removed from S04's
+scope** and tracked on
+[#154](https://github.com/sourcebastion/sourcebastion-scanner/issues/154)
+(M048 scope: license scanning and compliance).
+
+It was permission rather than a requirement, and it contradicted decisions
+already made. `ROADMAP.md` PLAN-10 lists SPDX format as out of scope.
+`inventory.imported_sbom` admits only CycloneDX 1.6 on purpose, so that one
+schema family is reasoned about rather than two. And the emitted CycloneDX
+document carries no timestamp, deliberately, so the export identity is
+byte-reproducible; SPDX 2.3 requires `creationInfo.created`, which is a direct
+conflict rather than an implementation detail.
+
+Where SPDX is actually relevant is licensing: its license list is already the
+vocabulary `license_checker.py` matches against. That is a licensing question,
+not an SBOM-parity one, which is why it moved to #154.
+
+**CycloneDX 1.6 is the one format this scanner emits and admits.**
 
 ## What this does not establish
 
@@ -130,8 +142,9 @@ checkout: aggregate CPU-time enforcement, complete kernel traces, same-UID
 administrator fencing and AMD64/ARM64 resource behaviour need the hosted jobs.
 The real-Grype proof is a finite integration proof and says so itself.
 
-Also open: production controller custody, advisory database publisher
-signatures, whole-milestone acceptance, and release or deployment readiness.
+Also open, and broader than S04: production controller custody, advisory
+database publisher signatures, whole-milestone acceptance, and release or
+deployment readiness.
 Findings may be compared across architectures only under equal advisory
 snapshot identity.
 

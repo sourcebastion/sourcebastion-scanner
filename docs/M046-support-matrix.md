@@ -20,7 +20,9 @@ acceptance must identify the exact code, registry, configuration and helpers.
 | Cargo manifests and registry locks | Static declarations and admitted registry/sparse lock entries retain distinct contexts | Manifest ranges remain unresolved; supported lock entries retain exact versions | Source package-ID selectors only; local/git/workspace ambiguity does not become a registry edge |
 | Modern Gradle dependency locks | Supported conservative coordinate/configuration entries | Exact asserted lock versions | Flat lock entries do not establish package edges or project ownership |
 | NuGet `packages.lock.json` v1/v2 | Conservative package entries remain distinct per framework/RID table; project references and v3 aliases remain unsupported | Explicit locked versions and independently validated SHA512 hashes; missing hashes retain partial coverage | Same-table named endpoints with reviewed numeric release ranges; floating/prerelease ranges and RID fallback remain unresolved |
-| Maven POM, `packages.config`, Bundler, Composer | Recognized inputs; canonical source adapters are currently unsupported | No selected canonical package records are admitted | No canonical edges admitted |
+| Bundler GEM locks | Single registry/ruby-platform numeric package subset; multiple sources and native platforms remain unsupported | Explicit unplatformed locked versions; runtime/requirement/checksum controls remain unassessed | Located graph losses; no endpoints inferred from gem names |
+| Composer locks | Conservative numeric package subset; runtime/development groups remain distinct | Explicit locked release versions; branch/prerelease/local/virtual variants remain unassessed | Require/provide/replace/conflict controls produce located losses; no guessed edges |
+| Maven POM, `packages.config`, Ruby/PHP executable manifests | Recognized inputs; canonical source adapters are currently unsupported | No selected canonical package records are admitted | No canonical edges admitted |
 
 `coverage.discovery`, `enumeration`, `version_resolution`, `graph` and
 `environment` are independent. Complete selected-version coverage over zero
@@ -34,9 +36,10 @@ The bounded restricted provider can retain observations for additional formats,
 including Java, .NET, Ruby and PHP. Those observations are separate evidence;
 they are not silently promoted to canonical packages, ownership or graph
 semantics. The original .NET fixture now retains its explicit locked package,
-with partial coverage for the invalid fixture hash. Ruby/PHP canonical source
-expectations still expect unsupported inputs and zero canonical occurrences;
-the historical oracle and all original source bytes remain unchanged. That characterizes the current
+with partial coverage for the invalid fixture hash. Original Ruby/PHP fixtures
+now retain their explicit locked packages, with partial Composer metadata
+coverage where appropriate. The historical oracle and all original source
+bytes remain unchanged. That characterizes the current
 boundary; it does not establish preservation of the legacy matcher’s packages
 or findings for a future replacement route.
 

@@ -5,6 +5,8 @@ Only numeric release ranges are checked here; prerelease/floating selectors
 remain unresolved instead of approximating NuGet's full version grammar.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import base64
 import binascii

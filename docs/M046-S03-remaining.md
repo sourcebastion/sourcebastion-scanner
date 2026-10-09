@@ -6,16 +6,17 @@ route and other agents' implementation branches are unchanged.
 Implemented foundations include strict canonical records and reproducible
 serialization, content-bound requirements/constraints, static Python metadata
 and all scoped Python lock families, npm/pnpm/Yarn/Cargo/Go/Gradle adapters,
-installed Python metadata evidence and conservative NuGet v1/v2 composition.
+installed Python metadata evidence, conservative NuGet v1/v2 composition and
+limited Bundler/Composer locked package enumeration.
 The full source-authored expectation set covers 64 unchanged historical inputs.
 
 Before acceptance:
 
 1. Preserve or explicitly disposition legacy ecosystem package coverage. The
-   canonical Ruby/PHP fixtures currently emit no package records, unlike the
-   historical inventory oracle; Maven/project/installed observations also need
-   their source/provider boundary reviewed. Do not silently relabel these as
-   full preservation.
+   original Java/.NET/Ruby/PHP fixtures now retain their explicit locked package
+   evidence, but broader native/source/provider cases need their boundaries
+   reviewed. Do not silently relabel a finite conservative subset as universal
+   preservation.
 2. Verify full source-authored record, package/version, evidenced-edge and
    disposition agreement in installed native AMD64 and ARM64 builds at the
    exact proposed head. Local Linux unit tests alone do not satisfy this gate.

@@ -2,7 +2,7 @@
   {
     "baseline_sha256": "3fd21f9d1e0b4f9ae128a0dceb2a94a6043d780faa8c09e0ea85a320b1bb5ab2",
     "candidate_sha256": "0fe1f2177e2d4743e17794befaf10099a68439924b7b9d41e3e54ce834cc601b",
-    "fingerprint": "f70b4b5fb655db327321340cc3e5e9a16f290dd5611b676d6344db4f9e0bdd8c",
+    "fingerprint": "cb6a613f4f17191352191ae49339afad36283df9298cf46d18c5d044af4aca18",
     "pull_request": 162,
     "reason": "M046 S05 records producer input ecosystem outcomes: 222 additions of ecosystem, enumeration and enumeration_basis across 74 inputs in 63 cases; no existing semantic values or case sets changed. Includes the correction to the partial-enumeration review finding in PR #162."
   }

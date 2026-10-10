@@ -101,6 +101,13 @@ oracle or observed diff requires fresh review. Malformed or duplicate entries
 fail closed. Do not refresh the oracle from observed output or weaken the base
 comparison to make a dependency bump pass.
 
+A successful same-snapshot finding comparison adds no finding delta to the
+fingerprint, so it preserves an approved corpus transition. Report hashes and
+comparison status remain retained provenance. Added/removed finding rows,
+including multiplicity and the advisory snapshot, enter the fingerprint and
+require their own exact approval. Snapshot mismatch still fails before any
+approval is considered; corpus approval never waives it.
+
 For finding changes, use complete actual Grype JSON from two executions under
 the *same* admitted snapshot, rather than match counts:
 

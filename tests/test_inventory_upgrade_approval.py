@@ -131,6 +131,52 @@ def test_corpus_approval_cannot_approve_new_findings(evidence):
     assert report["findings"]["status"] == "review-required"
 
 
+def test_equal_findings_preserve_corpus_approval_despite_raw_report_metadata(evidence):
+    _, report = invoke(evidence)
+    approve(evidence, report)
+    match = {"vulnerability": {"id": "existing"}, "artifact": {"name": "pip"}}
+    (evidence / "before-findings").write_text(json.dumps({"matches": [match], "descriptor": "baseline"}))
+    (evidence / "after-findings").write_text(json.dumps({"matches": [match], "descriptor": "candidate"}, indent=2))
+    result, report = invoke(evidence, "equal-findings", (
+        "--baseline-findings", str(evidence / "before-findings"),
+        "--candidate-findings", str(evidence / "after-findings"),
+        "--baseline-snapshot", "a" * 64, "--candidate-snapshot", "a" * 64,
+    ))
+    assert result.returncode == 0 and report["status"] == "passed"
+    assert report["findings"]["status"] == "passed"
+    assert report["findings"]["baseline_sha256"] != report["findings"]["candidate_sha256"]
+    assert report["approval"]["pull_request"] == 162
+
+
+def test_finding_delta_fingerprint_keeps_snapshot_rows_and_multiplicity():
+    report = {"baseline_sha256": "b" * 64, "corpus": {"status": "passed"},
+              "findings": {"status": "review-required", "removed": [], "added": [{"id": "one"}],
+                           "advisory_snapshot_sha256": "a" * 64, "baseline_sha256": "c" * 64,
+                           "candidate_sha256": "d" * 64}}
+    original = upgrade["transition"](report, "e" * 64)
+    metadata = deepcopy(report)
+    metadata["findings"].update(baseline_sha256="f" * 64, candidate_sha256="0" * 64)
+    assert upgrade["transition"](metadata, "e" * 64) == original
+    for field, value in (("added", [{"id": "two"}]), ("added", [{"id": "one"}, {"id": "one"}]),
+                         ("advisory_snapshot_sha256", "1" * 64)):
+        changed = deepcopy(report)
+        changed["findings"][field] = value
+        assert upgrade["transition"](changed, "e" * 64) != original
+
+
+def test_corpus_approval_cannot_waive_changed_advisory_snapshot(evidence):
+    _, report = invoke(evidence)
+    approve(evidence, report)
+    for name in ("before-findings", "after-findings"):
+        (evidence / name).write_text('{"matches":[]}')
+    result, report = invoke(evidence, "changed-snapshot", (
+        "--baseline-findings", str(evidence / "before-findings"),
+        "--candidate-findings", str(evidence / "after-findings"),
+        "--baseline-snapshot", "a" * 64, "--candidate-snapshot", "b" * 64,
+    ))
+    assert result.returncode == 1 and report["reason"] == "upgrade-advisory-snapshot-changed"
+
+
 @pytest.mark.parametrize("mutation", ["field", "digest", "reason", "number", "boolean", "duplicate", "not-list"])
 def test_malformed_approval_is_refused(evidence, mutation):
     _, report = invoke(evidence)

@@ -49,13 +49,20 @@ def accepted_upgrades(path):
 
 
 def transition(report, candidate_oracle_sha256):
-    """Bind every normalized difference, including finding provenance if present.
+    """Bind every normalized difference, without execution/report metadata.
 
     The candidate identity is the source-authored oracle's bytes, not the
     architecture-specific native proof. The raw proof hash remains in the report.
     """
+    findings = report["findings"]
+    # A successful, same-snapshot finding comparison adds no semantic delta.
+    # Its raw hashes stay in the report, but cannot invalidate an approved
+    # corpus delta merely because this invocation supplied more evidence.
+    finding_changes = {"removed": findings.get("removed", []), "added": findings.get("added", [])}
+    if any(finding_changes.values()):
+        finding_changes["advisory_snapshot_sha256"] = findings["advisory_snapshot_sha256"]
     fingerprint = sha(render({"schema_version": "m046.upgrade-fingerprint/1",
-                              "corpus": report["corpus"], "findings": report["findings"]}))
+                              "corpus": report["corpus"], "findings": finding_changes}))
     return {"baseline_sha256": report["baseline_sha256"],
             "candidate_sha256": candidate_oracle_sha256, "fingerprint": fingerprint}
 

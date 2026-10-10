@@ -10,11 +10,12 @@ answered by a merge or by this ledger:
 
 - **release evidence**, which comes from `release.yml` and does not run on a
   pull request;
-- **coordination with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54)**,
-  where M046's position is now recorded but agreement has not been given.
+- **coordination with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54)**
+  is now **satisfied**: the position is recorded and agreed.
 
-So S06 is implementation-complete and **not yet accepted**. Deferring closure
-removed a self-imposed blocker, not either of those two.
+So S06 is implementation-complete with **release evidence the single remaining
+acceptance item**. Deferring closure removed a self-imposed blocker, not that
+one.
 
 Tracking: [S06 #93](https://github.com/sourcebastion/sourcebastion-scanner/issues/93).
 Canonical scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
@@ -38,7 +39,7 @@ milestone closure.
 | Reuse the verified advisory snapshot; no per-scan refresh | implemented, in review | Base and candidate images are matched under one verified advisory generation; the snapshot mechanism is S04's, unchanged |
 | Bounded concurrency and outer deadlines; no hidden timeout allowance | implemented, in review | The host driver takes the controller's original `deadline_monotonic` from `job.json` and lowers, never raises it; one shared wall interval across stages |
 | Support, maintenance and rollback runbook published | implemented, in review | [`docs/M046-maintenance-runbook.md`](M046-maintenance-runbook.md) |
-| Coordinate with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54) without assuming its older architecture | **position recorded, agreement pending** | M046's architecture -- a verified snapshot prepared outside the scan, its identity checked against the matcher's report, no per-scan refresh -- is now stated on [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54#issuecomment-6098606123). Agreement or rejection has still to be recorded there |
+| Coordinate with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54) without assuming its older architecture | satisfied | Position stated and **agreement recorded** on [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54). The `GrypeScanner.scan` caller and snapshot-refresh ownership stay open there, scoped out of this agreement |
 | Numeric budgets pass on native hardware | satisfied | Exact-head run [38024740699](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38024740699) on `3ac1928a`: every arm within the frozen ceilings, three entrypoint repeats at roughly 8.54 CPU seconds, 59 MiB peak and 11 PIDs |
 | Exact-head CI | satisfied | The same run, green on AMD64 and ARM64, including the base-image mirror in every build path |
 | Distribution closure | **deferred to [M049 #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164)** | Investigation complete: 19 vendored natives across four packages bound to digests in [the closure evidence](M046-S06-distribution-closure.md), provenance established as Alpine 3.23 `aports`. Not required by #93's acceptance sentence; the runbook's blocking condition was self-imposed and is amended. **A deferral, not a resolution** |

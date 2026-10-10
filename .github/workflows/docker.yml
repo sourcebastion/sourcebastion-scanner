@@ -370,6 +370,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
@@ -378,11 +379,26 @@ jobs:
         id: python
         run: echo "version=$(python3 scripts/python_version.py current)" >> "$GITHUB_OUTPUT"
 
+      # Prefer the organization's byte-identical mirror of the pinned base
+      # images. buildkit resolves a base manifest from the registry on every
+      # build, even on a complete layer-cache hit, so anonymous Docker Hub
+      # quota -- which is per client address and shared across GitHub runners
+      # -- otherwise fails builds for reasons unrelated to the change. Falls
+      # back to upstream when the mirror does not yet serve the pinned digest,
+      # which is the case for the pull request that bumps a pin.
+      # Reads the mirror anonymously on purpose. A public repository must not
+      # hand repository secrets to a pull request build, so an unreadable
+      # mirror reads as unavailable and the build falls back to upstream.
+      - name: Select base image references
+        id: bases
+        run: python3 scripts/select_base_images.py >> "$GITHUB_OUTPUT"
+
       - name: Run Docker build checks (warnings are errors)
         env:
           SOURCEBASTION_PYTHON_VERSION: ${{ steps.python.outputs.version }}
         run: |
-          docker buildx build --check --build-arg "PYTHON_VERSION=$SOURCEBASTION_PYTHON_VERSION" -f images/Dockerfile .
+          docker buildx build --check --build-arg "PYTHON_VERSION=$SOURCEBASTION_PYTHON_VERSION" \
+            ${{ steps.bases.outputs.build_args }} -f images/Dockerfile .
 
       - name: Build scanner image with retries
         id: build
@@ -392,10 +408,20 @@ jobs:
           file: ./images/Dockerfile
           load: true
           tags: sourcebastion:standard-rule-test
-          build-args: PYTHON_VERSION=${{ steps.python.outputs.version }}
+          build-args: |
+            PYTHON_VERSION=${{ steps.python.outputs.version }}
+            ${{ steps.bases.outputs.build_args_multiline }}
           cache-from: type=gha,scope=scanner-${{ matrix.arch }}
           cache-to: type=gha,scope=scanner-${{ matrix.arch }},mode=max
           platforms: linux/${{ matrix.arch }}
+
+      - name: Retain candidate compressed layers before proof outputs enter the build context
+        env:
+          IMAGE_ARCH: ${{ matrix.arch }}
+        run: |
+          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+            ${{ steps.bases.outputs.build_args }} \
+            --output "type=oci,dest=$RUNNER_TEMP/inventory-candidate.oci.tar" -f images/Dockerfile .
 
       - name: Record image size
         env:
@@ -416,6 +442,22 @@ jobs:
         run: |
           scripts/assert-image-version.sh sourcebastion:standard-rule-test
           scripts/assert-image-runtime.sh sourcebastion:standard-rule-test
+
+      - name: Verify installed inventory runtime pins offline
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
+            -v "$PWD:/repo:ro" -w /repo \
+            sourcebastion:standard-rule-test scripts/verify-inventory-packaging.py > inventory-packaging-native.json
+
+      - name: Retain installed inventory packaging proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-packaging-${{ matrix.arch }}
+          path: inventory-packaging-native.json
+          if-no-files-found: error
 
       - name: Run rule fixture tests in standard image
         run: |
@@ -593,10 +635,9 @@ jobs:
             --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
             --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
             -v "$PWD:/workspace:ro" -w /workspace \
-            -v "$RUNNER_TEMP/inventory-provider/sourcebastion-go-source:/go-source:ro" \
             -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
             sourcebastion:standard-rule-test scripts/verify-go-source.py \
-              --binary /go-source --preparation /provider-manifest.json > inventory-go-source-native.json
+              --binary /usr/local/bin/sourcebastion-go-source --preparation /provider-manifest.json > inventory-go-source-native.json
 
       - name: Verify source-authored canonical expectations
         id: inventory_expectations
@@ -604,11 +645,73 @@ jobs:
           docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
             --user 65534:65534 --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
             -e PYTHONPATH= -v "$PWD:/repo:ro" -w /repo \
-            -v "$RUNNER_TEMP/inventory-provider/sourcebastion-go-source:/go-source:ro" \
             -v "$RUNNER_TEMP/inventory-provider/manifest.json:/provider-manifest.json:ro" \
             --tmpfs /tmp:rw,nosuid,nodev,size=16m --entrypoint python3 \
             sourcebastion:standard-rule-test scripts/verify-inventory-expectations.py \
-              --go-binary /go-source --go-preparation /provider-manifest.json > inventory-source-expectations-native.json
+              --go-binary /usr/local/bin/sourcebastion-go-source --go-preparation /provider-manifest.json --upgrade-report > inventory-source-expectations-native.json
+
+      - name: Compare upgrades with the independent base oracle
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.sha }}
+        run: |
+          git show "$BASE_SHA:evaluation/m046/canonical-source-expectations-v1.json" > inventory-base-oracle.json
+          status=0
+          python3 scripts/verify-inventory-upgrade.py --baseline evaluation/m046/canonical-source-expectations-v1.json \
+            --candidate inventory-source-expectations-native.json --output inventory-current-oracle-diff.json || status=1
+          python3 scripts/verify-inventory-upgrade.py --baseline inventory-base-oracle.json \
+            --candidate inventory-source-expectations-native.json --output inventory-upgrade-diff.json || status=1
+          exit "$status"
+
+      - name: Enforce added compressed release layers
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.sha }}
+          IMAGE_ARCH: ${{ matrix.arch }}
+        run: |
+          base_dir="$RUNNER_TEMP/inventory-image-base"
+          mkdir "$base_dir"
+          git archive "$BASE_SHA" | tar -x -C "$base_dir"
+          python3 scripts/select_base_images.py --checkout "$base_dir" --format json > "$RUNNER_TEMP/inventory-base-args.json"
+          python3 -c '
+          import json, sys
+          for name, value in json.load(open(sys.argv[1])).items():
+              print("--build-arg")
+              print(name + "=" + value)
+          ' "$RUNNER_TEMP/inventory-base-args.json" > "$RUNNER_TEMP/inventory-base-args.txt"
+          mapfile -t base_args < "$RUNNER_TEMP/inventory-base-args.txt"
+          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false "${base_args[@]}" \
+            --output "type=oci,dest=$RUNNER_TEMP/inventory-base.oci.tar" \
+            -f "$base_dir/images/Dockerfile" "$base_dir"
+          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+            "${base_args[@]}" --load --tag sourcebastion:inventory-upgrade-base -f "$base_dir/images/Dockerfile" "$base_dir"
+          python3 scripts/verify-inventory-release-size.py --architecture "$IMAGE_ARCH" \
+            --baseline "$RUNNER_TEMP/inventory-base.oci.tar" --candidate "$RUNNER_TEMP/inventory-candidate.oci.tar" \
+            --candidate-image image-inspect.json --output inventory-compressed-growth.json
+
+      # Arms within a repeat run concurrently; repeats stay sequential so each
+      # remains an independent variance sample. Every arm is single-threaded --
+      # measured at roughly 1.0x CPU against its 2-CPU ceiling -- so three in
+      # flight leaves a core for the driver and dockerd on a 4-vCPU runner.
+      # Concurrency is bounded rather than unlimited because each proof is
+      # judged against a frozen wall-clock ceiling.
+      - name: Measure native production adapter workloads in fresh cgroups
+        run: |
+          python3 scripts/run-inventory-resource-matrix.py \
+            --image sourcebastion:standard-rule-test --checkout "$PWD" \
+            --provider "$RUNNER_TEMP/inventory-provider" \
+            --output-root . --repeats 3 --concurrency 3
+
+      - name: Retain upgrade differences and host resource observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: inventory-maintenance-${{ matrix.arch }}
+          path: |
+            inventory-base-oracle.json
+            inventory-upgrade-diff.json
+            inventory-current-oracle-diff.json
+            inventory-compressed-growth.json
+            inventory-resources-*/
+          if-no-files-found: error
 
       - name: Retain source-authored expectation proof
         if: always() && contains(fromJSON('["success","failure","cancelled"]'), steps.inventory_expectations.outcome)
@@ -670,6 +773,8 @@ jobs:
           SOURCEBASTION_NATIVE_GRYPE_PROOF_OUTPUT: ${{ github.workspace }}/inventory-real-grype-proof
           SOURCEBASTION_NATIVE_DEPENDENCY_JOB_OUTPUT: ${{ github.workspace }}/inventory-dependency-job-proof
           SOURCEBASTION_NATIVE_ENTRYPOINT_OUTPUT: ${{ github.workspace }}/inventory-entrypoint-proof
+          SOURCEBASTION_UPGRADE_BASE_IMAGE: sourcebastion:inventory-upgrade-base
+          SOURCEBASTION_UPGRADE_BASE_CHECKOUT: ${{ runner.temp }}/inventory-image-base
         run: bash scripts/smoke-scan-hosted.sh sourcebastion:standard-rule-test
 
       - name: Upload finite canonical real-Grype evidence

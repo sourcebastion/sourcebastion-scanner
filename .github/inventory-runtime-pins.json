@@ -1,0 +1,29 @@
+{
+  "schema_version": "sourcebastion.inventory-runtime-pins/1",
+  "python": "3.14.8",
+  "python_image": "python:3.14.8-alpine3.23@sha256:e7cff362a12454395f8dc99607c21a602ea880cdce03538877b90c2ba932b16f",
+  "python_native_manifests": {
+    "amd64": "sha256:d86b293687bb79e27b860a0addd04deb1644da9ac356de78612c9484dc13e733",
+    "arm64": "sha256:fe368aeff9df1995b57f0aa9bbced949a2a98fb3e6dfd92568e5f6acea6220f7"
+  },
+  "alpine": "3.23",
+  "node_version": "v24.18.1",
+  "packages": {
+    "nodejs": {
+      "version": "24.18.1-r0",
+      "repository": "main",
+      "sha256": {
+        "x86_64": "3c78c9bc8a1d52cc18e79f94120d69ae7705dab1d77054dfa040a064bf344b87",
+        "aarch64": "c8d2a5fe776d0f5f3d8fd0ea41312317a0dc1d56ecd00c59ffadfc2d6c486f90"
+      }
+    },
+    "npm": {
+      "version": "11.11.0-r0",
+      "repository": "community",
+      "sha256": {
+        "x86_64": "9ceb98c5ee7b2a5f63b4d7b9a95f48682d5f169031bfe7dd60b68c922cea46e4",
+        "aarch64": "41100fbab9c6c3f08940d193b7a9736657dc8ea63126b77ae85ecb30f2077bbe"
+      }
+    }
+  }
+}

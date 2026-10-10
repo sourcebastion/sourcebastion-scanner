@@ -1,0 +1,12 @@
+{
+  "schema_version": "m046.release-budgets/1",
+  "source": "evaluation/m046/architecture-decision.md#numerical-freeze-v1",
+  "cpu_quota": 2,
+  "memory_bytes": 2147483648,
+  "swap_bytes": 0,
+  "cpu_usec": 120000000,
+  "wall_seconds": 150,
+  "pids": 256,
+  "added_compressed_layer_bytes": 262144000,
+  "repeats_per_native_architecture": 3
+}

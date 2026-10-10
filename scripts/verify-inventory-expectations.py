@@ -299,7 +299,7 @@ def failure_record(error, case=None):
     return record
 
 
-def verify(binary, preparation, *, progress=None):
+def verify(binary, preparation, *, progress=None, upgrade_report=False):
     if sys.flags.optimize:
         raise RuntimeError("optimized-probe-runtime-refused")
     from sourcebastion.inventory import contract
@@ -367,7 +367,18 @@ def verify(binary, preparation, *, progress=None):
                 assert actual.schema_version == "sourcebastion.inventory/1"
                 assert actual.environment == Environment() and actual.environment_sha256 == Environment().sha256
                 assert actual.limits == InventoryLimits()
-                compare(case, json.loads(encoded))
+                observed = json.loads(encoded)
+                # Upgrade mode retains the actual full record projection even
+                # on disagreement, so maintainers can inspect a failed gate.
+                # The separate upgrade comparator still fails against the
+                # independent base oracle; this never updates expectations.
+                disagreement = None
+                try:
+                    compare(case, observed)
+                except ValueError as error:
+                    if not upgrade_report:
+                        raise
+                    disagreement = str(error)
                 source.validate()
                 budget.guard()
                 repeated = compose_source(source, source_sha256=source_sha256, producer=producer, config=config, go_runtime=go_runtime, budget=budget)
@@ -380,6 +391,9 @@ def verify(binary, preparation, *, progress=None):
             fixture_unchanged()
             records.append({
                 "case": case["case"], "inventory_sha256": sha(encoded),
+                "observed": {"records": {key: observed[key] for key in COLLECTIONS},
+                             "coverage": observed["coverage"], "stages": observed["stages"]},
+                "expectation_disagreement": disagreement,
                 "cooperative_budget": {
                     "maximum": budget.maximum,
                     "after_composition": after_composition,
@@ -420,8 +434,9 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("--go-binary", required=True, type=Path)
         parser.add_argument("--go-preparation", required=True, type=Path)
+        parser.add_argument("--upgrade-report", action="store_true")
         arguments = parser.parse_args()
-        verify(arguments.go_binary, arguments.go_preparation, progress=progress)
+        verify(arguments.go_binary, arguments.go_preparation, progress=progress, upgrade_report=arguments.upgrade_report)
     except Exception as error:
         print(json.dumps(failure_record(error, progress.get("case"))))
         raise

@@ -186,6 +186,22 @@ def test_compressed_growth_cli_binds_the_actual_tested_image(tmp_path, same_imag
         assert receipt["reason"] == "compressed-candidate-is-not-tested-image"
 
 
+def test_frozen_s01_gate_refuses_an_arbitrary_pr_base_even_when_image_matches(tmp_path):
+    path = oci(tmp_path)
+    value = release["oci_layers"](path, "arm64")
+    inspect = tmp_path / "image.json"
+    inspect.write_text(json.dumps({"Id": value["config_digest"], "Architecture": "arm64", "Os": "linux"}))
+    output = tmp_path / "frozen-growth.json"
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/verify-inventory-release-size.py"),
+                            "--frozen-s01", "--baseline", str(path), "--candidate", str(path),
+                            "--architecture", "arm64", "--candidate-image", str(inspect), "--output", str(output)],
+                            capture_output=True)
+    assert result.returncode == 1
+    receipt = json.loads(output.read_text())
+    assert receipt["status"] == "failed"
+    assert receipt["reason"] == "frozen-s01-archive-digest-mismatch"
+
+
 def test_download_hash_failure_never_succeeds(tmp_path, monkeypatch):
     tool = runpy.run_path(str(ROOT / "scripts/prepare-inventory-node.py"))
     function = tool["prepare"]

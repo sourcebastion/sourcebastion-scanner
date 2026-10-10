@@ -121,7 +121,8 @@ def run(args):
         # No project command is accepted here. The workload is a reviewed
         # installed-engine proof script fixed by this trusted maintainer CLI.
         command = ["python3", "scripts/verify-inventory-expectations.py", "--go-binary", "/usr/local/bin/sourcebastion-go-source",
-                   "--go-preparation", "/prepared/manifest.json", "--upgrade-report"]
+                   "--go-preparation", "/prepared/manifest.json" if args.provider else
+                   "/usr/local/share/sourcebastion/inventory-go.json", "--upgrade-report"]
         if args.workload == "stress":
             command = ["python3", "scripts/verify-inventory-stress.py", "--arm", args.arm]
         if args.workload == "entrypoint":

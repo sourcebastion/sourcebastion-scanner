@@ -182,8 +182,17 @@ def bind_go_runtime(binary, preparation):
         raise ValueError("absolute-go-preparation-paths-required")
     manifest_binding, raw = bounded_file(preparation, 1024 * 1024, retain=True)
     manifest = json.loads(raw)
-    assert manifest["schema_version"] == "sourcebastion.provider-preparation/1"
-    assert manifest["status"] == "trusted-preparation-only"
+    if manifest["schema_version"] == "sourcebastion.provider-preparation/1":
+        assert manifest["status"] == "trusted-preparation-only"
+        binary_digest_key, binary_size_key = "go_source_binary_sha256", "go_source_binary_bytes"
+    elif manifest["schema_version"] == "sourcebastion.go-image-preparation/1":
+        # The release image carries its own maintained helper and build
+        # manifest. Bind those bytes directly, without rebuilding a provider
+        # or relabelling image evidence as a provider preparation receipt.
+        assert "status" not in manifest
+        binary_digest_key, binary_size_key = "binary_sha256", "binary_bytes"
+    else:
+        raise ValueError("unknown-go-preparation-schema")
     assert set(manifest["source_files"]) == GO_SOURCE_FILES
     architecture = {"x86_64": "amd64", "aarch64": "arm64"}[platform.machine()]
     assert manifest["architecture"] == architecture and manifest["cgo_enabled"] == "0"
@@ -199,8 +208,8 @@ def bind_go_runtime(binary, preparation):
     binary_binding, elf = bounded_file(binary, 64 * 1024 * 1024)
     assert elf[:6] == b"\x7fELF\x02\x01" and int.from_bytes(elf[18:20], "little") == {"amd64": 62, "arm64": 183}[architecture]
     assert binary_binding["identity"][2] & 0o111
-    assert binary_binding["sha256"] == manifest["go_source_binary_sha256"]
-    assert binary_binding["bytes"] == manifest["go_source_binary_bytes"]
+    assert binary_binding["sha256"] == manifest[binary_digest_key]
+    assert binary_binding["bytes"] == manifest[binary_size_key]
     runtime = Runtime(binary, binary_binding["sha256"])
 
     def unchanged():

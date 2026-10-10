@@ -56,6 +56,31 @@ bytes ARM64 under the 262,144,000-byte ceiling. Their baseline is the PR base,
 **not the frozen S01 baseline**, so they do not establish cumulative milestone
 growth. The images are CI-built image IDs rather than published registry digests.
 
+The [frozen S01 baseline receipt](M046/S07/frozen-s01-baselines.json) now records
+the verified retained OCI archives from run 37590730428 and their 13-layer
+pre-inventory prefixes. `verify-inventory-release-size.py --frozen-s01` requires
+those exact archive hashes and the anchored independent review. It excludes
+S01's extra feasibility layer from the baseline, keeping that layer charged as
+M046 growth. Substituting a newer PR base fails rather than reporting zero growth.
+This prepares the cumulative gate; a qualifying release still must run it.
+The recovered prefix also equals all 13 compressed descriptors in the
+[S01 image pins](M046/S07/frozen-s01-image-pins.json), retained byte-for-byte from
+source `d98fbd0fb9c5563999a5c061a12fb68191fddd86`. The gate checks both evidence
+anchors and records the actual v1.7.38 native baseline manifest, separately from
+the feasibility image's manifest.
+
+```sh
+python3 scripts/verify-inventory-release-size.py --frozen-s01 \
+  --architecture amd64 --baseline /retained/s01-amd64.oci.tar \
+  --candidate /published/release-amd64.oci.tar \
+  --candidate-image /observed/native-image-inspect-object.json \
+  --output /receipts/cumulative-growth-amd64.json
+```
+
+The candidate inspection file is the native Docker image object, not its enclosing
+array. Its config digest must match the verified candidate OCI config. Repeat for
+ARM64 and retain both native receipts with the release's registry manifest identities.
+
 Both real-Grype receipts use the same advertised advisory build time and upstream
 archive generation. Their locally prepared snapshot and database byte digests
 differ. Preserve these separate identities; do not claim byte-identical frozen
@@ -104,6 +129,14 @@ The existing `release.yml` validates locally built images before publication,
 then smoke-tests a staged digest. That flow is useful, but the staged hosted smoke
 does not retain the complete independent corpus/resource/rollback acceptance
 bundle for the published digest. S07 must add or run that proof explicitly.
+
+Native CI now exercises the installed image's
+`/usr/local/share/sourcebastion/inventory-go.json` for corpus/resource arms.
+`verify-inventory-expectations.py` accepts this build manifest as its own schema
+and binds its compiler/archive/source/native ELF digest/size and pre/post file
+identities. Separately prepared provider evidence remains a supported CI input;
+an image build manifest is not relabelled as provider preparation. Published
+proof must use the installed path, without rebuilding the helper.
 
 ## Development acceptance on designated work
 

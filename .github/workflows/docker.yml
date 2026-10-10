@@ -697,7 +697,6 @@ jobs:
         run: |
           python3 scripts/run-inventory-resource-matrix.py \
             --image sourcebastion:standard-rule-test --checkout "$PWD" \
-            --provider "$RUNNER_TEMP/inventory-provider" \
             --output-root . --repeats 3 --concurrency 3
 
       - name: Retain upgrade differences and host resource observations

@@ -12,9 +12,12 @@ import pytest
 PROBE = runpy.run_path(str(Path(__file__).parents[1] / "scripts/verify-inventory-expectations.py"))
 
 
-@pytest.fixture
-def preparation(tmp_path, monkeypatch):
+@pytest.fixture(params=[("provider", "x86_64"), ("provider", "aarch64"), ("image", "x86_64"), ("image", "aarch64")])
+def preparation(tmp_path, monkeypatch, request):
     monkeypatch.chdir(tmp_path)
+    schema, machine = request.param
+    # This is a synthetic ELF/header binding test; no native code executes.
+    monkeypatch.setattr(platform, "machine", lambda: machine)
     architecture = {"x86_64": "amd64", "aarch64": "arm64"}[platform.machine()]
     source = tmp_path / "cmd/inventory-provider"
     source.mkdir(parents=True)
@@ -41,15 +44,32 @@ def preparation(tmp_path, monkeypatch):
         "go_source_binary_sha256": hashlib.sha256(header).hexdigest(),
         "go_source_binary_bytes": len(header),
     }
+    if schema == "image":
+        manifest["schema_version"] = "sourcebastion.go-image-preparation/1"
+        manifest.pop("status")
+        manifest["binary_sha256"] = manifest.pop("go_source_binary_sha256")
+        manifest["binary_bytes"] = manifest.pop("go_source_binary_bytes")
     receipt = tmp_path / "manifest.json"
     receipt.write_text(json.dumps(manifest))
     return binary, receipt, manifest
+
+
+def test_reviewed_manifest_binds_helper_without_rebuilding_or_rewriting(preparation):
+    binary, receipt, _ = preparation
+    before = receipt.read_bytes()
+    runtime, evidence, unchanged = PROBE["bind_go_runtime"](binary, receipt)
+    assert runtime.sha256 == evidence["binary_sha256"] == hashlib.sha256(binary.read_bytes()).hexdigest()
+    assert evidence["preparation_sha256"] == hashlib.sha256(before).hexdigest()
+    unchanged()
+    assert receipt.read_bytes() == before
 
 
 @pytest.mark.parametrize("change", ["schema", "status", "architecture", "cgo", "compiler", "archive", "digest", "size", "extra-source", "missing-source"])
 def test_unbound_preparation_refuses_before_any_helper_execution(preparation, change):
     binary, receipt, manifest = preparation
     key = {"schema": "schema_version", "status": "status", "architecture": "architecture", "cgo": "cgo_enabled", "compiler": "go_version", "archive": "go_archive_sha256", "digest": "go_source_binary_sha256", "size": "go_source_binary_bytes"}.get(change)
+    if manifest["schema_version"] == "sourcebastion.go-image-preparation/1":
+        key = {"go_source_binary_sha256": "binary_sha256", "go_source_binary_bytes": "binary_bytes"}.get(key, key)
     if key:
         manifest[key] = "wrong"
     elif change == "extra-source":

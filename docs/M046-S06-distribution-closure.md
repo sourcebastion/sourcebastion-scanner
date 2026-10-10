@@ -99,3 +99,30 @@ than a lookup:
 
 Until those are answered, S06 release acceptance remains blocked -- and the
 scope is four packages and nineteen libraries, not one.
+
+## Tracking
+
+This work is scoped as
+[M049 #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164),
+in three slices: notices and a written offer in the image, a source mirror for
+the copyleft set, and drift detection with per-architecture evidence.
+
+That milestone takes a deliberately conservative posture. No legal opinion is
+sought, so it complies as though the GCC Runtime Library Exception question
+resolves against us, because mirroring GCC source costs less than deciding it.
+Where a library is dual-licensed with a permissive arm it elects that arm and
+records the election.
+
+It also records why no slice removes a vendored binary. The vendoring is
+mandated by the wheel platform policy rather than chosen: the same `rpds_py`
+version vendors nothing in its manylinux wheel and `libgcc_s` in its
+musllinux wheel, because the musllinux whitelist is smaller. A glibc base
+would be worse, not better -- semgrep's manylinux wheel vendors 26 libraries
+against musllinux's 16.
+
+Provenance is published, which is what makes the work mechanical. Semgrep
+builds `semgrep-core` on `alpine:3.23`, so these are Alpine 3.23 packages;
+versions read from the shipped binaries match (`gmp 6.3.0-r4`,
+`elfutils 0.194-r0`, `zstd 1.5.7-r2`, `libunwind 1.8.1-r0`), and our own base
+is Alpine 3.23.6. Corresponding Source is Alpine's `aports` -- APKBUILD,
+patches and upstream reference, already assembled.

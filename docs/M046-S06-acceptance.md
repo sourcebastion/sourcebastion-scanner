@@ -31,7 +31,7 @@ milestone closure.
 | Coordinate with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54) without assuming its older architecture | **position recorded, agreement pending** | M046's architecture -- a verified snapshot prepared outside the scan, its identity checked against the matcher's report, no per-scan refresh -- is now stated on [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54#issuecomment-6098606123). Agreement or rejection has still to be recorded there |
 | Numeric budgets pass on native hardware | satisfied | Exact-head run [38024740699](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38024740699) on `3ac1928a`: every arm within the frozen ceilings, three entrypoint repeats at roughly 8.54 CPU seconds, 59 MiB peak and 11 PIDs |
 | Exact-head CI | satisfied | The same run, green on AMD64 and ARM64, including the base-image mirror in every build path |
-| Distribution closure | **open, scope widened** | 19 vendored natives across four packages, bound to digests in [the closure evidence](M046-S06-distribution-closure.md); S01 recorded one |
+| Distribution closure | **open, scoped as [M049 #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164)** | 19 vendored natives across four packages, bound to digests in [the closure evidence](M046-S06-distribution-closure.md); S01 recorded one. Provenance is Alpine 3.23 `aports`, so the remaining work is mechanical |
 | Release evidence | **open** | `release.yml` validates images before publication and does not run on a pull request. S06 names it alongside exact-head CI |
 
 ## The demo S06 specifies

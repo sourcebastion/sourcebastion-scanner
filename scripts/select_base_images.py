@@ -22,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from base_image_mirror import build_args, dockerfile_agrees, pins  # noqa: E402
+from base_image_mirror import build_args, dockerfile_agrees, pins, version_agrees  # noqa: E402
 
 TIMEOUT = 20
 
@@ -71,6 +71,9 @@ def serves(image):
 def main():
     images = pins()
     dockerfile_agrees(images)
+    # Refuses before any build if the reviewed interpreter version and the
+    # pinned base image have drifted apart.
+    version_agrees(images)
     mirrored = all(serves(image) for image in images)
     chosen = build_args(images, mirrored=mirrored)
     inline = " ".join(f'--build-arg "{name}={value}"' for name, value in sorted(chosen.items()))

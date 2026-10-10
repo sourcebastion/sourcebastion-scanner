@@ -497,11 +497,35 @@ class InputCoverage(Record):
     parser: Optional[Name]
     disposition: Literal["discovered", "parsed", "ignored", "unsupported", "failed", "bounded-omission", "unresolved"]
     reason: Reason
+    # These are producer dispatch/parser outcomes for this input, including
+    # empty, ignored and unsupported inputs. They do not assert completeness
+    # of its containing directory, project or an installed dependency closure.
+    # Older producers omit them and retain unknown semantics.
+    ecosystem: Optional[Ecosystem] = None
+    enumeration: Fidelity = "unknown"
+    enumeration_basis: Literal["source-input", "unknown"] = "unknown"
     # Contexts assert only evidenced ownership/analysis, never completeness of
     # an entire project. Empty contexts preserve unknown ownership.
     root_ids: tuple[ID, ...] = Field(default=(), max_length=4096)
     analysis_scope_ids: tuple[ID, ...] = Field(default=(), max_length=4096)
     installed_environment_ids: tuple[ID, ...] = Field(default=(), max_length=4096)
+
+    @model_validator(mode="after")
+    def valid_input_outcome(self):
+        if self.enumeration != "unknown" and (
+            self.ecosystem is None or self.enumeration_basis != "source-input"
+        ):
+            raise ValueError("input-enumeration-requires-producer-domain")
+        if self.enumeration == "complete" and (
+            self.disposition != "parsed" or self.source_sha256 is None or self.parser is None
+        ):
+            raise ValueError("unexamined-input-cannot-prove-enumeration")
+        if self.ecosystem is not None:
+            from .registry import FORMAT_ECOSYSTEMS
+
+            if FORMAT_ECOSYSTEMS.get(self.format) != self.ecosystem:
+                raise ValueError("input-ecosystem-dispatch-mismatch")
+        return self
 
     @field_validator("source_path")
     @classmethod
@@ -904,6 +928,12 @@ def canonical_bytes(inventory, *, max_bytes=64 * 1024 * 1024, max_nodes=2000000)
     for row in data["coverage"]["inputs"]:
         for key in ("root_ids", "analysis_scope_ids", "installed_environment_ids"):
             row[key].sort()
+        # Preserve canonical bytes from earlier producers. Missing outcome
+        # fields mean unknown and must not be retroactively assigned dispatch
+        # or completeness by the reader.
+        if row["ecosystem"] is None and row["enumeration"] == "unknown" and row["enumeration_basis"] == "unknown":
+            for key in ("ecosystem", "enumeration", "enumeration_basis"):
+                del row[key]
     data["coverage"]["refusal_codes"].sort()
     encoded, size = [], 0
     encoder = json.JSONEncoder(sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)

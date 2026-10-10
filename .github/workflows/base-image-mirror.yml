@@ -1,0 +1,87 @@
+# Copy the pinned upstream base images into a registry this organization
+# controls. Builds then resolve base manifests without depending on anonymous
+# Docker Hub quota, which is per client address and shared across every
+# GitHub-hosted runner.
+#
+# Never runs on pull_request: this pushes packages, so it must not execute
+# code from an untrusted branch.
+name: Mirror base images
+
+on:
+  schedule:
+    # Mondays, ahead of the verified-artifact proposer at 06:37.
+    - cron: '19 5 * * 1'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/base-image-pins.json
+      - .github/workflows/base-image-mirror.yml
+      - scripts/base_image_mirror.py
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    name: Mirror pinned base images
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Refuses before any network access if a pin is malformed or disagrees
+      # with the Dockerfile's default.
+      - name: Check the pins agree with the Dockerfile
+        run: python3 scripts/base_image_mirror.py
+
+      - name: Authenticate to the mirror registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Copy each pinned digest into the mirror
+        env:
+          # crane copies manifest bytes verbatim, so the digest is preserved by
+          # construction rather than by assertion -- the assertion below then
+          # confirms it rather than hoping for it.
+          CRANE: gcr.io/go-containerregistry/crane@sha256:1f968817b95790bed063f71175aa6b8ff879fa17064020415f3e18bb6e6a36e1
+        run: |
+          set -euo pipefail
+          crane() {
+            docker run --rm \
+              -v "$HOME/.docker/config.json:/home/nonroot/.docker/config.json:ro" \
+              "$CRANE" "$@"
+          }
+          python3 - <<'PY' > /tmp/plan.txt
+          import json
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, "scripts")
+          from base_image_mirror import pins
+          for image in pins():
+              tag = image["upstream_tag"] or "pinned"
+              print(f"{image['name']}\t{image['upstream_repository']}@{image['digest']}"
+                    f"\t{image['mirror_repository']}:{tag}\t{image['mirror_repository']}@{image['digest']}")
+          PY
+          cat /tmp/plan.txt
+          while IFS=$'\t' read -r name source destination verify; do
+            [ -n "$name" ] || continue
+            echo "::group::$name"
+            crane copy "$source" "$destination"
+            # The mirror must serve the pinned digest, not merely some copy of
+            # the tag. A build references the digest, so this is the property
+            # the build depends on.
+            crane manifest "$verify" > /dev/null
+            echo "$name mirrored and the pinned digest resolves"
+            echo "::endgroup::"
+          done < /tmp/plan.txt

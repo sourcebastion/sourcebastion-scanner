@@ -1,0 +1,21 @@
+{
+  "schema_version": "sourcebastion.base-image-pins/1",
+  "mirror_registry": "ghcr.io/sourcebastion",
+  "note": "Upstream digests are authoritative. The mirror holds byte-identical manifests, so a pinned digest means the same bytes in either registry.",
+  "images": [
+    {
+      "name": "python",
+      "upstream_repository": "docker.io/library/python",
+      "upstream_tag": "3.14.8-alpine3.23",
+      "digest": "sha256:e7cff362a12454395f8dc99607c21a602ea880cdce03538877b90c2ba932b16f",
+      "mirror_repository": "ghcr.io/sourcebastion/base-python"
+    },
+    {
+      "name": "kics",
+      "upstream_repository": "docker.io/checkmarx/kics",
+      "upstream_tag": null,
+      "digest": "sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602",
+      "mirror_repository": "ghcr.io/sourcebastion/base-kics"
+    }
+  ]
+}

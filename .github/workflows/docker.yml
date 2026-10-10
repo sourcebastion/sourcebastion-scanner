@@ -378,11 +378,26 @@ jobs:
         id: python
         run: echo "version=$(python3 scripts/python_version.py current)" >> "$GITHUB_OUTPUT"
 
+      # Prefer the organization's byte-identical mirror of the pinned base
+      # images. buildkit resolves a base manifest from the registry on every
+      # build, even on a complete layer-cache hit, so anonymous Docker Hub
+      # quota -- which is per client address and shared across GitHub runners
+      # -- otherwise fails builds for reasons unrelated to the change. Falls
+      # back to upstream when the mirror does not yet serve the pinned digest,
+      # which is the case for the pull request that bumps a pin.
+      # Reads the mirror anonymously on purpose. A public repository must not
+      # hand repository secrets to a pull request build, so an unreadable
+      # mirror reads as unavailable and the build falls back to upstream.
+      - name: Select base image references
+        id: bases
+        run: python3 scripts/select_base_images.py >> "$GITHUB_OUTPUT"
+
       - name: Run Docker build checks (warnings are errors)
         env:
           SOURCEBASTION_PYTHON_VERSION: ${{ steps.python.outputs.version }}
         run: |
-          docker buildx build --check --build-arg "PYTHON_VERSION=$SOURCEBASTION_PYTHON_VERSION" -f images/Dockerfile .
+          docker buildx build --check --build-arg "PYTHON_VERSION=$SOURCEBASTION_PYTHON_VERSION" \
+            ${{ steps.bases.outputs.build_args }} -f images/Dockerfile .
 
       - name: Build scanner image with retries
         id: build
@@ -392,7 +407,9 @@ jobs:
           file: ./images/Dockerfile
           load: true
           tags: sourcebastion:standard-rule-test
-          build-args: PYTHON_VERSION=${{ steps.python.outputs.version }}
+          build-args: |
+            PYTHON_VERSION=${{ steps.python.outputs.version }}
+            ${{ steps.bases.outputs.build_args_multiline }}
           cache-from: type=gha,scope=scanner-${{ matrix.arch }}
           cache-to: type=gha,scope=scanner-${{ matrix.arch }},mode=max
           platforms: linux/${{ matrix.arch }}

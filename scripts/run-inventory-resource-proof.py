@@ -17,11 +17,25 @@ import time
 from inventory_release import FROZEN, measured_resources, policy
 
 
+#: Retained diagnostics are bounded. The workloads are reviewed maintainer
+#: scripts rather than customer code, so their messages are safe to record.
+DETAIL_BYTES = 2048
+
+
 def docker(*args, seconds=15):
     result = subprocess.run(["docker", *args], stdin=subprocess.DEVNULL, capture_output=True, timeout=seconds, check=True)
     if len(result.stdout) > 65536 or len(result.stderr) > 65536:
         raise ValueError("resource-driver-control-bound")
     return result.stdout
+
+
+def read_bytes(raw):
+    """The integer a docker command printed, or a refusal naming what it said."""
+    text = raw.decode("utf-8", "replace").strip() if isinstance(raw, bytes) else str(raw).strip()
+    try:
+        return int(text)
+    except ValueError:
+        raise ValueError("resource-container-exit-unreadable") from None
 
 
 def read(path):
@@ -170,6 +184,21 @@ def run(args):
         limits(root)
         receipt["exit_code"] = int(read(gate / "exit"))
         receipt["wall_seconds"] = time.monotonic() - started
+        # Every cgroup counter has now been read while the container is still
+        # held, so the workload may be released. It must be: a held container
+        # has not committed its stream, and `docker logs` returns nothing for
+        # output below a buffer threshold measured locally at between 4 KiB
+        # and 64 KiB. That silently lost the dependency job's receipt -- a few
+        # hundred bytes -- while the large stress and corpus reports came
+        # through, so the defect looked workload-specific rather than size
+        # dependent.
+        docker("kill", "--signal", "CONT", cid, seconds=remaining())
+        waited = read_bytes(docker("wait", cid, seconds=remaining()))
+        # The wrapper exits with the workload's status, so the container's
+        # status must agree with the gate file the workload wrote. A
+        # disagreement means the lifecycle is not what this proof reports.
+        if waited != receipt["exit_code"]:
+            raise ValueError("resource-container-exit-disagrees-with-workload")
         # Stream complete bounded workload output; a partial stream fails.
         with (args.output / "workload.json").open("xb") as stdout, (args.output / "workload.stderr").open("xb") as stderr:
             process = subprocess.Popen(["docker", "logs", cid], stdout=stdout, stderr=stderr)
@@ -194,14 +223,23 @@ def run(args):
         receipt["workload_sha256"] = hashlib.sha256((args.output / "workload.json").read_bytes()).hexdigest()
     except Exception as error:
         code = str(error)
-        receipt["reason"] = code if type(error) in (ValueError, TimeoutError) and code.startswith("resource-") else type(error).__name__
+        # `reason` stays a stable machine-readable code, so a caller can keep
+        # matching on `resource-*`. `detail` carries what used to be thrown
+        # away: an unexpected failure previously collapsed to its class name,
+        # which told a reader the shape of the error and nothing about it.
+        if type(error) in (ValueError, TimeoutError) and code.startswith("resource-"):
+            receipt["reason"] = code
+        else:
+            receipt["reason"] = type(error).__name__
+            receipt["detail"] = code[:DETAIL_BYTES] or "<no message>"
     finally:
         if cid is not None:
             try:
                 docker("rm", "--force", cid, seconds=20)
                 receipt["removed"] = True
-            except Exception:
+            except Exception as cleanup:
                 receipt["reason"] = "owned-container-cleanup-failed"
+                receipt["detail"] = str(cleanup)[:DETAIL_BYTES] or type(cleanup).__name__
         for signum, handler in original.items():
             signal.signal(signum, handler)
     if "reason" not in receipt:
@@ -209,7 +247,10 @@ def run(args):
             measured_resources(receipt)
             receipt["status"] = "passed"
         except (ValueError, KeyError) as error:
+            # A budget refusal names which ceiling; a KeyError names the
+            # missing counter. Both were previously reduced to a class name.
             receipt["reason"] = type(error).__name__
+            receipt["detail"] = str(error)[:DETAIL_BYTES] or "<no message>"
     (args.output / "resources.json").write_text(json.dumps(receipt, sort_keys=True))
     return 0 if receipt["status"] == "passed" else 1
 

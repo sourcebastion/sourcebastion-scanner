@@ -15,6 +15,40 @@ import sys
 import time
 
 MAX_CAPTURE = 65536
+#: Retained diagnostics are bounded. These workloads are reviewed maintainer
+#: scripts rather than customer code, so their own stderr is safe to quote,
+#: but a refusal message is not a place to stream an unbounded capture.
+MAX_DIAGNOSTIC = 2048
+
+
+def _size(path):
+    """Byte count, or None when the file was never written."""
+    try:
+        return path.stat().st_size
+    except OSError:
+        return None
+
+
+def _tail(path, limit=MAX_DIAGNOSTIC):
+    """The last bounded slice of a retained capture, or a note on its absence.
+
+    An absent file and an empty file are different failures and must not read
+    the same: one means nobody wrote it, the other means the writer had
+    nothing to say.
+    """
+    try:
+        raw = path.read_bytes()
+    except OSError:
+        return "<absent>"
+    if not raw:
+        return "<empty>"
+    text = raw[-limit:].decode("utf-8", "replace").strip()
+    return ("…" + text) if len(raw) > limit else text
+
+
+def _diagnosis(**fields):
+    """One line naming every value a reader needs to place the failure."""
+    return " ".join(f"{name}={value!r}" for name, value in fields.items())
 
 
 def render(value):
@@ -147,7 +181,12 @@ def owned_container(run, proof, label, options, image, command, *, seconds, abso
         code = run(["docker", "start", "--attach", cid], label, seconds=remaining())
         facts["exit_code"] = code
         if code != 0:
-            raise ValueError("finite-ci-owned-container-nonzero")
+            raise ValueError("finite-ci-owned-container-nonzero: " + _diagnosis(
+                label=label,
+                exit_code=code,
+                stderr=_tail(proof / (label + ".stderr")),
+                stdout_bytes=_size(proof / (label + ".stdout")),
+            ))
         if run(["docker", "inspect", cid], label + "-inspect-after", seconds=min(30, remaining())) != 0:
             raise ValueError("finite-ci-owned-container-final-inspect-failed")
         actual = bounded_json(proof / (label + "-inspect-after.stdout"))
@@ -269,7 +308,19 @@ def _run(args, proof):
         resources = bounded_json(resource_output / "resources.json")
         observations["resources"] = resources
         if code != 0 or resources["status"] != "passed":
-            raise ValueError("finite-ci-entrypoint-resource-gate-failed")
+            # Carry the driver's own diagnosis. The reason and exit code are
+            # already recorded in resources.json, and a bare refusal here sent
+            # a reader to the wrong layer to find them. The workloads are
+            # reviewed maintainer scripts, not customer code, so a bounded
+            # tail of their stderr is diagnostic rather than disclosure.
+            raise ValueError("finite-ci-entrypoint-resource-gate-failed: " + _diagnosis(
+                driver_exit=code,
+                status=resources.get("status"),
+                reason=resources.get("reason"),
+                workload_exit=resources.get("exit_code"),
+                stderr=_tail(resource_output / "workload.stderr"),
+                driver_stderr=_tail(proof / "entrypoint-resource-driver.stderr"),
+            ))
         shutil.copyfile(resource_output / "workload.json", proof / "entrypoint.stdout")
         # The verifier asserts the child wrote nothing to stderr. Without this
         # copy that assertion reads a file no one creates, so it can never

@@ -244,7 +244,7 @@ def test_resource_driver_removes_only_owned_container_on_failure(tmp_path, monke
     assert receipt["status"] == "failed" and receipt["removed"] == (failure != "cleanup")
 
 
-def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returncode=0):
+def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returncode=0, wait_code=0):
     """Drive the resource proof to the output-capture step with a stub Docker."""
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))
     functions = runpy.run_path(str(ROOT / "scripts/run-inventory-resource-proof.py"))
@@ -262,6 +262,10 @@ def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returnc
             Path(args[args.index("--cidfile") + 1]).write_text(cid)
         if args[0] == "inspect":
             return json.dumps([{"Image": image, "State": {"Running": True, "Pid": 123}}]).encode()
+        if args[0] == "wait":
+            # The wrapper exits with the workload's status; the gate file in
+            # this harness says 0, so the container must agree.
+            return str(wait_code).encode()
         return b""
 
     class Logs:
@@ -331,6 +335,16 @@ def test_a_workload_that_produced_no_output_is_not_a_passed_resource_proof(tmp_p
     assert receipt["status"] == "failed"
     assert receipt["reason"] == "resource-workload-output-empty"
     assert "workload_sha256" not in receipt, "no digest of nothing may be retained as evidence"
+
+
+def test_a_container_exit_disagreeing_with_the_workload_is_refused(tmp_path, monkeypatch):
+    """The wrapper exits with the workload's status, so a container status
+    that differs means the lifecycle is not what the receipt describes."""
+    execute, args = _driver(tmp_path, monkeypatch, wait_code=137)
+
+    assert execute(args) == 1
+    receipt = json.loads((args.output / "resources.json").read_text())
+    assert receipt["reason"] == "resource-container-exit-disagrees-with-workload"
 
 
 def test_a_workload_that_produced_output_still_passes(tmp_path, monkeypatch):

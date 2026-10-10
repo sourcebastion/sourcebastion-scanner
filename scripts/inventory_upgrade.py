@@ -18,6 +18,50 @@ COLLECTIONS = (
     "input_references", "occurrences", "relationships", "applications", "losses",
     "applicability", "dependency_selectors",
 )
+ACCEPTED_UPGRADES = ROOT / "evaluation/m046/accepted-upgrades.json"
+CURRENT_ORACLE = ROOT / "evaluation/m046/canonical-source-expectations-v1.json"
+
+
+def accepted_upgrades(path):
+    """Read a bounded, strict audit ledger; malformed approvals fail closed."""
+    entries, _ = load(path)
+    if type(entries) is not list or len(entries) > 1000:
+        raise ValueError("upgrade-approvals-list-required")
+    seen = set()
+    for entry in entries:
+        if type(entry) is not dict or set(entry) != {
+            "baseline_sha256", "candidate_sha256", "fingerprint", "reason", "pull_request"
+        }:
+            raise ValueError("upgrade-approval-fields-invalid")
+        for key in ("baseline_sha256", "candidate_sha256", "fingerprint"):
+            digest = entry[key]
+            if type(digest) is not str or len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+                raise ValueError("upgrade-approval-digest-invalid")
+        if type(entry["reason"]) is not str or not entry["reason"].strip() or len(entry["reason"]) > 4096:
+            raise ValueError("upgrade-approval-reason-required")
+        if type(entry["pull_request"]) is not int or entry["pull_request"] <= 0:
+            raise ValueError("upgrade-approval-pull-request-required")
+        identity = tuple(entry[key] for key in ("baseline_sha256", "candidate_sha256", "fingerprint"))
+        if identity in seen:
+            raise ValueError("upgrade-duplicate-approval")
+        seen.add(identity)
+    return entries
+
+
+def transition(report, candidate_oracle_sha256):
+    """Bind every normalized difference, including finding provenance if present.
+
+    The candidate identity is the source-authored oracle's bytes, not the
+    architecture-specific native proof. The raw proof hash remains in the report.
+    """
+    fingerprint = sha(render({"schema_version": "m046.upgrade-fingerprint/1",
+                              "corpus": report["corpus"], "findings": report["findings"]}))
+    return {"baseline_sha256": report["baseline_sha256"],
+            "candidate_sha256": candidate_oracle_sha256, "fingerprint": fingerprint}
+
+
+def matching_approval(entries, identity):
+    return next((entry for entry in entries if all(entry[key] == value for key, value in identity.items())), None)
 
 
 def render(value):

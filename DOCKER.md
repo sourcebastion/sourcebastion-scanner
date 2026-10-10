@@ -10,6 +10,11 @@ Alpine and a copied virtual environment. Build tools, wheel archives, download
 utilities and the source checkout stay in temporary stages. The final image
 runs as `sourcebastion` with writable `/scan` and `/home/sourcebastion/.cache`.
 CI reports the uncompressed image size for both architectures.
+The inventory maintenance gate also verifies installed runtime pins, compares
+source-authored upgrade expectations, measures fresh cgroup workloads and
+enforces added compressed OCI layers. See the
+[M046 maintenance runbook](docs/M046-maintenance-runbook.md) for the separate
+release, distribution-closure and rollback requirements.
 
 ```bash
 docker pull ghcr.io/sourcebastion/sourcebastion-scanner:latest

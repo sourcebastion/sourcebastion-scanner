@@ -33,10 +33,17 @@ def test_latest_selection_excludes_preview_versions_and_wrong_base():
 def reviewed(tmp_path, monkeypatch):
     (tmp_path / "images").mkdir()
     (tmp_path / "PYTHON_VERSION").write_text("3.14.8\n")
-    (tmp_path / "images/Dockerfile").write_text("ARG PYTHON_VERSION=3.14.8\n")
+    (tmp_path / "images/Dockerfile").write_text((ROOT / "images/Dockerfile").read_text())
     (tmp_path / ".github/python-locks").mkdir(parents=True)
     (tmp_path / ".github/python-locks/old.txt").write_text("reviewed")
     (tmp_path / ".github/semgrep-artifacts.json").write_text("{}")
+    for name in ("base-image-pins.json", "inventory-runtime-pins.json"):
+        (tmp_path / ".github" / name).write_bytes((ROOT / ".github" / name).read_bytes())
+    base = versions.base_tools()
+    monkeypatch.setattr(base, "resolve", lambda version, alpine: (
+        f"{version}-alpine{alpine}", "sha256:" + "a" * 64,
+        {"amd64": "sha256:" + "b" * 64, "arm64": "sha256:" + "c" * 64}))
+    monkeypatch.setattr(versions, "base_tools", lambda: base)
     monkeypatch.setattr(versions, "ROOT", tmp_path)
     return tmp_path
 
@@ -188,3 +195,33 @@ def test_manual_notes_work_without_generated_file(tmp_path):
                    env=env, check=True)
     assert (tmp_path / "VERSION").read_text() == "1.8.0\n"
     assert "Reviewed custom release notes." in (tmp_path / "CHANGELOG.md").read_text()
+
+
+def test_python_update_keeps_all_release_pins_coupled(reviewed, monkeypatch):
+    monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(b"{}"))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
+        validate_lock=lambda x: x, verify=lambda x: None, configure_python=lambda x: None,
+        generate_dependencies=lambda lock, path: (path / "new.txt").write_text("verified")))
+    assert versions.update("3.14.9") == "3.14.9"
+    base = json.loads((reviewed / ".github/base-image-pins.json").read_text())
+    runtime = json.loads((reviewed / ".github/inventory-runtime-pins.json").read_text())
+    python = next(row for row in base["images"] if row["name"] == "python")
+    assert python["upstream_tag"] == "3.14.9-alpine3.23"
+    assert runtime["python"] == versions.current() == "3.14.9"
+    assert runtime["python_image"].endswith("@" + python["digest"])
+    assert set(runtime["python_native_manifests"]) == {"amd64", "arm64"}
+    assert "ARG PYTHON_BASE=docker.io/library/python@" + python["digest"] in (reviewed / "images/Dockerfile").read_text()
+
+
+def test_registry_failure_keeps_pins_and_wheel_locks_unchanged(reviewed, monkeypatch):
+    before = {p.relative_to(reviewed): p.read_bytes() for p in reviewed.rglob("*") if p.is_file()}
+    monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(b"{}"))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
+        validate_lock=lambda x: x, verify=lambda x: None, configure_python=lambda x: None,
+        generate_dependencies=lambda lock, path: (path / "new.txt").write_text("verified")))
+    def refused(*args):
+        raise ValueError("python-base-descriptor-mismatch")
+    monkeypatch.setattr(versions.base_tools(), "resolve", refused)
+    with pytest.raises(ValueError, match="descriptor-mismatch"):
+        versions.update("3.14.9")
+    assert {p.relative_to(reviewed): p.read_bytes() for p in reviewed.rglob("*") if p.is_file()} == before

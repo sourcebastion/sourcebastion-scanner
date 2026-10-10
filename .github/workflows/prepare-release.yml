@@ -94,7 +94,8 @@ jobs:
           git switch -c "$branch"
           git config user.name 'sourcebastion-bot[bot]'
           git config user.email '327642096+sourcebastion-bot[bot]@users.noreply.github.com'
-          git add VERSION CHANGELOG.md PYTHON_VERSION images/Dockerfile .github/python-locks
+          git add VERSION CHANGELOG.md PYTHON_VERSION images/Dockerfile .github/python-locks \
+            .github/base-image-pins.json .github/inventory-runtime-pins.json
           git commit -m "chore(release): prepare v${RELEASE_VERSION}"
           git -c credential.helper='!gh auth git-credential' push origin "$branch"
           python_version=$(python scripts/python_version.py current)

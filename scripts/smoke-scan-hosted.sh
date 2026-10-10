@@ -48,6 +48,29 @@ docker run --rm --init --no-healthcheck --user "$(id -u):$(id -g)" \
   -v "$database:/advisories:ro" -v "$canonical_output:/out" \
   -w /src --entrypoint python "$image" scripts/verify-inventory-real-grype.py
 
+# Upgrade parity uses the same verified advisory generation for both source
+# heads. Baseline proof code runs with its own matching installed module map.
+if [[ -n "${SOURCEBASTION_UPGRADE_BASE_IMAGE:-}" ]]; then
+  : "${SOURCEBASTION_UPGRADE_BASE_CHECKOUT:?baseline checkout required}"
+  baseline_output="$canonical_output/baseline"
+  mkdir -m 700 "$baseline_output"
+  docker run --rm --init --no-healthcheck --user "$(id -u):$(id -g)" \
+    --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+    --cpus 2 --memory 2g --memory-swap 2g --pids-limit 256 \
+    --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+    -e PYTHONPATH= -e HOME=/tmp -e PYTHONDONTWRITEBYTECODE=1 \
+    -v "$SOURCEBASTION_UPGRADE_BASE_CHECKOUT:/src:ro" -v "$work/canonical-source:/fixture:ro" \
+    -v "$database:/advisories:ro" -v "$baseline_output:/out" \
+    -w /src --entrypoint python "$SOURCEBASTION_UPGRADE_BASE_IMAGE" scripts/verify-inventory-real-grype.py
+  baseline_snapshot="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["consumer"]["advisory_snapshot_sha256"])' "$baseline_output/receipt.json")"
+  candidate_snapshot="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["consumer"]["advisory_snapshot_sha256"])' "$canonical_output/receipt.json")"
+  python3 "$root/scripts/verify-inventory-upgrade.py" \
+    --baseline "$root/inventory-base-oracle.json" --candidate "$root/inventory-source-expectations-native.json" \
+    --baseline-findings "$baseline_output/grype.json" --candidate-findings "$canonical_output/grype.json" \
+    --baseline-snapshot "$baseline_snapshot" --candidate-snapshot "$candidate_snapshot" \
+    --output "$canonical_output/upgrade-with-findings.json"
+fi
+
 # Separate inactive fixed-controller evidence; expected generation facts are
 # prepared by the trusted CI parent without project input or credentials.
 # The actual controller includes runtime/status/hash/analysis in one150s ledger.
@@ -71,10 +94,13 @@ docker run --rm --init --no-healthcheck --user "$(id -u):$(id -g)" \
 # This finite fixture does not qualify production kernel/custody/admission.
 entrypoint_output="${SOURCEBASTION_NATIVE_ENTRYPOINT_OUTPUT:-$work/entrypoint-output}"
 mkdir -m 700 "$entrypoint_output"
-python3 "$root/scripts/run-inventory-entrypoint-proof.py" \
-  --image "$image" --checkout "$root" --source "$work/canonical-source" \
-  --advisories "$database" --preparation "$work/dependency-preparation" \
-  --output "$entrypoint_output"
+for repeat in 1 2 3; do
+  mkdir -m 700 "$entrypoint_output/repeat-$repeat"
+  python3 "$root/scripts/run-inventory-entrypoint-proof.py" \
+    --image "$image" --checkout "$root" --source "$work/canonical-source" \
+    --advisories "$database" --preparation "$work/dependency-preparation" \
+    --output "$entrypoint_output/repeat-$repeat"
+done
 
 cp "$root/tests/fixtures/scanners/deps/"*.json "$work/source/"
 cp "$root/tests/fixtures/scanners/iac/main.tf.fixture" "$work/source/main.tf"

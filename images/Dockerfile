@@ -14,6 +14,14 @@ FROM ${PYTHON_BASE} AS python-base
 
 FROM ${KICS_BASE} AS kics
 
+# Native static helper preparation is separate from all customer source.
+FROM python-base AS inventory-go
+WORKDIR /app
+COPY cmd/inventory-provider/ /app/cmd/inventory-provider/
+COPY scripts/build-inventory-go.py /app/scripts/build-inventory-go.py
+COPY LICENSE /app/LICENSE
+RUN python scripts/build-inventory-go.py --output /inventory-go
+
 # Based on the smallest published (micro) image: Alpine and a copied virtualenv.
 # Wheel-only dependency installs need no compiler or development headers.
 FROM python-base AS builder
@@ -34,6 +42,9 @@ RUN apk add --no-cache ca-certificates curl
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 COPY scripts/download_scanners.py .github/scanner-versions.json /tmp/scanners/
 RUN python /tmp/scanners/download_scanners.py --pins /tmp/scanners/scanner-versions.json
+COPY scripts/prepare-inventory-node.py .github/inventory-runtime-pins.json /tmp/inventory-runtime/
+RUN python /tmp/inventory-runtime/prepare-inventory-node.py \
+    --pins /tmp/inventory-runtime/inventory-runtime-pins.json --output /tmp/inventory-node
 RUN curl -sSfL "https://gitlab.com/gitlab-org/security-products/sast-rules/-/archive/main/sast-rules-main.tar.gz" \
       -o /tmp/sast-rules.tar.gz && \
     mkdir -p /tmp/sast-rules-extract /usr/local/share/sast-rules && \
@@ -48,7 +59,12 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH"
 # npm and pip support project dependency discovery. No curl or build toolchain.
-RUN apk add --no-cache git openssh-client ca-certificates nodejs npm bash libffi openssl libstdc++
+RUN --mount=from=scanners,source=/tmp/inventory-node,target=/tmp/inventory-node \
+    apk add --no-cache git openssh-client ca-certificates bash libffi openssl libstdc++ /tmp/inventory-node/*.apk
+COPY .github/inventory-runtime-pins.json /usr/local/share/sourcebastion/inventory-runtime-pins.json
+COPY --from=inventory-go /inventory-go/sourcebastion-go-source /usr/local/bin/sourcebastion-go-source
+COPY --from=inventory-go /inventory-go/manifest.json /usr/local/share/sourcebastion/inventory-go.json
+COPY --from=inventory-go /inventory-go/notices/ /usr/local/share/sourcebastion/inventory-go-notices/
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=scanners /usr/local/bin/gitleaks /usr/local/bin/grype /usr/local/bin/
 COPY --from=scanners /usr/local/share/sast-rules /usr/local/share/sast-rules

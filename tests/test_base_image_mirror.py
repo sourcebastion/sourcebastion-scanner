@@ -35,6 +35,40 @@ def test_the_shipped_pins_are_well_formed_and_match_the_dockerfile():
     assert mirror.dockerfile_agrees(images) is True
 
 
+def test_the_pinned_python_tag_names_the_reviewed_interpreter_version():
+    """`FROM python:${PYTHON_VERSION}-...` coupled these by interpolation. A
+    digest pin cannot interpolate, so the coupling is asserted instead."""
+    assert mirror.version_agrees(mirror.pins()) is True
+
+
+def test_bumping_the_interpreter_without_the_pin_is_refused(tmp_path):
+    """The regression this guards: PYTHON_VERSION moves, the base image does
+    not, and the build quietly uses the old interpreter."""
+    bumped = tmp_path / "PYTHON_VERSION"
+    bumped.write_text("3.14.9\n")
+
+    with pytest.raises(mirror.PinError, match="base-image-python-version-mismatch:3.14.9"):
+        mirror.version_agrees(mirror.pins(), bumped)
+
+
+def test_a_pins_document_without_a_python_image_is_refused(tmp_path):
+    value = document()
+    value["images"] = [i for i in value["images"] if i["name"] != "python"]
+
+    with pytest.raises(mirror.PinError, match="base-image-python-pin-missing"):
+        mirror.version_agrees(mirror.pins(write(tmp_path, value)))
+
+
+def test_the_dockerfile_arg_default_is_retained_for_the_version_accessor():
+    """scripts/python_version.py asserts the Dockerfile's ARG default equals
+    the PYTHON_VERSION file, so removing that ARG would break it even though
+    the base image no longer interpolates it."""
+    text = (ROOT / "images/Dockerfile").read_text()
+    version = (ROOT / "PYTHON_VERSION").read_text().strip()
+
+    assert f"ARG PYTHON_VERSION={version}\n" in text
+
+
 def test_every_chosen_reference_is_digest_pinned_in_both_registries():
     images = mirror.pins()
 

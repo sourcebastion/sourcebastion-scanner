@@ -24,6 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PINS = ROOT / ".github/base-image-pins.json"
 DOCKERFILE = ROOT / "images/Dockerfile"
+PYTHON_VERSION = ROOT / "PYTHON_VERSION"
 SCHEMA = "sourcebastion.base-image-pins/1"
 _DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 _REPOSITORY = re.compile(r"^[a-z0-9.\-]+(?::[0-9]+)?/[a-z0-9._\-/]+$")
@@ -71,6 +72,27 @@ def build_args(images, *, mirrored):
     return {f"{image['name'].upper()}_BASE": reference(image, mirrored=mirrored) for image in images}
 
 
+def version_agrees(images, version_path=PYTHON_VERSION):
+    """The pinned python tag must name the reviewed interpreter version.
+
+    `FROM python:${PYTHON_VERSION}-...` used to couple these by interpolation.
+    A digest pin cannot interpolate, so the coupling is asserted instead --
+    otherwise bumping PYTHON_VERSION would leave the base image on the old
+    interpreter with nothing to notice. `scripts/python_version.py current`
+    already ties the PYTHON_VERSION file to the Dockerfile's ARG default; this
+    ties both to the image actually built.
+    """
+    version = version_path.read_text().strip()
+    for image in images:
+        if image["name"] != "python":
+            continue
+        tag = image.get("upstream_tag")
+        if type(tag) is not str or not tag.startswith(version + "-"):
+            raise PinError(f"base-image-python-version-mismatch:{version}:{tag}")
+        return True
+    raise PinError("base-image-python-pin-missing")
+
+
 def dockerfile_agrees(images, path=DOCKERFILE):
     """Every pin must be the Dockerfile's default, so a plain `docker build`
     and a mirrored CI build resolve the same bytes."""
@@ -85,6 +107,7 @@ def dockerfile_agrees(images, path=DOCKERFILE):
 def main():
     images = pins()
     dockerfile_agrees(images)
+    version_agrees(images)
     print(json.dumps({
         "upstream": build_args(images, mirrored=False),
         "mirrored": build_args(images, mirrored=True),

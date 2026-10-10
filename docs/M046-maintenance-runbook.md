@@ -177,6 +177,46 @@ PR CI compares its immutable base. For final M046 release acceptance, also
 compare with the frozen S01 baseline source/release, not only the previous PR;
 successive small changes must not evade cumulative growth accounting.
 
+## Reading a held container's output
+
+The host driver holds each workload at a second `SIGSTOP` so every cgroup
+counter is read after the work finishes and before the container is torn down.
+A container held that way **has not committed its stream**, and `docker logs`
+returns nothing for small output. Measured against the pinned base image with
+the driver's own create/start/CONT/gate sequence:
+
+| bytes the workload wrote | bytes `docker logs` returned while held |
+| --- | --- |
+| 20 | 0 |
+| 4096 | 0 |
+| 65536 | 65536 |
+| 262144 | 262144 |
+
+The threshold sits between 4 KiB and 64 KiB. Below it the bytes are invisible
+until the container exits.
+
+This is worth knowing because of how it presents. The stress and corpus
+workloads emit large reports and were captured; only the dependency job's
+receipt -- a few hundred bytes -- fell under the threshold. So the defect
+looked specific to one workload, and the first hypothesis was a flush race.
+That hypothesis was wrong, and it was wrong in a plausible direction: a race
+would have affected the short stress arms most, not spared all eight of them.
+
+The driver therefore releases the held shell and awaits the container's exit
+before reading the stream, after its final observation. Two rules follow for
+anyone changing this path:
+
+- never read a workload's output while its container is still held, whatever
+  the output is expected to be;
+- a proof must refuse an empty capture rather than record one. The receipt
+  previously reported `status: passed` with `workload_sha256` set to the
+  digest of the empty string, and the first thing to object was an assertion
+  three layers downstream.
+
+The container's exit status is also checked against the gate file the workload
+wrote, because the wrapper exits with the workload's status; a disagreement
+means the lifecycle is not what the receipt describes.
+
 ## Distribution closure and rollback
 
 Preserve vendored parser notices and all shipped upstream license texts.

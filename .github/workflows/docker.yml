@@ -687,18 +687,18 @@ jobs:
             --baseline "$RUNNER_TEMP/inventory-base.oci.tar" --candidate "$RUNNER_TEMP/inventory-candidate.oci.tar" \
             --candidate-image image-inspect.json --output inventory-compressed-growth.json
 
+      # Arms within a repeat run concurrently; repeats stay sequential so each
+      # remains an independent variance sample. Every arm is single-threaded --
+      # measured at roughly 1.0x CPU against its 2-CPU ceiling -- so three in
+      # flight leaves a core for the driver and dockerd on a 4-vCPU runner.
+      # Concurrency is bounded rather than unlimited because each proof is
+      # judged against a frozen wall-clock ceiling.
       - name: Measure native production adapter workloads in fresh cgroups
         run: |
-          for repeat in 1 2 3; do
-            python3 scripts/run-inventory-resource-proof.py --image sourcebastion:standard-rule-test \
-              --checkout "$PWD" --workload corpus --provider "$RUNNER_TEMP/inventory-provider" \
-              --output "inventory-resources-corpus-$repeat"
-            for arm in flat-1000 flat-10000 flat-100000 flat-100001 graph expansion; do
-              python3 scripts/run-inventory-resource-proof.py --image sourcebastion:standard-rule-test \
-                --checkout "$PWD" --workload stress --arm "$arm" \
-                --output "inventory-resources-$arm-$repeat"
-            done
-          done
+          python3 scripts/run-inventory-resource-matrix.py \
+            --image sourcebastion:standard-rule-test --checkout "$PWD" \
+            --provider "$RUNNER_TEMP/inventory-provider" \
+            --output-root . --repeats 3 --concurrency 3
 
       - name: Retain upgrade differences and host resource observations
         if: always()

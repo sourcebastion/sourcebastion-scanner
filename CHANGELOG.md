@@ -4,6 +4,10 @@
 
 * a merged version bump now requests its own release. `release.yml` had always accepted a `repository_dispatch` of type `scanner-release` from `sourcebastion-bot[bot]`, but nothing sent it -- the initiator was semantic-release, removed in the same commit that introduced the gate -- so every release ran through the owner path, whose input was named `break_glass_reason`. The new `Release dispatch` workflow supplies the missing initiator, and that input is now `release_reason`: dispatching by hand is the documented fallback, not an incident. Nothing about what is checked changes, including the second approval on the `release` environment
 
+## [1.8.0] - 2026-10-10
+
+M046 S04 and S06: local SBOM export with Grype matching and inventory compatibility identity; verified inventory packaging, upgrade regression gates and the maintenance runbook. Distribution closure for bundled native libraries is tracked separately as M049 and is not claimed here.
+
 ## [1.7.38] - 2026-10-05
 
 ### Changed

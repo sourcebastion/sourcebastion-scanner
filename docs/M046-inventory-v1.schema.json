@@ -833,6 +833,48 @@
           "title": "Disposition",
           "type": "string"
         },
+        "ecosystem": {
+          "anyOf": [
+            {
+              "enum": [
+                "pypi",
+                "npm",
+                "golang",
+                "cargo",
+                "maven",
+                "nuget",
+                "gem",
+                "composer"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ecosystem"
+        },
+        "enumeration": {
+          "default": "unknown",
+          "enum": [
+            "complete",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "Enumeration",
+          "type": "string"
+        },
+        "enumeration_basis": {
+          "default": "unknown",
+          "enum": [
+            "source-input",
+            "unknown"
+          ],
+          "title": "Enumeration Basis",
+          "type": "string"
+        },
         "format": {
           "anyOf": [
             {

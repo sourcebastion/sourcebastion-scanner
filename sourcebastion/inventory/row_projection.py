@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 
-from .contract import Inventory, canonical_bytes
+from .contract import Inventory, canonical_bytes, identifier
 
 VERSION = "sourcebastion.inventory-row-projection/1"
 _DOMAIN = VERSION.encode("ascii") + b"\0"
@@ -324,10 +324,11 @@ def project_rows(inventory, *, max_rows, max_bytes, check):
             )
 
     for ordinal, record in enumerate(value["coverage"]["inputs"]):
+        input_id = identifier("input", record["source_path"])
         add(
             "input",
             (str(ordinal),),
-            (("ordinal", ordinal),)
+            (("ordinal", ordinal), ("canonical_id", input_id))
             + tuple(
                 (key, record[key])
                 for key in (
@@ -337,6 +338,9 @@ def project_rows(inventory, *, max_rows, max_bytes, check):
                     "parser",
                     "disposition",
                     "reason",
+                    "ecosystem",
+                    "enumeration",
+                    "enumeration_basis",
                 )
             ),
             record,
@@ -354,6 +358,11 @@ def project_rows(inventory, *, max_rows, max_bytes, check):
                         ("input_ordinal", ordinal),
                         ("kind", kind),
                         ("context_id", context_id),
+                    ("parent_id", input_id),
+                    ("canonical_id", context_id),
+                    ("context_kind", kind),
+                    ("root_id", context_id if kind == "root" else None),
+                    ("ecosystem", record["ecosystem"]),
                     ),
                     None,
                 )

@@ -1,0 +1,149 @@
+{
+  "acceptance": false,
+  "architectures": {
+    "amd64": {
+      "excluded_s01_addition_charge": 1173494,
+      "frozen_baseline": {
+        "architecture": "amd64",
+        "baseline_archive_sha256": "b0ada34dfaa6356f9ac0bc69a2f0a1d4c06d50b005ec378c59a87a7705c1dbfb",
+        "baseline_evidence_manifest": "sha256:fd04ac06d05a6b9f812a3c2ff1f86c6403d160cb7cc666e9c13be28a7ec2f685",
+        "baseline_image_pins_sha256": "7ecc7b94e0dbd0fde30c688c2a93b38b9f9e1880bab85f0ca38e243142d4c083",
+        "baseline_image_reference": "ghcr.io/sourcebastion/sourcebastion-scanner:v1.7.38@sha256:d73bb8029ecd841ac2980029464f7292dabf0e753c081180527b82579fb81543",
+        "baseline_kind": "frozen-s01-pre-inventory-layer-prefix",
+        "baseline_layer_count": 13,
+        "baseline_review_sha256": "3ce965fb4816d1a9e3ada9e6af66bc927cbe84178f998021bdb0982471b5ee45",
+        "baseline_source_run": 37590730428,
+        "baseline_source_sha": "d98fbd0fb9c5563999a5c061a12fb68191fddd86",
+        "config_digest": "sha256:7b2fd090f32acea0f6bb517b83be072e8ea4e055b66df602c5a06e309cf59f13",
+        "layers": [
+          {
+            "digest": "sha256:d0c1d894c237d8192cbcd37e435031ad4eddec173299568a5a05869c2e40dfa3",
+            "size": 3848507
+          },
+          {
+            "digest": "sha256:c668ff722a1d74e6d431db605c4078472a7a87107e2c0fa8045c86ba7ab93dc7",
+            "size": 416383
+          },
+          {
+            "digest": "sha256:60fecb568f88e49942c9d5f59730d0cdebbfa34084db05bb85f5cf57e2369013",
+            "size": 16106108
+          },
+          {
+            "digest": "sha256:26acd117ec0809f087f909a7aebb6a105dcab7ab6fe27c51a337f86dbd59eb6b",
+            "size": 246
+          },
+          {
+            "digest": "sha256:4442c0d19e9b8b06ff88f3630bdfbc9a9b39a2798a33793827b004c24ef98f32",
+            "size": 35734755
+          },
+          {
+            "digest": "sha256:e1dc01834424bc126a44b372cf91982fce6a030440748e3aa0cfa3c3aee986f8",
+            "size": 95936536
+          },
+          {
+            "digest": "sha256:13a6a85bcb90f4871f23c31b91dbf2e4a666fb857d29b63ce2213339bdc912f1",
+            "size": 38848178
+          },
+          {
+            "digest": "sha256:6be475e13bc447878cc185ab75dc8c59afcb0928872aac08839d9e69b6c0f10e",
+            "size": 253468
+          },
+          {
+            "digest": "sha256:08728e0b28c72fe50cd177613c443d47b5c632b2e047e2e9ec8eb58702ad6374",
+            "size": 30118157
+          },
+          {
+            "digest": "sha256:551c5bf40062dca822128b4e2ba3e59ddffd2f582c5a870425f2431399f2c202",
+            "size": 1658026
+          },
+          {
+            "digest": "sha256:30fdea4abad0cc05072580eea26f9f1e58eb0f9c9a25d7e61c05f9867cb54907",
+            "size": 4898
+          },
+          {
+            "digest": "sha256:5a12076f08e9a51c1a247a15e428a212d703543327923d769cf028ad22f3f454",
+            "size": 998
+          },
+          {
+            "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+            "size": 32
+          }
+        ],
+        "manifest_digest": "sha256:483556571ac02667b9fb2e88d0c6da9e9eec5c94e324baeec5fc7e4a69d11f45"
+      }
+    },
+    "arm64": {
+      "excluded_s01_addition_charge": 1148132,
+      "frozen_baseline": {
+        "architecture": "arm64",
+        "baseline_archive_sha256": "77bf69a4dfb28739d076a27c4b52fc480fb01a3bf81dcade6b9dd42ef8b7d000",
+        "baseline_evidence_manifest": "sha256:3979142858e3d40ebe40e424f865199cb9fa41c4cff3ebd0d53c06875b6fda43",
+        "baseline_image_pins_sha256": "7ecc7b94e0dbd0fde30c688c2a93b38b9f9e1880bab85f0ca38e243142d4c083",
+        "baseline_image_reference": "ghcr.io/sourcebastion/sourcebastion-scanner:v1.7.38@sha256:d73bb8029ecd841ac2980029464f7292dabf0e753c081180527b82579fb81543",
+        "baseline_kind": "frozen-s01-pre-inventory-layer-prefix",
+        "baseline_layer_count": 13,
+        "baseline_review_sha256": "3ce965fb4816d1a9e3ada9e6af66bc927cbe84178f998021bdb0982471b5ee45",
+        "baseline_source_run": 37590730428,
+        "baseline_source_sha": "d98fbd0fb9c5563999a5c061a12fb68191fddd86",
+        "config_digest": "sha256:e99ef24ddb8d74bc5e7cd11f46655165bbaca386464601a8f33d4c0e69f63854",
+        "layers": [
+          {
+            "digest": "sha256:ace1621be7ff15b54252f68393ac33181df7f3e095e36a5d9a9892031b357d31",
+            "size": 4186056
+          },
+          {
+            "digest": "sha256:c2c53ddb544ffda64b4945dc8d700fd0c660a8ea49ecbf1657e88e33ad27c415",
+            "size": 419118
+          },
+          {
+            "digest": "sha256:6e4b7bea54f6d9ff4216fbdad7cecd5d185639c5c3fd239c32cc4c01d2795ca1",
+            "size": 16496577
+          },
+          {
+            "digest": "sha256:95638307eabefd1327bd2853858fbab3d3217f8a5c80f7ef7ed163e207c96421",
+            "size": 249
+          },
+          {
+            "digest": "sha256:461b0d927a0a615e1ba6c742b6024a0a4f8a4602704b85351932f630af6c7246",
+            "size": 35197903
+          },
+          {
+            "digest": "sha256:433edb57912f1c9eeac41b5d8ca5c166740289f8c46c7ca6b2b617c841fbc0ee",
+            "size": 98450482
+          },
+          {
+            "digest": "sha256:7d0cac7ecb38b5df70e15fd0424afa36caf3810e43cbaee72a60d8a9659853cb",
+            "size": 35529263
+          },
+          {
+            "digest": "sha256:1b191c06c1036a18c11563ff95670f3d919fa7688a0843c87df6dcf709ddd567",
+            "size": 253479
+          },
+          {
+            "digest": "sha256:4fc472a186af6eabd476e1b02d1fdb990a037415b44e0857b0cfdb82d51872fb",
+            "size": 26955503
+          },
+          {
+            "digest": "sha256:1a457ba3e15826afe7b9954905fa216bb0a2a004ffa9a1b18e9febdf1519ce95",
+            "size": 1658021
+          },
+          {
+            "digest": "sha256:a26dbb98947835d7de4c9d052ffbe7ec6a589f4def7908f5d34b49abdd4ad84c",
+            "size": 4897
+          },
+          {
+            "digest": "sha256:3a76cf7209ffc3b0acfe2d13964bdf464cef2cba8ac4c1610cf5fa735b33b11d",
+            "size": 995
+          },
+          {
+            "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+            "size": 32
+          }
+        ],
+        "manifest_digest": "sha256:dbca7317f8042cae883b55216d731cc5da3a2e0283a8e4a601ac17049107fcf9"
+      }
+    }
+  },
+  "schema_version": "m046.s07-frozen-baselines/1",
+  "scope": "Retained S01 OCI archives verified on 2026-10-10; recovered prefix equals all 13 descriptors of the pinned v1.7.38 native baseline. No current release growth claim."
+}

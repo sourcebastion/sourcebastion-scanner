@@ -155,7 +155,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "requirements.txt",
@@ -168,7 +171,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": [],
@@ -283,7 +289,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": [],
@@ -441,7 +450,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "requirements.txt",
@@ -454,7 +466,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": [
@@ -603,7 +618,10 @@
             "analysis_scope_ids": [
               "scope:manifest"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": [],
@@ -699,7 +717,10 @@
             "analysis_scope_ids": [
               "scope:gradle-lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "maven",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -816,7 +837,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -933,7 +957,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1050,7 +1077,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1179,7 +1209,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1296,7 +1329,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1435,7 +1471,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "requirements.txt",
@@ -1448,7 +1487,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1565,7 +1607,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1686,7 +1731,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1803,7 +1851,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -1987,7 +2038,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "b/requirements.txt",
@@ -2000,7 +2054,10 @@
             "analysis_scope_ids": [
               "scope:1"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -2117,7 +2174,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -2246,7 +2306,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -2363,7 +2426,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -2532,7 +2598,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -2716,7 +2785,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "b/requirements.txt",
@@ -2729,7 +2801,10 @@
             "analysis_scope_ids": [
               "scope:1"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -2824,7 +2899,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "cargo",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -2999,7 +3077,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "cargo",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3140,7 +3221,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "cargo",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "b/Cargo.lock",
@@ -3153,7 +3237,10 @@
             "analysis_scope_ids": [
               "scope:1"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "cargo",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3268,7 +3355,10 @@
             "analysis_scope_ids": [
               "scope:0"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "cargo",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3363,7 +3453,10 @@
             "analysis_scope_ids": [
               "scope:input"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3538,7 +3631,10 @@
             "analysis_scope_ids": [
               "scope:input"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3633,7 +3729,10 @@
             "analysis_scope_ids": [
               "scope:input"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3759,7 +3858,10 @@
             "analysis_scope_ids": [
               "scope:input"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3854,7 +3956,10 @@
             "analysis_scope_ids": [
               "scope:input"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -3973,7 +4078,10 @@
             "analysis_scope_ids": [
               "scope:input"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -4023,7 +4131,10 @@
             "reason": "invalid-npm-source-syntax",
             "root_ids": [],
             "analysis_scope_ids": [],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "failed",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -4319,7 +4430,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "package.json",
@@ -4334,7 +4448,10 @@
             "analysis_scope_ids": [
               "scope:manifest"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "npm",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -4481,7 +4598,10 @@
             "analysis_scope_ids": [
               "scope:fixture"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "golang",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -4642,7 +4762,10 @@
             "analysis_scope_ids": [
               "scope:fixture"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "golang",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -4692,7 +4815,10 @@
             "reason": "unassessed-go-checksum-history",
             "root_ids": [],
             "analysis_scope_ids": [],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "golang",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -4853,7 +4979,10 @@
             "analysis_scope_ids": [
               "scope:fixture"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "golang",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -4948,7 +5077,10 @@
             "analysis_scope_ids": [
               "scope:nuget-net8"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "nuget",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5041,7 +5173,10 @@
             "analysis_scope_ids": [
               "scope:ruby-lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "gem",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5136,7 +5271,10 @@
             "analysis_scope_ids": [
               "scope:php-lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "composer",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5186,7 +5324,10 @@
             "reason": "non-dependency-prose",
             "root_ids": [],
             "analysis_scope_ids": [],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5335,7 +5476,10 @@
             "analysis_scope_ids": [
               "scope:manifest"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5504,7 +5648,10 @@
             "analysis_scope_ids": [
               "scope:manifest"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5625,7 +5772,10 @@
             "analysis_scope_ids": [
               "scope:manifest"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5746,7 +5896,10 @@
             "analysis_scope_ids": [
               "scope:manifest"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5796,7 +5949,10 @@
             "reason": "dynamic-metadata",
             "root_ids": [],
             "analysis_scope_ids": [],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5846,7 +6002,10 @@
             "reason": "invalid-lock-metadata-hash",
             "root_ids": [],
             "analysis_scope_ids": [],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "failed",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5896,7 +6055,10 @@
             "reason": "invalid-requirement",
             "root_ids": [],
             "analysis_scope_ids": [],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "failed",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -5940,7 +6102,10 @@
             "reason": "unsupported-symlink",
             "root_ids": [],
             "analysis_scope_ids": [],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -6082,7 +6247,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "failed",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": [
@@ -6185,7 +6353,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "requirements.txt",
@@ -6198,7 +6369,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": [
@@ -6307,7 +6481,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "requirements.txt",
@@ -6320,7 +6497,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "partial",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -6446,7 +6626,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -6584,7 +6767,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -6695,7 +6881,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -6838,7 +7027,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -7324,7 +7516,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -8073,7 +8268,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -8280,7 +8478,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -8375,7 +8576,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -8470,7 +8674,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "unknown",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -8651,7 +8858,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "locks/base.pip",
@@ -8664,7 +8874,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           },
           {
             "source_path": "requirements.txt",
@@ -8677,7 +8890,10 @@
             "analysis_scope_ids": [
               "scope:origin"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": [],
@@ -8865,7 +9081,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []
@@ -8966,7 +9185,10 @@
             "analysis_scope_ids": [
               "scope:lock"
             ],
-            "installed_environment_ids": []
+            "installed_environment_ids": [],
+            "ecosystem": "pypi",
+            "enumeration": "complete",
+            "enumeration_basis": "source-input"
           }
         ],
         "refusal_codes": []

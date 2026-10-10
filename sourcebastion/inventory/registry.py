@@ -47,12 +47,33 @@ FORMATS = frozenset(NAMES.values()) | {
     "python-uv-script-lock",
     "python-installed-metadata",
 }
+# Dispatch identity, independent of whether an adapter emitted any packages.
+# Unsupported, ignored and explicitly empty inputs still belong to a known
+# ecosystem. Unknown ordinary text must never acquire an ecosystem this way.
+FORMAT_ECOSYSTEMS = {
+    **dict.fromkeys((
+        "pip-requirements", "python-pyproject", "python-setup-cfg",
+        "python-setup-static", "python-pipfile", "python-pipfile-lock",
+        "python-poetry-lock", "python-uv-lock", "python-pdm-lock",
+        "python-pylock", "python-uv-script-lock", "python-installed-metadata",
+    ), "pypi"),
+    **dict.fromkeys(("npm-manifest", "npm-lock", "pnpm-lock", "yarn-lock"), "npm"),
+    **dict.fromkeys(("go-mod", "go-sum"), "golang"),
+    **dict.fromkeys(("cargo-manifest", "cargo-lock"), "cargo"),
+    **dict.fromkeys(("maven-pom", "gradle-manifest", "gradle-lock"), "maven"),
+    **dict.fromkeys(("nuget-lock", "nuget-packages"), "nuget"),
+    **dict.fromkeys(("bundler-manifest", "bundler-lock"), "gem"),
+    **dict.fromkeys(("composer-manifest", "composer-lock"), "composer"),
+}
+if set(FORMAT_ECOSYSTEMS) != FORMATS:
+    raise RuntimeError("registry-ecosystem-domain-incomplete")
 REGISTRY_SHA256 = hashlib.sha256(
     json.dumps(
         {
             "version": VERSION,
             "names": NAMES,
             "formats": sorted(FORMATS),
+            "ecosystems": FORMAT_ECOSYSTEMS,
             "rules": [
                 "pylock[.name].toml",
                 "*.py.lock",

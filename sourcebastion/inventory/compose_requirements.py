@@ -38,10 +38,27 @@ from .contract import (
 from .discovery import discover
 from .inputs import InputRefusal, Source, relative_path
 from .markers import context_key, disjoint, marker_activation
-from .registry import DiscoveryConfig, REGISTRY_SHA256, format_for
+from .registry import DiscoveryConfig, REGISTRY_SHA256, FORMAT_ECOSYSTEMS, format_for
 
 VERSION = "sourcebastion.requirements-composition/1"
 MAX_RECORDS = 100000
+
+
+def _input_outcome(row, *, refused=False):
+    ecosystem = FORMAT_ECOSYSTEMS.get(row.format)
+    outcome = {
+        "parsed": "complete",
+        "unresolved": "partial",
+        "bounded-omission": "partial",
+        "failed": "failed",
+    }.get(row.disposition, "unknown") if (
+        ecosystem and row.source_sha256 is not None and row.parser is not None
+    ) else "unknown"
+    return row.model_copy(update={
+        "ecosystem": ecosystem,
+        "enumeration": "unknown" if refused else outcome,
+        "enumeration_basis": "source-input" if ecosystem else "unknown",
+    })
 
 
 def _source_limits(source, config):
@@ -255,7 +272,7 @@ def _compose(
                 version_resolution="unknown",
                 graph="unknown",
                 environment="unknown",
-                inputs=tuple(inputs[path] for path in sorted(inputs)),
+                inputs=tuple(_input_outcome(inputs[path], refused=True) for path in sorted(inputs)),
                 refusal_codes=tuple(sorted(global_refusals)),
             ),
             stages=StageStates(inventory="failed"),
@@ -564,6 +581,13 @@ def _compose(
 
             extend_secondary_locks(extra)
         source.validate()
+        # The producer records dispatch outcomes even when no package was
+        # emitted. A parsed input enumerates only its source records; global
+        # inventory/graph/version fidelity remains separately conservative.
+        # Unknown input ownership remains unknown rather than folder-inferred.
+        for path, row in inputs.items():
+            step()
+            inputs[path] = _input_outcome(row)
         covered = tuple(
             inputs[path].model_copy(
                 update={

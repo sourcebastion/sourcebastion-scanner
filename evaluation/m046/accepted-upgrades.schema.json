@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reviewed inventory oracle transitions",
+  "type": "array",
+  "maxItems": 1000,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["baseline_sha256", "candidate_sha256", "fingerprint", "reason", "pull_request"],
+    "properties": {
+      "baseline_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+      "candidate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+      "fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+      "reason": {"type": "string", "minLength": 1, "maxLength": 4096, "pattern": "\\S"},
+      "pull_request": {"type": "integer", "minimum": 1}
+    }
+  }
+}

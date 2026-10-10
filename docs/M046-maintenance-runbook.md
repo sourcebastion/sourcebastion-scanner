@@ -4,6 +4,8 @@ Owner: scanner maintainers. S06 implementation lives in scanner issue #93.
 The executable gates below do not accept S06 or M046 by themselves. S06 needs
 reviewed exact-head native evidence, S02–S04 acceptance, and distribution closure;
 S07 additionally needs published-digest development and rollback evidence.
+Its requirement-by-requirement record is the
+[S07 acceptance ledger](M046-S07-acceptance.md).
 
 ## Supported release and identities
 
@@ -72,15 +74,39 @@ rtk proxy python3 scripts/verify-inventory-upgrade.py \
 ```
 
 The gate emits package, version/hash/range, edge, context and coverage diffs and
-exits nonzero for any difference or missing/added case. Generated record IDs do
+exits nonzero for any unapproved difference or missing/added case. Generated record IDs do
 not define parity: records bind by source context, with ambiguity refused.
 Counters retain multiplicity. Editing the candidate oracle cannot hide a
 required custom-input disappearance because the base oracle is compared too.
 Malformed, duplicate, oversized or incomplete evidence fails closed. Failure
 output is retained for review. There is no automatic baseline refresh or
-`--accept-all` switch. A deliberate semantic/oracle change requires a separately
-reviewed scope decision and gate adjustment before adopting it; do not weaken
-the base comparison in an ordinary dependency bump.
+`--accept-all` switch.
+
+An intended change needs an exact transition entry in
+`evaluation/m046/accepted-upgrades.json`; its schema is alongside it. On an
+unapproved change the log summarizes the changed/missing/added cases and prints
+the exact entry to paste. Inspect the full retained diff, verify every change
+against source evidence, and fill in the rationale and pull request number.
+Approval is a reviewed commit containing that entry, not a CI rerun or label.
+The first entry records #162's independently reviewed 222 additions of the three
+input ecosystem/enumeration fields, after the partial-input validator fix.
+
+Entries bind the immutable base oracle bytes, current source-authored oracle
+bytes and a fingerprint of the complete normalized corpus/finding diff. The
+native proof must match the current oracle and its digest before any entry can
+apply. Architecture-specific proof metadata does not change approval; its raw
+hash remains in the retained report. The original diff remains `review-required`
+inside a passing report, alongside the matched audit entry. Any change to either
+oracle or observed diff requires fresh review. Malformed or duplicate entries
+fail closed. Do not refresh the oracle from observed output or weaken the base
+comparison to make a dependency bump pass.
+
+A successful same-snapshot finding comparison adds no finding delta to the
+fingerprint, so it preserves an approved corpus transition. Report hashes and
+comparison status remain retained provenance. Added/removed finding rows,
+including multiplicity and the advisory snapshot, enter the fingerprint and
+require their own exact approval. Snapshot mismatch still fails before any
+approval is considered; corpus approval never waives it.
 
 For finding changes, use complete actual Grype JSON from two executions under
 the *same* admitted snapshot, rather than match counts:

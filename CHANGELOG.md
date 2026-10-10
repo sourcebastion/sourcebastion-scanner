@@ -8,6 +8,10 @@
 
 M046 S04 and S06: local SBOM export with Grype matching and inventory compatibility identity; verified inventory packaging, upgrade regression gates and the maintenance runbook. Distribution closure for bundled native libraries is tracked separately as M049 and is not claimed here.
 
+- M046 S05 (#162): record producer input ecosystem and enumeration outcomes, preserve evidenced root context in indexed projections, and reject enumeration claims on unexamined inputs while keeping legacy canonical bytes compatible.
+- M046 S07 (#165): bind native corpus/resource proofs to the installed Go helper manifest and measure cumulative image growth against the frozen S01 baseline. Published-release, development/human and rollback acceptance remain separate requirements.
+- M050 (#167): allow reviewed semantic changes only through exact base-oracle, candidate-oracle and normalized-diff approval entries; retain the independent comparison and fail on unmatched changes.
+
 ## [1.7.38] - 2026-10-05
 
 ### Changed

@@ -1,0 +1,548 @@
+{
+  "status": "public-registry-digest-pins-only; published-signatures-pending",
+  "reference": "ghcr.io/sourcebastion/sourcebastion-scanner:v1.7.38@sha256:d73bb8029ecd841ac2980029464f7292dabf0e753c081180527b82579fb81543",
+  "architectures": {
+    "amd64": {
+      "manifest": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "config": {
+          "mediaType": "application/vnd.oci.image.config.v1+json",
+          "digest": "sha256:7b2fd090f32acea0f6bb517b83be072e8ea4e055b66df602c5a06e309cf59f13",
+          "size": 8518
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:d0c1d894c237d8192cbcd37e435031ad4eddec173299568a5a05869c2e40dfa3",
+            "size": 3848507
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:c668ff722a1d74e6d431db605c4078472a7a87107e2c0fa8045c86ba7ab93dc7",
+            "size": 416383
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:60fecb568f88e49942c9d5f59730d0cdebbfa34084db05bb85f5cf57e2369013",
+            "size": 16106108
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:26acd117ec0809f087f909a7aebb6a105dcab7ab6fe27c51a337f86dbd59eb6b",
+            "size": 246
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:4442c0d19e9b8b06ff88f3630bdfbc9a9b39a2798a33793827b004c24ef98f32",
+            "size": 35734755
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:e1dc01834424bc126a44b372cf91982fce6a030440748e3aa0cfa3c3aee986f8",
+            "size": 95936536
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:13a6a85bcb90f4871f23c31b91dbf2e4a666fb857d29b63ce2213339bdc912f1",
+            "size": 38848178
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:6be475e13bc447878cc185ab75dc8c59afcb0928872aac08839d9e69b6c0f10e",
+            "size": 253468
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:08728e0b28c72fe50cd177613c443d47b5c632b2e047e2e9ec8eb58702ad6374",
+            "size": 30118157
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:551c5bf40062dca822128b4e2ba3e59ddffd2f582c5a870425f2431399f2c202",
+            "size": 1658026
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:30fdea4abad0cc05072580eea26f9f1e58eb0f9c9a25d7e61c05f9867cb54907",
+            "size": 4898
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:5a12076f08e9a51c1a247a15e428a212d703543327923d769cf028ad22f3f454",
+            "size": 998
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+            "size": 32
+          }
+        ]
+      },
+      "manifest_digest": "sha256:483556571ac02667b9fb2e88d0c6da9e9eec5c94e324baeec5fc7e4a69d11f45",
+      "configuration": {
+        "architecture": "amd64",
+        "config": {
+          "User": "sourcebastion",
+          "Env": [
+            "PATH=/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "PYTHON_VERSION=3.14.8",
+            "PYTHON_SHA256=c2215904f02b175596dc49351585104f4bc20341e1c47378b26a2c274360ce73",
+            "PYTHONUNBUFFERED=1",
+            "PYTHONDONTWRITEBYTECODE=1",
+            "HOME=/home/sourcebastion"
+          ],
+          "Entrypoint": [
+            "sourcebastion"
+          ],
+          "Cmd": [
+            "--help"
+          ],
+          "WorkingDir": "/scan",
+          "Labels": {
+            "io.sourcebastion.python.version": "3.14.8",
+            "org.opencontainers.image.description": "SourceBastion application security scanner",
+            "org.opencontainers.image.title": "sourcebastion-scanner",
+            "org.opencontainers.image.version": "1.7.38"
+          },
+          "ArgsEscaped": true,
+          "Healthcheck": {
+            "Test": [
+              "CMD",
+              "sourcebastion",
+              "--version"
+            ],
+            "Interval": 30000000000,
+            "Timeout": 10000000000,
+            "StartPeriod": 5000000000,
+            "Retries": 3
+          }
+        },
+        "created": "2026-10-05T17:09:19.275305601Z",
+        "history": [
+          {
+            "created": "2026-09-17T20:37:33.169606102Z",
+            "created_by": "ADD alpine-minirootfs-3.23.6-x86_64.tar.gz / # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-09-17T20:37:33.169606102Z",
+            "created_by": "CMD [\"/bin/sh\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:34:00.213524501Z",
+            "created_by": "ENV PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:34:00.213524501Z",
+            "created_by": "RUN /bin/sh -c set -eux; \tapk add --no-cache \t\tca-certificates \t\ttzdata \t; # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-01T21:34:00.213524501Z",
+            "created_by": "ENV PYTHON_VERSION=3.14.8",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:34:00.213524501Z",
+            "created_by": "ENV PYTHON_SHA256=c2215904f02b175596dc49351585104f4bc20341e1c47378b26a2c274360ce73",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:36:39.151441497Z",
+            "created_by": "RUN /bin/sh -c set -eux; \t\tapk add --no-cache --virtual .build-deps \t\tbluez-dev \t\tbzip2-dev \t\tdpkg-dev dpkg \t\tfindutils \t\tg++ \t\tgcc \t\tgdbm-dev \t\tgnupg \t\tlibc-dev \t\tlibffi-dev \t\tlibnsl-dev \t\tlibtirpc-dev \t\tlinux-headers \t\tmake \t\tncurses-dev \t\topenssl-dev \t\tpax-utils \t\treadline-dev \t\tsqlite-dev \t\ttar \t\ttcl-dev \t\ttk \t\ttk-dev \t\tutil-linux-dev \t\txz \t\txz-dev \t\tzlib-dev \t\tzstd-dev \t; \t\twget -O python.tar.xz \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz\"; \techo \"$PYTHON_SHA256 *python.tar.xz\" | sha256sum -c -; \tmkdir -p /usr/src/python; \ttar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \trm python.tar.xz; \t\tcd /usr/src/python; \tgnuArch=\"$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)\"; \t./configure \t\t--build=\"$gnuArch\" \t\t--enable-loadable-sqlite-extensions \t\t--enable-option-checking=fatal \t\t--enable-shared \t\t$(test \"${gnuArch%%-*}\" != 'riscv64' && echo '--with-lto') \t\t--with-ensurepip \t; \tnproc=\"$(nproc)\"; \tEXTRA_CFLAGS=\"-DTHREAD_STACK_SIZE=0x100000\"; \tLDFLAGS=\"${LDFLAGS:-} -Wl,--strip-all\"; \tarch=\"$(apk --print-arch)\"; \tcase \"$arch\" in \t\tx86_64|aarch64) \t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\"; \t\t\t;; \t\tx86) \t\t\t;; \t\t*) \t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer\"; \t\t\t;; \tesac; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-}\" \t; \trm python; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-} -Wl,-rpath='\\$\\$ORIGIN/../lib'\" \t\tpython \t; \tmake install; \t\tcd /; \trm -rf /usr/src/python; \t\tfind /usr/local -depth \t\t\\( \t\t\t\\( -type d -a \\( -name test -o -name tests -o -name idle_test \\) \\) \t\t\t-o \\( -type f -a \\( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \\) \\) \t\t\\) -exec rm -rf '{}' + \t; \t\tfind /usr/local -type f -executable -not \\( -name '*tkinter*' \\) -exec scanelf --needed --nobanner --format '%n#p' '{}' ';' \t\t| tr ',' '\\n' \t\t| sort -u \t\t| awk 'system(\"[ -e /usr/local/lib/\" $1 \" ]\") == 0 { next } { print \"so:\" $1 }' \t\t| xargs -rt apk add --no-network --virtual .python-rundeps \t; \tapk del --no-network .build-deps; \t\texport PYTHONDONTWRITEBYTECODE=1; \tpython3 --version; \tpip3 --version # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-01T21:36:39.244093284Z",
+            "created_by": "RUN /bin/sh -c set -eux; \tfor src in idle3 pip3 pydoc3 python3 python3-config; do \t\tdst=\"$(echo \"$src\" | tr -d 3)\"; \t\t[ -s \"/usr/local/bin/$src\" ]; \t\t[ ! -e \"/usr/local/bin/$dst\" ]; \t\tln -svT \"$src\" \"/usr/local/bin/$dst\"; \tdone # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-01T21:36:39.244093284Z",
+            "created_by": "CMD [\"python3\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T06:00:57.678824529Z",
+            "created_by": "ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PATH=/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T06:00:57.678824529Z",
+            "created_by": "RUN /bin/sh -c apk add --no-cache git openssh-client ca-certificates nodejs npm bash libffi openssl libstdc++ # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:17.905519411Z",
+            "created_by": "COPY /opt/venv /opt/venv # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:18.190865331Z",
+            "created_by": "COPY /usr/local/bin/gitleaks /usr/local/bin/grype /usr/local/bin/ # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:18.292884066Z",
+            "created_by": "COPY /usr/local/share/sast-rules /usr/local/share/sast-rules # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:18.44493457Z",
+            "created_by": "COPY /app/bin/kics /usr/local/bin/kics # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:19.132746751Z",
+            "created_by": "COPY /app/bin/assets /usr/local/bin/assets # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:19.199470248Z",
+            "created_by": "COPY rules/ /app/rules/ # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:19.261803175Z",
+            "created_by": "RUN /bin/sh -c addgroup -S sourcebastion && adduser -S -G sourcebastion sourcebastion &&     mkdir -p /scan /home/sourcebastion/.cache &&     chown -R sourcebastion:sourcebastion /home/sourcebastion /scan # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:19.261803175Z",
+            "created_by": "USER sourcebastion",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:09:19.261803175Z",
+            "created_by": "ENV HOME=/home/sourcebastion",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:09:19.275305601Z",
+            "created_by": "WORKDIR /scan",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:09:19.275305601Z",
+            "created_by": "HEALTHCHECK {Test:[CMD sourcebastion --version] Interval:30s Timeout:10s StartPeriod:5s StartInterval:0s Retries:3}",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:09:19.275305601Z",
+            "created_by": "ENTRYPOINT [\"sourcebastion\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:09:19.275305601Z",
+            "created_by": "CMD [\"--help\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          }
+        ],
+        "os": "linux",
+        "rootfs": {
+          "type": "layers",
+          "diff_ids": [
+            "sha256:e63b02c2b5c761df2cb95e657d744f27d95da4e051235a13c80b88cd68eab188",
+            "sha256:7c4134b6a3ae662dc75bf1e0cc28df07164d953f5697d59a9b97ffbce2036278",
+            "sha256:fea0728561719285049d54581e6de31e1d542ceb34d05307a20d108c4190fd9e",
+            "sha256:325206d0611343d6f488af992a0a8953f7c828c7c6e3ef913b8fa32be7bebbc6",
+            "sha256:7f51b5ca8e9b095625bf7364bd5c49dacf3c3cc79902584b9edd5ec0244518b5",
+            "sha256:f1a3b387af4ee6fff1592f0f19a2dd1a9f0e8a71b3680a6208dd49c1b4f67aaf",
+            "sha256:4a2d0c4e1d8acdeb683884ebc8d586b9b62547dedf47d44529cbc84ad20323be",
+            "sha256:04d5f082f7242b6f5989a33302bb278cef5f2d7231e8edfb3b93d113c710c517",
+            "sha256:6ba350ed2e6ecbf26c6059f735869ede9b8f4052e918a66df5fbfc16e52346bc",
+            "sha256:750016e06811f201836978b80d62043361a8d765af8b8e865684929d2403fd9f",
+            "sha256:2e9077da9130e175c120ff468a33b65edd9eef16b04cb804ef94fce8ef72b3be",
+            "sha256:a5a34fe15499ae9fef011689d33a62169085f72d5bcfe53b03e2f3e555d19dde",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+          ]
+        }
+      }
+    },
+    "arm64": {
+      "manifest": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "config": {
+          "mediaType": "application/vnd.oci.image.config.v1+json",
+          "digest": "sha256:e99ef24ddb8d74bc5e7cd11f46655165bbaca386464601a8f33d4c0e69f63854",
+          "size": 8519
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:ace1621be7ff15b54252f68393ac33181df7f3e095e36a5d9a9892031b357d31",
+            "size": 4186056
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:c2c53ddb544ffda64b4945dc8d700fd0c660a8ea49ecbf1657e88e33ad27c415",
+            "size": 419118
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:6e4b7bea54f6d9ff4216fbdad7cecd5d185639c5c3fd239c32cc4c01d2795ca1",
+            "size": 16496577
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:95638307eabefd1327bd2853858fbab3d3217f8a5c80f7ef7ed163e207c96421",
+            "size": 249
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:461b0d927a0a615e1ba6c742b6024a0a4f8a4602704b85351932f630af6c7246",
+            "size": 35197903
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:433edb57912f1c9eeac41b5d8ca5c166740289f8c46c7ca6b2b617c841fbc0ee",
+            "size": 98450482
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:7d0cac7ecb38b5df70e15fd0424afa36caf3810e43cbaee72a60d8a9659853cb",
+            "size": 35529263
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:1b191c06c1036a18c11563ff95670f3d919fa7688a0843c87df6dcf709ddd567",
+            "size": 253479
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:4fc472a186af6eabd476e1b02d1fdb990a037415b44e0857b0cfdb82d51872fb",
+            "size": 26955503
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:1a457ba3e15826afe7b9954905fa216bb0a2a004ffa9a1b18e9febdf1519ce95",
+            "size": 1658021
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:a26dbb98947835d7de4c9d052ffbe7ec6a589f4def7908f5d34b49abdd4ad84c",
+            "size": 4897
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:3a76cf7209ffc3b0acfe2d13964bdf464cef2cba8ac4c1610cf5fa735b33b11d",
+            "size": 995
+          },
+          {
+            "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+            "digest": "sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1",
+            "size": 32
+          }
+        ]
+      },
+      "manifest_digest": "sha256:dbca7317f8042cae883b55216d731cc5da3a2e0283a8e4a601ac17049107fcf9",
+      "configuration": {
+        "architecture": "arm64",
+        "config": {
+          "User": "sourcebastion",
+          "Env": [
+            "PATH=/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "PYTHON_VERSION=3.14.8",
+            "PYTHON_SHA256=c2215904f02b175596dc49351585104f4bc20341e1c47378b26a2c274360ce73",
+            "PYTHONUNBUFFERED=1",
+            "PYTHONDONTWRITEBYTECODE=1",
+            "HOME=/home/sourcebastion"
+          ],
+          "Entrypoint": [
+            "sourcebastion"
+          ],
+          "Cmd": [
+            "--help"
+          ],
+          "WorkingDir": "/scan",
+          "Labels": {
+            "io.sourcebastion.python.version": "3.14.8",
+            "org.opencontainers.image.description": "SourceBastion application security scanner",
+            "org.opencontainers.image.title": "sourcebastion-scanner",
+            "org.opencontainers.image.version": "1.7.38"
+          },
+          "ArgsEscaped": true,
+          "Healthcheck": {
+            "Test": [
+              "CMD",
+              "sourcebastion",
+              "--version"
+            ],
+            "Interval": 30000000000,
+            "Timeout": 10000000000,
+            "StartPeriod": 5000000000,
+            "Retries": 3
+          }
+        },
+        "created": "2026-10-05T17:15:07.408780922Z",
+        "history": [
+          {
+            "created": "2026-09-17T20:37:18.289637635Z",
+            "created_by": "ADD alpine-minirootfs-3.23.6-aarch64.tar.gz / # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-09-17T20:37:18.289637635Z",
+            "created_by": "CMD [\"/bin/sh\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:33:42.721195329Z",
+            "created_by": "ENV PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:33:42.721195329Z",
+            "created_by": "RUN /bin/sh -c set -eux; \tapk add --no-cache \t\tca-certificates \t\ttzdata \t; # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-01T21:33:42.721195329Z",
+            "created_by": "ENV PYTHON_VERSION=3.14.8",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:33:42.721195329Z",
+            "created_by": "ENV PYTHON_SHA256=c2215904f02b175596dc49351585104f4bc20341e1c47378b26a2c274360ce73",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-01T21:36:20.079299972Z",
+            "created_by": "RUN /bin/sh -c set -eux; \t\tapk add --no-cache --virtual .build-deps \t\tbluez-dev \t\tbzip2-dev \t\tdpkg-dev dpkg \t\tfindutils \t\tg++ \t\tgcc \t\tgdbm-dev \t\tgnupg \t\tlibc-dev \t\tlibffi-dev \t\tlibnsl-dev \t\tlibtirpc-dev \t\tlinux-headers \t\tmake \t\tncurses-dev \t\topenssl-dev \t\tpax-utils \t\treadline-dev \t\tsqlite-dev \t\ttar \t\ttcl-dev \t\ttk \t\ttk-dev \t\tutil-linux-dev \t\txz \t\txz-dev \t\tzlib-dev \t\tzstd-dev \t; \t\twget -O python.tar.xz \"https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz\"; \techo \"$PYTHON_SHA256 *python.tar.xz\" | sha256sum -c -; \tmkdir -p /usr/src/python; \ttar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \trm python.tar.xz; \t\tcd /usr/src/python; \tgnuArch=\"$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)\"; \t./configure \t\t--build=\"$gnuArch\" \t\t--enable-loadable-sqlite-extensions \t\t--enable-option-checking=fatal \t\t--enable-shared \t\t$(test \"${gnuArch%%-*}\" != 'riscv64' && echo '--with-lto') \t\t--with-ensurepip \t; \tnproc=\"$(nproc)\"; \tEXTRA_CFLAGS=\"-DTHREAD_STACK_SIZE=0x100000\"; \tLDFLAGS=\"${LDFLAGS:-} -Wl,--strip-all\"; \tarch=\"$(apk --print-arch)\"; \tcase \"$arch\" in \t\tx86_64|aarch64) \t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\"; \t\t\t;; \t\tx86) \t\t\t;; \t\t*) \t\t\tEXTRA_CFLAGS=\"${EXTRA_CFLAGS:-} -fno-omit-frame-pointer\"; \t\t\t;; \tesac; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-}\" \t; \trm python; \tmake -j \"$nproc\" \t\t\"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}\" \t\t\"LDFLAGS=${LDFLAGS:-} -Wl,-rpath='\\$\\$ORIGIN/../lib'\" \t\tpython \t; \tmake install; \t\tcd /; \trm -rf /usr/src/python; \t\tfind /usr/local -depth \t\t\\( \t\t\t\\( -type d -a \\( -name test -o -name tests -o -name idle_test \\) \\) \t\t\t-o \\( -type f -a \\( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \\) \\) \t\t\\) -exec rm -rf '{}' + \t; \t\tfind /usr/local -type f -executable -not \\( -name '*tkinter*' \\) -exec scanelf --needed --nobanner --format '%n#p' '{}' ';' \t\t| tr ',' '\\n' \t\t| sort -u \t\t| awk 'system(\"[ -e /usr/local/lib/\" $1 \" ]\") == 0 { next } { print \"so:\" $1 }' \t\t| xargs -rt apk add --no-network --virtual .python-rundeps \t; \tapk del --no-network .build-deps; \t\texport PYTHONDONTWRITEBYTECODE=1; \tpython3 --version; \tpip3 --version # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-01T21:36:20.181105233Z",
+            "created_by": "RUN /bin/sh -c set -eux; \tfor src in idle3 pip3 pydoc3 python3 python3-config; do \t\tdst=\"$(echo \"$src\" | tr -d 3)\"; \t\t[ -s \"/usr/local/bin/$src\" ]; \t\t[ ! -e \"/usr/local/bin/$dst\" ]; \t\tln -svT \"$src\" \"/usr/local/bin/$dst\"; \tdone # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-01T21:36:20.181105233Z",
+            "created_by": "CMD [\"python3\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T06:01:07.401272207Z",
+            "created_by": "ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PATH=/opt/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T06:01:07.401272207Z",
+            "created_by": "RUN /bin/sh -c apk add --no-cache git openssh-client ca-certificates nodejs npm bash libffi openssl libstdc++ # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:06.013328352Z",
+            "created_by": "COPY /opt/venv /opt/venv # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:06.305057896Z",
+            "created_by": "COPY /usr/local/bin/gitleaks /usr/local/bin/grype /usr/local/bin/ # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:06.402997766Z",
+            "created_by": "COPY /usr/local/share/sast-rules /usr/local/share/sast-rules # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:06.510150863Z",
+            "created_by": "COPY /app/bin/kics /usr/local/bin/kics # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:07.142791188Z",
+            "created_by": "COPY /app/bin/assets /usr/local/bin/assets # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:07.21510774Z",
+            "created_by": "COPY rules/ /app/rules/ # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:07.394424369Z",
+            "created_by": "RUN /bin/sh -c addgroup -S sourcebastion && adduser -S -G sourcebastion sourcebastion &&     mkdir -p /scan /home/sourcebastion/.cache &&     chown -R sourcebastion:sourcebastion /home/sourcebastion /scan # buildkit",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:07.394424369Z",
+            "created_by": "USER sourcebastion",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:15:07.394424369Z",
+            "created_by": "ENV HOME=/home/sourcebastion",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:15:07.408780922Z",
+            "created_by": "WORKDIR /scan",
+            "comment": "buildkit.dockerfile.v0"
+          },
+          {
+            "created": "2026-10-05T17:15:07.408780922Z",
+            "created_by": "HEALTHCHECK {Test:[CMD sourcebastion --version] Interval:30s Timeout:10s StartPeriod:5s StartInterval:0s Retries:3}",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:15:07.408780922Z",
+            "created_by": "ENTRYPOINT [\"sourcebastion\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          },
+          {
+            "created": "2026-10-05T17:15:07.408780922Z",
+            "created_by": "CMD [\"--help\"]",
+            "comment": "buildkit.dockerfile.v0",
+            "empty_layer": true
+          }
+        ],
+        "os": "linux",
+        "rootfs": {
+          "type": "layers",
+          "diff_ids": [
+            "sha256:18932007cc273c0541920263e57c02d40013c4730d7db35437a4ffcc31422eda",
+            "sha256:0633a929f4d47fb3d94891fd47ebe4490bb13f44c1417a2da225aac990a61745",
+            "sha256:b4346d7bb7d61346501da186ce6c32a3c2c347aa707d4461d3a4782f2ce635f2",
+            "sha256:063f19fff8782aca6c8c3c4a0bf64f5818f0acbe860d7a1c2085ca7a3ab5ca57",
+            "sha256:af3749c9066f6a3276c61a7389ae94325285bdf8ce0f8180cc079bbab2800727",
+            "sha256:19fd29780c6a6692897813497c191e8ac3666c3dd2de4d5078cb43e2cf97f8bd",
+            "sha256:050d3c4175d5c4bfe9f319fb5ab847ea4b25b6977d738d4636964939cd949b53",
+            "sha256:54dd24421919352b89d212c0d7917d3e39d0c6608835fbcdcfe81f8c4a6d2d4d",
+            "sha256:24dd8485099b7c771e81a13f979effc0cdfc8857ddcace9cec3f08f77afcab43",
+            "sha256:5ab2e90d36659d51204160192881d206ec9cdc3f10113684cf7a9419511d2fba",
+            "sha256:d57e43c21953cdc3e7e102ed64a6547960968d7b98dbd8ee668e3b0441c8f32e",
+            "sha256:1cf05c2baef5c9a12b4b81179945cac418cd1d875f09c9a2a02cc96b8ee547ea",
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+          ]
+        }
+      }
+    }
+  }
+}

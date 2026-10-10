@@ -13,6 +13,52 @@ FROZEN = {
     "cpu_usec": 120000000, "wall_seconds": 150, "pids": 256,
     "added_compressed_layer_bytes": 262144000, "repeats_per_native_architecture": 3,
 }
+S01_REVIEW_SHA256 = "3ce965fb4816d1a9e3ada9e6af66bc927cbe84178f998021bdb0982471b5ee45"
+S01_IMAGE_PINS_SHA256 = "7ecc7b94e0dbd0fde30c688c2a93b38b9f9e1880bab85f0ca38e243142d4c083"
+
+
+def frozen_s01_layers(path, architecture):
+    """Recover the reviewed pre-inventory 13-layer prefix from S01 evidence.
+
+    S01 retained a feasibility image containing that prefix plus one schema
+    stack layer. Counting that new layer as baseline would silently credit
+    part of M046. Verify the exact retained archive and exclude the reviewed
+    addition; never rebuild a historical checkout to manufacture a baseline.
+    """
+    raw = (ROOT / "evaluation/m046/evidence/direct-alpine-independent-verification.json").read_bytes()
+    if hashlib.sha256(raw).hexdigest() != S01_REVIEW_SHA256:
+        raise ValueError("frozen-s01-review-changed")
+    review = json.loads(raw)
+    matches = [row for row in review["architectures"] if row["architecture"] == architecture]
+    if len(matches) != 1:
+        raise ValueError("frozen-s01-architecture-required")
+    row = matches[0]
+    with path.open("rb") as stream:
+        if hashlib.file_digest(stream, "sha256").hexdigest() != row["oci_sha256"]:
+            raise ValueError("frozen-s01-archive-digest-mismatch")
+    observed = oci_layers(path, architecture)
+    pins_raw = (ROOT / "docs/M046/S07/frozen-s01-image-pins.json").read_bytes()
+    if hashlib.sha256(pins_raw).hexdigest() != S01_IMAGE_PINS_SHA256:
+        raise ValueError("frozen-s01-image-pins-changed")
+    pins = json.loads(pins_raw)
+    pinned = pins["architectures"][architecture]
+    prefix = [{"digest": layer["digest"], "size": layer["size"]} for layer in pinned["manifest"]["layers"]]
+    cost = row["image_cost"]
+    count = cost["baseline_layers"]
+    additions = [{"digest": layer["digest"], "size": layer["size"]} for layer in cost["added_layers"]]
+    if (count != 13 or observed["manifest_digest"] != cost["manifest_digest"]
+            or observed["config_digest"] != cost["configuration_digest"]
+            or len(observed["layers"]) != count + len(additions)
+            or observed["layers"][count:] != additions or observed["layers"][:count] != prefix):
+        raise ValueError("frozen-s01-layer-prefix-mismatch")
+    return {**observed, "layers": prefix, "manifest_digest": pinned["manifest_digest"],
+            "config_digest": pinned["manifest"]["config"]["digest"],
+            "baseline_kind": "frozen-s01-pre-inventory-layer-prefix",
+            "baseline_layer_count": count, "baseline_archive_sha256": row["oci_sha256"],
+            "baseline_review_sha256": S01_REVIEW_SHA256,
+            "baseline_source_sha": review["head"], "baseline_source_run": review["run"],
+            "baseline_image_reference": pins["reference"], "baseline_image_pins_sha256": S01_IMAGE_PINS_SHA256,
+            "baseline_evidence_manifest": observed["manifest_digest"]}
 
 
 def policy():

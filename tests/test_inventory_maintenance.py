@@ -186,6 +186,22 @@ def test_compressed_growth_cli_binds_the_actual_tested_image(tmp_path, same_imag
         assert receipt["reason"] == "compressed-candidate-is-not-tested-image"
 
 
+def test_frozen_s01_gate_refuses_an_arbitrary_pr_base_even_when_image_matches(tmp_path):
+    path = oci(tmp_path)
+    value = release["oci_layers"](path, "arm64")
+    inspect = tmp_path / "image.json"
+    inspect.write_text(json.dumps({"Id": value["config_digest"], "Architecture": "arm64", "Os": "linux"}))
+    output = tmp_path / "frozen-growth.json"
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/verify-inventory-release-size.py"),
+                            "--frozen-s01", "--baseline", str(path), "--candidate", str(path),
+                            "--architecture", "arm64", "--candidate-image", str(inspect), "--output", str(output)],
+                            capture_output=True)
+    assert result.returncode == 1
+    receipt = json.loads(output.read_text())
+    assert receipt["status"] == "failed"
+    assert receipt["reason"] == "frozen-s01-archive-digest-mismatch"
+
+
 def test_download_hash_failure_never_succeeds(tmp_path, monkeypatch):
     tool = runpy.run_path(str(ROOT / "scripts/prepare-inventory-node.py"))
     function = tool["prepare"]
@@ -378,6 +394,38 @@ def test_exit_file_visibility_does_not_release_shell_before_second_stop(tmp_path
     execute, args = _driver(tmp_path, monkeypatch, delayed_stop=True)
     assert execute(args) == 0
     assert json.loads((args.output / "resources.json").read_text())["status"] == "passed"
+
+
+@pytest.mark.parametrize("prepared", [False, True])
+def test_corpus_cli_admits_installed_helper_and_optional_provider(tmp_path, monkeypatch, prepared):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    main = runpy.run_path(str(ROOT / "scripts/run-inventory-resource-proof.py"))["main"]
+    admitted = []
+    monkeypatch.setitem(main.__globals__, "run", lambda args: admitted.append(args) or 0)
+    argv = ["--image", "reviewed", "--checkout", str(ROOT), "--output", str(tmp_path / "proof"), "--workload", "corpus"]
+    if prepared:
+        argv += ["--provider", str(tmp_path / "provider")]
+    assert main(argv) == 0
+    assert admitted[0].workload == "corpus"
+    assert admitted[0].provider == (tmp_path / "provider" if prepared else None)
+
+
+@pytest.mark.parametrize("prepared", [False, True])
+def test_corpus_driver_selects_the_admitted_manifest(tmp_path, monkeypatch, prepared):
+    execute, args = _driver(tmp_path, monkeypatch)
+    args.workload = "corpus"
+    args.provider = tmp_path / "provider" if prepared else None
+    calls = []
+    original = execute.__globals__["docker"]
+    def recorded(*arguments, **options):
+        calls.append(arguments)
+        return original(*arguments, **options)
+    monkeypatch.setitem(execute.__globals__, "docker", recorded)
+    assert execute(args) == 0
+    created = next(command for command in calls if command[0] == "create")
+    assert created[created.index("--go-preparation") + 1] == (
+        "/prepared/manifest.json" if prepared else "/usr/local/share/sourcebastion/inventory-go.json"
+    )
 
 
 @pytest.mark.parametrize("raw", [b"warning\n0", b"", b"0\n1"])

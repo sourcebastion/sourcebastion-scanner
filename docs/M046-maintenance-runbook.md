@@ -4,6 +4,8 @@ Owner: scanner maintainers. S06 implementation lives in scanner issue #93.
 The executable gates below do not accept S06 or M046 by themselves. S06 needs
 reviewed exact-head native evidence, S02–S04 acceptance, and distribution closure;
 S07 additionally needs published-digest development and rollback evidence.
+Its requirement-by-requirement record is the
+[S07 acceptance ledger](M046-S07-acceptance.md).
 
 ## Supported release and identities
 

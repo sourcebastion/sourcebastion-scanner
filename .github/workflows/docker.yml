@@ -420,6 +420,7 @@ jobs:
           IMAGE_ARCH: ${{ matrix.arch }}
         run: |
           docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+            ${{ steps.bases.outputs.build_args }} \
             --output "type=oci,dest=$RUNNER_TEMP/inventory-candidate.oci.tar" -f images/Dockerfile .
 
       - name: Record image size
@@ -669,11 +670,19 @@ jobs:
           base_dir="$RUNNER_TEMP/inventory-image-base"
           mkdir "$base_dir"
           git archive "$BASE_SHA" | tar -x -C "$base_dir"
-          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+          python3 scripts/select_base_images.py --checkout "$base_dir" --format json > "$RUNNER_TEMP/inventory-base-args.json"
+          python3 -c '
+          import json, sys
+          for name, value in json.load(open(sys.argv[1])).items():
+              print("--build-arg")
+              print(name + "=" + value)
+          ' "$RUNNER_TEMP/inventory-base-args.json" > "$RUNNER_TEMP/inventory-base-args.txt"
+          mapfile -t base_args < "$RUNNER_TEMP/inventory-base-args.txt"
+          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false "${base_args[@]}" \
             --output "type=oci,dest=$RUNNER_TEMP/inventory-base.oci.tar" \
             -f "$base_dir/images/Dockerfile" "$base_dir"
           docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
-            --load --tag sourcebastion:inventory-upgrade-base -f "$base_dir/images/Dockerfile" "$base_dir"
+            "${base_args[@]}" --load --tag sourcebastion:inventory-upgrade-base -f "$base_dir/images/Dockerfile" "$base_dir"
           python3 scripts/verify-inventory-release-size.py --architecture "$IMAGE_ARCH" \
             --baseline "$RUNNER_TEMP/inventory-base.oci.tar" --candidate "$RUNNER_TEMP/inventory-candidate.oci.tar" \
             --candidate-image image-inspect.json --output inventory-compressed-growth.json

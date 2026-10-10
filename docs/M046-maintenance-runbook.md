@@ -47,7 +47,12 @@ This is a maintainer cadence, not a created recurring automation. Update pins
 only in a reviewed PR; scanner-artifact/update and release preparation stay
 outside customer scanning. A Python update must update the immutable Docker
 base and both native manifest digests together with the interpreter and wheel
-locks. Updating a tag or build argument alone fails installed verification.
+locks. `scripts/python_version.py update` resolves the official multiarchitecture
+index and verifies both native manifests, config digests, architectures and
+interpreter versions before changing the wheel locks or pins. Release preparation
+stages `base-image-pins.json`, `inventory-runtime-pins.json`, `PYTHON_VERSION` and
+the Dockerfile together. Registry or verification failures preserve the reviewed
+files. Updating a tag or build argument alone fails installed verification.
 
 Keep `tests/fixtures/inventory/corpus.json` and fixture bytes independent of tool
 output. The hand-authored full-record oracle is
@@ -203,7 +208,10 @@ That hypothesis was wrong, and it was wrong in a plausible direction: a race
 would have affected the short stress arms most, not spared all eight of them.
 
 The driver therefore releases the held shell and awaits the container's exit
-before reading the stream, after its final observation. Two rules follow for
+before reading the stream, after its final observation. The exit file appears
+before `printf` completes and before the second stop, so file existence is not
+the handoff: the driver waits for the shell's stopped state before reading the
+exit status, taking final counters or releasing it. Two rules follow for
 anyone changing this path:
 
 - never read a workload's output while its container is still held, whatever

@@ -51,6 +51,13 @@ def artifact_tools():
     return artifacts
 
 
+def base_tools():
+    spec = importlib.util.spec_from_file_location("release_python_base", ROOT / "scripts/python_base.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def update(requested):
     requested = requested.strip()
     if requested != "latest":
@@ -82,16 +89,17 @@ def update(requested):
                     raise
                 failures.append(f"{version}: {exc}")
                 continue
+            # Resolve the index, both native manifests and interpreter configs
+            # before replacing reviewed pins or any wheel lock.
+            pin_updates = base_tools().updated_files(ROOT, version)
             # Only update reviewed files after all wheels and target closures verify.
             destination = ROOT / ".github/python-locks"
             for path in destination.glob("*.txt"):
                 path.unlink()
             for path in staged.iterdir():
                 (destination / path.name).write_bytes(path.read_bytes())
-            (ROOT / "PYTHON_VERSION").write_text(version + "\n")
-            dockerfile = ROOT / "images/Dockerfile"
-            dockerfile.write_text(re.sub(r"^ARG PYTHON_VERSION=.*$", "ARG PYTHON_VERSION=" + version,
-                                        dockerfile.read_text(), flags=re.MULTILINE))
+            for path, content in pin_updates.items():
+                path.write_text(content)
             return version
     raise ValueError("no compatible stable Python candidate: " + "; ".join(failures))
 

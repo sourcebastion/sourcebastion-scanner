@@ -244,13 +244,14 @@ def test_resource_driver_removes_only_owned_container_on_failure(tmp_path, monke
     assert receipt["status"] == "failed" and receipt["removed"] == (failure != "cleanup")
 
 
-def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returncode=0, wait_code=0):
+def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returncode=0, wait_code=0, delayed_stop=False):
     """Drive the resource proof to the output-capture step with a stub Docker."""
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))
     functions = runpy.run_path(str(ROOT / "scripts/run-inventory-resource-proof.py"))
     execute = functions["run"]
     scope = execute.__globals__
     args_holder = {}
+    phase = {"continues": 0, "stopped": False, "second_reads": 0}
     monkeypatch.setattr(scope["platform"], "system", lambda: "Linux")
     monkeypatch.setattr(scope["platform"], "machine", lambda: "x86_64")
     cid, image = "c" * 64, "sha256:" + "a" * 64
@@ -262,6 +263,10 @@ def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returnc
             Path(args[args.index("--cidfile") + 1]).write_text(cid)
         if args[0] == "inspect":
             return json.dumps([{"Image": image, "State": {"Running": True, "Pid": 123}}]).encode()
+        if args[:3] == ("kill", "--signal", "CONT"):
+            phase["continues"] += 1
+            if delayed_stop and phase["continues"] == 2:
+                assert phase["stopped"], "CONT before second STOP loses the wakeup"
         if args[0] == "wait":
             # The wrapper exits with the workload's status; the gate file in
             # this harness says 0, so the container must agree.
@@ -294,6 +299,9 @@ def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returnc
     seen = []
 
     def observe(_root):
+        if delayed_stop and seen:
+            assert phase["stopped"], "final counters must be sampled while held"
+        assert phase["continues"] < 2, "cgroup may be gone after release"
         # The pre-work call writes the gate file, standing in for a container
         # that has already finished, so the wait loop's /proc inspection (which
         # cannot be stubbed on a non-Linux host) is never reached. The loop
@@ -311,8 +319,16 @@ def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returnc
     def read(path):
         text = str(path)
         if text.startswith("/proc/"):
-            return "124" if text.endswith("/children") else "State:\tT"
+            if text.endswith("/children"):
+                return "124"
+            if delayed_stop and phase["continues"] == 1:
+                phase["second_reads"] += 1
+                phase["stopped"] = phase["second_reads"] >= 3
+                return "State:\tT" if phase["stopped"] else "State:\tR"
+            return "State:\tT"
         if text.endswith("/gate/exit"):
+            if delayed_stop:
+                assert phase["stopped"], "exit file can still be empty before STOP"
             return "0"
         return original_read(path)
 
@@ -356,3 +372,17 @@ def test_a_workload_that_produced_output_still_passes(tmp_path, monkeypatch):
     receipt = json.loads((args.output / "resources.json").read_text())
     assert receipt["status"] == "passed"
     assert receipt["workload_sha256"] == hashlib.sha256(b'{"arm": "flat-1000"}\n').hexdigest()
+
+
+def test_exit_file_visibility_does_not_release_shell_before_second_stop(tmp_path, monkeypatch):
+    execute, args = _driver(tmp_path, monkeypatch, delayed_stop=True)
+    assert execute(args) == 0
+    assert json.loads((args.output / "resources.json").read_text())["status"] == "passed"
+
+
+@pytest.mark.parametrize("raw", [b"warning\n0", b"", b"0\n1"])
+def test_ambiguous_docker_wait_output_is_refused(raw, monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    functions = runpy.run_path(str(ROOT / "scripts/run-inventory-resource-proof.py"))
+    with pytest.raises(ValueError, match="exit-unreadable"):
+        functions["read_bytes"](raw)

@@ -180,6 +180,12 @@ def run(args):
             if not Path(f"/proc/{pid}").exists():
                 raise ValueError("resource-container-exited-without-final-observation")
             time.sleep(0.02)
+        # Creating the exit file precedes both printf completing and SIGSTOP.
+        # Observe the second stop before reading it or sending CONT, otherwise
+        # an early CONT can be lost and leave the shell stopped forever.
+        while "State:\tT" not in read(Path(f"/proc/{shell}/status")):
+            remaining()
+            time.sleep(0.01)
         receipt.update(observe(root))
         limits(root)
         receipt["exit_code"] = int(read(gate / "exit"))

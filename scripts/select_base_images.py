@@ -13,6 +13,7 @@ either registry, so the fallback cannot change which bytes are built.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import urllib.error
@@ -38,7 +39,9 @@ def anonymous_token(host, path):
     query = urllib.parse.urlencode({"service": host, "scope": f"repository:{path}:pull"})
     try:
         with urllib.request.urlopen(f"https://{host}/token?{query}", timeout=TIMEOUT) as response:
-            return json.load(response).get("token") or ""
+            value = json.load(response)
+            token = value.get("token") if isinstance(value, dict) else None
+            return token if isinstance(token, str) else ""
     except (urllib.error.URLError, OSError, ValueError):
         return ""
 
@@ -69,13 +72,20 @@ def serves(image):
 
 
 def main():
-    images = pins()
-    dockerfile_agrees(images)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--checkout", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--format", choices=("github", "json"), default="github")
+    args = parser.parse_args()
+    images = pins(args.checkout / ".github/base-image-pins.json")
+    dockerfile_agrees(images, args.checkout / "images/Dockerfile")
     # Refuses before any build if the reviewed interpreter version and the
     # pinned base image have drifted apart.
-    version_agrees(images)
+    version_agrees(images, args.checkout / "PYTHON_VERSION")
     mirrored = all(serves(image) for image in images)
     chosen = build_args(images, mirrored=mirrored)
+    if args.format == "json":
+        print(json.dumps(chosen, sort_keys=True))
+        return 0
     inline = " ".join(f'--build-arg "{name}={value}"' for name, value in sorted(chosen.items()))
     lines = "\n".join(f"{name}={value}" for name, value in sorted(chosen.items()))
     print("source=" + ("mirror" if mirrored else "upstream"))

@@ -1,10 +1,10 @@
 # M046 S06 acceptance ledger
 
-Status: implementation is largely in place and in review on
+Status: implementation is in place and green at exact head on
 [#159](https://github.com/sourcebastion/sourcebastion-scanner/pull/159).
-S06 is **not accepted**: its own acceptance sentence requires exact-head CI and
-release evidence, and several items below are open for reasons no merge
-addresses.
+S06 is **not accepted**. Exact-head CI and the numeric budgets are now
+satisfied; release evidence, coordination with #54 and distribution closure are
+not, and none of those three is answered by a merge.
 
 Tracking: [S06 #93](https://github.com/sourcebastion/sourcebastion-scanner/issues/93).
 Canonical scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
@@ -29,8 +29,9 @@ milestone closure.
 | Bounded concurrency and outer deadlines; no hidden timeout allowance | implemented, in review | The host driver takes the controller's original `deadline_monotonic` from `job.json` and lowers, never raises it; one shared wall interval across stages |
 | Support, maintenance and rollback runbook published | implemented, in review | [`docs/M046-maintenance-runbook.md`](M046-maintenance-runbook.md) |
 | Coordinate with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54) without assuming its older architecture | **open** | #54 is open. This slice reuses the verified snapshot rather than a database in every image, which is the coordination S06 asks for, but #54 records no agreed position yet |
-| Numeric budgets pass on native hardware | **open** | Needs the exact-head native run; see below |
-| Exact-head CI and release evidence | **open** | The requirement S06 names last, and the one that cannot be satisfied from a developer checkout |
+| Numeric budgets pass on native hardware | satisfied | Exact-head run [38024740699](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38024740699) on `3ac1928a`: every arm within the frozen ceilings, three entrypoint repeats at roughly 8.54 CPU seconds, 59 MiB peak and 11 PIDs |
+| Exact-head CI | satisfied | The same run, green on AMD64 and ARM64, including the base-image mirror in every build path |
+| Release evidence | **open** | `release.yml` validates images before publication and does not run on a pull request. S06 names it alongside exact-head CI |
 
 ## The demo S06 specifies
 
@@ -67,10 +68,29 @@ gate and `owned_container` raised bare codes, and the driver reduced any
 unexpected error to its class name. Both now carry bounded diagnostics, which
 is what sent this investigation to the wrong layer twice.
 
+## The capture defect, closed at exact head
+
+The host resource proof reported `status: passed` for a workload that emitted
+nothing. At exact head the entrypoint arm records `status: passed` with real
+`workload_sha256` values across three repeats, where it previously recorded the
+digest of the empty string. The receipt is captured, the budgets are measured
+and the container is removed.
+
+Two defects in the first fix were found in review and are also closed. Creating
+the exit file precedes both the `printf` completing and the shell stopping, so
+the driver now waits for the second stopped state before reading the exit code
+or sending `CONT`; reading on file creation alone could see empty bytes, and an
+early `CONT` is lost on a running process and strands the shell. Separately the
+OCI candidate and baseline builds did not receive the selected base image
+arguments, so they bypassed the mirror; the baseline now selects independently
+from its own checkout's reviewed pins, because a baseline commit may pin a
+different digest.
+
 ## What this does not establish
 
-The exact-head native run is the gate S06 names, and no local result
-substitutes for it. Also open, and listed by #159 itself: accepted S02-S04
+Release evidence comes from `release.yml`, which validates images before
+publication and does not run on a pull request. Also open, and listed by #159
+itself: accepted S02-S04
 integration, reviewed native release evidence, cumulative compressed growth
 against the frozen S01 baseline, and distribution closure including the S01
 rpds/libgcc finding.

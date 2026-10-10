@@ -51,7 +51,9 @@ def _input_outcome(row, *, refused=False):
         "unresolved": "partial",
         "bounded-omission": "partial",
         "failed": "failed",
-    }.get(row.disposition, "unknown") if ecosystem else "unknown"
+    }.get(row.disposition, "unknown") if (
+        ecosystem and row.source_sha256 is not None and row.parser is not None
+    ) else "unknown"
     return row.model_copy(update={
         "ecosystem": ecosystem,
         "enumeration": "unknown" if refused else outcome,

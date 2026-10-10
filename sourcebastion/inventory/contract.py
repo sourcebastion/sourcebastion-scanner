@@ -516,9 +516,12 @@ class InputCoverage(Record):
             self.ecosystem is None or self.enumeration_basis != "source-input"
         ):
             raise ValueError("input-enumeration-requires-producer-domain")
-        if self.enumeration == "complete" and (
-            self.disposition != "parsed" or self.source_sha256 is None or self.parser is None
+        if self.enumeration != "unknown" and (
+            self.disposition not in {"parsed", "failed", "bounded-omission", "unresolved"}
+            or self.source_sha256 is None or self.parser is None
         ):
+            raise ValueError("unexamined-input-cannot-prove-enumeration")
+        if self.enumeration == "complete" and self.disposition != "parsed":
             raise ValueError("unexamined-input-cannot-prove-enumeration")
         if self.ecosystem is not None:
             from .registry import FORMAT_ECOSYSTEMS

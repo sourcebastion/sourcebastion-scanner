@@ -5,7 +5,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from sourcebastion.inventory.contract import InputCoverage, canonical_bytes
+from sourcebastion.inventory.contract import InputCoverage, Inventory, canonical_bytes
 from sourcebastion.inventory.row_projection import project_rows
 from sourcebastion.inventory.registry import DiscoveryConfig
 from tests.test_inventory_gradle_composition import run
@@ -61,6 +61,50 @@ def test_invalid_or_cross_ecosystem_outcomes_are_refused(updates):
             "format": "pip-requirements", "parser": "test", "disposition": "parsed", "reason": "static-input",
             **updates,
         })
+
+
+@pytest.fixture
+def examined_input():
+    return {
+        "source_path": "requirements.txt", "source_sha256": "a" * 64,
+        "format": "pip-requirements", "parser": "test", "reason": "static-input",
+        "ecosystem": "pypi", "enumeration_basis": "source-input",
+    }
+
+
+@pytest.mark.parametrize("disposition", [
+    "discovered", "parsed", "ignored", "unsupported", "failed", "bounded-omission", "unresolved",
+])
+@pytest.mark.parametrize("enumeration", ["unknown", "partial", "failed", "complete"])
+def test_input_enumeration_requires_an_examined_disposition(examined_input, disposition, enumeration):
+    values = {**examined_input, "disposition": disposition, "enumeration": enumeration}
+    allowed = enumeration == "unknown" or (
+        disposition in {"parsed", "failed", "bounded-omission", "unresolved"}
+        and (enumeration != "complete" or disposition == "parsed")
+    )
+    if allowed:
+        assert InputCoverage(**values).enumeration == enumeration
+    else:
+        with pytest.raises(ValidationError, match="unexamined-input-cannot-prove-enumeration"):
+            InputCoverage(**values)
+
+
+@pytest.mark.parametrize("disposition", ["parsed", "failed", "bounded-omission", "unresolved"])
+@pytest.mark.parametrize("missing", ["source_sha256", "parser"])
+def test_partial_input_requires_actual_source_and_parser_evidence(examined_input, disposition, missing):
+    with pytest.raises(ValidationError, match="unexamined-input-cannot-prove-enumeration"):
+        InputCoverage(**{
+            **examined_input, "disposition": disposition, "enumeration": "partial", missing: None,
+        })
+
+
+def test_unread_include_target_keeps_unknown_enumeration_and_valid_canonical_bytes(tmp_path):
+    (tmp_path / "requirements.txt").write_text("-r absent.txt\npip==26.0.1\n")
+    result = run(tmp_path)
+    missing = next(row for row in result.coverage.inputs if row.source_path == "absent.txt")
+    assert missing.source_sha256 is None and missing.parser is None
+    assert missing.enumeration == "unknown"
+    assert Inventory.model_validate_json(canonical_bytes(result)) == result
 
 
 def test_older_canonical_inputs_keep_their_original_bytes_and_unknown_domains(tmp_path):

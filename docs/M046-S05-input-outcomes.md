@@ -8,9 +8,13 @@ incompatible runtime and component identities.
 
 `enumeration_basis=source-input` restricts the input's enumeration outcome to
 the records encoded by that input. Parsed input records have complete input
-enumeration; unresolved or bounded inputs are partial; parser failures are
-failed. Unsupported, ignored and unexamined inputs remain unknown. A complete
-input outcome requires a parser and admitted source digest. It never means a
+enumeration; examined unresolved or bounded inputs are partial; parser failures
+are failed. Unsupported, ignored, discovered and otherwise unexamined inputs
+remain unknown. Every non-unknown input outcome requires a parser, an admitted
+source digest and an examined disposition (`parsed`, `failed`,
+`bounded-omission` or `unresolved`). A missing include target remains unknown;
+an unresolved version in a parsed, source-bound input can remain partial.
+Complete additionally requires `parsed`. It never means a
 complete installed dependency closure, full graph, all dependencies in a
 directory, or all ecosystems in a project. Global inventory, version, graph
 and discovery fidelity remain separate and unchanged.

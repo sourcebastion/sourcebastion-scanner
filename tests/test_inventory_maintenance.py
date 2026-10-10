@@ -396,6 +396,38 @@ def test_exit_file_visibility_does_not_release_shell_before_second_stop(tmp_path
     assert json.loads((args.output / "resources.json").read_text())["status"] == "passed"
 
 
+@pytest.mark.parametrize("prepared", [False, True])
+def test_corpus_cli_admits_installed_helper_and_optional_provider(tmp_path, monkeypatch, prepared):
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    main = runpy.run_path(str(ROOT / "scripts/run-inventory-resource-proof.py"))["main"]
+    admitted = []
+    monkeypatch.setitem(main.__globals__, "run", lambda args: admitted.append(args) or 0)
+    argv = ["--image", "reviewed", "--checkout", str(ROOT), "--output", str(tmp_path / "proof"), "--workload", "corpus"]
+    if prepared:
+        argv += ["--provider", str(tmp_path / "provider")]
+    assert main(argv) == 0
+    assert admitted[0].workload == "corpus"
+    assert admitted[0].provider == (tmp_path / "provider" if prepared else None)
+
+
+@pytest.mark.parametrize("prepared", [False, True])
+def test_corpus_driver_selects_the_admitted_manifest(tmp_path, monkeypatch, prepared):
+    execute, args = _driver(tmp_path, monkeypatch)
+    args.workload = "corpus"
+    args.provider = tmp_path / "provider" if prepared else None
+    calls = []
+    original = execute.__globals__["docker"]
+    def recorded(*arguments, **options):
+        calls.append(arguments)
+        return original(*arguments, **options)
+    monkeypatch.setitem(execute.__globals__, "docker", recorded)
+    assert execute(args) == 0
+    created = next(command for command in calls if command[0] == "create")
+    assert created[created.index("--go-preparation") + 1] == (
+        "/prepared/manifest.json" if prepared else "/usr/local/share/sourcebastion/inventory-go.json"
+    )
+
+
 @pytest.mark.parametrize("raw", [b"warning\n0", b"", b"0\n1"])
 def test_ambiguous_docker_wait_output_is_refused(raw, monkeypatch):
     monkeypatch.syspath_prepend(str(ROOT / "scripts"))

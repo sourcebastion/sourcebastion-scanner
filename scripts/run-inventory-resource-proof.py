@@ -262,7 +262,7 @@ def run(args):
     return 0 if receipt["status"] == "passed" else 1
 
 
-if __name__ == "__main__":
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", required=True)
     parser.add_argument("--checkout", required=True, type=Path)
@@ -272,9 +272,11 @@ if __name__ == "__main__":
     for name in ("source", "advisories", "preparation", "control", "artifacts"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--arm", choices=("flat-1000", "flat-10000", "flat-100000", "flat-100001", "graph", "expansion"), default="flat-1000")
-    args = parser.parse_args()
-    if args.workload == "corpus" and args.provider is None:
-        parser.error("--provider required for corpus")
+    args = parser.parse_args(argv)
     if args.workload == "entrypoint" and any(getattr(args, name) is None for name in ("source", "advisories", "preparation", "control", "artifacts")):
         parser.error("entrypoint requires all immutable controller mounts")
-    raise SystemExit(run(args))
+    return run(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,115 @@
+{
+  "architecture": "arm64",
+  "image": "ghcr.io/sourcebastion/sourcebastion-scanner:latest",
+  "libraries": [
+    {
+      "bytes": 203337,
+      "path": "/opt/venv/lib/python3.14/site-packages/cryptography.libs/libgcc_s-2d945d6c.so.1",
+      "sha256": "35d3a03b621ff2ba18dcf4a727cd42b016b5ae332f37fb963c2a3f5744e1c046"
+    },
+    {
+      "bytes": 529921,
+      "path": "/opt/venv/lib/python3.14/site-packages/pydantic_core.libs/libgcc_s-0bf60adc.so.1",
+      "sha256": "f33db50df5fb0591ee20b789e7f26cb4593e3a36a3dcd45c668d5af03a3f5a87"
+    },
+    {
+      "bytes": 529921,
+      "path": "/opt/venv/lib/python3.14/site-packages/rpds_py.libs/libgcc_s-0bf60adc.so.1",
+      "sha256": "f33db50df5fb0591ee20b789e7f26cb4593e3a36a3dcd45c668d5af03a3f5a87"
+    },
+    {
+      "bytes": 132857,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libbz2.so.1",
+      "sha256": "d69519dfb7bca25be2defcdabb2e20f1cd9bf192b653292494a7ae743a2fb40e"
+    },
+    {
+      "bytes": 4747793,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libcrypto.so.3",
+      "sha256": "76f07b63a7572d0fc1ead253cdd0de348700ab88c88506e946a710c3e1b8dcf3"
+    },
+    {
+      "bytes": 666849,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libdw.so.1",
+      "sha256": "5f00cb1cc7a8eab7b00a040344518f0e8cadb8601e4ceee42e8f3e64896cc18e"
+    },
+    {
+      "bytes": 201017,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libelf.so.1",
+      "sha256": "e68132be880dd9d5a5b6eaebd2406af951e83e26a2a0920b36d1124d40e58c18"
+    },
+    {
+      "bytes": 134945,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libev.so.4",
+      "sha256": "198e2b77fcab316246bdc232d22b72810b3f17c245facccd21f3ebb263dc3ec3"
+    },
+    {
+      "bytes": 132097,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libfts.so.0",
+      "sha256": "08efaa24e061fa3c04a22380b7c108e3d278821e02579d821d878e381c3f8f0a"
+    },
+    {
+      "bytes": 202209,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libgcc_s.so.1",
+      "sha256": "cf8fbe9f144cf6a8ebb70c463fe01941058b898ed80798851e15654f0d9cb9e6"
+    },
+    {
+      "bytes": 542545,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libgmp.so.10",
+      "sha256": "6978b66f386b3074de88f445dd1c6d1b7411d3cf164a0ca37ab03ac21b033caa"
+    },
+    {
+      "bytes": 332817,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/liblzma.so.5",
+      "sha256": "2f826d7f90095f6059a3ac35191652477d19721241945668058d83254cc84b37"
+    },
+    {
+      "bytes": 856049,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libpcre2-8.so.0",
+      "sha256": "09db3c053f706d395d8a9892957cab16b6d58ba47dd2ec6fc448da3d84ab6ade"
+    },
+    {
+      "bytes": 949321,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libssl.so.3",
+      "sha256": "c2427d6b050c8869275d4040ed027a1a53927158b20e0efa17635fea1851e35a"
+    },
+    {
+      "bytes": 3302249,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libstdc++.so.6",
+      "sha256": "7b290615eaed5256ff7e0ba856bd7e1119e2d6ba9c5d4d4c70c366184fabf97f"
+    },
+    {
+      "bytes": 333521,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libtree-sitter.so.0.26",
+      "sha256": "45c5c113e3e81c34133fe7f0756b520a5dc5826806a505ae3230e1e6ab474168"
+    },
+    {
+      "bytes": 134737,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libunwind.so.8",
+      "sha256": "dc13535fda6c87e5417247d9d88e84285af5a026c3b9d16c56deb643d200ec78"
+    },
+    {
+      "bytes": 200177,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libz.so.1",
+      "sha256": "53c10f0830c9516b56023732df6927e69e601dfc7f731daa84f141c7db83ea8a"
+    },
+    {
+      "bytes": 728665,
+      "path": "/opt/venv/lib/python3.14/site-packages/semgrep/bin/libs/libzstd.so.1",
+      "sha256": "5321777c248937ed788f437a61352571cbf4f87d0d223f686fa4882f7a0a53a3"
+    },
+    {
+      "bytes": 133008,
+      "path": "/usr/lib/libgcc_s.so.1",
+      "sha256": "fd240181fecbb70409aa70ccb76671a96ac22be540e6398fe66d6800a16b2b18"
+    }
+  ],
+  "observed": "2026-10-10",
+  "owner_versions": {
+    "cryptography": "50.0.2",
+    "pydantic_core": "2.46.5",
+    "rpds_py": "2026.9.1",
+    "semgrep": "1.179.0"
+  },
+  "schema_version": "sourcebastion.m046-bundled-natives/1",
+  "scope": "Observed in the published ARM64 scanner image. Identification of bundled bytes, not a licence clearance."
+}

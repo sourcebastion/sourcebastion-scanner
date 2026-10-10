@@ -28,9 +28,10 @@ milestone closure.
 | Reuse the verified advisory snapshot; no per-scan refresh | implemented, in review | Base and candidate images are matched under one verified advisory generation; the snapshot mechanism is S04's, unchanged |
 | Bounded concurrency and outer deadlines; no hidden timeout allowance | implemented, in review | The host driver takes the controller's original `deadline_monotonic` from `job.json` and lowers, never raises it; one shared wall interval across stages |
 | Support, maintenance and rollback runbook published | implemented, in review | [`docs/M046-maintenance-runbook.md`](M046-maintenance-runbook.md) |
-| Coordinate with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54) without assuming its older architecture | **open** | #54 is open. This slice reuses the verified snapshot rather than a database in every image, which is the coordination S06 asks for, but #54 records no agreed position yet |
+| Coordinate with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54) without assuming its older architecture | **position recorded, agreement pending** | M046's architecture -- a verified snapshot prepared outside the scan, its identity checked against the matcher's report, no per-scan refresh -- is now stated on [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54#issuecomment-6098606123). Agreement or rejection has still to be recorded there |
 | Numeric budgets pass on native hardware | satisfied | Exact-head run [38024740699](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38024740699) on `3ac1928a`: every arm within the frozen ceilings, three entrypoint repeats at roughly 8.54 CPU seconds, 59 MiB peak and 11 PIDs |
 | Exact-head CI | satisfied | The same run, green on AMD64 and ARM64, including the base-image mirror in every build path |
+| Distribution closure | **open, scope widened** | 19 vendored natives across four packages, bound to digests in [the closure evidence](M046-S06-distribution-closure.md); S01 recorded one |
 | Release evidence | **open** | `release.yml` validates images before publication and does not run on a pull request. S06 names it alongside exact-head CI |
 
 ## The demo S06 specifies
@@ -85,6 +86,24 @@ OCI candidate and baseline builds did not receive the selected base image
 arguments, so they bypassed the mirror; the baseline now selects independently
 from its own checkout's reviewed pins, because a baseline commit may pin a
 different digest.
+
+## Distribution closure is wider than S01 recorded
+
+S01 left open "the musl rpds bundled `libgcc_s.so.1`" -- one library in one
+package. The published image actually carries **19 vendored native libraries
+across four packages** (`semgrep`, `rpds_py`, `pydantic_core`, `cryptography`),
+including four distinct `libgcc_s.so.1` byte-sets, plus Alpine's own. Several
+carry real copyleft source obligations rather than notice retention alone:
+`libgmp` is LGPL-3.0-or-later, `libdw` and `libelf` are elfutils.
+
+`rpds_py`'s own CycloneDX SBOM lists its 17 cargo crates and omits the bundled
+`libgcc_s.so.1` entirely, which is the concrete reason a wheel hash plus an
+SPDX label does not resolve this.
+
+Evidence, bound to digests:
+[`docs/M046-S06-distribution-closure.md`](M046-S06-distribution-closure.md)
+and [`docs/M046/S06-bundled-natives-arm64.json`](M046/S06-bundled-natives-arm64.json).
+Identification only; no clearance is claimed, and ARM64 alone was observed.
 
 ## What this does not establish
 

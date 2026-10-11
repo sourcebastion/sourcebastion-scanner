@@ -209,6 +209,11 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
             ls = results["license_summary"]
             click.echo(f"\n  License check: {ls['total']} package(s) - "
                         f"{ls['permitted']} permitted, {ls['denied']} denied, {ls['undetermined']} undetermined")
+            if ls.get("declarations_not_assessed"):
+                click.echo(
+                    f"  ⚠ {ls['declarations_not_assessed']} declared dependenc(ies) were not license-checked: "
+                    "only locked or installed packages state a license. Commit a lockfile to check them."
+                )
             if ls["coverage"] != "complete":
                 # Never let a clean count over partial coverage read as compliance.
                 click.echo(

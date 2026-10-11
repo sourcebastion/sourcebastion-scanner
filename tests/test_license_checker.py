@@ -59,6 +59,7 @@ class TestPolicyOverInventory:
         assert findings["a/isc"]["rule_id"] == "license-undetermined-ISC"
         assert result["summary"] | {"unassessed_inputs": None} == {
             "total": 6,
+            "declarations_not_assessed": 0,
             "permitted": 2,
             "denied": 1,
             "undetermined": 3,
@@ -98,6 +99,15 @@ class TestPolicyOverInventory:
         finding = by_package(results(tmp_path, allowed=["MIT"]))["classified"]
         assert finding["license_result"] == "undetermined"
         assert len(finding["all_licenses"]) == 2
+
+    def test_declarations_are_not_reported_as_unstated(self, tmp_path):
+        """A manifest names a dependency; it never states that dependency's license."""
+        project(tmp_path, ("a/mit", ["MIT"]))
+        (tmp_path / "requirements.txt").write_text("six==1.16.0\n")
+        result = results(tmp_path, allowed=["MIT"])
+        assert result["summary"]["total"] == 1
+        assert result["summary"]["declarations_not_assessed"] == 1
+        assert result["findings"] == []
 
     def test_undetermined_severity_can_be_lowered(self, tmp_path):
         project(tmp_path, ("a/none", None))
@@ -157,6 +167,13 @@ class TestCli:
         assert result.exit_code == 0, result.output
         assert "1 package(s) - 0 permitted, 1 denied" in result.output
         assert "suppressed" in result.output
+
+    def test_declarations_without_a_lock_are_called_out(self, tmp_path):
+        project(tmp_path, ("a/mit", ["MIT"]))
+        (tmp_path / "requirements.txt").write_text("six==1.16.0\n")
+        config = self.config(tmp_path, "license_policy:\n  allowed_licenses: [MIT]\n")
+        result = CliRunner().invoke(main, ["scan", str(tmp_path), "--license-check", "--config", config])
+        assert "1 declared dependenc(ies) were not license-checked" in result.output
 
     def test_partial_coverage_warning(self, tmp_path):
         project(tmp_path, ("a/mit", ["MIT"]))

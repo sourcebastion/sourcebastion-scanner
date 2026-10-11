@@ -8,6 +8,11 @@ text, an unlisted ``LicenseRef``) is never permitted.
 
 When an occurrence has several observations, the strictest wins: any denied
 observation denies it, and any undetermined one keeps it from being permitted.
+
+Only resolved packages are evaluated: locked, installed or imported
+occurrences. A manifest declaration names a dependency but never states that
+dependency's license, so it is counted as not assessed instead of reported as
+unstated beside the resolved package that does state one.
 """
 
 from __future__ import annotations
@@ -29,6 +34,7 @@ from sourcebastion.license_expression import (
 logger = logging.getLogger(__name__)
 
 SCANNER = "license-checker"
+RESOLVED = frozenset({"locked", "installed", "imported"})
 PRODUCER = "sourcebastion-scanner-license-check"
 
 
@@ -104,7 +110,8 @@ def evaluate_inventory(inventory, policy: LicensePolicy, *, undetermined_severit
 
     findings, packages = [], []
     counts = {PERMITTED: 0, DENIED: 0, UNDETERMINED: 0}
-    for occurrence in sorted(inventory.occurrences, key=lambda row: (row.name, row.selected_version or "", row.id)):
+    resolved = [row for row in inventory.occurrences if row.evidence_kind in RESOLVED]
+    for occurrence in sorted(resolved, key=lambda row: (row.name, row.selected_version or "", row.id)):
         rows = sorted(observations.get(occurrence.id, ()), key=lambda row: row.id)
         evaluated = [(row, evaluate(row.value_raw, policy)) for row in rows]
         if any(e.result == DENIED for _, e in evaluated):
@@ -131,7 +138,10 @@ def evaluate_inventory(inventory, policy: LicensePolicy, *, undetermined_severit
         "findings": findings,
         "packages": packages,
         "summary": {
-            "total": len(inventory.occurrences),
+            "total": len(resolved),
+            # Declarations with no resolved package (e.g. requirements.txt
+            # without a lock) cannot be license-checked; they are not clean.
+            "declarations_not_assessed": len(inventory.occurrences) - len(resolved),
             "permitted": counts[PERMITTED],
             "denied": counts[DENIED],
             "undetermined": counts[UNDETERMINED],

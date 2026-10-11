@@ -122,7 +122,8 @@ Suppress one with an ignore rule on its `rule_id`.
 
 | Field | Description |
 |---|---|
-| `license_summary.total` | Packages in the inventory |
+| `license_summary.total` | Resolved packages evaluated (locked, installed or imported) |
+| `license_summary.declarations_not_assessed` | Declared dependencies with no resolved package to read a license from (commit a lockfile to check them) |
 | `license_summary.permitted` / `denied` / `undetermined` | Packages per result |
 | `license_summary.coverage` | `complete` or `partial`. When partial, some dependency files weren't read and packages may be missing. |
 | `license_summary.unassessed_inputs` | Dependency files that weren't assessed |

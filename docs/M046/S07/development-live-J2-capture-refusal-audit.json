@@ -1,0 +1,57 @@
+{
+  "acceptance": false,
+  "actual_cause": "Parent 16 MiB materialization of 37197996-byte diagnostic after recovery node-budget refusal",
+  "candidate_capture_proof": {
+    "acceptance": false,
+    "byte_and_digest_integrity": true,
+    "diagnostic_bytes": 37197996,
+    "diagnostic_materialized": false,
+    "provider_decode_checks": 2008500,
+    "provider_decode_refusal": "provider-input-node-budget-exceeded",
+    "retained_names": [
+      "consumer-config.json",
+      "grype-status.json",
+      "grype-status.stderr",
+      "grype-version.json",
+      "grype-version.stderr",
+      "grype.stderr",
+      "grype.yaml",
+      "inventory.json",
+      "sbom.cdx.json"
+    ],
+    "scope": "isolated immutable artifact replay, no live publication",
+    "stages": {
+      "composition": "succeeded",
+      "consumer_execution": "succeeded",
+      "export": "succeeded",
+      "finalization": "not_run",
+      "inventory": "succeeded",
+      "recovery": "failed",
+      "runtime_admission": "succeeded"
+    },
+    "status": "passed",
+    "wall_seconds": 6.058204544999171
+  },
+  "expectation_met": false,
+  "fix_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/418",
+  "image": "ghcr.io/sourcebastion/sourcebastion-scanner@sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6",
+  "live_accepted_run": false,
+  "live_job_status": "failed",
+  "original_frozen_oracle_sha256": "6e9adb839895e8671d08faf941ea1e479cfd3a0c75cd7fee2e5de4770d21a44a",
+  "original_frozen_oracle_unchanged": true,
+  "original_live_source_commit": "da63068b88006717e5ddd9d6ab18974073484ada",
+  "platform_revision": "02a8e6c3ed9bbf999fc55b2decea823e5da76ecf",
+  "reason": "dependency-job-stage-failed",
+  "scope": "isolated authored J2 reproduction; no job or publication",
+  "source_sha256": "3b47ed9630dadd03fd01ea67cb67c663ad01889e0edc721abbc6e150115247b6",
+  "stages": {
+    "composition": "succeeded",
+    "consumer_execution": "succeeded",
+    "export": "succeeded",
+    "finalization": "not_run",
+    "inventory": "succeeded",
+    "recovery": "failed",
+    "runtime_admission": "succeeded"
+  },
+  "status": "terminal-failed-original-expectation-unmet"
+}

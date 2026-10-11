@@ -391,6 +391,25 @@ is frozen before any corresponding source edit or submission, to reach the
 consumer boundary within the same runtime limits. No existing attempt is reset
 or replayed and no numerical ceiling is increased.
 
+The 2,000-line case J2 also remains failed with its original expectation unmet.
+Its [capture-refusal audit](M046/S07/development-live-J2-capture-refusal-audit.json)
+records a terminal job without an accepted run. An isolated replay using the
+same source and published image finished Grype, then refused recovery at the
+unchanged provider node budget. The parent tried to materialize the resulting
+37,197,996-byte diagnostic through its 16 MiB capture bound, discarding usable
+canonical inventory/export. [Platform #418](https://github.com/sourcebastion/sourcebastion-platform/pull/418)
+stream-verifies this diagnostic without making it matching input, preserving
+all original integrity/resource guards. Its 89 focused checks and immutable
+isolated artifact replay pass; reviewed CI and normal deployment remain pending.
+
+A separate [prospective recovery-refusal oracle](M046/S07/development-bounded-recovery-expectations.json)
+defines fresh case J3 using the same authored 2,000-line source, before its new
+commit or submission. It requires successful inventory/export, unavailable
+matching, the real recovery node-budget refusal, and no accepted matcher input
+or fresh Grype findings. Both original J/J2 oracles remain byte-for-byte unchanged;
+their failures are not relabelled as passes. J3, the final restoration scan and
+the designated human checks remain pending.
+
 The requesting user will perform the live second-account and revoked-grant
 SBOM download refusal checks and review coverage, findings and the authorized
 download once fresh results are visible. These checks and dated human acceptance

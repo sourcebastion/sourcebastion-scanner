@@ -7,6 +7,7 @@ if [[ $# -ne 1 ]]; then
 fi
 image=$1
 root="${SOURCEBASTION_NATIVE_PROOF_CHECKOUT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+driver="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 work="$(mktemp -d)"
 cleanup() {
   local status=$? cleanup_status=0
@@ -117,7 +118,7 @@ entrypoint_output="${SOURCEBASTION_NATIVE_ENTRYPOINT_OUTPUT:-$work/entrypoint-ou
 mkdir -m 700 "$entrypoint_output"
 for repeat in 1 2 3; do
   mkdir -m 700 "$entrypoint_output/repeat-$repeat"
-  python3 "$root/scripts/run-inventory-entrypoint-proof.py" \
+  python3 "$driver/run-inventory-entrypoint-proof.py" \
     --image "$image" --checkout "$root" --source "$work/canonical-source" \
     --advisories "$database" --preparation "$work/dependency-preparation" \
     --output "$entrypoint_output/repeat-$repeat"

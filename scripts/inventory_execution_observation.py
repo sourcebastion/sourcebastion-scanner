@@ -44,6 +44,24 @@ def proc_status(pid):
     return dict(line.split(":", 1) for line in raw.splitlines() if ":" in line)
 
 
+def verify_observation(directory):
+    trace = directory / "execution.trace"
+    metadata = directory / "execution-observation.json"
+    if trace.stat().st_size > MAX_TRACE_BYTES or metadata.stat().st_size > 2 * MAX_TRACE_BYTES:
+        raise ValueError("execution-observer-retained-bound")
+    raw = trace.read_bytes()
+    value = json.loads(metadata.read_bytes())
+    if (value.get("status") != "trace-collected-review-required"
+            or value.get("attached_before_workload_release") is not True
+            or value.get("detached_after_workload_exit") is not True
+            or value.get("acceptance") is not False
+            or value.get("trace_sha256") != hashlib.sha256(raw).hexdigest()
+            or value.get("trace_bytes") != len(raw)
+            or any(value.get(key) != item for key, item in records(raw).items())):
+        raise ValueError("execution-observer-retained-binding-mismatch")
+    return value["trace_sha256"]
+
+
 def birth(pid):
     raw = Path(f"/proc/{pid}/stat").read_text()
     return raw[raw.rindex(")") + 2:].split()[19]

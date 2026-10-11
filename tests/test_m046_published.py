@@ -150,6 +150,7 @@ def test_s01_zip_is_verified_before_extracting_only_fixed_oci_entry(tmp_path, mo
 
 
 def native_pair(tmp_path):
+    from inventory_execution_observation import records
     roots = [tmp_path / arch for arch in ("amd64", "arm64")]
     arms = ("corpus", "flat-1000", "flat-10000", "flat-100000", "flat-100001", "graph", "expansion")
     for root, arch in zip(roots, ("amd64", "arm64")):
@@ -176,11 +177,21 @@ def native_pair(tmp_path):
             (path / "resources.json").write_text(json.dumps(resource))
         (root / "frozen-s01-growth.json").write_text(json.dumps({"status": "passed", "candidate_manifest": CONFIG,
             "tested_image_id": CONFIG, "baseline_kind": "frozen-s01-pre-inventory-layer-prefix"}))
+        traces = {}
+        for path in [root / "observed-corpus-resources"] + paths[-3:]:
+            path.mkdir(parents=True, exist_ok=True)
+            raw = b'123 execve("/installed/unit-test", ["unit-test"], 0x123 /* 0 vars */) = 0\n'
+            (path / "execution.trace").write_bytes(raw)
+            (path / "execution-observation.json").write_text(json.dumps({
+                "status": "trace-collected-review-required", "acceptance": False,
+                "attached_before_workload_release": True, "detached_after_workload_exit": True,
+                "trace_sha256": published.sha(raw), "trace_bytes": len(raw), **records(raw)}))
+            traces[path.relative_to(root).as_posix()] = published.sha(raw)
         receipt = {"status": "finite-published-native-passed", "architecture": arch, "acceptance": False,
                    "config_digest": CONFIG, "native_manifest": CONFIG, "image": published.IMAGE + "@" + CONFIG,
                    "source_sha": SOURCE, "release_tag": "v1.8.0", "release_id": 123,
                    "shared_advisory_manifest_sha256": "d" * 64, "advisory_snapshot_sha256": "d" * 64,
-                   "remaining_acceptance": ["human review"], "retained_files": {}}
+                   "remaining_acceptance": ["human review"], "retained_files": {}, "execution_observation_traces": traces}
         (root / "receipt.json").write_text(json.dumps(receipt))
         rebind(root)
     return roots
@@ -200,12 +211,16 @@ def test_comparison_checks_48_bindings_and_64_cases_without_claiming_acceptance(
     assert result["acceptance"] is False and result["remaining_acceptance"] == ["human review"]
 
 
-@pytest.mark.parametrize("change", ["stale-hash", "resource-limit", "missing-resource", "case-digest", "missing-case", "advisory", "growth", "repeated-case"])
+@pytest.mark.parametrize("change", ["stale-hash", "resource-limit", "missing-resource", "case-digest", "missing-case", "advisory", "growth", "repeated-case", "missing-trace", "trace-substitution"])
 def test_cross_native_comparison_refuses_altered_evidence_even_with_rehashed_bundle(tmp_path, change):
     roots = native_pair(tmp_path)
     root = roots[1]
     if change == "stale-hash":
         (root / "source-expectations.stdout").write_bytes(b"substituted")
+    elif change == "missing-trace":
+        (root / "entrypoint/repeat-2/entrypoint-resources/execution.trace").unlink()
+    elif change == "trace-substitution":
+        (root / "observed-corpus-resources/execution.trace").write_bytes(b"changed")
     elif change == "advisory":
         path = root / "receipt.json"
         receipt = json.loads(path.read_bytes())

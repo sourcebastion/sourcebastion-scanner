@@ -123,6 +123,7 @@ def verify_advisories(root, manifest, expected_sha256):
 def compare_native(left, right):
     """Compare retained native receipts, without promoting finite proof to acceptance."""
     from inventory_release import measured_resources
+    from inventory_execution_observation import verify_observation
 
     receipts, cases = [], []
     arms = ("corpus", "flat-1000", "flat-10000", "flat-100000", "flat-100001", "graph", "expansion")
@@ -135,6 +136,11 @@ def compare_native(left, right):
                   for path in root.rglob("*") if path.is_file() and path != root / "receipt.json"}
         if actual != receipt["retained_files"]:
             raise ValueError("native-retained-file-binding-mismatch")
+        trace_paths = [root / "observed-corpus-resources"] + [
+            root / f"entrypoint/repeat-{repeat}/entrypoint-resources" for repeat in range(1, 4)]
+        traces = {path.relative_to(root).as_posix(): verify_observation(path) for path in trace_paths}
+        if traces != receipt.get("execution_observation_traces"):
+            raise ValueError("native-execution-observation-binding-mismatch")
         resources = [root / f"inventory-resources-{arm}-{repeat}/resources.json"
                      for arm in arms for repeat in range(1, 4)]
         resources += [root / f"entrypoint/repeat-{repeat}/entrypoint-resources/resources.json" for repeat in range(1, 4)]

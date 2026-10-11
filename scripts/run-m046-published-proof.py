@@ -11,6 +11,7 @@ import sys
 
 from m046_published import IMAGE, S01_ARTIFACTS, bind_native, extract_s01, native_descriptor, verify_advisories
 from inventory_release import frozen_s01_layers, growth, oci_layers
+from inventory_execution_observation import verify_observation
 
 DRIVER = Path(__file__).resolve().parent
 
@@ -102,6 +103,10 @@ def main():
         environment.pop("SOURCEBASTION_UPGRADE_BASE_IMAGE", None)
         environment.pop("SOURCEBASTION_UPGRADE_BASE_CHECKOUT", None)
         run(["bash", str(DRIVER / "smoke-scan-hosted.sh"), image], "hosted-frozen-advisories", seconds=1200, environment=environment)
+        observation_roots = [args.output / "observed-corpus-resources"] + [
+            args.output / f"entrypoint/repeat-{repeat}/entrypoint-resources" for repeat in range(1, 4)]
+        receipt["execution_observation_traces"] = {
+            path.relative_to(args.output).as_posix(): verify_observation(path) for path in observation_roots}
         consumer = json.loads((args.output / "real-grype/receipt.json").read_bytes())["consumer"]
         if consumer["advisory_snapshot_sha256"] != args.advisory_manifest_sha256:
             raise ValueError("consumer-did-not-use-shared-advisory-generation")

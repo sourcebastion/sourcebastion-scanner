@@ -1,6 +1,5 @@
 {
   "acceptance": false,
-  "actual_cause": "Parent 16 MiB materialization of 37197996-byte diagnostic after recovery node-budget refusal",
   "candidate_capture_proof": {
     "acceptance": false,
     "byte_and_digest_integrity": true,
@@ -32,13 +31,17 @@
     "status": "passed",
     "wall_seconds": 6.058204544999171
   },
+  "diagnostic_extent_source": "Isolated replay of the same source and published image; original live scratch was cleaned. The isolated size is not claimed as a measured original-live extent.",
   "expectation_met": false,
   "fix_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/418",
   "image": "ghcr.io/sourcebastion/sourcebastion-scanner@sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6",
+  "isolated_reproduction_cause": "Parent 16 MiB materialization of 37197996-byte diagnostic after recovery node-budget refusal",
   "live_accepted_run": false,
   "live_job_status": "failed",
   "original_frozen_oracle_sha256": "6e9adb839895e8671d08faf941ea1e479cfd3a0c75cd7fee2e5de4770d21a44a",
   "original_frozen_oracle_unchanged": true,
+  "original_live_capture_error": "inventory_capture_file_invalid",
+  "original_live_child_receipt_retained": false,
   "original_live_source_commit": "da63068b88006717e5ddd9d6ab18974073484ada",
   "platform_revision": "02a8e6c3ed9bbf999fc55b2decea823e5da76ecf",
   "reason": "dependency-job-stage-failed",

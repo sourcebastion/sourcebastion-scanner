@@ -332,6 +332,49 @@ def test_container_runner_maps_host_identity_and_checkout(tmp_path: Path):
     ]
 
 
+@pytest.mark.parametrize("scan_exit", [0, 37])
+def test_hosted_smoke_removes_sealed_scratch_and_preserves_scan_exit(tmp_path, scan_exit):
+    scratch_parent = tmp_path / "scratch"
+    scratch_parent.mkdir()
+    retained = tmp_path / "retained-proof"
+    retained.mkdir()
+    (retained / "receipt.json").write_text('{"retained":true}')
+    retained.chmod(0o555)
+    capture = tmp_path / "work-path"
+    # Execute the actual setup/EXIT trap before any Docker or scanner work.
+    setup = (ROOT / "scripts/smoke-scan-hosted.sh").read_text().split(
+        'mkdir -m 700 "$work/source"', 1
+    )[0]
+    command = setup + '''
+printf '%s' "$work" > "$WORK_CAPTURE"
+mkdir -p "$work/entrypoint-output/repeat-1/control"
+printf '{"sealed":true}' > "$work/entrypoint-output/repeat-1/control/job.json"
+chmod 444 "$work/entrypoint-output/repeat-1/control/job.json"
+chmod 555 "$work/entrypoint-output/repeat-1/control"
+ln -s "$RETAINED_PROOF" "$work/external-proof"
+exit "$SCAN_EXIT"
+'''
+    environment = os.environ | {
+        "TMPDIR": str(scratch_parent), "WORK_CAPTURE": str(capture),
+        "RETAINED_PROOF": str(retained), "SCAN_EXIT": str(scan_exit),
+    }
+    # Run the prelude from a file: under `bash -c`, BASH_SOURCE[0] is unset and
+    # `set -u` makes the real script's own `root=` line fail.
+    harness = tmp_path / "hosted-smoke-cleanup.sh"
+    harness.write_text(command, encoding="utf-8")
+    try:
+        result = subprocess.run(
+            ["bash", str(harness), "unused-image"],
+            env=environment, capture_output=True, text=True,
+        )
+        assert result.returncode == scan_exit, result.stderr
+        assert not Path(capture.read_text()).exists()
+        assert (retained.stat().st_mode & 0o777) == 0o555
+        assert (retained / "receipt.json").read_text() == '{"retained":true}'
+    finally:
+        retained.chmod(0o755)
+
+
 def test_retired_semantic_release_runtime_is_absent():
     for path in (".releaserc.json", "package.json", "package-lock.json"):
         assert not (ROOT / path).exists()

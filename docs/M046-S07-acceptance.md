@@ -273,9 +273,16 @@ Fresh commit `4e7289a38feb4305f82370a54515e3ddf1f11242` completed and
 including all eight contextual cases, 530 inventory rows, 20 matching rows and
 the official CycloneDX schema. Its execution bound a full plan, but the findings
 envelope fell back and ScanRun planning fields remain absent; it cannot qualify
-as a reuse baseline. A subsequent same-byte diagnostic pass will retain the
-other-scanner report to establish that refusal. The original source expectations
-remain unchanged.
+as a reuse baseline. Same-byte diagnostic commit
+`08bd160437f19787a9b32d4415edf40288fe0d0d` retained the complete other-scanner
+report and reproduced `duplicate_finding`: KICS emitted eight repeated identities
+that ordinary storage already reduces by its first-observation rule.
+[Platform #414](https://github.com/sourcebastion/sourcebastion-platform/pull/414)
+applies that same rule before constructing the hosted envelope. Its 98 focused
+tests pass, and [the exact retained report replay](M046/S07/development-envelope-dedup-replay.json)
+produces a valid 128-finding envelope with all persisted finding fields equal.
+Exact-head CI, deployment and subsequent live full/reuse validation remain
+pending. The original source expectations remain unchanged.
 
 Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)
 were mechanically derived from the frozen rich source oracle before the new

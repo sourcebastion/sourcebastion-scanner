@@ -6,8 +6,8 @@ verified; automated live development and rollback proofs now pass. The designate
 human confirmed the signed-in foreign-account download returns 404 and the owner's
 downloaded K SBOM checksum matches the frozen expectation. The live revoked-grant
 check initially failed; its deployed fix now has a fresh human-confirmed 404.
-The original failure is preserved. Visible owner review and restored access
-after this latest refusal remain pending.
+The original failure is preserved. The restored K download now passes with a
+fresh matching checksum. Visible owner coverage and findings review remains pending.
 Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
 scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
@@ -513,8 +513,14 @@ and the bound repository grant unauthorized with reason `deselected`. This fresh
 revoked-grant refusal passes independently of the preserved original failure.
 An additional actual K checksum report also matches the frozen expected digest;
 that report preceded this latest revocation and does not establish subsequent
-restoration. A restored download after this refusal and visible K/J3/H coverage
-and K findings review remain pending; overall acceptance remains false.
+restoration. The designated reviewer subsequently confirmed the K SBOM is present,
+pasted fresh local `shasum -a 256 sbom.cdx.json` output equal to
+`42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de`,
+and explicitly confirmed the checksum matches. Read-only corroboration records
+the later repository addition applied at `2026-10-11 18:07:21+00:00` and the
+bound grant authorized. Restored access to the original bytes after the fresh
+404 passes. Visible K/J3/H coverage and K findings review remains pending;
+overall acceptance remains false.
 
 ## Native CI evidence independently inspected
 

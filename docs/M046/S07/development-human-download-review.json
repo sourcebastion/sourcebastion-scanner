@@ -55,7 +55,7 @@
       "reviewed_head_check_result": "all completed success or expected skip",
       "normal_development_run": 38159496574,
       "installed_verification": "passed: exact revision and fix file hashes, healthy service, keyring configured, normal worker resumed, persistent writer/reuse/recovery off and read presentation on",
-      "fresh_human_revoke_restore": "revoked download404 passed; restoration after this refusal pending",
+      "fresh_human_revoke_restore": "passed: revoked download404, then restored original K SBOM with matching actual checksum",
       "normal_development_run_attempt": 2,
       "normal_development_result": "success",
       "installed_files_sha256": {
@@ -74,10 +74,20 @@
       "platform_revision": "af1c361b32ae15ee11645d72e4f282c9f557ab1e",
       "corroboration": "read-only inspection confirms the test-repository removal event applied and its bound grant was unauthorized with reason deselected",
       "removed_event_applied_at": "2026-10-11 18:05:03+00:00",
-      "restored_download_after_this_refusal": "pending"
+      "restored_download_after_this_refusal": "passed: fresh actual downloaded checksum matches frozen expectation"
     }
   },
-  "restored_grant_original_download": "pending",
+  "restored_grant_original_download": {
+    "status": "passed",
+    "observed_date": "2026-10-11",
+    "evidence_source": "designated reviewer pasted fresh local shasum output after the confirmed revoked-download404 and explicitly confirmed checksum matches",
+    "filename": "sbom.cdx.json",
+    "reported_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+    "matches_frozen_expectation": true,
+    "after_fresh_revoked_download_refusal": true,
+    "restored_event_applied_at": "2026-10-11 18:07:21+00:00",
+    "corroboration": "read-only inspection confirms the later test-repository addition applied and the bound grant is authorized"
+  },
   "post_fix_actual_download_integrity": {
     "status": "passed",
     "observed_date": "2026-10-11",

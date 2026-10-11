@@ -59,6 +59,22 @@ This run found a defect, which was fixed before acceptance. Declared
 locked packages. `27e4abe` now evaluates only resolved packages and counts
 declarations separately.
 
+### Full CLI scan in the local image (2026-10-11)
+
+`sourcebastion scan /scan --license-check` ran in the same image against the
+corpus, with the policy as `.sourcebastion.yaml`. Network access was allowed,
+because grype fetches its advisory database. There is no `syft` binary in the
+image.
+
+- **Result:** exit 0. It reported `16 package(s) - 5 permitted, 2 denied,
+  9 undetermined` and the five declarations that weren't license-checked.
+- **Findings:** the two denials were `acme/gpl` (`GPL-3.0-only`) and `left`
+  (`MIT AND GPL-3.0-only`), and the nine undetermined packages were listed with
+  their stated values or "no license stated".
+- **Exit status:** exit 0 is the configured behaviour. License findings gate
+  only through the existing severity and baseline gate (D5), and this run
+  configured none.
+
 ### Platform rendering of real rows (2026-10-11)
 
 A real `/2` inventory composed from the corpus went through the scanner row

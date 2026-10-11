@@ -98,7 +98,7 @@ unconfigured. The earlier [first-target oracle](M046/S07/development-source-expe
 is retained unchanged as a superseded designation, not evidence for this target.
 
 Additional source-authored development fixtures are prepared locally on the
-corrected repository at `0a5fa872ff8537366cb3da7ad47b9fcfeff5f372`, branch
+corrected repository at `d01f3278ca960530d1c9f1290324469531471124`, branch
 `test/m046-s07-development`. Their [pre-scan expectations](M046/S07/development-fixture-expectations-ez-appsec-juice-shop.json)
 hash to `df9dfad45661241ebf8cddba14851443126ffe17614e499c8f40d45084e3f049`.
 Thirteen additional inputs cover custom pip and two separate pip 26.0.1

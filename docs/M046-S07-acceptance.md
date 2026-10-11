@@ -4,8 +4,9 @@ Status: **open**. This ledger records the acceptance requirements and evidence
 available through 2026-10-11. Published native qualification is independently
 verified; automated live development and rollback proofs now pass. The designated
 human confirmed the signed-in foreign-account download returns 404 and the owner's
-downloaded K SBOM checksum matches the frozen expectation. The visible owner
-review and revoked-grant/restored-access checks remain pending.
+downloaded K SBOM checksum matches the frozen expectation. The live revoked-grant
+check failed; the fix and its fresh retest, visible owner review and restored
+access remain pending.
 Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
 scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
@@ -478,6 +479,20 @@ findings, confirms the same K download returns 404 after
 revoking only the test repository grant, and restores the grant with the original
 download bytes accessible again. No account identifiers, session credentials or
 private snapshot links are included in the public receipt.
+
+The subsequent owner revoke test **failed**: the K SBOM remained downloadable
+after the test repository was deselected from the development App installation.
+Read-only inspection confirms that the provider's complete current repository
+list excludes the test repository, but its platform grant remains authorized.
+The durable webhook was marked applied with `repository_selection: selected`,
+`action: added`, six additions and an empty removal list. Explicit-delta handling
+did not revoke the omitted grant. [Platform #419](https://github.com/sourcebastion/sourcebastion-platform/pull/419)
+adds current-membership reconciliation and failure refusal. Its 151 focused tests
+pass, including a retained-artifact download regression that fails on the
+baseline. Review, normal deployment and a fresh designated revoke/restore test
+remain required. The original failed observation is preserved independently;
+neither the earlier foreign-account 404 nor the matching owner checksum proves
+this revoked-grant criterion.
 
 ## Native CI evidence independently inspected
 

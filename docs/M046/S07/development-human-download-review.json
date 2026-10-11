@@ -45,7 +45,7 @@
     },
     "fix_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/419",
     "original_failure_preserved": true,
-    "post_fix_live_retest": "pending",
+    "post_fix_live_retest": "passed",
     "fix_delivery": {
       "state": "deployed_verified",
       "reviewed_head": "31cde1d26f619b1f7380a760ea150383116c239f",
@@ -55,7 +55,7 @@
       "reviewed_head_check_result": "all completed success or expected skip",
       "normal_development_run": 38159496574,
       "installed_verification": "passed: exact revision and fix file hashes, healthy service, keyring configured, normal worker resumed, persistent writer/reuse/recovery off and read presentation on",
-      "fresh_human_revoke_restore": "pending",
+      "fresh_human_revoke_restore": "revoked download404 passed; restoration after this refusal pending",
       "normal_development_run_attempt": 2,
       "normal_development_result": "success",
       "installed_files_sha256": {
@@ -65,7 +65,25 @@
       },
       "original_deployment_failure_retained": true,
       "deployment_retry_storage_repair": "Two verified byte-identical historical advisory database copies share storage; every generation path, database byte and metadata receipt preserved; current symlink unchanged"
+    },
+    "post_fix_live_retest_observation": {
+      "status": "passed",
+      "observed_date": "2026-10-11",
+      "reported_http_status": 404,
+      "evidence_source": "designated reviewer confirmed 404 for the exact bound primary-owner download after repository deselection",
+      "platform_revision": "af1c361b32ae15ee11645d72e4f282c9f557ab1e",
+      "corroboration": "read-only inspection confirms the test-repository removal event applied and its bound grant was unauthorized with reason deselected",
+      "removed_event_applied_at": "2026-10-11 18:05:03+00:00",
+      "restored_download_after_this_refusal": "pending"
     }
   },
-  "restored_grant_original_download": "pending"
+  "restored_grant_original_download": "pending",
+  "post_fix_actual_download_integrity": {
+    "status": "passed",
+    "observed_date": "2026-10-11",
+    "reported_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+    "matches_frozen_expectation": true,
+    "reported_before_fresh_revocation": true,
+    "does_not_establish_restoration_after_fresh_refusal": true
+  }
 }

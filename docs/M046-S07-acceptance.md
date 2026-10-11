@@ -281,8 +281,33 @@ that ordinary storage already reduces by its first-observation rule.
 applies that same rule before constructing the hosted envelope. Its 98 focused
 tests pass, and [the exact retained report replay](M046/S07/development-envelope-dedup-replay.json)
 produces a valid 128-finding envelope with all persisted finding fields equal.
-Exact-head CI, deployment and subsequent live full/reuse validation remain
-pending. The original source expectations remain unchanged.
+It merged as `d321f8885754051bb692c97eca2d76f8e9c15761` after CI passed and
+deployed successfully in
+[38117244954](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38117244954),
+attempt 2. The first attempt failed pip bootstrap before the scanner image proof
+ran; its failed log and digest-verified artifact remain retained separately.
+Fresh commit `954c8f5ee8bb77dea2ac63dbe176a1c2575d9e5e` then completed with a
+persisted qualifying full plan. The [full-scan and publication audit](M046/S07/development-full-and-reuse-publication-audit.json)
+verifies all eight frozen contextual cases, 530 inventory rows, 20 matching
+rows, the eight required pip source/advisory groups, and the official CycloneDX
+schema. The original source expectations remain unchanged.
+
+The first fresh reuse commit `c9de07d5eddc1b1482336c6f21e20a7594c74a77`
+persisted incremental run 113 with origin run 112, identical canonical/export
+bytes and unchanged row/artifact quotas. Publication failed: nine carried
+findings had no title or description, so their annotations had empty messages.
+GitHub returned the correlated failure check with zero annotations. Recomputing
+the exact old nine-annotation body reproduces its recorded intent digest;
+the returned content does not. Normal finalization exhausted its three attempts,
+retained the accepted artifact and unconfirmed provider journal, released
+admission, and settled the execution failed/unknown/unavailable. No uncertain
+annotation append was replayed and no original attempt was reset.
+[Platform #415](https://github.com/sourcebastion/sourcebastion-platform/pull/415)
+uses retained finding names/rules for nonempty annotation messages and permits
+the designated test preflight to retain a validated settled quarantine without
+classifying it as active work. Its 172 focused tests pass; CI, deployment and
+two successful fresh reuse submissions remain pending. The failed publication
+does not count as accepted fresh reuse.
 
 Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)
 were mechanically derived from the frozen rich source oracle before the new

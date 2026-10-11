@@ -83,6 +83,12 @@ def check_licenses(
             logger.error("license inventory composition failed: %s", type(error).__name__)
             raise ScannerExecutionError(SCANNER, "execution_failed") from None
     if inventory.stages.inventory == "failed":
+        # Fixed refusal codes only, never source text, e.g. the npm selector
+        # runtime missing on a host other than the Linux scanner image.
+        logger.error(
+            "license inventory could not be composed: %s",
+            ", ".join(inventory.coverage.refusal_codes) or "inventory-failed",
+        )
         raise ScannerExecutionError(SCANNER, "scope_unresolved")
     return evaluate_inventory(inventory, policy, undetermined_severity=undetermined_severity)
 

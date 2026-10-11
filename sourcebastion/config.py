@@ -9,8 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 import yaml
 
 from sourcebastion.policy import PolicyRule
-from sourcebastion.license_checker import LicensePolicy
-from sourcebastion.license_expression import validate_policy_entry
+from sourcebastion.license_expression import LicensePolicy, validate_policy_entry
 
 
 class LicensePolicyConfig(BaseModel):
@@ -18,6 +17,9 @@ class LicensePolicyConfig(BaseModel):
 
     allowed_licenses: List[str] = Field(default_factory=list)
     denied_licenses: List[str] = Field(default_factory=list)
+    # Undetermined licenses can be lowered but never silenced as a class;
+    # suppression stays per rule_id through ignore rules (M048 D5).
+    undetermined_severity: Literal["medium", "low"] = "medium"
 
     @field_validator("allowed_licenses", "denied_licenses")
     @classmethod
@@ -30,10 +32,7 @@ class LicensePolicyConfig(BaseModel):
 
     def to_policy(self) -> LicensePolicy:
         """Convert to a LicensePolicy instance."""
-        return LicensePolicy(
-            allowed_licenses=self.allowed_licenses,
-            denied_licenses=self.denied_licenses,
-        )
+        return LicensePolicy(allowed=self.allowed_licenses, denied=self.denied_licenses)
 
 
 class IgnoreRule(BaseModel):

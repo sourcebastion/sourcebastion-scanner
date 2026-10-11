@@ -3,9 +3,10 @@
 Status: **open**. This ledger records the acceptance requirements and evidence
 available through 2026-10-11. Published native qualification is independently
 verified; automated live development and rollback proofs now pass. The designated
-human confirmed the signed-in foreign-account download returns 404. The owner
-review, actual downloaded checksum and revoked-grant/restored-access checks remain
-pending. Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
+human confirmed the signed-in foreign-account download returns 404 and the owner's
+downloaded K SBOM checksum matches the frozen expectation. The visible owner
+review and revoked-grant/restored-access checks remain pending.
+Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
 scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
 ## Slice prerequisites
@@ -455,7 +456,7 @@ recorded below; the other checks and overall human acceptance remain pending.
 Failed attempts and normal retries are retained separately and
 cannot substitute for fresh designated acceptance work.
 
-### Human foreign-account download check (2026-10-11)
+### Human download checks (2026-10-11)
 
 The designated reviewer signed in with the designated second development account
 and confirmed that the exact K snapshot download request returns **404**, with
@@ -465,9 +466,15 @@ response. The [sanitized human observation](M046/S07/development-human-download-
 records the result separately from the automated proofs. This is a user-reported
 browser observation, not an agent-authenticated request.
 
-The foreign-account refusal criterion passes. Overall S07 acceptance remains
-false until the owner reviews K/J3/H coverage and K findings, measures the actual
-authorized K download checksum, confirms the same K download returns 404 after
+The designated owner subsequently downloaded K's SBOM and pasted the local
+checksum output for `sbom.cdx.json`. Its actual SHA-256 is
+`42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de`,
+which equals the frozen expected digest of the accepted K artifact. This actual
+download observation is separate from the earlier source-side integrity proofs.
+
+The foreign-account refusal and owner-download integrity criteria pass. Overall
+S07 acceptance remains false until the owner reviews K/J3/H coverage and K
+findings, confirms the same K download returns 404 after
 revoking only the test repository grant, and restores the grant with the original
 download bytes accessible again. No account identifiers, session credentials or
 private snapshot links are included in the public receipt.

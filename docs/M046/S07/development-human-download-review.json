@@ -18,7 +18,15 @@
     "clarification": "The workspace 200 was not a download result. The reviewer subsequently confirmed the actual download returns 404."
   },
   "owner_visible_coverage_and_findings_review": "pending",
-  "owner_actual_download_sha256": null,
+  "owner_actual_download_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+  "owner_download_integrity": {
+    "status": "passed",
+    "observed_date": "2026-10-11",
+    "evidence_source": "designated human reviewer pasted local checksum output for the downloaded file",
+    "filename": "sbom.cdx.json",
+    "expected_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+    "reported_sha256_matches_frozen_expectation": true
+  },
   "revoked_grant_download_refusal": "pending",
   "restored_grant_original_download": "pending"
 }

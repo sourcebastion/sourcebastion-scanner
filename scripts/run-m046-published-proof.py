@@ -82,6 +82,9 @@ def main():
             (args.output / (label + "-workload.json")).write_bytes((output / "workload.json").read_bytes())
         run([sys.executable, str(args.checkout / "scripts/validate-inventory-cyclonedx.py"),
              str(args.output / "cyclonedx-generated-workload.json")], "cyclonedx-validation", seconds=150)
+        run([sys.executable, str(DRIVER / "run-inventory-resource-proof.py"), "--image", image,
+             "--checkout", str(args.checkout), "--workload", "corpus", "--observe-execution",
+             "--output", str(args.output / "observed-corpus-resources")], "observed-corpus", seconds=200)
         run([sys.executable, str(DRIVER / "run-inventory-resource-matrix.py"), "--image", image,
              "--checkout", str(args.checkout), "--output-root", str(args.output), "--repeats", "3", "--concurrency", "3"],
             "resource-matrix", seconds=3600)
@@ -91,6 +94,7 @@ def main():
              "--candidate", str(args.output / "source-expectations.stdout"),
              "--output", str(args.output / "current-oracle-diff.json")], "oracle-gate")
         environment = {**os.environ, "SOURCEBASTION_NATIVE_PROOF_CHECKOUT": str(args.checkout),
+                       "SOURCEBASTION_NATIVE_OBSERVE_EXECUTION": "1",
                        "SOURCEBASTION_NATIVE_ADVISORIES": str(args.advisories),
                        "SOURCEBASTION_NATIVE_GRYPE_PROOF_OUTPUT": str(args.output / "real-grype"),
                        "SOURCEBASTION_NATIVE_DEPENDENCY_JOB_OUTPUT": str(args.output / "dependency-job"),

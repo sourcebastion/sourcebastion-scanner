@@ -15,6 +15,7 @@ import signal
 import subprocess
 import time
 from inventory_release import FROZEN, measured_resources, policy
+from inventory_execution_observation import ExecutionObservation
 
 
 #: Retained diagnostics are bounded. The workloads are reviewed maintainer
@@ -93,6 +94,7 @@ def run(args):
                "architecture": architecture, "status": "failed", "removed": False,
                "scope": "Finite native CI workload; no production custody/administrator-fencing or M046 acceptance."}
     cid, root, original = None, None, {}
+    trace = ExecutionObservation(args.output) if args.observe_execution else None
     started = time.monotonic()
     deadline = started + FROZEN["wall_seconds"]
     def remaining():
@@ -173,6 +175,8 @@ def run(args):
         while "State:\tT" not in read(Path(f"/proc/{shell}/status")):
             remaining()
             time.sleep(0.01)
+        if trace is not None:
+            trace.start(shell, deadline)
         docker("kill", "--signal", "CONT", cid, seconds=remaining())
         while not (gate / "exit").exists():
             remaining()
@@ -193,6 +197,8 @@ def run(args):
         limits(root)
         receipt["exit_code"] = int(read(gate / "exit"))
         receipt["wall_seconds"] = time.monotonic() - started
+        if trace is not None:
+            receipt["execution_observation"] = trace.stop(completed=True)
         # Every cgroup counter has now been read while the container is still
         # held, so the workload may be released. It must be: a held container
         # has not committed its stream, and `docker logs` returns nothing for
@@ -242,6 +248,12 @@ def run(args):
             receipt["reason"] = type(error).__name__
             receipt["detail"] = code[:DETAIL_BYTES] or "<no message>"
     finally:
+        if trace is not None:
+            try:
+                trace.stop()
+            except Exception as cleanup:
+                receipt["reason"] = "execution-observer-cleanup-failed"
+                receipt["detail"] = str(cleanup)[:DETAIL_BYTES]
         if cid is not None:
             try:
                 docker("rm", "--force", cid, seconds=20)
@@ -271,10 +283,13 @@ def main(argv=None):
     parser.add_argument("--provider", type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--workload", choices=("corpus", "stress", "entrypoint", "packaging", "cyclonedx"), default="corpus")
+    parser.add_argument("--observe-execution", action="store_true")
     for name in ("source", "advisories", "preparation", "control", "artifacts"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--arm", choices=("flat-1000", "flat-10000", "flat-100000", "flat-100001", "graph", "expansion"), default="flat-1000")
     args = parser.parse_args(argv)
+    if args.workload == "entrypoint" and os.environ.get("SOURCEBASTION_NATIVE_OBSERVE_EXECUTION") == "1":
+        args.observe_execution = True
     if args.workload == "entrypoint" and any(getattr(args, name) is None for name in ("source", "advisories", "preparation", "control", "artifacts")):
         parser.error("entrypoint requires all immutable controller mounts")
     return run(args)

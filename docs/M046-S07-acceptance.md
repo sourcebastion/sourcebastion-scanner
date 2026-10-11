@@ -70,6 +70,15 @@ installed-entrypoint repeats run against the published images. The comparison
 job checks all 48 matrix/entrypoint workload bindings, repeat consistency, equal
 canonical case digests and the shared release/advisory identities.
 
+An additional corpus run and all three installed-entrypoint runs attach a host
+process/network tracer before the trusted stopped shell releases the workload.
+The trace follows descendant processes and retains execution arguments and
+IPv4/IPv6 attempts, including failed attempts. Missing, truncated or premature
+traces refuse qualification. Collection reports `trace-collected-review-required`;
+the raw invocations still require review against the installed allowed tools.
+This adds observations without claiming that isolation flags establish absence
+of project execution or network attempts.
+
 This workflow is prepared, **not yet executed against a published v1.8.1**.
 Its receipts always retain `acceptance: false` and enumerate the execution
 observation, adversarial lifecycle, development human review, rollback and slice

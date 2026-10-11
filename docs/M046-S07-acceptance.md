@@ -2,7 +2,8 @@
 
 Status: **open**. This ledger records the acceptance requirements and evidence
 available through 2026-10-11. Published native qualification is independently
-verified; live development, human review and rollback acceptance remain pending. Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
+verified; automated live development and rollback proofs now pass. Signed-in
+download refusals and dated human review remain pending. Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
 scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
 ## Slice prerequisites
@@ -13,7 +14,7 @@ scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/
 | S02 | Content validation, custom paths, exclusions and located discovery outcomes over the independent corpus | Accepted by #88 and [#90](https://github.com/sourcebastion/sourcebastion-scanner/issues/90). Revalidate against the published release. |
 | S03 | Selected-version, declaration, occurrence and graph semantics on supported ecosystems; explicit unsupported outcomes | Accepted by #88 and [#91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91). The owner waived legacy scanner parity, not truthful semantics or the minimum corpus. |
 | S04 | Standards-valid CycloneDX, actual offline Grype, four pip advisory groups, matching identity and independent failure states | [Acceptance ledger](M046-S04-acceptance.md) records all five stated criteria met; #92 is closed. Published qualification below independently binds standards-valid export, real matching, the four original pip advisory groups and source equivalence to the release tuple. SPDX remains in M048 #154; live development and resource acceptance remain S07 requirements. |
-| S05 | Immutable queryable rows, authorized artifact access, truthful root/ecosystem coverage, retention/reuse and development presentation | Foundation #403 and [platform #404](https://github.com/sourcebastion/sourcebastion-platform/pull/404) merged; platform merge `377f61d2c6e544b409b471250c20edcb40fa30f8`, reviewed head `402fd5b93058f3c1e291def04a520313731e65de`. [Scanner #162](https://github.com/sourcebastion/sourcebastion-scanner/pull/162) and [#165](https://github.com/sourcebastion/sourcebastion-scanner/pull/165) merged as `4effe1897114ef3e3c6cf17b52172d8ea3844986` and `899f1255320241b9e9ef7f7cc77152da6374083c`; both are included in the published release. Actual development runtime/validator binding is verified; fresh development presentation, human acceptance and rollback remain open. |
+| S05 | Immutable queryable rows, authorized artifact access, truthful root/ecosystem coverage, retention/reuse and development presentation | Foundation #403 and [platform #404](https://github.com/sourcebastion/sourcebastion-platform/pull/404) merged; platform merge `377f61d2c6e544b409b471250c20edcb40fa30f8`, reviewed head `402fd5b93058f3c1e291def04a520313731e65de`. [Scanner #162](https://github.com/sourcebastion/sourcebastion-scanner/pull/162) and [#165](https://github.com/sourcebastion/sourcebastion-scanner/pull/165) merged as `4effe1897114ef3e3c6cf17b52172d8ea3844986` and `899f1255320241b9e9ef7f7cc77152da6374083c`; both are included in the published release. Actual development runtime/validator binding, fresh scan persistence/presentation-function captures, reuse and rollback proofs pass; signed-in download refusal and human acceptance remain open. |
 | S06 | Verified native packaging, upgrade gates, numerical budgets, support/runbook, #54 coordination and release evidence | Implementation and release evidence accepted in the [S06 ledger](M046-S06-acceptance.md); S07 independently audited published native qualification and frozen-S01 growth below. [#163](https://github.com/sourcebastion/sourcebastion-scanner/pull/163) merged the distribution deferral to M049 #164; the obligation remains open there. |
 | S07 | All preceding slices accepted, published native proof, development human acceptance and rollback/mixed-version receipts | Open; required demonstrations below. |
 
@@ -378,8 +379,8 @@ completes as a full scan with exact new charges, all contextual/matching checks
 and official schema validation passing. Pure read-only captures after both
 transitions preserve the rows, artifacts, expiry and exact bytes of three earlier
 stored origins, including the qualifying full baseline. No keyring rotation,
-quota reset or historical attempt replay was used. Bounded matching failure and
-its fresh recovery case remain in progress.
+quota reset or historical attempt replay was used. Original bounded-attempt
+failures and the separate fresh recovery demonstration are recorded below.
 
 The predeclared 6,000-line bounded case instead reached the unchanged aggregate
 CPU ceiling. Its [terminal refusal audit](M046/S07/development-live-cpu-refusal-audit.json)
@@ -400,15 +401,50 @@ unchanged provider node budget. The parent tried to materialize the resulting
 canonical inventory/export. [Platform #418](https://github.com/sourcebastion/sourcebastion-platform/pull/418)
 stream-verifies this diagnostic without making it matching input, preserving
 all original integrity/resource guards. Its 89 focused checks and immutable
-isolated artifact replay pass; reviewed CI and normal deployment remain pending.
+isolated artifact replay pass. All 27 checks passed for reviewed head
+`ae0af4970ae44ea464425ba78e9612fa55cc8f56`; merge
+`2e3c7dc93e3ff09d251fec6d09168c593e78af6d` normally deployed in successful run
+[38127054354](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38127054354).
+The actual application validator, keyring, queue and persistent defaults passed
+post-deployment verification.
 
 A separate [prospective recovery-refusal oracle](M046/S07/development-bounded-recovery-expectations.json)
 defines fresh case J3 using the same authored 2,000-line source, before its new
 commit or submission. It requires successful inventory/export, unavailable
 matching, the real recovery node-budget refusal, and no accepted matcher input
 or fresh Grype findings. Both original J/J2 oracles remain byte-for-byte unchanged;
-their failures are not relabelled as passes. J3, the final restoration scan and
-the designated human checks remain pending.
+their failures are not relabelled as passes.
+
+The [fresh recovery/restoration audit](M046/S07/development-live-recovery-restoration-audit.json)
+now passes through the real worker, accepted handoff and finalizer. J3 at source
+`3269d964a9641cd95e76745c411729eb82f7bed6` finishes its first compute attempt with
+4,533 exact inventory rows, one inventory snapshot, two stored artifacts and
+zero matching rows or fresh Grype findings. Its 2,000 located declarations and
+selected occurrences agree with the prospective oracle. The independently
+retained 37,197,995-byte diagnostic reproduces the unchanged provider node-budget
+refusal; the authenticated capsule contains no accepted matching input. Inventory
+and the standards-valid 2,015-component SBOM remain available. Dependency CPU is
+within the unchanged 120-second ceiling, and all owned containers are removed.
+
+The final fresh K scan at source `d24770870ab6dda3eac4fe8bb33d5c9085229788`
+restores exact earlier tree `8c5e1cd8bf31f9f17aa760eaee9ea77bd83d4b50` and passes
+as a full scan: 530 inventory rows, 20 matching rows, two snapshots and two
+artifacts. All original contextual cases, 148 base declarations, eight base
+selected versions and all eight pip source/advisory groups pass. Its official
+CycloneDX validation passes with 15 components, and canonical/export bytes equal
+the preceding normal I restoration. Both J3 and K incur exactly their new row
+and artifact charges. Existing rows, snapshots, artifact bytes and expiry for
+three earlier origins remain unchanged through the final transition.
+
+Read captures of the actual deployed presentation function distinguish K's
+partial inventory/ready matching, J3's partial inventory/unavailable matching,
+and the legacy H result's unknown inventory/unavailable matching. These captures
+forbid SQL writes and roll back all transactions; they do not establish browser
+or human acceptance. After verified quiescence, both temporarily disabled GitHub
+workflows were restored to active, the application worker cron reinstalled and
+the worker resumed. Persistent inventory writer/reuse/M044 adoption remain off;
+inventory read presentation remains on. All remaining checks are the designated
+signed-in download refusals, actual downloaded checksum and dated human review.
 
 The requesting user will perform the live second-account and revoked-grant
 SBOM download refusal checks and review coverage, findings and the authorized
@@ -500,8 +536,8 @@ python3 scripts/audit-m046-native-ci.py \
 The qualifying published release inspected is
 [v1.8.1](https://github.com/sourcebastion/sourcebastion-scanner/releases/tag/v1.8.1),
 source `957e1670d1552c0e1056c3bdf1cd2c78108abfc6`, published 2026-10-11 UTC.
-Its identity and finite native qualification are verified above; live development
-acceptance and mixed-version rollback remain open. The prior admitted development image remains preserved for rollback.
+Its identity and finite native qualification are verified above; automated live
+development and mixed-version rollback proofs pass, with human acceptance open. The prior admitted development image remains preserved for rollback.
 
 After normal release review, bind one qualifying tuple to immutable receipts:
 scanner source SHA and release tag; OCI index and AMD64/ARM64 manifest/config
@@ -515,9 +551,9 @@ admitted tuple for rollback. A moving `latest` tag cannot identify either tuple.
 | Required check | Execution and retained evidence | State |
 | --- | --- | --- |
 | Published native binaries | Pull the reviewed digest on actual native Linux AMD64 and ARM64. Validate installed payloads and run the independent corpus using those payloads, without replacing them with checkout modules. Record architecture/kernel, image/native hashes, expected/observed records and canonical per-case digests. | Passed on both published native images; 64 equal cases |
-| Frozen advisory matching | Admit reviewed frozen inputs before the workload, disable scan-time refresh/network, and run actual Grype on the canonical SBOM. Record all four pip advisory groups per selected occurrence, matching identity, distinct incomplete-inventory/matcher-failure states and standards validation. | Published matching/schema and required advisory groups passed; live matcher-failure presentation remains pending |
+| Frozen advisory matching | Admit reviewed frozen inputs before the workload, disable scan-time refresh/network, and run actual Grype on the canonical SBOM. Record all four pip advisory groups per selected occurrence, matching identity, distinct incomplete-inventory/matcher-failure states and standards validation. | Published and live matching/schema and required advisory groups passed; live unavailable-matching presentation function verified, browser review pending |
 | No mutation/execution/install/forge calls | Read-only source and filesystem policies, denied network, actual source pre/post hashes and execution observations covering adversarial fixtures. Record allowed tool invocations and child lifecycle; read-only/network settings alone do not prove every no-execution requirement. | Eight published raw traces reviewed with allowed invocations and no observed network syscalls; source guards and installed pre/post payloads passed |
-| Bounds, cancellation and child cleanup | Three fresh-cgroup repeats per architecture of corpus, stress and actual installed entrypoint; inherited outer deadline, finite child/resource observers. Exercise timeout, cancellation and controller loss; prove owned descendants/containers reaped, no late publication and explicit refused/partial states. | All 48 published normal-exit resource bindings passed; actual installed AMD64 deadline/cancellation/controller-loss proof passed in development isolation; live queue refusal remains pending |
+| Bounds, cancellation and child cleanup | Three fresh-cgroup repeats per architecture of corpus, stress and actual installed entrypoint; inherited outer deadline, finite child/resource observers. Exercise timeout, cancellation and controller loss; prove owned descendants/containers reaped, no late publication and explicit refused/partial states. | All 48 published normal-exit resource bindings passed; actual installed AMD64 deadline/cancellation/controller-loss proof passed in development isolation; live CPU, capacity and key refusals plus final restoration passed |
 | Cumulative image growth | Compare verified compressed OCI descriptors against the reviewed frozen S01 baseline, bound to each published native manifest. Record baseline identity and byte totals. | Passed against frozen S01: 206,007,354 bytes AMD64; 201,263,464 bytes ARM64 |
 | Numerical exceptions | Compare actual aggregate work with [frozen budgets](../evaluation/m046/release-budgets-v1.json); link any explicit reviewed exception. Do not increase ceilings silently or treat a refused arm as a complete result. | No new exception proposed |
 

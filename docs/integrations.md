@@ -63,7 +63,9 @@ See the `--slack-webhook` and `--teams-webhook` options on the `scan` command. S
 
 ## License Compliance
 
-ez-appsec can check dependency licenses against configurable allowed and denied lists. License data is extracted using [syft](https://github.com/anchore/syft) (bundled with grype).
+ez-appsec can check dependency licenses against configurable allowed and denied lists. License data is extracted by running the [syft](https://github.com/anchore/syft) command, which must be installed on `PATH`.
+
+> **Not available in the published image.** The `sourcebastion-scanner` image ships grype, which embeds syft as a library but provides no `syft` command. With a `license_policy` configured, `scan --license-check` exits 1 before scanning and says so. License checking moves to the canonical inventory in [M048](https://github.com/sourcebastion/sourcebastion-scanner/issues/154).
 
 ### Setup
 

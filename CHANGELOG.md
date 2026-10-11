@@ -2,6 +2,7 @@
 
 ### Changed
 
+* `scan --license-check` with a `license_policy` configured now exits 1 before any scanner runs when no `syft` command is on `PATH`, and says why. The published image has never included `syft` (grype embeds it as a library only), so the check previously ran every other scanner first and then failed with `license-checker scanner failed (not_installed)`. The docs no longer claim syft is bundled with grype. License checking moves to the canonical inventory in M048 (#154)
 * a merged version bump now requests its own release. `release.yml` had always accepted a `repository_dispatch` of type `scanner-release` from `sourcebastion-bot[bot]`, but nothing sent it -- the initiator was semantic-release, removed in the same commit that introduced the gate -- so every release ran through the owner path, whose input was named `break_glass_reason`. The new `Release dispatch` workflow supplies the missing initiator, and that input is now `release_reason`: dispatching by hand is the documented fallback, not an incident. Nothing about what is checked changes, including the second approval on the `release` environment
 
 ## [1.8.1] - 2026-10-10

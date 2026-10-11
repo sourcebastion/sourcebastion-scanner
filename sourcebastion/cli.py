@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from sourcebastion.external_scanners import ScannerExecutionError
+from sourcebastion.license_checker import SYFT_UNAVAILABLE_MESSAGE, syft_available
 from sourcebastion.scanner import SecurityScanner
 from sourcebastion.config import Config
 from sourcebastion.baseline import load_baseline, diff_findings
@@ -44,7 +45,7 @@ def main():
 @click.option("--jira-project", envvar="SOURCEBASTION_JIRA_PROJECT", default=None, help="Jira project key for new issues")
 @click.option("--sbom/--no-sbom", default=False, help="Generate CycloneDX SBOM alongside scan results")
 @click.option("--sbom-output", type=click.Path(), default="sbom.cdx.json", help="Output path for SBOM file (default: sbom.cdx.json)")
-@click.option("--license-check", is_flag=True, default=False, help="Run license compliance check (requires syft)")
+@click.option("--license-check", is_flag=True, default=False, help="Run license compliance check (requires syft on PATH; not included in the published image)")
 @click.option("--image", default=None, help="Container image to scan for OS-level CVEs (e.g. nginx:latest)")
 @click.option("--registry-auth", default=None, help="Private registry credentials in user:token format")
 @click.option("--rules", multiple=True, help="Custom rule packs to enable (python, ruby, java, javascript, php, or 'all')")
@@ -61,6 +62,12 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
             config.severity = severity
         if output:
             config.output_file = output
+
+        if license_check and config.license_policy and not syft_available():
+            # Refused before any scanner runs rather than after all of them,
+            # with the exit status a mid-scan component failure would give.
+            click.echo(f"✗ Error: {SYFT_UNAVAILABLE_MESSAGE}", err=True)
+            sys.exit(1)
 
         scanner = SecurityScanner(config, license_check=license_check)
 

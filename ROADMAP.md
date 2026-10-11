@@ -315,7 +315,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 
 **Technical approach:**
 - New `sourcebastion/license_checker.py`
-- Syft (bundled with grype) outputs license data — parse from its JSON output
+- Syft outputs license data — parse from its JSON output. The `syft` command is not in the published image; see M048 (#154)
 - Map SPDX license identifiers to policy rules
 
 **Done criteria:**

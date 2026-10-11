@@ -3,6 +3,7 @@ checks them against configurable allowed/denied lists (PLAN-11)"""
 
 import json
 import logging
+import shutil
 import subprocess
 import tempfile
 from fnmatch import fnmatch
@@ -115,6 +116,25 @@ def extract_licenses_from_syft(syft_json: Dict[str, Any]) -> List[PackageLicense
         ))
 
     return packages
+
+
+# The published scanner image ships grype, which embeds syft as a library but
+# provides no `syft` command, so this check cannot run there. Saying so before
+# the scan starts beats failing after every other scanner has finished.
+# License checking moves to the canonical inventory in M048 (#154).
+SYFT_UNAVAILABLE_MESSAGE = (
+    "--license-check requires the `syft` command on PATH, and it was not found. "
+    "The published sourcebastion-scanner image does not include syft, so license "
+    "checking is unavailable there until M048 "
+    "(https://github.com/sourcebastion/sourcebastion-scanner/issues/154). "
+    "Install syft (https://github.com/anchore/syft) to use it outside the image, "
+    "or run the scan without --license-check."
+)
+
+
+def syft_available() -> bool:
+    """Whether a `syft` command is on PATH for the license check to run."""
+    return shutil.which("syft") is not None
 
 
 def run_syft(path: str) -> Tuple[Optional[Dict[str, Any]], str]:

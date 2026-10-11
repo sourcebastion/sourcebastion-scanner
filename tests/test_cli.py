@@ -95,6 +95,58 @@ def example():
         assert result.exit_code == 1
         assert "semgrep scanner failed (timeout)" in result.output
 
+    @pytest.fixture
+    def license_config(self, temp_dir):
+        config = Path(temp_dir) / "license.yaml"
+        config.write_text("license_policy:\n  denied_licenses:\n    - AGPL*\n")
+        return str(config)
+
+    def test_license_check_without_syft_is_refused_before_scanning(
+        self, sample_file, license_config, tmp_path
+    ):
+        """The published image has no syft; say so instead of failing late."""
+        runner = CliRunner()
+        output = tmp_path / "sourcebastion.sarif"
+
+        with (
+            patch("sourcebastion.license_checker.shutil.which", return_value=None),
+            patch("sourcebastion.cli.SecurityScanner") as scanner,
+        ):
+            result = runner.invoke(main, [
+                "scan", sample_file, "--license-check",
+                "--config", license_config, "--output", str(output),
+            ])
+
+        assert result.exit_code == 1
+        assert "requires the `syft` command on PATH" in result.output
+        assert "published sourcebastion-scanner image does not include syft" in result.output
+        scanner.assert_not_called()
+        assert not output.exists()
+
+    def test_license_check_with_syft_proceeds(self, sample_file, license_config):
+        runner = CliRunner()
+        with (
+            patch("sourcebastion.license_checker.shutil.which", return_value="/usr/bin/syft"),
+            patch("sourcebastion.scanner.check_licenses", return_value={
+                "findings": [], "packages": [],
+                "summary": {"total": 0, "allowed": 0, "denied": 0, "unknown": 0},
+            }),
+        ):
+            result = runner.invoke(main, [
+                "scan", sample_file, "--license-check", "--config", license_config,
+            ])
+
+        assert result.exit_code == 0, result.output
+        assert "syft" not in result.output
+
+    def test_license_check_without_policy_does_not_require_syft(self, sample_file):
+        """No policy means the check never runs syft, so absence is no reason to refuse."""
+        runner = CliRunner()
+        with patch("sourcebastion.license_checker.shutil.which", return_value=None):
+            result = runner.invoke(main, ["scan", sample_file, "--license-check"])
+
+        assert result.exit_code == 0, result.output
+
     def test_scan_with_invalid_output_path(self, sample_file):
         """Test scan with invalid output path"""
         runner = CliRunner()

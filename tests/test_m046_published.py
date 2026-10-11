@@ -84,6 +84,28 @@ def generation(tmp_path):
     return root, manifest, published.sha(manifest.read_bytes())
 
 
+@pytest.mark.parametrize("case", ["current-upstream-size", "oversize-file", "oversize-generation"])
+def test_advisory_admission_uses_existing_four_gib_generation_bound(tmp_path, monkeypatch, case):
+    root = tmp_path / "generation"
+    (root / "6").mkdir(parents=True)
+    (root / "snapshot.json").write_bytes(b"{}")
+    database = root / "6/vulnerability.db"
+    with database.open("wb") as stream:
+        stream.truncate(4 * 1024**3 + 1 if case == "oversize-file" else 3_222_298_624)
+    if case == "oversize-generation":
+        with (root / "extra.db").open("wb") as stream:
+            stream.truncate(2 * 1024**3)
+    # Sparse files exercise real stat/aggregate limits without allocating GiBs
+    # in this metadata-boundary unit test. Byte/hash substitution is exercised
+    # by the real-file tests below and actual qualification hashes every byte.
+    monkeypatch.setattr(published.hashlib, "file_digest", lambda *_args: published.hashlib.sha256(b"unit-test"))
+    if case == "current-upstream-size":
+        assert published.advisory_files(root)["6/vulnerability.db"]["bytes"] == 3_222_298_624
+    else:
+        with pytest.raises(ValueError, match="shared-advisory-(file-refused|size-bound)"):
+            published.advisory_files(root)
+
+
 @pytest.mark.parametrize("change", ["db", "snapshot", "extra", "manifest", "missing", "symlink", "hardlink"])
 def test_both_architectures_must_receive_exact_same_advisory_file_set(tmp_path, change):
     root, manifest, digest = generation(tmp_path)

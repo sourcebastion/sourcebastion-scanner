@@ -95,7 +95,10 @@ def advisory_files(root):
         if stat.S_ISDIR(info.st_mode):
             continue
         relative = path.relative_to(root).as_posix()
-        if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 2 * 1024**3
+        # The reviewed consumer bounds the entire advisory generation to 4GiB.
+        # Current upstream vulnerability.db is over 3GiB; a separate 2GiB
+        # per-file ceiling incorrectly refuses an otherwise admitted generation.
+        if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 4 * 1024**3
                 or len(result) >= 16 or any(part in {"", ".", ".."} for part in PurePosixPath(relative).parts)):
             raise ValueError("shared-advisory-file-refused")
         total += info.st_size

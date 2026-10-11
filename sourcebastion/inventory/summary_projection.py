@@ -69,7 +69,7 @@ def project_inventory(inventory, *, check):
                 "canonical_projection_losses": len(snapshot.losses),
             },
             "artifact": {
-                "format": "sourcebastion.inventory/1",
+                "format": snapshot.schema_version,
                 "sha256": hashlib.sha256(raw).hexdigest(),
                 "byte_count": len(raw),
             },

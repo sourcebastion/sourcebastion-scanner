@@ -349,7 +349,8 @@ def test_explicit_environment_retains_only_supplied_inputs_and_refuses_conflicts
 
 
 def test_published_structural_schema_tracks_the_implemented_contract():
-    path = Path(__file__).resolve().parents[1] / "docs/M046-inventory-v1.schema.json"
+    # The M046 /1 snapshot is frozen history; the contract now describes /2.
+    path = Path(__file__).resolve().parents[1] / "docs/M048-inventory-v2.schema.json"
     assert json.loads(path.read_text()) == Inventory.model_json_schema()
 
 

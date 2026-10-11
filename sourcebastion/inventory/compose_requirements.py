@@ -16,6 +16,8 @@ from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 from pydantic import ValidationError
 
+from sourcebastion.license_expression import SPDX_LICENSE_LIST_VERSION
+
 from .budget import PipelineBudget
 from .contract import (
     AnalysisScope,
@@ -24,6 +26,8 @@ from .contract import (
     Declaration,
     Environment,
     InputCoverage,
+    INVENTORY_V1,
+    INVENTORY_V2,
     InputReference,
     Inventory,
     InventoryLimits,
@@ -156,6 +160,7 @@ def _compose(
     manifest_inputs=False,
     go_runtime=None,
     budget=None,
+    licenses=False,
 ):
     """Consume a controller Source once; publish only after final epoch checks.
 
@@ -258,9 +263,16 @@ def _compose(
             marker_keys[value] = context_key(value, check=step)
         return marker_keys[value]
 
+    # License evidence is opt-in until every consumer reads inventory/2. A /1
+    # inventory asserts nothing about licenses; /2 assesses every occurrence.
+    license_fields = (
+        dict(schema_version=INVENTORY_V2, license_list_version=SPDX_LICENSE_LIST_VERSION) if licenses else {}
+    )
+
     def build_failed(reason):
         global_refusals.add(reason)
         return Inventory(
+            **license_fields,
             source_sha256=source_sha256,
             producer=producer,
             limits=limits,
@@ -537,6 +549,7 @@ def _compose(
             graph="unknown",
             root_contexts=defaultdict(set),
             adapted_inputs=set(),
+            licenses=[],
             enumerated=False,
             unresolved_versions=False,
             selection_nodes=selection_nodes,
@@ -615,8 +628,14 @@ def _compose(
         ):
             discovery_fidelity = "complete"
         status = "complete" if enumeration == version_fidelity == discovery_fidelity == "complete" else "partial"
+        if licenses:
+            from .licenses import assess
+
+            license_fields = dict(
+                license_fields, licenses=tuple(extra.licenses), license_gaps=tuple(assess(occurrences, extra.licenses))
+            )
         payload = dict(
-            schema_version="sourcebastion.inventory/1",
+            **{"schema_version": INVENTORY_V1, **license_fields},
             source_sha256=source_sha256,
             producer=producer,
             limits=limits,

@@ -50,6 +50,8 @@ class Package:
     hashes: tuple = ()
     source_key: str | None = None
     optional: bool | None = None
+    # The entry's stated ``license`` value and its locator, unparsed here.
+    license: tuple | None = None
 
 
 @dataclass(frozen=True)
@@ -372,6 +374,7 @@ class Parser:
                         hashes,
                         source_key,
                         value.get("optional"),
+                        (locator + "/license", value["license"]) if "license" in value else None,
                     )
                 )
             except InputRefusal as error:

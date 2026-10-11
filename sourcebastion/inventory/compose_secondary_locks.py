@@ -3,6 +3,7 @@
 from . import secondary_locks
 from .contract import AnalysisScope, InputCoverage, Locator, Occurrence, ProjectionLoss, identifier, package_purl
 from .inputs import InputRefusal
+from .licenses import observe
 
 VERSION = "sourcebastion.secondary-lock-composition/1"
 
@@ -73,6 +74,10 @@ def extend(state):
                 **values,
             )
             state.retain(state.occurrences, occurrence, state.limits.occurrences)
+            if raw.license is not None:
+                observed = observe(occurrence, locate(raw.license[0]), raw.license[1], "lock-record")
+                if observed is not None:
+                    state.retain(state.licenses, observed)
             if raw.graph_locator:
                 state.graph = "partial"
                 loss = dict(

@@ -29,6 +29,8 @@ class Package:
     scopes: tuple
     registry_sha256: str | None = None
     graph_locator: str | None = None
+    # The stated license value and its locator, unparsed here.
+    license: tuple | None = None
 
 
 @dataclass(frozen=True)
@@ -36,6 +38,21 @@ class Document:
     disposition: str
     reason: str
     packages: tuple = ()
+
+
+def composer_license(value):
+    """Composer's ``license`` array is disjunctive by definition: one OR claim.
+
+    A member that is itself an expression is parenthesized so it keeps its own
+    precedence. An empty list states nothing. Any other shape is returned as-is
+    and recorded as an unparsed claim.
+    """
+    if type(value) is list and not value:
+        return None
+    if type(value) is list and all(type(member) is str and member.strip() for member in value):
+        members = [f"({m.strip()})" if len(m.split()) > 1 else m.strip() for m in value]
+        return members[0] if len(members) == 1 else " OR ".join(members)
+    return value
 
 
 def composer(content, *, deadline, check, max_records):
@@ -104,7 +121,16 @@ def composer(content, *, deadline, check, max_records):
                     if values:
                         partial.add("unassessed-composer-dependency-graph")
                         graph = f"/{field}/{index}/{control}"
-            packages.append(Package(name, version, f"/{field}/{index}", (scope,), graph_locator=graph))
+            packages.append(
+                Package(
+                    name,
+                    version,
+                    f"/{field}/{index}",
+                    (scope,),
+                    graph_locator=graph,
+                    license=(f"/{field}/{index}/license", composer_license(row["license"])) if "license" in row else None,
+                )
+            )
     return Document(
         "unsupported" if partial else "parsed",
         sorted(partial)[0] if partial else "static-composer-lock",

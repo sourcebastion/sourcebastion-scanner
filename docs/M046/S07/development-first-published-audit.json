@@ -1,0 +1,61 @@
+{
+  "acceptance": false,
+  "base_declarations": 148,
+  "base_selected_occurrences": 8,
+  "canonical_sha256": "39bb5256295d7748a98613b88c9548d40e9ca553fd6775f2336fa272c0bc0f45",
+  "evidence_scope": "First genuine fresh designated development result; overall comparison failed. Retained unchanged for later rollback readability. No acceptance asserted.",
+  "exact_contextual_cases": [
+    "python-product-build-input",
+    "python-product-hidden-lock",
+    "python-pip-extension",
+    "node-npm-complete",
+    "rust-edges",
+    "python-range",
+    "python-false-positive"
+  ],
+  "export_sha256": "1304ce2ca74710d4a9be47e7e1374730cc4a8ce26955427831ab616b4bfbe420",
+  "http_authorization_checks": false,
+  "human_review": false,
+  "known_failure": {
+    "case": "go-module",
+    "expected": "preserved module root, scope, application and unresolved declaration/occurrence",
+    "fix_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/413",
+    "observed": "go-parser-runtime-unavailable; all contextual Go records absent"
+  },
+  "matching_output_sha256": "0f8fce4c4701822be6bb32496540a3d05193267af7af08395ca7c40aa26313cd",
+  "official_schema_validation": {
+    "acceptance": false,
+    "bom_sha256": "1304ce2ca74710d4a9be47e7e1374730cc4a8ce26955427831ab616b4bfbe420",
+    "components": 15,
+    "remote_retrieval": "refused",
+    "schema_sha256": {
+      "bom-1.6.schema.json": "3e92dddbc30cf7f6a02b80f0942b1a4cfd4fb1c26f1dfc4310afa9d613cafb93",
+      "jsf-0.82.schema.json": "8bae002c25e723db7ee1f26afde680ae1a2b1a8f6b4b4b0fd65dc3becb090aae",
+      "spdx.schema.json": "baa9d3bd1ed57b6751b0887edead6b5063ff53ff7429cf85d476c6c94af0166e"
+    },
+    "status": "offline-official-cyclonedx-validation-passed",
+    "validator_versions": {
+      "attrs": "26.1.0",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "referencing": "0.37.0",
+      "rpds-py": "2026.6.3",
+      "typing-extensions": "4.16.0"
+    }
+  },
+  "persisted_inventory_rows_equal": 522,
+  "platform_revision": "50c366049c48e4f96c02377c6e5bf61c369901b2",
+  "prefixed_oracle_sha256": "0361ef2d9d4c7743369236aa746c1cd58da91b9b0934d1218f7a402907841509",
+  "recovery_identity_sha256": "c21f659d6937b80c58f4648f62f76e93eb0548c9b6aa1b11487f17b4dba899e6",
+  "replayed_matching_rows": 20,
+  "required_pip_source_advisory_groups": 8,
+  "schema_version": "m046.live-development-independent-replay/1",
+  "source_commit": "e1d3ff87d05cd41e135b9db488ad66f6b1f4f8f1",
+  "source_sha256": "1c2f8b4834491e0f3c1c930f9d5c34c29978868d78c68feb92a13898e0a3974d",
+  "stages": {
+    "export": "not-run",
+    "inventory": "partial",
+    "matching": "not-run"
+  },
+  "status": "failed-known-go-runtime-defect"
+}

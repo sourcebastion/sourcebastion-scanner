@@ -244,8 +244,26 @@ path. No inventory or accepted result was published by that job.
 bounds inventory cancellation polling to 250 ms while preserving immediate
 known-loss, expiry, drain and phase/generation checks and every durable effect
 fence. Its 138 focused tests and all CI, including the PostgreSQL contract, passed.
-It merged as `50c366049c48e4f96c02377c6e5bf61c369901b2`; normal development deployment
-and fresh designated acceptance results remain pending.
+It merged as `50c366049c48e4f96c02377c6e5bf61c369901b2` and deployed successfully in
+[38112428605 attempt 2](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38112428605).
+The first attempt refused an advisory refresh at the required scanner gate;
+that failure is retained separately. Post-deployment validator/keyring/defaults,
+healthy marker, empty queue and absence of active containers were verified.
+
+Fresh provider commit `e1d3ff87d05cd41e135b9db488ad66f6b1f4f8f1` completed and
+published a result, but [its independent comparison](M046/S07/development-first-published-audit.json)
+failed the pre-scan Go expectations. The hosted controller hard-coded
+`go_sha256=None`, yielding a truthful `go-parser-runtime-unavailable` outcome
+instead of the image helper's source declarations. The remaining seven contextual
+cases, 148 base declarations, eight selected base versions, all 522 inventory rows,
+20 recovered matching rows and eight required pip advisory/path combinations
+passed diagnostic replay. The actual exported bytes passed the pinned offline
+official CycloneDX schema. This result remains intact and is not acceptance.
+[Platform #413](https://github.com/sourcebastion/sourcebastion-platform/pull/413)
+wires the installed helper and authenticates its digest through finalization,
+with changed reuse compatibility to refuse pre-fix snapshots. Its 100 focused
+tests pass; exact-head native proof, CI, deployment and subsequent fresh results
+remain pending. The original source expectations remain unchanged.
 
 Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)
 were mechanically derived from the frozen rich source oracle before the new

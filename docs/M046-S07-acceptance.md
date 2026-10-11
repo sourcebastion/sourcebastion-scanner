@@ -2,8 +2,10 @@
 
 Status: **open**. This ledger records the acceptance requirements and evidence
 available through 2026-10-11. Published native qualification is independently
-verified; automated live development and rollback proofs now pass. Signed-in
-download refusals and dated human review remain pending. Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
+verified; automated live development and rollback proofs now pass. The designated
+human confirmed the signed-in foreign-account download returns 404. The owner
+review, actual downloaded checksum and revoked-grant/restored-access checks remain
+pending. Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
 scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
 ## Slice prerequisites
@@ -443,14 +445,32 @@ forbid SQL writes and roll back all transactions; they do not establish browser
 or human acceptance. After verified quiescence, both temporarily disabled GitHub
 workflows were restored to active, the application worker cron reinstalled and
 the worker resumed. Persistent inventory writer/reuse/M044 adoption remain off;
-inventory read presentation remains on. All remaining checks are the designated
-signed-in download refusals, actual downloaded checksum and dated human review.
+inventory read presentation remains on. At restoration, all designated signed-in
+download checks, the actual downloaded checksum and dated human review were pending.
 
 The requesting user will perform the live second-account and revoked-grant
 SBOM download refusal checks and review coverage, findings and the authorized
-download once fresh results are visible. These checks and dated human acceptance
-remain pending. Failed attempts and normal retries are retained separately and
+download once fresh results are visible. The subsequent foreign-account result is
+recorded below; the other checks and overall human acceptance remain pending.
+Failed attempts and normal retries are retained separately and
 cannot substitute for fresh designated acceptance work.
+
+### Human foreign-account download check (2026-10-11)
+
+The designated reviewer signed in with the designated second development account
+and confirmed that the exact K snapshot download request returns **404**, with
+the response **Not available**. The earlier reported 200 was clarified to belong
+to `/account/sbom`, which rendered an empty workspace; it was not a download
+response. The [sanitized human observation](M046/S07/development-human-download-review.json)
+records the result separately from the automated proofs. This is a user-reported
+browser observation, not an agent-authenticated request.
+
+The foreign-account refusal criterion passes. Overall S07 acceptance remains
+false until the owner reviews K/J3/H coverage and K findings, measures the actual
+authorized K download checksum, confirms the same K download returns 404 after
+revoking only the test repository grant, and restores the grant with the original
+download bytes accessible again. No account identifiers, session credentials or
+private snapshot links are included in the public receipt.
 
 ## Native CI evidence independently inspected
 

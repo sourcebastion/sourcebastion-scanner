@@ -1,0 +1,24 @@
+{
+  "schema_version": "m046.sanitized-human-review/1",
+  "observed_date": "2026-10-11",
+  "acceptance": false,
+  "case": "K",
+  "run_id": 123,
+  "source_commit": "d24770870ab6dda3eac4fe8bb33d5c9085229788",
+  "foreign_account_download": {
+    "status": "passed",
+    "evidence_source": "designated human reviewer, signed-in browser observation",
+    "request_path": "/account/sbom/download",
+    "same_designated_project_and_snapshot": true,
+    "reported_http_status": 404,
+    "reported_response": "Not available",
+    "earlier_workspace_status": 200,
+    "earlier_workspace_path": "/account/sbom",
+    "earlier_workspace_body": "empty SBOM page with no sources",
+    "clarification": "The workspace 200 was not a download result. The reviewer subsequently confirmed the actual download returns 404."
+  },
+  "owner_visible_coverage_and_findings_review": "pending",
+  "owner_actual_download_sha256": null,
+  "revoked_grant_download_refusal": "pending",
+  "restored_grant_original_download": "pending"
+}

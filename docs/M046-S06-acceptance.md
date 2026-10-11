@@ -1,28 +1,25 @@
 # M046 S06 acceptance ledger
 
-Status: implementation is complete and merged, and green at exact head.
-Exact-head CI and the numeric budgets are satisfied. Distribution closure is
-**deferred to [M049](https://github.com/sourcebastion/sourcebastion-scanner/issues/164)**
-by decision, with the reason recorded below.
+Status: **every acceptance criterion S06 states is met**, with executable
+evidence, and all of its implementation is on `main`. Exact-head CI, the
+numeric budgets, coordination with
+[#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54) and
+**release evidence** are all satisfied. Distribution closure is **deferred to
+[M049](https://github.com/sourcebastion/sourcebastion-scanner/issues/164)** by
+decision, with the reason recorded below.
 
-Two requirements from #93's own acceptance sentence remain, and neither is
-answered by a merge or by this ledger:
-
-- **release evidence**, which comes from `release.yml` and does not run on a
-  pull request;
-- **coordination with [#54](https://github.com/sourcebastion/sourcebastion-scanner/issues/54)**
-  is now **satisfied**: the position is recorded and agreed.
-
-So S06 is implementation-complete with **release evidence the single remaining
-acceptance item**. Deferring closure removed a self-imposed blocker, not that
-one.
+Release evidence was the last item, and it could only come from a real
+release. It now exists: **v1.8.1**, published 2026-10-11 from `957e1670`,
+validated and promoted in run
+[38101710508](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38101710508).
+The detail is in [Release evidence](#release-evidence) below.
 
 Tracking: [S06 #93](https://github.com/sourcebastion/sourcebastion-scanner/issues/93).
 Canonical scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
 This file records what the slice establishes and what it does not, the same way
-[S04's ledger](M046-S04-acceptance.md) does. It is not a release, deployment or
-milestone closure.
+[S04's ledger](M046-S04-acceptance.md) does. It cites a release as evidence; it
+is not itself a deployment, a product-route activation or an M046 closure.
 
 ## What S06 asks for, and where each part stands
 
@@ -43,7 +40,7 @@ milestone closure.
 | Numeric budgets pass on native hardware | satisfied | Exact-head run [38024740699](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38024740699) on `3ac1928a`: every arm within the frozen ceilings, three entrypoint repeats at roughly 8.54 CPU seconds, 59 MiB peak and 11 PIDs |
 | Exact-head CI | satisfied | The same run, green on AMD64 and ARM64, including the base-image mirror in every build path |
 | Distribution closure | **deferred to [M049 #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164)** | Investigation complete: 19 vendored natives across four packages bound to digests in [the closure evidence](M046-S06-distribution-closure.md), provenance established as Alpine 3.23 `aports`. Not required by #93's acceptance sentence; the runbook's blocking condition was self-imposed and is amended. **A deferral, not a resolution** |
-| Release evidence | **open** | `release.yml` validates images before publication and does not run on a pull request. S06 names it alongside exact-head CI |
+| Release evidence | satisfied | v1.8.1, run [38101710508](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38101710508): the staged index `sha256:f007b57f...` passed `Test staged hosted scan` on **both** AMD64 and ARM64 and was promoted **unchanged** to `v1.8.1`, `957e1670...` and `latest`. See [Release evidence](#release-evidence) |
 
 ## The demo S06 specifies
 
@@ -143,14 +140,86 @@ mechanical, need no legal opinion, and modify no shipped binary.
 **S06 accepted does not mean the distribution is compliant.** Those are
 separate claims and should stay separate.
 
+## Release evidence
+
+S06's acceptance sentence names release evidence alongside exact-head CI.
+`release.yml` does not run on a pull request, so no merge could produce it.
+This is the run that did.
+
+**v1.8.1**, published 2026-10-11T02:09:16Z from `957e1670`, run
+[38101710508](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38101710508).
+It went through the designed initiator rather than the owner break-glass path:
+`release-dispatch.yml` saw the `VERSION` change reach `main` and sent the bot
+`repository_dispatch`, and `prepare-release` then held the run in the
+`release` environment until a designated human approved it. The two attempts
+before it were manual `workflow_dispatch` runs, which is why they needed a
+version argument supplied by hand.
+
+### The published image is the tested image
+
+| Role | Digest |
+| --- | --- |
+| Staged index, built once and scanned | `sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6` |
+| `v1.8.1`, `957e1670d1552c0e1056c3bdf1cd2c78108abfc6`, `latest` | the same `sha256:f007b57f...` |
+| linux/amd64 manifest | `sha256:60851bee28a838a040c87dac1bb7b1d946250a198a73666684c67f2d67a2d3a2` |
+| linux/arm64 manifest | `sha256:c6ec51cb385755ae2ac173bed8679abc0db2a23ebafb1e052c8f7578ae270b69` |
+
+`Promote validated image tags` ran `docker buildx imagetools create` over
+`${image}@${STANDARD_DIGEST}` with `STANDARD_DIGEST=sha256:f007b57f...`, so
+promotion retagged the tested index rather than rebuilding. Confirmed
+independently against the registry after publication: `v1.8.1` and `latest`
+both resolve to `sha256:f007b57f...`, with the two per-architecture manifests
+above. No image was built between the scan and the tags.
+
+### What the gate actually checked on that digest
+
+`Test staged hosted scan` pulls the staged digest and scans through the
+offline hosted-worker boundary -- no network, read-only source and advisories.
+On **both** architectures:
+
+- all four components reported findings: `{'gitleaks': 1, 'grype': 61, 'semgrep': 1, 'kics': 4}`, twice per architecture (serial and parallel);
+- serial and parallel hosted scans preserved the complete finding identity multiset;
+- a Python-only read-only checkout reported dependency vulnerabilities;
+- missing and stale advisory data were **refused** without a clean report, for both a missing database and a `1ns` maximum age.
+
+`Release Security Scan` and both native builds also passed, and
+`Update GitHub Release` published the release only after all of them.
+
+### The defect this gate exposed first
+
+The previous attempt, run
+[38095674451](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38095674451),
+failed `Test staged hosted scan` on both architectures **after every assertion
+above had passed**. The entrypoint proof seals its `control/` directories at
+`0555` holding a `0444` `job.json` so the container under test cannot tamper
+with its own control record. `docker.yml` redirects that output to the
+workspace; `release.yml` set no such variable, so the proof landed inside the
+script's `mktemp -d`, the `EXIT` trap's `rm -rf` could not unlink it, and bash
+took the trap's status as the script's. A clean scan exited 1.
+
+Fail-closed behaved correctly: `Promote validated image tags` and
+`Update GitHub Release` were skipped and nothing was published.
+[#169](https://github.com/sourcebastion/sourcebastion-scanner/pull/169)
+restores the owner write bit inside the private scratch tree before removing
+it, keeps cleanup from changing the verdict in either direction, and carries
+an executable case that fails both with the old trap and with the restore
+deleted. Run 38101710508 contains **zero** `cannot remove` lines.
+
+Worth recording as a review lesson: cleanup ran outside the evidence the
+checks produced, so a passing scan and a failing job looked identical from
+inside the script. The negative case now has a positive one -- the temporary
+tree must be gone and the exit status must be the scan's.
+
 ## What this does not establish
 
-Release evidence comes from `release.yml`, which validates images before
-publication and does not run on a pull request. Also open, and listed by #159
-itself: accepted S02-S04
-integration, reviewed native release evidence, cumulative compressed growth
-against the frozen S01 baseline, and distribution closure including the S01
-rpds/libgcc finding.
+Release evidence establishes that the published image is the tested image. It
+does not establish the items [#159](https://github.com/sourcebastion/sourcebastion-scanner/pull/159)
+itself lists as still open: accepted S02-S04 integration, reviewed native
+release evidence beyond the release gate, cumulative compressed growth against
+the frozen S01 baseline, and distribution closure including the S01
+rpds/libgcc finding. Those belong to
+[S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94)
+and [M049 #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164).
 
 Local results in this repository are measured on a macOS checkout where 109
 tests fail for unrelated reasons -- 105 npm, yarn and pnpm composition and
@@ -159,5 +228,6 @@ environment. They fail identically on `main`. The host resource driver cannot
 run here at all: it requires a Linux cgroup v2 host, and Docker Desktop cannot
 provide local host cgroup acceptance.
 
-No production activation, release, deployment or milestone closure is part of
-this ledger.
+The release v1.8.1 is cited as evidence that the published image is the tested
+image. No production activation, deployment, customer route or M046 closure is
+part of this ledger.

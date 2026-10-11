@@ -14,7 +14,9 @@ cleanup() {
   # After the owned containers have stopped, restore directory write access
   # only inside this private scratch tree so its read-only records can be
   # unlinked. find does not follow symlinks or touch retained external proofs.
-  find "$work" -type d -exec chmod u+w -- {} + || cleanup_status=$?
+  # chmod takes no "--": BSD chmod reads it as a file name, so the restore
+  # silently fails on macOS. find supplies absolute mktemp paths regardless.
+  find "$work" -type d -exec chmod u+w {} + || cleanup_status=$?
   rm -rf -- "$work" || cleanup_status=$?
   if [[ $status -eq 0 ]]; then
     status=$cleanup_status

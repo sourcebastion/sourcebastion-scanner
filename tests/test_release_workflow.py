@@ -358,9 +358,13 @@ exit "$SCAN_EXIT"
         "TMPDIR": str(scratch_parent), "WORK_CAPTURE": str(capture),
         "RETAINED_PROOF": str(retained), "SCAN_EXIT": str(scan_exit),
     }
+    # Run the prelude from a file: under `bash -c`, BASH_SOURCE[0] is unset and
+    # `set -u` makes the real script's own `root=` line fail.
+    harness = tmp_path / "hosted-smoke-cleanup.sh"
+    harness.write_text(command, encoding="utf-8")
     try:
         result = subprocess.run(
-            ["bash", "-c", command, "hosted-smoke-cleanup", "unused-image"],
+            ["bash", str(harness), "unused-image"],
             env=environment, capture_output=True, text=True,
         )
         assert result.returncode == scan_exit, result.stderr

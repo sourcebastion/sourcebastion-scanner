@@ -1,0 +1,75 @@
+{
+  "acceptance": false,
+  "cases": [
+    {
+      "artifact_charge_exact": true,
+      "cause": "runtime manifest",
+      "component_compatibility_changed": true,
+      "content_audit_sha256": "30d9953786e80c44e143a2c32ef537cc52d381da573207f4006f1b117552274c",
+      "direct_counts": {
+        "artifacts": 2,
+        "records": 550,
+        "snapshots": 2
+      },
+      "fresh_full_plan": true,
+      "independent_source_matching_and_schema_passed": true,
+      "official_schema_audit_sha256": "687b0e29bf1097600d099f08ebe1eb935f4caa11315881793d50ae3e9f86bd71",
+      "receipt_sha256": "fe06cbafed0e32b129fd831b26d2adecc22e68ee4786911f117b5b006f3ecbac",
+      "reuse_refused": true,
+      "row_charge_exact": true,
+      "run_id": 116,
+      "separate_source_guard_changed": false,
+      "source_commit": "b4f79d029cca7eea77311174bb90d318c7a0c8bd",
+      "step": "D"
+    },
+    {
+      "artifact_charge_exact": true,
+      "cause": "advisory file identity",
+      "component_compatibility_changed": true,
+      "content_audit_sha256": "a63a85c1796ed2d28f9dcc84e0ded0df06858ba38c012f6122128edbac42a2ee",
+      "direct_counts": {
+        "artifacts": 2,
+        "records": 550,
+        "snapshots": 2
+      },
+      "fresh_full_plan": true,
+      "independent_source_matching_and_schema_passed": true,
+      "official_schema_audit_sha256": "687b0e29bf1097600d099f08ebe1eb935f4caa11315881793d50ae3e9f86bd71",
+      "receipt_sha256": "59d14c0368a0a5a8b71dc6d783cf6e8d3f3fd746698e03acd5f1c105330aed85",
+      "reuse_refused": true,
+      "row_charge_exact": true,
+      "run_id": 117,
+      "separate_source_guard_changed": false,
+      "source_commit": "7881237df9ab6cfa454552173890a5a87b9d473d",
+      "step": "E"
+    },
+    {
+      "artifact_charge_exact": true,
+      "cause": "source bytes",
+      "component_compatibility_changed": false,
+      "content_audit_sha256": "926ec23d1164b08054083e6fb8572dea41104cf8fb2496c44b54f5dc295007de",
+      "direct_counts": {
+        "artifacts": 2,
+        "records": 550,
+        "snapshots": 2
+      },
+      "fresh_full_plan": true,
+      "independent_source_matching_and_schema_passed": true,
+      "official_schema_audit_sha256": "accf04daad1366ad67b7e048a05373e6b6c746925a13995acfb0f86807e2ee56",
+      "receipt_sha256": "df780cba0093a08f03a8bcc9f262e9dd2172ee1d71f389df8fb6dfc58b3dbfd2",
+      "reuse_refused": true,
+      "row_charge_exact": true,
+      "run_id": 118,
+      "separate_source_guard_changed": true,
+      "source_commit": "797d56ba2e43b9b0d5ba3d95ffed9d0251a5f7f0",
+      "step": "F"
+    }
+  ],
+  "http_authorization_checks": false,
+  "human_review": false,
+  "original_expectations_unchanged": true,
+  "platform_revision": "02a8e6c3ed9bbf999fc55b2decea823e5da76ecf",
+  "schema_version": "m046.live-invalidation-audit/1",
+  "source_guard_auditor_correction": "Initial auditor incorrectly required the runtime/advisory component key to change for a source edit. The reviewed planner checks source digest separately. The failed assertion and original auditor are retained; the corrected audit verifies the changed source digest, equal runtime/advisory key, fresh full plan without baseline and exact new charges. No source expectation was changed.",
+  "status": "passed"
+}

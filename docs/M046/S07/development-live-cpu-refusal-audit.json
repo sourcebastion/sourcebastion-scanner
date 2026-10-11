@@ -1,0 +1,20 @@
+{
+  "acceptance": false,
+  "compute_attempts": 1,
+  "cpu_ceiling_microseconds": 120000000,
+  "expectation_met": false,
+  "job_status": "failed",
+  "observed_supervisor_cpu_microseconds": 120044568,
+  "original_oracle_sha256": "9dcc5fef1e96dbc0f494beef95bfc01a48fd4de365092ed0759eb8c4dde6a5b5",
+  "owned_resources_cleanup": "normal runner cleanup confirmed before next designated admission",
+  "platform_revision": "02a8e6c3ed9bbf999fc55b2decea823e5da76ecf",
+  "private_terminal_receipt_sha256": "9e4f71e36cfde0b2d78a5191dadaa693e0ac0da3f37e88282d6fa9cff832ad0f",
+  "quota_unchanged": true,
+  "run_recorded": false,
+  "runtime_limits_unchanged": true,
+  "schema_version": "m046.live-bounded-cpu-refusal/1",
+  "scope": "Terminal CPU refusal; not the required inventory-present matching-unavailable demonstration",
+  "source_commit": "aa7e5cd7120076511ad837fcf6dd080155d1228b",
+  "source_oracles_unchanged": true,
+  "supervisor_outcome": "refused"
+}

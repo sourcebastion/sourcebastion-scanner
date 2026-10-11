@@ -341,8 +341,11 @@ through the real capacity API; the baseline incorrectly returns 200 after
 revocation, while the candidate returns the uniform 404/no-store refusal and
 restores access to the original bytes after reauthorization. Its 110 focused
 tests and mandatory CI pass. It merged as
-`02a8e6c3ed9bbf999fc55b2decea823e5da76ecf`; normal development deployment and the designated human's live
-second-account/revoked-grant checks remain pending.
+`02a8e6c3ed9bbf999fc55b2decea823e5da76ecf` and normal development deployment
+[38122770228](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38122770228)
+passed. The deployed validator, keyring, retained quarantine and disabled persistent
+defaults were verified again with the hosted worker paused/drained. The designated
+human's live second-account/revoked-grant checks remain pending.
 
 Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)
 were mechanically derived from the frozen rich source oracle before the new
@@ -350,6 +353,43 @@ fresh acceptance commit was pushed. They preserve complete contextual records
 and per-input outcomes, binding generated IDs by unique source anchors. Shared
 global coverage and stage status are assessed separately; neither original
 oracle was changed to match scan output.
+
+The [live invalidation audit](M046/S07/development-live-invalidation-audit.json)
+verifies three successive fresh provider commits and full runs 116–118. Changing
+only the predeclared runtime row limit, then the frozen advisory file identity,
+then the source range bytes refuses reuse. Each run creates its own 550 records,
+two snapshots and two artifacts with exact new row/byte/artifact charges, and
+passes contextual content, matching and official schema checks. Runtime/advisory
+changes alter the component key; source equality is a separate mandatory guard.
+The auditor's initial contrary key assertion and failed output are retained;
+its correction checks that separate source guard and fresh plan without changing
+the frozen source expectations. Capacity, key, bounded matching and rollback
+cases follow below.
+
+The [live capacity/key/rollback audit](M046/S07/development-live-capacity-key-rollback-audit.json)
+verifies the predeclared one-row account limit refuses storage with
+`inventory_row_quota_exceeded`, zero direct inventory publication and unchanged
+row/artifact charges. A fresh scan on the retained prior `707fc32a` image with
+writer/reuse disabled completes; the actual deployed presentation reports
+inventory unknown and matching unavailable. Restoring the qualifying candidate
+first refuses missing artifact keys before claim, with the queued row unchanged,
+zero attempts and no owned container or worker receipt. The same fresh job then
+completes as a full scan with exact new charges, all contextual/matching checks
+and official schema validation passing. Pure read-only captures after both
+transitions preserve the rows, artifacts, expiry and exact bytes of three earlier
+stored origins, including the qualifying full baseline. No keyring rotation,
+quota reset or historical attempt replay was used. Bounded matching failure and
+its fresh recovery case remain in progress.
+
+The predeclared 6,000-line bounded case instead reached the unchanged aggregate
+CPU ceiling. Its [terminal refusal audit](M046/S07/development-live-cpu-refusal-audit.json)
+retains the supervisor's 120,044,568 microseconds, one failed compute attempt,
+no accepted run and unchanged quotas and earlier artifacts. It is not counted
+as inventory-present/matching-unavailable acceptance. Its original source oracle
+remains unchanged. A separate [2,000-line source expectation](M046/S07/development-bounded-matching-2000-expectations.json)
+is frozen before any corresponding source edit or submission, to reach the
+consumer boundary within the same runtime limits. No existing attempt is reset
+or replayed and no numerical ceiling is increased.
 
 The requesting user will perform the live second-account and revoked-grant
 SBOM download refusal checks and review coverage, findings and the authorized

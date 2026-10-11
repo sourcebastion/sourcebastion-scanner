@@ -1,0 +1,158 @@
+{
+  "acceptance": false,
+  "candidate_restored_with_exact_new_charge": true,
+  "capacity_refused_without_publication_or_charge": true,
+  "cases": [
+    {
+      "direct_counts": {
+        "artifacts": 0,
+        "records": 0,
+        "snapshots": 0
+      },
+      "image": "ghcr.io/sourcebastion/sourcebastion-scanner@sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6",
+      "inventory_outcome": {
+        "diagnostic": "inventory_row_quota_exceeded",
+        "matching": "unavailable",
+        "payload_sha256": "7363e06585992f42d376929ce07279af4ae75f72818a17d8d8eec1bdf1747aba",
+        "storage": "unavailable"
+      },
+      "receipt_sha256": "8eccd91077e0b5e7e7b88d5d6706b9be7a4926f6f35007e322af8744e72d5bad",
+      "run_id": 119,
+      "source_commit": "a967553493c066ca92a21fd420f45642e263a686",
+      "source_tree": "8c5e1cd8bf31f9f17aa760eaee9ea77bd83d4b50",
+      "step": "G"
+    },
+    {
+      "direct_counts": {
+        "artifacts": 0,
+        "records": 0,
+        "snapshots": 0
+      },
+      "image": "ghcr.io/sourcebastion/sourcebastion-scanner@sha256:707fc32a147255a5c43067adc691253bf6667d1b8a86d34e59fae408ff13b184",
+      "inventory_outcome": null,
+      "presentation": {
+        "inventory": "unknown",
+        "matching": "unavailable",
+        "storage": "not-recorded"
+      },
+      "presentation_sql_writes_forbidden": true,
+      "presentation_transactions_rolled_back": true,
+      "receipt_sha256": "8cc6d2311ffa7aa1dc608a99f0dd674d637c4b7288e35fa6d8cabf9aecb18e83",
+      "run_id": 120,
+      "source_commit": "cb986d63831aa4a03920673f4dce90db0be10830",
+      "source_tree": "8c5e1cd8bf31f9f17aa760eaee9ea77bd83d4b50",
+      "step": "H"
+    },
+    {
+      "direct_counts": {
+        "artifacts": 2,
+        "records": 550,
+        "snapshots": 2
+      },
+      "image": "ghcr.io/sourcebastion/sourcebastion-scanner@sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6",
+      "inventory_outcome": {
+        "matching": "ready",
+        "payload_sha256": "f42208ba041970bbc28a62fdc95d03572580203cfbc0cb10edfbebc1de089396",
+        "runtime_sha256": "606f5a6a56520e2c0affa50602e042cc03040dd898b9bd04ecdca9dceadd5a54",
+        "source_sha256": "2be4669db6545c608143fed326508e2e743c4cbc9bb965d6d9577ec8651dd9f0",
+        "storage": "ready"
+      },
+      "receipt_sha256": "b848f6b0d0656b63a1612c475646c83ffefb8f93f8ad267ca9ff255c15beab75",
+      "run_id": 121,
+      "source_commit": "4ac24a749f523dd30fe0869afafc946fbf404995",
+      "source_tree": "8c5e1cd8bf31f9f17aa760eaee9ea77bd83d4b50",
+      "step": "I"
+    }
+  ],
+  "historical_origins": [
+    {
+      "acceptance": false,
+      "http_authorization_checks": false,
+      "human_review": false,
+      "origins": [
+        {
+          "canonical_sha256": "39bb5256295d7748a98613b88c9548d40e9ca553fd6775f2336fa272c0bc0f45",
+          "export_sha256": "1304ce2ca74710d4a9be47e7e1374730cc4a8ce26955427831ab616b4bfbe420",
+          "origin": "A",
+          "rows_snapshots_artifacts_expiry_equal": true,
+          "run_id": 109,
+          "source_commit": "e1d3ff87d05cd41e135b9db488ad66f6b1f4f8f1"
+        },
+        {
+          "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+          "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+          "origin": "A2",
+          "rows_snapshots_artifacts_expiry_equal": true,
+          "run_id": 110,
+          "source_commit": "4e7289a38feb4305f82370a54515e3ddf1f11242"
+        },
+        {
+          "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+          "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+          "origin": "A4",
+          "rows_snapshots_artifacts_expiry_equal": true,
+          "run_id": 112,
+          "source_commit": "954c8f5ee8bb77dea2ac63dbe176a1c2575d9e5e"
+        }
+      ],
+      "read_only_capture": true,
+      "stage": "H",
+      "status": "passed"
+    },
+    {
+      "acceptance": false,
+      "http_authorization_checks": false,
+      "human_review": false,
+      "origins": [
+        {
+          "canonical_sha256": "39bb5256295d7748a98613b88c9548d40e9ca553fd6775f2336fa272c0bc0f45",
+          "export_sha256": "1304ce2ca74710d4a9be47e7e1374730cc4a8ce26955427831ab616b4bfbe420",
+          "origin": "A",
+          "rows_snapshots_artifacts_expiry_equal": true,
+          "run_id": 109,
+          "source_commit": "e1d3ff87d05cd41e135b9db488ad66f6b1f4f8f1"
+        },
+        {
+          "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+          "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+          "origin": "A2",
+          "rows_snapshots_artifacts_expiry_equal": true,
+          "run_id": 110,
+          "source_commit": "4e7289a38feb4305f82370a54515e3ddf1f11242"
+        },
+        {
+          "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+          "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+          "origin": "A4",
+          "rows_snapshots_artifacts_expiry_equal": true,
+          "run_id": 112,
+          "source_commit": "954c8f5ee8bb77dea2ac63dbe176a1c2575d9e5e"
+        }
+      ],
+      "read_only_capture": true,
+      "stage": "I",
+      "status": "passed"
+    }
+  ],
+  "http_authorization_checks": false,
+  "human_review": false,
+  "key_preflight": {
+    "acceptance": false,
+    "job_id_sha256": "6113a0191978070a61db77ce608bcb09cb0033a3c4ec64957634d441d3916573",
+    "normal_fresh_process_restoration_follows": true,
+    "owned_containers": 0,
+    "persistent_keyring_unchanged": true,
+    "queued_row_unchanged": true,
+    "run_attempts": 0,
+    "source_commit": "4ac24a749f523dd30fe0869afafc946fbf404995",
+    "started_at": null,
+    "status": "passed"
+  },
+  "legacy_unknown_without_inventory_charge": true,
+  "original_export_sha256": "1304ce2ca74710d4a9be47e7e1374730cc4a8ce26955427831ab616b4bfbe420",
+  "original_rows_artifacts_expiry_unchanged_through_rollback": true,
+  "platform_revision": "02a8e6c3ed9bbf999fc55b2decea823e5da76ecf",
+  "restored_export_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+  "schema_version": "m046.live-capacity-key-rollback-audit/1",
+  "status": "passed"
+}

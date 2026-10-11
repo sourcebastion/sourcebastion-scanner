@@ -68,6 +68,34 @@
   "origin_run_id": 112,
   "origin_source_commit": "954c8f5ee8bb77dea2ac63dbe176a1c2575d9e5e",
   "platform_revision": "9bb1f59cb6389bb0a2ab4b02f0638d4cc3f248d9",
+  "provider_readback": [
+    {
+      "annotation_readback_sha256": "886414752f0d28c871277c37ddca7e39dc128b2bb61ba9eabb14568d77f25d36",
+      "annotations": 9,
+      "conclusion": "failure",
+      "empty_messages": 0,
+      "empty_titles": 0,
+      "note": "Intentionally vulnerable/incomplete fixture may have a failing policy conclusion; delivery is confirmed.",
+      "publication_confirmed": true,
+      "run_id": 114,
+      "source_commit": "7b9b9584611b055e5888449a769eba904f8b1790",
+      "status": "completed",
+      "step": "B2"
+    },
+    {
+      "annotation_readback_sha256": "a30226e9197f008d489049ea9ebd9f8b2302dc88a95f8cdf03488d7749e1b93a",
+      "annotations": 9,
+      "conclusion": "failure",
+      "empty_messages": 0,
+      "empty_titles": 0,
+      "note": "Intentionally vulnerable/incomplete fixture may have a failing policy conclusion; delivery is confirmed.",
+      "publication_confirmed": true,
+      "run_id": 115,
+      "source_commit": "bcf221b651a80fd842b1704301a06587a15fc7f7",
+      "status": "completed",
+      "step": "C"
+    }
+  ],
   "required_pip_source_advisory_groups": 8,
   "schema_version": "m046.live-development-reuse-audit/1",
   "status": "passed"

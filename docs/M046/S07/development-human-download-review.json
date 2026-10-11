@@ -1,7 +1,7 @@
 {
   "schema_version": "m046.sanitized-human-review/1",
   "observed_date": "2026-10-11",
-  "acceptance": false,
+  "acceptance": true,
   "case": "K",
   "run_id": 123,
   "source_commit": "d24770870ab6dda3eac4fe8bb33d5c9085229788",
@@ -17,7 +17,7 @@
     "earlier_workspace_body": "empty SBOM page with no sources",
     "clarification": "The workspace 200 was not a download result. The reviewer subsequently confirmed the actual download returns 404."
   },
-  "owner_visible_coverage_and_findings_review": "pending",
+  "owner_visible_coverage_and_findings_review": "passed",
   "owner_actual_download_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
   "owner_download_integrity": {
     "status": "passed",
@@ -95,5 +95,36 @@
     "matches_frozen_expectation": true,
     "reported_before_fresh_revocation": true,
     "does_not_establish_restoration_after_fresh_refusal": true
+  },
+  "final_signoff": {
+    "status": "accepted",
+    "recorded_at": "2026-10-11T20:50:43.976273+00:00",
+    "evidence_source": "designated requesting human reviewer, explicit conversation sign-off after the deployed tab review",
+    "reported_statement": "signed off",
+    "platform_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/420",
+    "platform_revision": "08d0b500fab703e64650658ec8906c2573191300",
+    "development_deployment_run": 38172712480,
+    "reviewed_cases": [
+      {
+        "case": "K",
+        "run_id": 123,
+        "source_commit": "d24770870ab6dda3eac4fe8bb33d5c9085229788",
+        "scope": "partial inventory with ready matching; dependency/input outcomes; four required pip advisory groups at both exact source paths"
+      },
+      {
+        "case": "J3",
+        "run_id": 122,
+        "source_commit": "3269d964a9641cd95e76745c411729eb82f7bed6",
+        "scope": "retained partial inventory and SBOM with unavailable matching, without a clean-scan claim"
+      },
+      {
+        "case": "H",
+        "run_id": 120,
+        "source_commit": "cb986d63831aa4a03920673f4dce90db0be10830",
+        "scope": "legacy inventory not recorded, unavailable matching and unavailable SBOM export"
+      }
+    ],
+    "download_checks_previously_completed": true,
+    "original_failures_and_frozen_expectations_preserved": true
   }
 }

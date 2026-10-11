@@ -10,6 +10,7 @@ import yaml
 
 from sourcebastion.policy import PolicyRule
 from sourcebastion.license_checker import LicensePolicy
+from sourcebastion.license_expression import validate_policy_entry
 
 
 class LicensePolicyConfig(BaseModel):
@@ -17,6 +18,15 @@ class LicensePolicyConfig(BaseModel):
 
     allowed_licenses: List[str] = Field(default_factory=list)
     denied_licenses: List[str] = Field(default_factory=list)
+
+    @field_validator("allowed_licenses", "denied_licenses")
+    @classmethod
+    def _refuse_expressions(cls, entries: List[str]) -> List[str]:
+        # A policy names licenses; an expression entry could never match a
+        # parsed term and would silently do nothing (M048 D3).
+        for entry in entries:
+            validate_policy_entry(entry)
+        return entries
 
     def to_policy(self) -> LicensePolicy:
         """Convert to a LicensePolicy instance."""

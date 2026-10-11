@@ -25,9 +25,10 @@ tuple. A later parser/config change requires review and the affected proofs agai
 
 The replacement v1.8.0 [release run 38095674451](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38095674451)
 targets `4effe1897114ef3e3c6cf17b52172d8ea3844986`, containing both scanner #162
-and #165. On 2026-10-10 it is waiting for the repository's `release` environment
-review. No published tag, index digest or successful publication is inferred from
-dispatch. The earlier run 38089205320 was cancelled before publication because
+and #165. The user selected approval in GitHub, and the repository's `release`
+environment approval completed before native release validation began. The run
+is still in progress; no published index digest or successful publication is
+inferred from the approval. The earlier run 38089205320 was cancelled before publication because
 its source did not contain both PRs.
 
 The [latest native audit](M046/S07/native-ci-audit-38094267046.json) verifies all
@@ -78,9 +79,28 @@ gh workflow run docker.yml --ref <reviewed-driver-ref> \
 
 The development host's deployment marker was independently read on 2026-10-10:
 `89f7e91b7a9dfb19804ccb35b512c4b19ea6fde0`. A merge is not a deployment.
-Designation of the test account/repositories and a dated human review remain
-required before fresh development acceptance scans. No activation, customer
-replay or credit reset is established by these receipts.
+The user designated `sourcebastion/juice-shop` and an existing active development
+account before any fresh acceptance scan. Private read-only inspection found no
+registered repositories for that account and no `sourcebastion` App installation;
+normal signed-in project connection is pending. Account contact details remain
+private. A dated human review remains required after the visible results exist.
+No activation, customer replay or credit reset is established by these receipts.
+
+The [source-authored Juice Shop expectations](M046/S07/development-source-expectations-juice-shop.json)
+were written before submitting scans, from immutable commit
+`8fb217241af4f9970be17b621bb7ef51fa7891da`. Their SHA-256 is
+`3e73c6799d7d4100577ff7a366a13f8e62ef07c0cf6fcd6117bbdedc817a78b3`.
+The two npm manifests declare 175 occurrences, including six literal selected
+versions. There are no standard lockfiles and no evidenced package edges; ranges
+must remain unresolved and coverage incomplete. The backup lock filename is
+unconfigured. This source does not cover the required custom pip, mixed-language,
+empty, ignored and unsupported demonstrations; the oracle explicitly records
+those remaining cases. No expectation was derived from scanner output.
+
+[Platform #405](https://github.com/sourcebastion/sourcebastion-platform/pull/405)
+binds the companion installed validator to exact release source `4effe1897`.
+The source/wheel/installed-payload proof and 121 required conformance tests passed
+without skips. Image admission and development activation remain separate.
 
 ## Native CI evidence independently inspected
 

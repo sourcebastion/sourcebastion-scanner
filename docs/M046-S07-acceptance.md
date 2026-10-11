@@ -317,10 +317,21 @@ reads bounded private JSON text and exports only the original result metadata.
 Its [retained regression proof](M046/S07/development-release-reader-regression.json)
 binds 85 focused tests, disposable PostgreSQL baseline failure/candidate success
 and a read-only candidate inventory of the actual development queue
-pass. Full CI and normal deployment remain pending; the first CI attempt ran
-out of runner disk and is rerunning unchanged after unused cache cleanup.
-Two successful fresh reuse submissions remain pending. The failed publication
-does not count as accepted fresh reuse.
+pass. All CI passed on the unchanged commit after unused runner cache cleanup,
+and it merged as `9bb1f59cb6389bb0a2ab4b02f0638d4cc3f248d9`. Normal development
+deployment [38121640429](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38121640429),
+attempt 2, passed; attempt 1 refused an advisory refresh before changing development
+and its digest-verified diagnostic artifact is retained separately. The actual
+deployed validator, keyring, retained settled quarantine and disabled persistent
+writer/reuse/adoption defaults passed verification with the worker paused/drained.
+Fresh commits `7b9b9584611b055e5888449a769eba904f8b1790` and
+`bcf221b651a80fd842b1704301a06587a15fc7f7` then completed and published normally,
+on their first compute attempts. The [independent successive-reuse audit](M046/S07/development-live-reuse-audit.json)
+verifies runs 114 and 115 both reuse origin run 112, skip Grype execution, create
+zero direct inventory rows/snapshots/artifacts, and retain byte-identical original
+records, snapshots, artifacts, expiry and account quota charges. Both pass the
+frozen contextual content/matching audit and official CycloneDX schema. The
+failed predecessor remains intact and is excluded from these two demonstrations.
 
 Inspection of the actual SBOM read authorization found that an existing
 provider repository grant was checked for presence but not its current
@@ -329,7 +340,8 @@ adds that state check. Three route regressions revoke and restore the grant
 through the real capacity API; the baseline incorrectly returns 200 after
 revocation, while the candidate returns the uniform 404/no-store refusal and
 restores access to the original bytes after reauthorization. Its 110 focused
-tests and mandatory CI pass. Deployment and the designated human's live
+tests and mandatory CI pass. It merged as
+`02a8e6c3ed9bbf999fc55b2decea823e5da76ecf`; normal development deployment and the designated human's live
 second-account/revoked-grant checks remain pending.
 
 Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)

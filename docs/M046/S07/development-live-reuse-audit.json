@@ -1,0 +1,74 @@
+{
+  "acceptance": false,
+  "base_declarations": 148,
+  "base_selected_occurrences": 8,
+  "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+  "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+  "failed_predecessor": "retained settled quarantine; excluded from the two successful fresh reuse demonstrations",
+  "fresh_reuses": [
+    {
+      "commit": "7b9b9584611b055e5888449a769eba904f8b1790",
+      "component_statuses": {
+        "custom_php": "complete",
+        "gitleaks": "complete",
+        "grype": "not_run",
+        "kics": "complete",
+        "semgrep": "complete"
+      },
+      "compute_attempts": 1,
+      "content_audit_sha256": "4585a36f1dd5ed5c43219d21492fb22bcc32d94b2cecc0903f682246a7a30975",
+      "direct_inventory_counts": {
+        "artifacts": 0,
+        "records": 0,
+        "snapshots": 0
+      },
+      "immutable_origin_rows_artifacts_expiry_equal": true,
+      "job_id_sha256": "1404fa245fd75611456ea56bc1b4b80211d679fab8f1010ce7f81b31cb11d798",
+      "official_schema_audit_sha256": "687b0e29bf1097600d099f08ebe1eb935f4caa11315881793d50ae3e9f86bd71",
+      "origin_run_id": 112,
+      "private_receipt_sha256": "0731a6fc4aada25eec497dd3698932cf5606f34882125de8961d9126eeb6e963",
+      "publication": "completed normally",
+      "quota_equal": true,
+      "run_id": 114,
+      "step": "B2"
+    },
+    {
+      "commit": "bcf221b651a80fd842b1704301a06587a15fc7f7",
+      "component_statuses": {
+        "custom_php": "complete",
+        "gitleaks": "complete",
+        "grype": "not_run",
+        "kics": "complete",
+        "semgrep": "complete"
+      },
+      "compute_attempts": 1,
+      "content_audit_sha256": "758166ef2b7c2208fea6b88bae37110274569e446870052774b77df7e16809b3",
+      "direct_inventory_counts": {
+        "artifacts": 0,
+        "records": 0,
+        "snapshots": 0
+      },
+      "immutable_origin_rows_artifacts_expiry_equal": true,
+      "job_id_sha256": "d42a17afac8c7ac50b98503227c44efdcb207a1587f6419dbe481699f5254989",
+      "official_schema_audit_sha256": "687b0e29bf1097600d099f08ebe1eb935f4caa11315881793d50ae3e9f86bd71",
+      "origin_run_id": 112,
+      "private_receipt_sha256": "76cf64c5a3d3a28f3f88fa19bb8f8b9287111149ec56d7490ba54c62e04caa9d",
+      "publication": "completed normally",
+      "quota_equal": true,
+      "run_id": 115,
+      "step": "C"
+    }
+  ],
+  "frozen_expectations_unchanged": true,
+  "http_authorization_checks": false,
+  "human_review": false,
+  "inventory_rows": 530,
+  "matching_rows": 20,
+  "official_cyclonedx_validation": "passed for both reused exports",
+  "origin_run_id": 112,
+  "origin_source_commit": "954c8f5ee8bb77dea2ac63dbe176a1c2575d9e5e",
+  "platform_revision": "9bb1f59cb6389bb0a2ab4b02f0638d4cc3f248d9",
+  "required_pip_source_advisory_groups": 8,
+  "schema_version": "m046.live-development-reuse-audit/1",
+  "status": "passed"
+}

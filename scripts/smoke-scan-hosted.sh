@@ -8,7 +8,16 @@ fi
 image=$1
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+# The proof drivers below leave read-only control directories inside $work on
+# purpose, so a plain rm -rf cannot unlink their contents. Restore the owner
+# write bit first, and never let cleanup change the verdict of the checks.
+cleanup() {
+  local status=$?
+  chmod -R u+rwX "$work" 2>/dev/null || true
+  rm -rf "$work" || true
+  return "$status"
+}
+trap cleanup EXIT
 mkdir -m 700 "$work/source" "$work/database" "$work/output"
 
 # Advisory preparation never receives a checkout or any provider credentials.

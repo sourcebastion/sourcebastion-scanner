@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = ROOT / ".github" / "workflows" / "release.yml"
 DOCKER_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "docker.yml"
 CONTAINER_RUNNER_PATH = ROOT / "scripts" / "run-scanner-container.sh"
+HOSTED_SMOKE_PATH = ROOT / "scripts" / "smoke-scan-hosted.sh"
 BUILD_JOBS = ("build-docker-standard",)
 
 
@@ -427,3 +428,56 @@ def test_the_initiator_can_reach_the_bot_credentials():
         "the dispatch job must declare the environment holding "
         "SOURCEBASTION_BOT_APP_ID and SOURCEBASTION_BOT_PRIVATE_KEY"
     )
+
+
+def hosted_smoke_cleanup() -> str:
+    """The shipped cleanup handler, extracted so the test runs the real code."""
+    lines = HOSTED_SMOKE_PATH.read_text(encoding="utf-8").splitlines()
+    start = lines.index("cleanup() {")
+    end = lines.index("}", start)
+    body = "\n".join(lines[start : end + 1])
+    assert "trap cleanup EXIT" in "\n".join(lines)
+    return body
+
+
+@pytest.mark.parametrize("failing", [False, True])
+def test_hosted_smoke_cleanup_survives_read_only_proof_output(tmp_path: Path, failing: bool):
+    # The entrypoint proof leaves control/ at 0o555 with a 0o444 record inside,
+    # and the release job does not redirect that output outside the temporary
+    # directory. A plain `rm -rf` fails there and, from an EXIT trap, turns a
+    # fully passing hosted scan into exit 1.
+    script = tmp_path / "harness.sh"
+    script.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n"
+        'work="$(mktemp -d)"\n'
+        'echo "$work" > "$1"\n'
+        f"{hosted_smoke_cleanup()}\n"
+        "trap cleanup EXIT\n"
+        'mkdir -m 700 "$work/control"\n'
+        ': > "$work/control/job.json"\n'
+        'chmod 444 "$work/control/job.json"\n'
+        'chmod 555 "$work/control"\n'
+        'echo "hosted checks passed"\n'
+        '[[ "${FAIL:-}" == 1 ]] && exit 1\n'
+        "exit 0\n",
+        encoding="utf-8",
+    )
+    recorded = tmp_path / "work-path"
+    environment = dict(os.environ)
+    if failing:
+        environment["FAIL"] = "1"
+
+    completed = subprocess.run(
+        ["bash", str(script), str(recorded)],
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+
+    assert "hosted checks passed" in completed.stdout
+    assert "Permission denied" not in completed.stderr
+    assert not Path(recorded.read_text(encoding="utf-8").strip()).exists()
+    # Cleanup must not change the verdict in either direction.
+    assert completed.returncode == (1 if failing else 0)
+

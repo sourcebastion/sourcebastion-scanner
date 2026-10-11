@@ -1,0 +1,1273 @@
+{
+  "commit": "8fb217241af4f9970be17b621bb7ef51fa7891da",
+  "coverage": {
+    "backup_lock": {
+      "default_policy": "ordinary unconfigured custom filename; never claim its records were enumerated",
+      "path": "ftp/package-lock.json.bak",
+      "sha256": "7cb3e96bd39da1f17f49b67ffd1446e2f2b91382730d634f0de9485dd4a0987f"
+    },
+    "clean_result_allowed": false,
+    "ecosystems": [
+      "npm"
+    ],
+    "selected_version_fidelity": "incomplete: manifests contain ranges and there are no standard lockfiles"
+  },
+  "declarations_and_occurrences": [
+    {
+      "declared_expression": "^2.0.35",
+      "expected_selected_version": null,
+      "name": "@ai-sdk/openai-compatible",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.2.9",
+      "expected_selected_version": null,
+      "name": "@fontsource/roboto",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.0.116",
+      "expected_selected_version": null,
+      "name": "ai",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.0.19",
+      "expected_selected_version": null,
+      "name": "beercss",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.20.4",
+      "expected_selected_version": null,
+      "name": "body-parser",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.0.0",
+      "expected_selected_version": null,
+      "name": "check-dependencies",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.12.6",
+      "expected_selected_version": null,
+      "name": "clarinet",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "1.4.0",
+      "expected_selected_version": "1.4.0",
+      "name": "colors",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.8.1",
+      "expected_selected_version": null,
+      "name": "compression",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.3.12",
+      "expected_selected_version": null,
+      "name": "config",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.7",
+      "expected_selected_version": null,
+      "name": "cookie-parser",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.1.1",
+      "expected_selected_version": null,
+      "name": "cookieconsent",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.8.5",
+      "expected_selected_version": null,
+      "name": "cors",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^8.0.0",
+      "expected_selected_version": null,
+      "name": "download",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.5.1",
+      "expected_selected_version": null,
+      "name": "errorhandler",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.16.0",
+      "expected_selected_version": null,
+      "name": "ethers",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.22.1",
+      "expected_selected_version": null,
+      "name": "express",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.3.2",
+      "expected_selected_version": null,
+      "name": "express-ipfilter",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "0.1.3",
+      "expected_selected_version": "0.1.3",
+      "name": "express-jwt",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^7.5.1",
+      "expected_selected_version": null,
+      "name": "express-rate-limit",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.5.0",
+      "expected_selected_version": null,
+      "name": "express-robots-txt",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.0.0",
+      "expected_selected_version": null,
+      "name": "express-security.txt",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.6.0",
+      "expected_selected_version": null,
+      "name": "feature-policy",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.0.0",
+      "expected_selected_version": null,
+      "name": "file-stream-rotator",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^16.5.4",
+      "expected_selected_version": null,
+      "name": "file-type",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.2",
+      "expected_selected_version": null,
+      "name": "finale-rest",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^9.1.0",
+      "expected_selected_version": null,
+      "name": "fs-extra",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.4.5",
+      "expected_selected_version": null,
+      "name": "glob",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.2.11",
+      "expected_selected_version": null,
+      "name": "graceful-fs",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.3.0",
+      "expected_selected_version": null,
+      "name": "hashids",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.2.0",
+      "expected_selected_version": null,
+      "name": "hbs",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.6.0",
+      "expected_selected_version": null,
+      "name": "helmet",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.0",
+      "expected_selected_version": null,
+      "name": "html-entities",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.11.1",
+      "expected_selected_version": null,
+      "name": "i18n",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.14.0",
+      "expected_selected_version": null,
+      "name": "js-yaml",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "0.4.0",
+      "expected_selected_version": "0.4.0",
+      "name": "jsonwebtoken",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.7.1",
+      "expected_selected_version": null,
+      "name": "libxml2-wasm",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.6.11",
+      "expected_selected_version": null,
+      "name": "marsdb",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.13.14",
+      "expected_selected_version": null,
+      "name": "material-icons",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.0.2",
+      "expected_selected_version": null,
+      "name": "median",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.10.0",
+      "expected_selected_version": null,
+      "name": "morgan",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.5-lts.1",
+      "expected_selected_version": null,
+      "name": "multer",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.3.3",
+      "expected_selected_version": null,
+      "name": "notevil",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.3.0",
+      "expected_selected_version": null,
+      "name": "on-finished",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^13.4.0",
+      "expected_selected_version": null,
+      "name": "otplib",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.11.0",
+      "expected_selected_version": null,
+      "name": "pdfkit",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.2.0",
+      "expected_selected_version": null,
+      "name": "portscanner",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^15.1.3",
+      "expected_selected_version": null,
+      "name": "prom-client",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.0.3",
+      "expected_selected_version": null,
+      "name": "pug",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.2",
+      "expected_selected_version": null,
+      "name": "replace",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.6.3",
+      "expected_selected_version": null,
+      "name": "sanitize-filename",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "1.4.2",
+      "expected_selected_version": "1.4.2",
+      "name": "sanitize-html",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^7.6.3",
+      "expected_selected_version": null,
+      "name": "semver",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.37.3",
+      "expected_selected_version": null,
+      "name": "sequelize",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.9.1",
+      "expected_selected_version": null,
+      "name": "serve-index",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.1.2",
+      "expected_selected_version": null,
+      "name": "socket.io",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.1.7",
+      "expected_selected_version": null,
+      "name": "sqlite3",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.0",
+      "expected_selected_version": null,
+      "name": "svg-captcha",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.0.1",
+      "expected_selected_version": null,
+      "name": "swagger-ui-express",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.12.3",
+      "expected_selected_version": null,
+      "name": "unzipper",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.16.0",
+      "expected_selected_version": null,
+      "name": "winston",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.0.2",
+      "expected_selected_version": null,
+      "name": "z85",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.4.3",
+      "expected_selected_version": null,
+      "name": "zod",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.0.0||^3.0.0||^4.00",
+      "expected_selected_version": null,
+      "name": "@cyclonedx/cyclonedx-npm",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^9.33.0",
+      "expected_selected_version": null,
+      "name": "@eslint/js",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.0.2",
+      "expected_selected_version": null,
+      "name": "@istanbuljs/nyc-config-typescript",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.12.3",
+      "expected_selected_version": null,
+      "name": "@types/clarinet",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.8.1",
+      "expected_selected_version": null,
+      "name": "@types/compression",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.3.5",
+      "expected_selected_version": null,
+      "name": "@types/config",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.4.10",
+      "expected_selected_version": null,
+      "name": "@types/cookie-parser",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.8.19",
+      "expected_selected_version": null,
+      "name": "@types/cors",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^6.0.6",
+      "expected_selected_version": null,
+      "name": "@types/cross-spawn",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.0.1",
+      "expected_selected_version": null,
+      "name": "@types/diff",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^8.0.5",
+      "expected_selected_version": null,
+      "name": "@types/download",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.5.3",
+      "expected_selected_version": null,
+      "name": "@types/errorhandler",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.6.5",
+      "expected_selected_version": null,
+      "name": "@types/exif",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.17.25",
+      "expected_selected_version": null,
+      "name": "@types/express",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^6.0.4",
+      "expected_selected_version": null,
+      "name": "@types/express-jwt",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^9.0.13",
+      "expected_selected_version": null,
+      "name": "@types/fs-extra",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.2.0",
+      "expected_selected_version": null,
+      "name": "@types/glob",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.1.9",
+      "expected_selected_version": null,
+      "name": "@types/graceful-fs",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.12.0",
+      "expected_selected_version": null,
+      "name": "@types/i18n",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.12.10",
+      "expected_selected_version": null,
+      "name": "@types/js-yaml",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^8.5.9",
+      "expected_selected_version": null,
+      "name": "@types/jsonwebtoken",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.2.10",
+      "expected_selected_version": null,
+      "name": "@types/jws",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.17.14",
+      "expected_selected_version": null,
+      "name": "@types/lodash",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.9.9",
+      "expected_selected_version": null,
+      "name": "@types/morgan",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.4.12",
+      "expected_selected_version": null,
+      "name": "@types/multer",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^26.0.1",
+      "expected_selected_version": null,
+      "name": "@types/node",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.3.4",
+      "expected_selected_version": null,
+      "name": "@types/on-finished",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.10.6",
+      "expected_selected_version": null,
+      "name": "@types/pdfkit",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.1.4",
+      "expected_selected_version": null,
+      "name": "@types/portscanner",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.0.10",
+      "expected_selected_version": null,
+      "name": "@types/pug",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.27.2",
+      "expected_selected_version": null,
+      "name": "@types/sanitize-html",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.5.8",
+      "expected_selected_version": null,
+      "name": "@types/semver",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.28.20",
+      "expected_selected_version": null,
+      "name": "@types/sequelize",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.9.4",
+      "expected_selected_version": null,
+      "name": "@types/serve-index",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.2.0",
+      "expected_selected_version": null,
+      "name": "@types/supertest",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.1.6",
+      "expected_selected_version": null,
+      "name": "@types/swagger-ui-express",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.10.10",
+      "expected_selected_version": null,
+      "name": "@types/unzipper",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^5.3.0",
+      "expected_selected_version": null,
+      "name": "concurrently",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^15.16.0",
+      "expected_selected_version": null,
+      "name": "cypress",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^9.0.0",
+      "expected_selected_version": null,
+      "name": "diff",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^9.39.4",
+      "expected_selected_version": null,
+      "name": "eslint",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.6.0",
+      "expected_selected_version": null,
+      "name": "exif",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^17.4.0",
+      "expected_selected_version": null,
+      "name": "globals",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.13.0",
+      "expected_selected_version": null,
+      "name": "neostandard",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^15.1.0",
+      "expected_selected_version": null,
+      "name": "nyc",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.1.3",
+      "expected_selected_version": null,
+      "name": "socket.io-client",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.2.2",
+      "expected_selected_version": null,
+      "name": "supertest",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.21.0",
+      "expected_selected_version": null,
+      "name": "tsx",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^6.0.3",
+      "expected_selected_version": null,
+      "name": "typescript",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^8.57.1",
+      "expected_selected_version": null,
+      "name": "typescript-eslint",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/animations",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/build",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/cdk",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/cli",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/common",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/compiler",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/compiler-cli",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/core",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/forms",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/material",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/platform-browser",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/router",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.2.5",
+      "expected_selected_version": null,
+      "name": "@codemirror/lang-javascript",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.0.2",
+      "expected_selected_version": null,
+      "name": "@codemirror/lang-json",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.1.2",
+      "expected_selected_version": null,
+      "name": "@codemirror/lang-yaml",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.12.0",
+      "expected_selected_version": null,
+      "name": "@codemirror/merge",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.0.0",
+      "expected_selected_version": null,
+      "name": "@cyclonedx/cyclonedx-esbuild",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "~1.2.30",
+      "expected_selected_version": null,
+      "name": "@fortawesome/fontawesome-svg-core",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.14.0",
+      "expected_selected_version": null,
+      "name": "@fortawesome/free-brands-svg-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.14.0",
+      "expected_selected_version": null,
+      "name": "@fortawesome/free-regular-svg-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.14.0",
+      "expected_selected_version": null,
+      "name": "@fortawesome/free-solid-svg-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^17.0.0",
+      "expected_selected_version": null,
+      "name": "@ngx-translate/core",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^17.0.0",
+      "expected_selected_version": null,
+      "name": "@ngx-translate/http-loader",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.5.8",
+      "expected_selected_version": null,
+      "name": "@wagmi/core",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^21.0.5",
+      "expected_selected_version": null,
+      "name": "angularx-qrcode",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.9.3",
+      "expected_selected_version": null,
+      "name": "canvas-confetti",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.0.2",
+      "expected_selected_version": null,
+      "name": "codemirror",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.1.1",
+      "expected_selected_version": null,
+      "name": "cookieconsent",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.7.2",
+      "expected_selected_version": null,
+      "name": "ethers",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.9.2",
+      "expected_selected_version": null,
+      "name": "flag-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.4.1",
+      "expected_selected_version": null,
+      "name": "font-mfizz",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.0.0",
+      "expected_selected_version": null,
+      "name": "jwt-decode",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.17.21",
+      "expected_selected_version": null,
+      "name": "lodash-es",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.13.14",
+      "expected_selected_version": null,
+      "name": "material-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^12.0.0",
+      "expected_selected_version": null,
+      "name": "ng-gallery",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.0.0",
+      "expected_selected_version": null,
+      "name": "ng2-file-upload",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^7.0.0",
+      "expected_selected_version": null,
+      "name": "ngx-window-token",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.0.0",
+      "expected_selected_version": null,
+      "name": "ngy-cookie",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "7.8.2",
+      "expected_selected_version": "7.8.2",
+      "name": "rxjs",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.86.3",
+      "expected_selected_version": null,
+      "name": "sass",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.2",
+      "expected_selected_version": null,
+      "name": "snarkdown",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.1.0",
+      "expected_selected_version": null,
+      "name": "socket.io-client",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.1.0",
+      "expected_selected_version": null,
+      "name": "solidity-browser-compiler",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.5.0",
+      "expected_selected_version": null,
+      "name": "tslib",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "~6.0.3",
+      "expected_selected_version": null,
+      "name": "typescript",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "~0.15.0",
+      "expected_selected_version": null,
+      "name": "zone.js",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^22.0.1",
+      "expected_selected_version": null,
+      "name": "@angular/language-service",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "9.33.0",
+      "expected_selected_version": "9.33.0",
+      "name": "@eslint/js",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.17.9",
+      "expected_selected_version": null,
+      "name": "@types/express-serve-static-core",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.2.1",
+      "expected_selected_version": null,
+      "name": "@types/jwt-decode",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^20.17.19",
+      "expected_selected_version": null,
+      "name": "@types/node",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.4.33",
+      "expected_selected_version": null,
+      "name": "@types/socket.io-client",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.1.2",
+      "expected_selected_version": null,
+      "name": "@vitest/coverage-v8",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^22.0.0",
+      "expected_selected_version": null,
+      "name": "angular-eslint",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.7.0",
+      "expected_selected_version": null,
+      "name": "esbuild-visualizer",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^9.33.0",
+      "expected_selected_version": null,
+      "name": "eslint",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^29.0.1",
+      "expected_selected_version": null,
+      "name": "jsdom",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^16.10.0",
+      "expected_selected_version": null,
+      "name": "stylelint",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^12.1.0",
+      "expected_selected_version": null,
+      "name": "stylelint-config-sass-guidelines",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^6.0.0",
+      "expected_selected_version": null,
+      "name": "stylelint-scss",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^8.42.0",
+      "expected_selected_version": null,
+      "name": "typescript-eslint",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.1.1",
+      "expected_selected_version": null,
+      "name": "vitest",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    }
+  ],
+  "designated_by": "owner in this session before submitting fresh scans",
+  "expected_occurrences": 175,
+  "expected_relationships": [],
+  "expected_selected_versions": 6,
+  "missing_s07_demonstrations": [
+    "custom pip input with four advisory groups",
+    "Python/Node/Go/Rust mixed source",
+    "empty/unsupported/ignored deliberate inputs",
+    "human review and rollback"
+  ],
+  "repository": "sourcebastion/juice-shop",
+  "scan_submitted": false,
+  "schema_version": "m046.designated-source-expectations/1",
+  "scope": "Authored from designated repository bytes before any scan; independent of scanner output. This source alone cannot prove every S07 case.",
+  "source_files": [
+    {
+      "application_name": "juice-shop",
+      "application_version": "20.2.0",
+      "bytes": 7276,
+      "path": "package.json",
+      "sha256": "e582b8e132fb6fa82e10f496e8ee55c8d9617f4ba19fc50ad87547bf8d281d87"
+    },
+    {
+      "application_name": "frontend",
+      "application_version": "20.2.0",
+      "bytes": 3913,
+      "path": "frontend/package.json",
+      "sha256": "75d0c7e9c78fbab805d65eb2a2e15a4de583a2f0f5ab5df164e9c6918d00b332"
+    }
+  ],
+  "written_before_scans": true
+}

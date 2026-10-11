@@ -6,7 +6,8 @@ if [[ $# -ne 1 ]]; then
   exit 2
 fi
 image=$1
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+root="${SOURCEBASTION_NATIVE_PROOF_CHECKOUT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+driver="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 work="$(mktemp -d)"
 cleanup() {
   local status=$? cleanup_status=0
@@ -27,10 +28,16 @@ trap cleanup EXIT
 mkdir -m 700 "$work/source" "$work/database" "$work/output"
 
 # Advisory preparation never receives a checkout or any provider credentials.
+if [[ -n "${SOURCEBASTION_NATIVE_ADVISORIES:-}" ]]; then
+  database="$(readlink -f "$SOURCEBASTION_NATIVE_ADVISORIES")"
+  test -f "$database/snapshot.json"
+  test -f "$database/6/vulnerability.db"
+else
 docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
   -v "$work/database:/database" --entrypoint python "$image" \
   -c 'import os,runpy,sys; os.umask(0o077); sys.argv=["sourcebastion.grype_database","/database"]; runpy.run_module("sourcebastion.grype_database",run_name="__main__")'
 database="$(readlink -f "$work/database/current")"
+fi
 
 # Separate canonical SBOM/real-Grype evidence reuses this source-free generation.
 # Fixed reviewed fixture only; no change to the released directory-scan route.
@@ -111,7 +118,7 @@ entrypoint_output="${SOURCEBASTION_NATIVE_ENTRYPOINT_OUTPUT:-$work/entrypoint-ou
 mkdir -m 700 "$entrypoint_output"
 for repeat in 1 2 3; do
   mkdir -m 700 "$entrypoint_output/repeat-$repeat"
-  python3 "$root/scripts/run-inventory-entrypoint-proof.py" \
+  python3 "$driver/run-inventory-entrypoint-proof.py" \
     --image "$image" --checkout "$root" --source "$work/canonical-source" \
     --advisories "$database" --preparation "$work/dependency-preparation" \
     --output "$entrypoint_output/repeat-$repeat"

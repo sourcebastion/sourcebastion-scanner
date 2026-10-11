@@ -2,10 +2,20 @@
 
 Owner: scanner maintainers. S06 implementation lives in scanner issue #93.
 The executable gates below do not accept S06 or M046 by themselves. S06 needs
-reviewed exact-head native evidence, S02–S04 acceptance, and distribution closure;
+reviewed exact-head native evidence, S02–S04 acceptance and release evidence;
 S07 additionally needs published-digest development and rollback evidence.
+Distribution closure is deferred to M049 #164 and remains a separate obligation.
 Its requirement-by-requirement record is the
 [S07 acceptance ledger](M046-S07-acceptance.md).
+
+After publication, use `m046-published-proof.yml` with the exact release tag,
+source SHA and verified multiarchitecture index digest. Its two native jobs
+pull immutable manifests, verify installed payloads, measure the frozen S01
+cumulative layer delta and share one source-free advisory generation. Retain
+the shared input artifact, both native proof artifacts and their comparison.
+This finite qualification does not supply development human review, adversarial
+execution observations or mixed-version rollback acceptance; the S07 ledger
+lists the remaining requirements and the manual dispatch command.
 
 ## Supported release and identities
 

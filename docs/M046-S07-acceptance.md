@@ -13,13 +13,126 @@ scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/
 | S02 | Content validation, custom paths, exclusions and located discovery outcomes over the independent corpus | Accepted by #88 and [#90](https://github.com/sourcebastion/sourcebastion-scanner/issues/90). Revalidate against the published release. |
 | S03 | Selected-version, declaration, occurrence and graph semantics on supported ecosystems; explicit unsupported outcomes | Accepted by #88 and [#91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91). The owner waived legacy scanner parity, not truthful semantics or the minimum corpus. |
 | S04 | Standards-valid CycloneDX, actual offline Grype, four pip advisory groups, matching identity and independent failure states | [Acceptance ledger](M046-S04-acceptance.md) records merged implementation and finite native evidence. #92 remains open; reconcile its acceptance record with reviewed evidence. SPDX moved to M048 #154. |
-| S05 | Immutable queryable rows, authorized artifact access, truthful root/ecosystem coverage, retention/reuse and development presentation | Foundation #403 merged. [Platform #404](https://github.com/sourcebastion/sourcebastion-platform/pull/404) is draft at `9c6e3a6588ff14603b2d260b9da034c878811ea2`; [scanner #162](https://github.com/sourcebastion/sourcebastion-scanner/pull/162) is draft at `af6e138e709c27ba03f0c716ebb0488d1183f484`. Independent review, reviewed schema changes and integration acceptance remain prerequisites. |
-| S06 | Verified native packaging, upgrade gates, numerical budgets, support/runbook, #54 coordination and release evidence | Implementation merged. Native PR run verified below; actual release evidence remains open. [#163](https://github.com/sourcebastion/sourcebastion-scanner/pull/163) proposes distribution deferral to M049; this ledger does not decide that separate proposal. |
+| S05 | Immutable queryable rows, authorized artifact access, truthful root/ecosystem coverage, retention/reuse and development presentation | Foundation #403 and [platform #404](https://github.com/sourcebastion/sourcebastion-platform/pull/404) merged; platform merge `377f61d2c6e544b409b471250c20edcb40fa30f8`, reviewed head `402fd5b93058f3c1e291def04a520313731e65de`. [Scanner #162](https://github.com/sourcebastion/sourcebastion-scanner/pull/162) and [#165](https://github.com/sourcebastion/sourcebastion-scanner/pull/165) merged into `4effe1897114ef3e3c6cf17b52172d8ea3844986`; tested head `ea88bbd21a53ccbdab9eb35525f77ec38564d4e3`. Published runtime/validator binding, fresh development presentation, human acceptance and rollback remain open. |
+| S06 | Verified native packaging, upgrade gates, numerical budgets, support/runbook, #54 coordination and release evidence | Implementation merged. Native PR evidence verified below; actual release evidence remains open. [#163](https://github.com/sourcebastion/sourcebastion-scanner/pull/163) merged the distribution deferral to M049 #164; the obligation remains open there. |
 | S07 | All preceding slices accepted, published native proof, development human acceptance and rollback/mixed-version receipts | Open; required demonstrations below. |
 
 Issue closure alone is insufficient. Each accepted slice must link its actual
 criterion-by-criterion evidence and bind that evidence to the qualifying release
 tuple. A later parser/config change requires review and the affected proofs again.
+
+## Current release and qualification work
+
+The v1.8.0 [release run 38095674451](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38095674451)
+failed after both staged hosted scans passed their scanner assertions: cleanup
+could not remove deliberately sealed control directories. It did not publish;
+the v1.8.0 release remains a draft. [#169](https://github.com/sourcebastion/sourcebastion-scanner/pull/169)
+fixes private scratch cleanup, with exit-status and external-evidence regression
+checks, and advances the version to v1.8.1. Both native jobs passed before merge.
+
+The v1.8.1 [release run 38101710508](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38101710508)
+selects exact source `957e1670d1552c0e1056c3bdf1cd2c78108abfc6`. Both the reviewed
+heads and merge commits of scanner #162 and #165 are ancestors of that source.
+This replacement run has its own required `release` environment approval; the
+user chose to approve in GitHub. No published index digest or successful
+publication is inferred from starting the run or from an approval. The earlier
+run 38089205320 was cancelled before publication because its source did not
+contain both PRs.
+
+The [latest native audit](M046/S07/native-ci-audit-38094267046.json) verifies all
+eight GitHub artifact digests from successful exact-head run
+[38094267046](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38094267046),
+48 resource/workload bindings, six installed-entrypoint bindings and 64 equal
+canonical case digests. Its AMD64 maxima are 32.895919 CPU seconds, 33.111418 wall
+seconds, 618,926,080 bytes and 11 PIDs; ARM64 maxima are 41.950598 CPU seconds,
+42.251301 wall seconds, 618,844,160 bytes and 11 PIDs. All are within frozen
+ceilings. Its image-size receipts still compare against the PR base, and its two
+advisory snapshot hashes differ. These are finite CI proofs rather than published
+release acceptance.
+
+The audit preserves the reviewed S05 corpus delta instead of concealing it:
+baseline oracle `3fd21f9d1e0b4f9ae128a0dceb2a94a6043d780faa8c09e0ea85a320b1bb5ab2`,
+candidate oracle `0fe1f2177e2d4743e17794befaf10099a68439924b7b9d41e3e54ce834cc601b`,
+exact transition `cb6a613f4f17191352191ae49339afad36283df9298cf46d18c5d044af4aca18`.
+It recomputes the difference against the archived immutable base oracle and
+requires the exact committed approval. The minimal gate in #162 does not close
+M050 #167 or replace its planned formal process.
+
+`.github/workflows/m046-published-proof.yml` prepares a finite published-image
+qualification path. It requires an already published stable tag, its exact
+source SHA and the published index digest. It checks the tag/index binding,
+selects one actual native manifest per architecture, verifies pulled config and
+retained compressed OCI bytes, and charges cumulative growth from the retained
+S01 archives. Both native jobs consume the same separately prepared advisory
+file set, verified before and after scanning. Installed module/runtime checks,
+official CycloneDX validation, three corpus/stress cgroup repeats and three
+installed-entrypoint repeats run against the published images. The comparison
+job checks all 48 matrix/entrypoint workload bindings, repeat consistency, equal
+canonical case digests and the shared release/advisory identities.
+
+An additional corpus run and all three installed-entrypoint runs attach a host
+process/network tracer before the trusted stopped shell releases the workload.
+The trace follows descendant processes and retains execution arguments and
+IPv4/IPv6 attempts, including failed attempts. Missing, truncated or premature
+traces refuse qualification. Collection reports `trace-collected-review-required`;
+the raw invocations still require review against the installed allowed tools.
+This adds observations without claiming that isolation flags establish absence
+of project execution or network attempts.
+
+This workflow is prepared, **not yet executed against a published v1.8.1**.
+Its receipts always retain `acceptance: false` and enumerate the execution
+observation, adversarial lifecycle, development human review, rollback and slice
+acceptance work still required. Passing it cannot close #94 by itself.
+
+The existing Docker Validation workflow can invoke a reviewed driver branch
+before the new workflow is registered on `main`:
+
+```sh
+gh workflow run docker.yml --ref <reviewed-driver-ref> \
+  -f build_images=false -f published_release_tag=v1.8.1 \
+  -f published_release_sha=957e1670d1552c0e1056c3bdf1cd2c78108abfc6 \
+  -f published_image_digest=sha256:<verified-published-index-digest>
+```
+
+The development host's deployment marker was independently read on 2026-10-10:
+`89f7e91b7a9dfb19804ccb35b512c4b19ea6fde0`. A merge is not a deployment.
+The user corrected the designated repository to `ez-appsec/juice-shop` before
+any acceptance scan was submitted. Read-only inspection using the platform's
+normalized account key confirms one owned, authorized, enabled and entitled
+project, with the account's active `ez-appsec` installation. Account contact
+information and database identifiers remain private. The requesting user agreed
+to review coverage, findings and the SBOM download in development, before any
+fresh acceptance scan. This designation is not acceptance; the dated review
+remains required after visible results exist. No activation, customer replay or credit
+reset is established by these receipts.
+
+The [corrected source-authored expectations](M046/S07/development-source-expectations-ez-appsec-juice-shop.json)
+were written before scans from immutable commit
+`0810fef353a6d0ed772890015e2d374715723328`. Their SHA-256 is
+`db704b7540fd724ac9ea3a8f179bcb661a32c1dad3bbd797b4c42a48686e9aad`.
+Two npm manifests declare 148 occurrences, including eight literal selected
+versions. There are no standard lockfiles or evidenced package edges; unresolved
+ranges and incomplete coverage must remain visible. The backup lock filename is
+unconfigured. The earlier [first-target oracle](M046/S07/development-source-expectations-juice-shop.json)
+is retained unchanged as a superseded designation, not evidence for this target.
+
+Additional source-authored development fixtures are prepared locally on the
+corrected repository at `d01f3278ca960530d1c9f1290324469531471124`, branch
+`test/m046-s07-development`. Their [pre-scan expectations](M046/S07/development-fixture-expectations-ez-appsec-juice-shop.json)
+hash to `df9dfad45661241ebf8cddba14851443126ffe17614e499c8f40d45084e3f049`.
+Thirteen additional inputs cover custom pip and two separate pip 26.0.1
+observations with four required advisory groups each, npm/Cargo lock edges,
+unresolved Go/Python declarations, empty application manifests, ignored prose,
+unsupported inputs and project-execution traps. Relative case expectations come
+from the frozen source-authored corpus at `4effe1897`; final comparisons must
+bind exact prefixed paths and contexts. The branch has not been pushed and no
+scan was submitted. Publication awaits runtime admission so the provider hook
+cannot silently turn preparation into an unqualified acceptance scan.
+
+[Platform #405](https://github.com/sourcebastion/sourcebastion-platform/pull/405)
+prepares the companion installed validator for exact v1.8.1 source `957e1670`.
+The installed source/wheel payload proof and all 121 required conformance tests
+passed for that binding without skips. Image admission and development activation remain separate.
 
 ## Native CI evidence independently inspected
 

@@ -18,6 +18,18 @@ on:
         description: Build and exercise both architectures without publishing
         type: boolean
         default: false
+      published_release_tag:
+        description: Optional published tag to qualify (requires source SHA and index digest)
+        type: string
+        default: ''
+      published_release_sha:
+        description: Exact 40-character published source SHA
+        type: string
+        default: ''
+      published_image_digest:
+        description: Exact published multiarchitecture index digest (sha256:...)
+        type: string
+        default: ''
   workflow_call:
     inputs:
       build_images:
@@ -33,6 +45,18 @@ permissions:
   contents: read
 
 jobs:
+  qualify-published:
+    if: github.event_name == 'workflow_dispatch' && inputs.published_release_tag != ''
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+    uses: ./.github/workflows/m046-published-proof.yml
+    with:
+      release_tag: ${{ inputs.published_release_tag }}
+      release_sha: ${{ inputs.published_release_sha }}
+      image_digest: ${{ inputs.published_image_digest }}
+
   # ============================================
   # LINT STAGE
   # ============================================

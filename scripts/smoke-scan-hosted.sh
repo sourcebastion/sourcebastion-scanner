@@ -8,7 +8,22 @@ fi
 image=$1
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+cleanup() {
+  local status=$? cleanup_status=0
+  # The entrypoint proof deliberately seals its control directories at 0555.
+  # After the owned containers have stopped, restore directory write access
+  # only inside this private scratch tree so its read-only records can be
+  # unlinked. find does not follow symlinks or touch retained external proofs.
+  # chmod takes no "--": BSD chmod reads it as a file name, so the restore
+  # silently fails on macOS. find supplies absolute mktemp paths regardless.
+  find "$work" -type d -exec chmod u+w {} + || cleanup_status=$?
+  rm -rf -- "$work" || cleanup_status=$?
+  if [[ $status -eq 0 ]]; then
+    status=$cleanup_status
+  fi
+  exit "$status"
+}
+trap cleanup EXIT
 mkdir -m 700 "$work/source" "$work/database" "$work/output"
 
 # Advisory preparation never receives a checkout or any provider credentials.

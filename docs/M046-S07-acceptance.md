@@ -262,8 +262,20 @@ official CycloneDX schema. This result remains intact and is not acceptance.
 [Platform #413](https://github.com/sourcebastion/sourcebastion-platform/pull/413)
 wires the installed helper and authenticates its digest through finalization,
 with changed reuse compatibility to refuse pre-fix snapshots. Its 100 focused
-tests pass; exact-head native proof, CI, deployment and subsequent fresh results
-remain pending. The original source expectations remain unchanged.
+tests and all CI pass. The [exact-head native proof](M046/S07/hosted-go-helper-native-audit.json)
+passed the actual Docker worker with a Go module, then two successive reuse passes
+with unchanged origin rows, artifact charges and expiry (338.47 seconds). These
+remain isolated authored SQL fixtures rather than live account acceptance.
+It merged as `58fdd2cf963db081f0e32f687570345446715787` and deployed successfully
+in [38114332666](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38114332666).
+Fresh commit `4e7289a38feb4305f82370a54515e3ddf1f11242` completed and
+[passed the frozen content audit](M046/S07/development-go-fixed-content-audit.json),
+including all eight contextual cases, 530 inventory rows, 20 matching rows and
+the official CycloneDX schema. Its execution bound a full plan, but the findings
+envelope fell back and ScanRun planning fields remain absent; it cannot qualify
+as a reuse baseline. A subsequent same-byte diagnostic pass will retain the
+other-scanner report to establish that refusal. The original source expectations
+remain unchanged.
 
 Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)
 were mechanically derived from the frozen rich source oracle before the new

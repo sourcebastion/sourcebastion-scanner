@@ -23,13 +23,21 @@ tuple. A later parser/config change requires review and the affected proofs agai
 
 ## Current release and qualification work
 
-The replacement v1.8.0 [release run 38095674451](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38095674451)
-targets `4effe1897114ef3e3c6cf17b52172d8ea3844986`, containing both scanner #162
-and #165. The user selected approval in GitHub, and the repository's `release`
-environment approval completed before native release validation began. The run
-is still in progress; no published index digest or successful publication is
-inferred from the approval. The earlier run 38089205320 was cancelled before publication because
-its source did not contain both PRs.
+The v1.8.0 [release run 38095674451](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38095674451)
+failed after both staged hosted scans passed their scanner assertions: cleanup
+could not remove deliberately sealed control directories. It did not publish;
+the v1.8.0 release remains a draft. [#169](https://github.com/sourcebastion/sourcebastion-scanner/pull/169)
+fixes private scratch cleanup, with exit-status and external-evidence regression
+checks, and advances the version to v1.8.1. Both native jobs passed before merge.
+
+The v1.8.1 [release run 38101710508](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38101710508)
+selects exact source `957e1670d1552c0e1056c3bdf1cd2c78108abfc6`. Both the reviewed
+heads and merge commits of scanner #162 and #165 are ancestors of that source.
+This replacement run has its own required `release` environment approval; the
+user chose to approve in GitHub. No published index digest or successful
+publication is inferred from starting the run or from an approval. The earlier
+run 38089205320 was cancelled before publication because its source did not
+contain both PRs.
 
 The [latest native audit](M046/S07/native-ci-audit-38094267046.json) verifies all
 eight GitHub artifact digests from successful exact-head run
@@ -62,7 +70,7 @@ installed-entrypoint repeats run against the published images. The comparison
 job checks all 48 matrix/entrypoint workload bindings, repeat consistency, equal
 canonical case digests and the shared release/advisory identities.
 
-This workflow is prepared, **not yet executed against a published v1.8.0**.
+This workflow is prepared, **not yet executed against a published v1.8.1**.
 Its receipts always retain `acceptance: false` and enumerate the execution
 observation, adversarial lifecycle, development human review, rollback and slice
 acceptance work still required. Passing it cannot close #94 by itself.
@@ -72,8 +80,8 @@ before the new workflow is registered on `main`:
 
 ```sh
 gh workflow run docker.yml --ref <reviewed-driver-ref> \
-  -f build_images=false -f published_release_tag=v1.8.0 \
-  -f published_release_sha=4effe1897114ef3e3c6cf17b52172d8ea3844986 \
+  -f build_images=false -f published_release_tag=v1.8.1 \
+  -f published_release_sha=957e1670d1552c0e1056c3bdf1cd2c78108abfc6 \
   -f published_image_digest=sha256:<verified-published-index-digest>
 ```
 
@@ -83,8 +91,10 @@ The user corrected the designated repository to `ez-appsec/juice-shop` before
 any acceptance scan was submitted. Read-only inspection using the platform's
 normalized account key confirms one owned, authorized, enabled and entitled
 project, with the account's active `ez-appsec` installation. Account contact
-information and database identifiers remain private. A dated human review remains
-required after visible results exist. No activation, customer replay or credit
+information and database identifiers remain private. The requesting user agreed
+to review coverage, findings and the SBOM download in development, before any
+fresh acceptance scan. This designation is not acceptance; the dated review
+remains required after visible results exist. No activation, customer replay or credit
 reset is established by these receipts.
 
 The [corrected source-authored expectations](M046/S07/development-source-expectations-ez-appsec-juice-shop.json)
@@ -111,9 +121,9 @@ scan was submitted. Publication awaits runtime admission so the provider hook
 cannot silently turn preparation into an unqualified acceptance scan.
 
 [Platform #405](https://github.com/sourcebastion/sourcebastion-platform/pull/405)
-binds the companion installed validator to exact release source `4effe1897`.
-The source/wheel/installed-payload proof and 121 required conformance tests passed
-without skips. Image admission and development activation remain separate.
+prepares the companion installed validator for exact v1.8.1 source `957e1670`.
+The installed source/wheel payload proof and all 121 required conformance tests
+passed for that binding without skips. Image admission and development activation remain separate.
 
 ## Native CI evidence independently inspected
 

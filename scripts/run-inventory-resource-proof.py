@@ -125,6 +125,8 @@ def run(args):
                    "/usr/local/share/sourcebastion/inventory-go.json", "--upgrade-report"]
         if args.workload == "stress":
             command = ["python3", "scripts/verify-inventory-stress.py", "--arm", args.arm]
+        if args.workload in {"packaging", "cyclonedx"}:
+            command = ["python3", f"scripts/verify-inventory-{args.workload}.py"]
         if args.workload == "entrypoint":
             for name, destination, mode in (("source", "/source", "ro"), ("advisories", "/advisories", "ro"),
                                            ("preparation", "/preparation", "ro"), ("control", "/control", "ro"),
@@ -268,7 +270,7 @@ def main(argv=None):
     parser.add_argument("--checkout", required=True, type=Path)
     parser.add_argument("--provider", type=Path)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--workload", choices=("corpus", "stress", "entrypoint"), default="corpus")
+    parser.add_argument("--workload", choices=("corpus", "stress", "entrypoint", "packaging", "cyclonedx"), default="corpus")
     for name in ("source", "advisories", "preparation", "control", "artifacts"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--arm", choices=("flat-1000", "flat-10000", "flat-100000", "flat-100001", "graph", "expansion"), default="flat-1000")

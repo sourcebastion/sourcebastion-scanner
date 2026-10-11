@@ -1,0 +1,211 @@
+name: M046 published native qualification
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Already published stable release tag
+        required: true
+        type: string
+      release_sha:
+        description: Exact reviewed 40-character release source SHA
+        required: true
+        type: string
+      image_digest:
+        description: Published multiarchitecture index digest (sha256:...)
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      release_tag:
+        required: true
+        type: string
+      release_sha:
+        required: true
+        type: string
+      image_digest:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+jobs:
+  prepare:
+    name: Bind published release and freeze one advisory generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      advisory_manifest_sha256: ${{ steps.freeze.outputs.advisory_manifest_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install source-free registry inspection tool
+        run: |
+          sudo -n apt-get -o Acquire::Retries=1 -o DPkg::Lock::Timeout=30 update
+          sudo -n apt-get -o Acquire::Retries=1 -o DPkg::Lock::Timeout=30 install -y skopeo
+      - name: Bind the published tag, source and index bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          mkdir -m 700 "$RUNNER_TEMP/shared-proof"
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/shared-proof/release.json"
+          export RESOLVED_RELEASE_SHA
+          RESOLVED_RELEASE_SHA=$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")
+          skopeo inspect --raw "docker://ghcr.io/sourcebastion/sourcebastion-scanner:$RELEASE_TAG" > "$RUNNER_TEMP/shared-proof/index.json"
+          python3 - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          from m046_published import native_descriptor, release_identity
+          root = Path(os.environ['RUNNER_TEMP']) / 'shared-proof'
+          identity = release_identity(json.loads((root / 'release.json').read_bytes()),
+              os.environ['RELEASE_TAG'], os.environ['RELEASE_SHA'], os.environ['RESOLVED_RELEASE_SHA'], os.environ['IMAGE_DIGEST'])
+          raw = (root / 'index.json').read_bytes()
+          for arch in ('amd64', 'arm64'):
+              native_descriptor(raw, os.environ['IMAGE_DIGEST'], arch)
+          (root / 'identity.json').write_text(json.dumps(identity, sort_keys=True))
+          PY
+      - name: Prepare shared advisories without source or provider credentials
+        id: freeze
+        env:
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+        run: |
+          set -euo pipefail
+          mkdir -m 700 "$RUNNER_TEMP/advisory-preparation"
+          image="ghcr.io/sourcebastion/sourcebastion-scanner@$IMAGE_DIGEST"
+          docker pull --platform linux/amd64 "$image"
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$RUNNER_TEMP/advisory-preparation:/database" --entrypoint python "$image" \
+            -c 'import os,runpy,sys; os.umask(0o077); sys.argv=["sourcebastion.grype_database","/database"]; runpy.run_module("sourcebastion.grype_database",run_name="__main__")'
+          snapshot=$(readlink -f "$RUNNER_TEMP/advisory-preparation/current")
+          mkdir -m 700 "$RUNNER_TEMP/shared-proof/advisories"
+          cp -a "$snapshot/." "$RUNNER_TEMP/shared-proof/advisories/"
+          python3 - <<'PY'
+          import hashlib, json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          from m046_published import advisory_files
+          root = Path(os.environ['RUNNER_TEMP']) / 'shared-proof'
+          raw = json.dumps(advisory_files(root / 'advisories'), sort_keys=True, separators=(',', ':')).encode()
+          (root / 'advisory-files.json').write_bytes(raw)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              stream.write('advisory_manifest_sha256=' + hashlib.sha256(raw).hexdigest() + '\n')
+          PY
+      - name: Retain shared immutable qualification inputs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: m046-published-shared-inputs
+          path: ${{ runner.temp }}/shared-proof/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+
+  compare:
+    name: Verify both published native proof bundles
+    needs: native
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: m046-published-native-*
+          path: ${{ runner.temp }}/native-proofs
+      - name: Require matching corpus, advisory and release identities
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          from m046_published import compare_native
+          root = Path(os.environ['RUNNER_TEMP']) / 'native-proofs'
+          result = compare_native(root / 'm046-published-native-amd64', root / 'm046-published-native-arm64')
+          (root / 'comparison.json').write_text(json.dumps(result, sort_keys=True, indent=2) + '\n')
+          print(json.dumps(result, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: m046-published-native-comparison
+          path: ${{ runner.temp }}/native-proofs/comparison.json
+          if-no-files-found: error
+          retention-days: 30
+
+  native:
+    name: Qualify published scanner (${{ matrix.arch }})
+    needs: prepare
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Check out qualification driver
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check out exact published source for independent comparisons
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ inputs.release_sha }}
+          path: release-source
+          persist-credentials: false
+      - name: Install source-free registry inspection tool
+        run: |
+          sudo -n apt-get -o Acquire::Retries=1 -o DPkg::Lock::Timeout=30 update
+          sudo -n apt-get -o Acquire::Retries=1 -o DPkg::Lock::Timeout=30 install -y skopeo
+      - name: Restore shared advisory bytes and immutable identities
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: m046-published-shared-inputs
+          path: ${{ runner.temp }}/shared-proof
+      - name: Restore private advisory permissions
+        run: |
+          find "$RUNNER_TEMP/shared-proof" -type d -exec chmod 700 {} +
+          find "$RUNNER_TEMP/shared-proof" -type f -exec chmod 600 {} +
+      - name: Prepare pinned host schema validator outside scanning
+        run: |
+          python3 -m venv "$RUNNER_TEMP/cyclonedx-validator"
+          "$RUNNER_TEMP/cyclonedx-validator/bin/pip" install --disable-pip-version-check \
+            jsonschema==4.26.0 referencing==0.37.0 attrs==26.1.0 rpds-py==2026.6.3 \
+            jsonschema-specifications==2025.9.1 typing-extensions==4.16.0
+      - name: Qualify the actual native published digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ADVISORY_MANIFEST_SHA256: ${{ needs.prepare.outputs.advisory_manifest_sha256 }}
+        run: |
+          "$RUNNER_TEMP/cyclonedx-validator/bin/python" scripts/run-m046-published-proof.py \
+            --identity "$RUNNER_TEMP/shared-proof/identity.json" \
+            --index "$RUNNER_TEMP/shared-proof/index.json" \
+            --checkout "$GITHUB_WORKSPACE/release-source" \
+            --advisories "$RUNNER_TEMP/shared-proof/advisories" \
+            --advisory-manifest "$RUNNER_TEMP/shared-proof/advisory-files.json" \
+            --advisory-manifest-sha256 "$ADVISORY_MANIFEST_SHA256" \
+            --output "$RUNNER_TEMP/published-proof" --temporary "$RUNNER_TEMP/native-archives"
+      - name: Retain qualification receipts including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: m046-published-native-${{ matrix.arch }}
+          path: ${{ runner.temp }}/published-proof/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30

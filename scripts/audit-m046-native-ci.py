@@ -13,6 +13,23 @@ import json
 from pathlib import Path
 import zipfile
 
+from inventory_upgrade import ACCEPTED_UPGRADES, accepted_upgrades, corpus_diff, matching_approval, transition
+
+
+def verify_corpus_gate(diff):
+    """Retain exact reviewed additive upgrades without accepting a gate waiver."""
+    corpus = diff["corpus"]
+    require(diff["status"] == "passed" and corpus["cases_compared"] == 64
+            and corpus["same_source_corpus"] is True and not corpus["missing_cases"]
+            and not corpus["added_cases"], "corpus-upgrade-refused")
+    if corpus["changes"]:
+        require(corpus["status"] == "review-required", "changed-corpus-status-concealed")
+        identity = transition(diff, diff["candidate_oracle_sha256"])
+        approval = matching_approval(accepted_upgrades(ACCEPTED_UPGRADES), identity)
+        require(approval is not None and approval == diff.get("approval"), "corpus-exact-approval-required")
+    else:
+        require(corpus["status"] == "passed", "corpus-upgrade-refused")
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -82,11 +99,12 @@ def audit(root):
                         section["resources"].append({"archive": name, "path": member,
                                                      "receipt_sha256": digest(archive.read(member)), **receipt})
                 if kind == "maintenance":
+                    baseline_raw = archive.read("inventory-base-oracle.json")
+                    baseline = json.loads(baseline_raw)
                     section["compressed_growth"] = read("inventory-compressed-growth.json")
                     for member in ("inventory-upgrade-diff.json", "inventory-current-oracle-diff.json"):
                         diff = read(member)
-                        require(diff["status"] == "passed" and diff["corpus"]["cases_compared"] == 64
-                                and not diff["corpus"]["changes"] and not diff["corpus"]["missing_cases"], "corpus-upgrade-refused")
+                        verify_corpus_gate(diff)
                         section[member] = diff
                 if kind == "entrypoint":
                     for repeat in range(1, 4):
@@ -117,7 +135,8 @@ def audit(root):
                         for name, info in binding["binding"]["files"].items()}
                     section["matching"]["advisory_status"] = binding["status"]
                 if kind == "source-expectations":
-                    proof = read("inventory-source-expectations-native.json")
+                    proof_raw = archive.read("inventory-source-expectations-native.json")
+                    proof = json.loads(proof_raw)
                     require(proof["architecture"] == {"amd64": "x86_64", "arm64": "aarch64"}[arch] and len(proof["cases"]) == 64
                             and all(case["expectation_disagreement"] is None for case in proof["cases"]), "source-oracle-disagreement")
                     case_maps[arch] = {case["case"]: case["inventory_sha256"] for case in proof["cases"]}
@@ -125,6 +144,14 @@ def audit(root):
                     section["corpus"] = {"cases": 64, "case_inventory_sha256": case_maps[arch],
                         "expectations_sha256": proof["expectations_sha256"],
                         "historical_oracle_sha256": proof["historical_oracle_sha256"], "go_runtime": proof["go_runtime"]}
+        base_diff = section["inventory-upgrade-diff.json"]
+        require(base_diff["baseline_sha256"] == digest(baseline_raw)
+                and base_diff["corpus"] == corpus_diff(baseline, proof), "base-oracle-diff-binding-mismatch")
+        for member in ("inventory-upgrade-diff.json", "inventory-current-oracle-diff.json"):
+            diff = section[member]
+            require(diff["candidate_sha256"] == digest(proof_raw), "native-proof-diff-binding-mismatch")
+            if "candidate_oracle_sha256" in diff:
+                require(diff["candidate_oracle_sha256"] == proof["expectations_sha256"], "candidate-oracle-binding-mismatch")
         section["maxima"] = {key: max(receipt[key] for receipt in section["resources"])
             for key in ("cpu_usec", "memory_peak", "pids_peak", "wall_seconds")}
         section["resource_receipts_verified"] = len(section["resources"])

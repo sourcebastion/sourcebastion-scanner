@@ -14,7 +14,7 @@ scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/
 | S03 | Selected-version, declaration, occurrence and graph semantics on supported ecosystems; explicit unsupported outcomes | Accepted by #88 and [#91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91). The owner waived legacy scanner parity, not truthful semantics or the minimum corpus. |
 | S04 | Standards-valid CycloneDX, actual offline Grype, four pip advisory groups, matching identity and independent failure states | [Acceptance ledger](M046-S04-acceptance.md) records merged implementation and finite native evidence. #92 remains open; reconcile its acceptance record with reviewed evidence. SPDX moved to M048 #154. |
 | S05 | Immutable queryable rows, authorized artifact access, truthful root/ecosystem coverage, retention/reuse and development presentation | Foundation #403 and [platform #404](https://github.com/sourcebastion/sourcebastion-platform/pull/404) merged; platform merge `377f61d2c6e544b409b471250c20edcb40fa30f8`, reviewed head `402fd5b93058f3c1e291def04a520313731e65de`. [Scanner #162](https://github.com/sourcebastion/sourcebastion-scanner/pull/162) and [#165](https://github.com/sourcebastion/sourcebastion-scanner/pull/165) merged into `4effe1897114ef3e3c6cf17b52172d8ea3844986`; tested head `ea88bbd21a53ccbdab9eb35525f77ec38564d4e3`. Published runtime/validator binding, fresh development presentation, human acceptance and rollback remain open. |
-| S06 | Verified native packaging, upgrade gates, numerical budgets, support/runbook, #54 coordination and release evidence | Implementation merged. Native PR evidence verified below; actual release evidence remains open. [#163](https://github.com/sourcebastion/sourcebastion-scanner/pull/163) merged the distribution deferral to M049 #164; the obligation remains open there. |
+| S06 | Verified native packaging, upgrade gates, numerical budgets, support/runbook, #54 coordination and release evidence | Implementation and release evidence accepted in the [S06 ledger](M046-S06-acceptance.md); S07 independently audited published native qualification and frozen-S01 growth below. [#163](https://github.com/sourcebastion/sourcebastion-scanner/pull/163) merged the distribution deferral to M049 #164; the obligation remains open there. |
 | S07 | All preceding slices accepted, published native proof, development human acceptance and rollback/mixed-version receipts | Open; required demonstrations below. |
 
 Issue closure alone is insufficient. Each accepted slice must link its actual
@@ -33,13 +33,21 @@ checks, and advances the version to v1.8.1. Both native jobs passed before merge
 The v1.8.1 [release run 38101710508](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38101710508)
 selects exact source `957e1670d1552c0e1056c3bdf1cd2c78108abfc6`. Both the reviewed
 heads and merge commits of scanner #162 and #165 are ancestors of that source.
-This replacement run has its own required `release` environment approval; the
-user chose to approve in GitHub. No published index digest or successful
-publication is inferred from starting the run or from an approval. The earlier
+This replacement run received the required GitHub approval and completed
+successfully. Independent public registry and signed release-workflow attestation
+verification bound both version/source tags to index
+`sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6`,
+byte-identical to the tested staging index. AMD64 manifest/config:
+`sha256:60851bee28a838a040c87dac1bb7b1d946250a198a73666684c67f2d67a2d3a2` /
+`sha256:8c29d7386e23d46820797e369c2186d8bce066ce2fe735e24db0e99260608a7b`.
+ARM64 manifest/config:
+`sha256:c6ec51cb385755ae2ac173bed8679abc0db2a23ebafb1e052c8f7578ae270b69` /
+`sha256:28f2a34e3e19fb545cd72eb1ebd764b263634a9e6bb868eb1844318b3a115e06`.
+This establishes publication identity, not whole-S07 acceptance. The earlier
 run 38089205320 was cancelled before publication because its source did not
 contain both PRs.
 
-The [latest native audit](M046/S07/native-ci-audit-38094267046.json) verifies all
+The [earlier native CI audit](M046/S07/native-ci-audit-38094267046.json) verifies all
 eight GitHub artifact digests from successful exact-head run
 [38094267046](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38094267046),
 48 resource/workload bindings, six installed-entrypoint bindings and 64 equal
@@ -79,10 +87,46 @@ the raw invocations still require review against the installed allowed tools.
 This adds observations without claiming that isolation flags establish absence
 of project execution or network attempts.
 
-This workflow is prepared, **not yet executed against a published v1.8.1**.
-Its receipts always retain `acceptance: false` and enumerate the execution
-observation, adversarial lifecycle, development human review, rollback and slice
-acceptance work still required. Passing it cannot close #94 by itself.
+Published qualification passed in
+[38104916825](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/38104916825)
+at driver `843ab4c7fc80612044078e31f28f6cfe6baac530` against this exact tuple.
+The [independent published audit](M046/S07/published-native-audit-38104916825.json)
+checks all three native/comparison archive digests and the shared-input archive
+against GitHub's SHA-256 records. It verifies all 48 resource/workload bindings,
+64 equal canonical corpus cases, the complete shared advisory file set and its
+3.22 GB database hash, and cumulative frozen-S01 growth of 206,007,354 bytes
+AMD64 and 201,263,464 bytes ARM64. Complete 10k exports pass; 100k/100001 cases
+retain their expected incomplete/refusal states.
+
+The eight raw execution traces were independently reviewed: each corpus trace
+contains 37 allowed executions (the installed Python proof, fixed installed
+Node parsers and the hash-bound Go helper), and each installed-entrypoint trace
+contains the installed isolated Python entrypoint plus exactly three hash-bound
+Grype commands: version, database status and explicit SBOM matching. All observed
+executions succeed; none of these traces records a network syscall or an IPv4/IPv6
+attempt. Held descriptor paths are supported by the reviewed executable hash and
+metadata guards and installed payload proofs, not treated as identity by themselves.
+All six retained canonical inventories, exports and recovery maps were independently
+replayed byte-for-byte; each preserves all ten required source/advisory groups,
+including the original four pip groups independently on both custom source paths.
+
+Across the 24 matrix/entrypoint receipts per architecture, maxima are 47.199806 CPU
+seconds, 47.470222 wall seconds, 619,167,744 bytes and 11 PIDs on AMD64; 41.755441
+CPU seconds, 42.078098 wall seconds, 618,856,448 bytes and 12 PIDs on ARM64. Every
+receipt reports zero swap and OOM kills and removal of its owned container.
+These are finite workload maxima, not throughput or a production capacity claim.
+Complete independently verified public OCI archives are retained separately;
+their native manifest, configuration and layer descriptors match this published
+qualification. A different archive wrapper is not claimed to have the CI wrapper's
+SHA-256.
+
+The preceding qualification refused a completed corpus because ptrace reported
+the shell's SIGSTOP group-stop as lowercase `t`. The corrected driver requires
+that exact shell's recorded SIGSTOP group-stop; intermediate syscall stops cannot
+qualify. All 122 affected checks pass. Failed receipts remain separate.
+Qualification receipts retain `acceptance: false`; live development review,
+adversarial lifecycle, mixed-version rollback and all-slice acceptance remain
+separate. Passing this proof cannot close #94 by itself.
 
 The existing Docker Validation workflow can invoke a reviewed driver branch
 before the new workflow is registered on `main`:
@@ -130,9 +174,36 @@ scan was submitted. Publication awaits runtime admission so the provider hook
 cannot silently turn preparation into an unqualified acceptance scan.
 
 [Platform #405](https://github.com/sourcebastion/sourcebastion-platform/pull/405)
-prepares the companion installed validator for exact v1.8.1 source `957e1670`.
-The installed source/wheel payload proof and all 121 required conformance tests
-passed for that binding without skips. Image admission and development activation remain separate.
+merged as `8b331bef13ace72672282a53c45c22bccba338f1`. It binds the companion
+validator to exact v1.8.1 source `957e1670`, enables development read presentation
+and provides the guarded exact-job production worker driver. The installed wheel
+proof and 134 isolated development conformance/admission checks passed without
+skips on Python 3.11. An additional three real-Docker tests passed against the
+published AMD64 image: actual worker/handoff/finalizer and isolated SQL rows,
+authorized/foreign-account route checks and two successive reuse passes with
+unchanged row/artifact charges and expiry. These are isolated authored-fixture
+proofs; live account presentation and authorization review remain separate.
+
+A finite proof also exercised the actual installed entrypoint and production
+Docker watchdog on the development host under deadline, cancellation and host
+controller SIGKILL. All three refused, removed their exact owned containers,
+reaped observed process birth identities, preserved source bytes and showed no
+later artifact writes. Neither entrypoint nor watchdog was paused or replaced.
+No live queue or accepted publication was involved.
+
+Development deployment remains pending: both automatic attempts failed the
+existing pinned legacy scanner check on the slow pool before changing the healthy
+application. The same source passed the mandatory hosted-runtime check on the
+established fast pool. [Platform #408](https://github.com/sourcebastion/sourcebastion-platform/pull/408)
+moves the unchanged scanner proof to that pool as a required deployment dependency
+and retains failure diagnostics. Actual application deployment stays on the slow
+pool. No resource-cause inference, scanner deadline change or bypass is claimed.
+The exact validator wheel must also be installed and proved in the real
+non-container application's environment, followed by a healthy service restart,
+before admission; an isolated proof environment does not establish that binding.
+The user designated themselves to perform the live foreign-account and
+revoked-grant download checks once fresh results are visible; those checks and
+the dated human review are not yet done.
 
 ## Native CI evidence independently inspected
 
@@ -215,10 +286,11 @@ python3 scripts/audit-m046-native-ci.py \
 
 ## Required release identity and native demonstration
 
-The latest published release inspected is
-[v1.7.38](https://github.com/sourcebastion/sourcebastion-scanner/releases/tag/v1.7.38),
-source `d64123b32be61b634a8b20d390c0cb6efaeefe91`, published 2026-10-05.
-It predates the qualifying M046 integration. Its existence is not S07 evidence.
+The qualifying published release inspected is
+[v1.8.1](https://github.com/sourcebastion/sourcebastion-scanner/releases/tag/v1.8.1),
+source `957e1670d1552c0e1056c3bdf1cd2c78108abfc6`, published 2026-10-11 UTC.
+Its identity and finite native qualification are verified above; live development
+acceptance and mixed-version rollback remain open. The prior admitted development image remains preserved for rollback.
 
 After normal release review, bind one qualifying tuple to immutable receipts:
 scanner source SHA and release tag; OCI index and AMD64/ARM64 manifest/config
@@ -231,11 +303,11 @@ admitted tuple for rollback. A moving `latest` tag cannot identify either tuple.
 
 | Required check | Execution and retained evidence | State |
 | --- | --- | --- |
-| Published native binaries | Pull the reviewed digest on actual native Linux AMD64 and ARM64. Validate installed payloads and run the independent corpus using those payloads, without replacing them with checkout modules. Record architecture/kernel, image/native hashes, expected/observed records and canonical per-case digests. | Not run |
-| Frozen advisory matching | Admit reviewed frozen inputs before the workload, disable scan-time refresh/network, and run actual Grype on the canonical SBOM. Record all four pip advisory groups per selected occurrence, matching identity, distinct incomplete-inventory/matcher-failure states and standards validation. | Not run on published digest |
-| No mutation/execution/install/forge calls | Read-only source and filesystem policies, denied network, actual source pre/post hashes and execution observations covering adversarial fixtures. Record allowed tool invocations and child lifecycle; read-only/network settings alone do not prove every no-execution requirement. | Release observations missing |
-| Bounds, cancellation and child cleanup | Three fresh-cgroup repeats per architecture of corpus, stress and actual installed entrypoint; inherited outer deadline, finite child/resource observers. Exercise timeout, cancellation and controller loss; prove owned descendants/containers reaped, no late publication and explicit refused/partial states. | Historical normal-exit evidence only |
-| Cumulative image growth | Compare verified compressed OCI descriptors against the reviewed frozen S01 baseline, bound to each published native manifest. Record baseline identity and byte totals. | Missing |
+| Published native binaries | Pull the reviewed digest on actual native Linux AMD64 and ARM64. Validate installed payloads and run the independent corpus using those payloads, without replacing them with checkout modules. Record architecture/kernel, image/native hashes, expected/observed records and canonical per-case digests. | Passed on both published native images; 64 equal cases |
+| Frozen advisory matching | Admit reviewed frozen inputs before the workload, disable scan-time refresh/network, and run actual Grype on the canonical SBOM. Record all four pip advisory groups per selected occurrence, matching identity, distinct incomplete-inventory/matcher-failure states and standards validation. | Published matching/schema and required advisory groups passed; live matcher-failure presentation remains pending |
+| No mutation/execution/install/forge calls | Read-only source and filesystem policies, denied network, actual source pre/post hashes and execution observations covering adversarial fixtures. Record allowed tool invocations and child lifecycle; read-only/network settings alone do not prove every no-execution requirement. | Eight published raw traces reviewed with allowed invocations and no observed network syscalls; source guards and installed pre/post payloads passed |
+| Bounds, cancellation and child cleanup | Three fresh-cgroup repeats per architecture of corpus, stress and actual installed entrypoint; inherited outer deadline, finite child/resource observers. Exercise timeout, cancellation and controller loss; prove owned descendants/containers reaped, no late publication and explicit refused/partial states. | All 48 published normal-exit resource bindings passed; actual installed AMD64 deadline/cancellation/controller-loss proof passed in development isolation; live queue refusal remains pending |
+| Cumulative image growth | Compare verified compressed OCI descriptors against the reviewed frozen S01 baseline, bound to each published native manifest. Record baseline identity and byte totals. | Passed against frozen S01: 206,007,354 bytes AMD64; 201,263,464 bytes ARM64 |
 | Numerical exceptions | Compare actual aggregate work with [frozen budgets](../evaluation/m046/release-budgets-v1.json); link any explicit reviewed exception. Do not increase ceilings silently or treat a refused arm as a complete result. | No new exception proposed |
 
 The existing `release.yml` validates locally built images before publication,

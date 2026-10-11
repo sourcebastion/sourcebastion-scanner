@@ -1,0 +1,351 @@
+{
+  "acceptance": false,
+  "architectures": [
+    {
+      "all_swap_and_oom_zero": true,
+      "architecture": "amd64",
+      "config_digest": "sha256:8c29d7386e23d46820797e369c2186d8bce066ce2fe735e24db0e99260608a7b",
+      "entrypoints": [
+        {
+          "grype_binary_sha256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e",
+          "installed_package_prepost_bindings_equal": true,
+          "matches": 18,
+          "proof_sha256": "fc41f96436e6315e1535d2349e5507a7f1285323bbb737f273ac1741a36631ae",
+          "repeat": 1,
+          "required_advisory_groups": true,
+          "source_readonly_fixture_bound": true
+        },
+        {
+          "grype_binary_sha256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e",
+          "installed_package_prepost_bindings_equal": true,
+          "matches": 18,
+          "proof_sha256": "48b7d293d5a9cebeed00426be4c6778fa7fe9d7ccd66cf990f660d819c7bd7bf",
+          "repeat": 2,
+          "required_advisory_groups": true,
+          "source_readonly_fixture_bound": true
+        },
+        {
+          "grype_binary_sha256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e",
+          "installed_package_prepost_bindings_equal": true,
+          "matches": 18,
+          "proof_sha256": "f68bf44a62540fca41f24fbd3bd4ddcaa5eaefc0acc8ddadb433eb254bab7fea",
+          "repeat": 3,
+          "required_advisory_groups": true,
+          "source_readonly_fixture_bound": true
+        }
+      ],
+      "growth": {
+        "added_compressed_bytes": 206007354,
+        "architecture": "amd64",
+        "baseline_archive_sha256": "b0ada34dfaa6356f9ac0bc69a2f0a1d4c06d50b005ec378c59a87a7705c1dbfb",
+        "baseline_evidence_manifest": "sha256:fd04ac06d05a6b9f812a3c2ff1f86c6403d160cb7cc666e9c13be28a7ec2f685",
+        "baseline_image_pins_sha256": "7ecc7b94e0dbd0fde30c688c2a93b38b9f9e1880bab85f0ca38e243142d4c083",
+        "baseline_image_reference": "ghcr.io/sourcebastion/sourcebastion-scanner:v1.7.38@sha256:d73bb8029ecd841ac2980029464f7292dabf0e753c081180527b82579fb81543",
+        "baseline_kind": "frozen-s01-pre-inventory-layer-prefix",
+        "baseline_layer_count": 13,
+        "baseline_manifest": "sha256:483556571ac02667b9fb2e88d0c6da9e9eec5c94e324baeec5fc7e4a69d11f45",
+        "baseline_review_sha256": "3ce965fb4816d1a9e3ada9e6af66bc927cbe84178f998021bdb0982471b5ee45",
+        "baseline_source_run": 37590730428,
+        "baseline_source_sha": "d98fbd0fb9c5563999a5c061a12fb68191fddd86",
+        "candidate_manifest": "sha256:60851bee28a838a040c87dac1bb7b1d946250a198a73666684c67f2d67a2d3a2",
+        "ceiling": 262144000,
+        "status": "passed",
+        "tested_image_id": "sha256:8c29d7386e23d46820797e369c2186d8bce066ce2fe735e24db0e99260608a7b"
+      },
+      "maximum_cpu_seconds": 47.199806,
+      "maximum_memory_bytes": 619167744,
+      "maximum_pids": 11,
+      "maximum_wall_seconds": 47.470221683999995,
+      "native_manifest": "sha256:60851bee28a838a040c87dac1bb7b1d946250a198a73666684c67f2d67a2d3a2",
+      "receipt_sha256": "1d047627a6b95d3fca542b629d94a71947619390e97e7e5cd5dbac8aa5bd226e",
+      "retained_file_count": 345,
+      "traces": [
+        {
+          "allowed_invocation_counts": {
+            "held-fd-grype:db": 1,
+            "held-fd-grype:sbom:/out/sbom.cdx.json": 1,
+            "held-fd-grype:version": 1,
+            "installed-python-proof-or-entrypoint": 1
+          },
+          "executions": 4,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "entrypoint/repeat-1/entrypoint-resources/execution.trace",
+          "sha256": "6c14951de3d8226ebbe7c737c560483c13cbfa28a45efe02873e3d1e8c0d6518"
+        },
+        {
+          "allowed_invocation_counts": {
+            "held-fd-grype:db": 1,
+            "held-fd-grype:sbom:/out/sbom.cdx.json": 1,
+            "held-fd-grype:version": 1,
+            "installed-python-proof-or-entrypoint": 1
+          },
+          "executions": 4,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "entrypoint/repeat-2/entrypoint-resources/execution.trace",
+          "sha256": "422e1f89bcd92ad0e7687b19f58c01e58ecc29903b557454f3370012f47a1510"
+        },
+        {
+          "allowed_invocation_counts": {
+            "held-fd-grype:db": 1,
+            "held-fd-grype:sbom:/out/sbom.cdx.json": 1,
+            "held-fd-grype:version": 1,
+            "installed-python-proof-or-entrypoint": 1
+          },
+          "executions": 4,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "entrypoint/repeat-3/entrypoint-resources/execution.trace",
+          "sha256": "1292239b74e662b4aef32deb37c45383a670ce7a220b4bfc68855fe6ce0ebb40"
+        },
+        {
+          "allowed_invocation_counts": {
+            "held-fd-go-source-helper": 6,
+            "installed-python-proof-or-entrypoint": 1,
+            "node_selectors.cjs": 28,
+            "yarn_legacy.cjs": 2
+          },
+          "executions": 37,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "observed-corpus-resources/execution.trace",
+          "sha256": "9d3898ef98d93e0124748fd43dfd8c38da7b4567e2ed0aed0909aada389deedc"
+        }
+      ]
+    },
+    {
+      "all_swap_and_oom_zero": true,
+      "architecture": "arm64",
+      "config_digest": "sha256:28f2a34e3e19fb545cd72eb1ebd764b263634a9e6bb868eb1844318b3a115e06",
+      "entrypoints": [
+        {
+          "grype_binary_sha256": "885734e2e13cdd6ac25341e4b751aa504cbc3d27a2924ca1d6db0b7aa499b742",
+          "installed_package_prepost_bindings_equal": true,
+          "matches": 18,
+          "proof_sha256": "d99423d77b4d874b3202810d1f4acf7f115a9fa84335fa8417aa04aa7d5ea31a",
+          "repeat": 1,
+          "required_advisory_groups": true,
+          "source_readonly_fixture_bound": true
+        },
+        {
+          "grype_binary_sha256": "885734e2e13cdd6ac25341e4b751aa504cbc3d27a2924ca1d6db0b7aa499b742",
+          "installed_package_prepost_bindings_equal": true,
+          "matches": 18,
+          "proof_sha256": "7bd986284a81d9fcfd4927b26ab5c3df73df1704371d087958126babe4aeb1a6",
+          "repeat": 2,
+          "required_advisory_groups": true,
+          "source_readonly_fixture_bound": true
+        },
+        {
+          "grype_binary_sha256": "885734e2e13cdd6ac25341e4b751aa504cbc3d27a2924ca1d6db0b7aa499b742",
+          "installed_package_prepost_bindings_equal": true,
+          "matches": 18,
+          "proof_sha256": "a04949467e4110024bac69f3a519ccd3412b93113345d300084d56db497232ac",
+          "repeat": 3,
+          "required_advisory_groups": true,
+          "source_readonly_fixture_bound": true
+        }
+      ],
+      "growth": {
+        "added_compressed_bytes": 201263464,
+        "architecture": "arm64",
+        "baseline_archive_sha256": "77bf69a4dfb28739d076a27c4b52fc480fb01a3bf81dcade6b9dd42ef8b7d000",
+        "baseline_evidence_manifest": "sha256:3979142858e3d40ebe40e424f865199cb9fa41c4cff3ebd0d53c06875b6fda43",
+        "baseline_image_pins_sha256": "7ecc7b94e0dbd0fde30c688c2a93b38b9f9e1880bab85f0ca38e243142d4c083",
+        "baseline_image_reference": "ghcr.io/sourcebastion/sourcebastion-scanner:v1.7.38@sha256:d73bb8029ecd841ac2980029464f7292dabf0e753c081180527b82579fb81543",
+        "baseline_kind": "frozen-s01-pre-inventory-layer-prefix",
+        "baseline_layer_count": 13,
+        "baseline_manifest": "sha256:dbca7317f8042cae883b55216d731cc5da3a2e0283a8e4a601ac17049107fcf9",
+        "baseline_review_sha256": "3ce965fb4816d1a9e3ada9e6af66bc927cbe84178f998021bdb0982471b5ee45",
+        "baseline_source_run": 37590730428,
+        "baseline_source_sha": "d98fbd0fb9c5563999a5c061a12fb68191fddd86",
+        "candidate_manifest": "sha256:c6ec51cb385755ae2ac173bed8679abc0db2a23ebafb1e052c8f7578ae270b69",
+        "ceiling": 262144000,
+        "status": "passed",
+        "tested_image_id": "sha256:28f2a34e3e19fb545cd72eb1ebd764b263634a9e6bb868eb1844318b3a115e06"
+      },
+      "maximum_cpu_seconds": 41.755441,
+      "maximum_memory_bytes": 618856448,
+      "maximum_pids": 12,
+      "maximum_wall_seconds": 42.07809823299999,
+      "native_manifest": "sha256:c6ec51cb385755ae2ac173bed8679abc0db2a23ebafb1e052c8f7578ae270b69",
+      "receipt_sha256": "497d517b3b6bff0bf243393bdd2e3ff05418f3d94c48f2e4cd7bd465e9312f31",
+      "retained_file_count": 345,
+      "traces": [
+        {
+          "allowed_invocation_counts": {
+            "held-fd-grype:db": 1,
+            "held-fd-grype:sbom:/out/sbom.cdx.json": 1,
+            "held-fd-grype:version": 1,
+            "installed-python-proof-or-entrypoint": 1
+          },
+          "executions": 4,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "entrypoint/repeat-1/entrypoint-resources/execution.trace",
+          "sha256": "50e8a24eda683e203dd0b01c59ca2ddfd338da81e8a4181b3d841a2078374663"
+        },
+        {
+          "allowed_invocation_counts": {
+            "held-fd-grype:db": 1,
+            "held-fd-grype:sbom:/out/sbom.cdx.json": 1,
+            "held-fd-grype:version": 1,
+            "installed-python-proof-or-entrypoint": 1
+          },
+          "executions": 4,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "entrypoint/repeat-2/entrypoint-resources/execution.trace",
+          "sha256": "c877c11a3bb9fdf426843560ae1f65b1d40c33d8840ffc84294d8cfaeeba5815"
+        },
+        {
+          "allowed_invocation_counts": {
+            "held-fd-grype:db": 1,
+            "held-fd-grype:sbom:/out/sbom.cdx.json": 1,
+            "held-fd-grype:version": 1,
+            "installed-python-proof-or-entrypoint": 1
+          },
+          "executions": 4,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "entrypoint/repeat-3/entrypoint-resources/execution.trace",
+          "sha256": "fdbe9d51d83109543c4500fea9a9f4e064f662da88e32c3f4a52334b9de4cd1a"
+        },
+        {
+          "allowed_invocation_counts": {
+            "held-fd-go-source-helper": 6,
+            "installed-python-proof-or-entrypoint": 1,
+            "node_selectors.cjs": 28,
+            "yarn_legacy.cjs": 2
+          },
+          "executions": 37,
+          "inet_records": 0,
+          "network_syscall_records": 0,
+          "path": "observed-corpus-resources/execution.trace",
+          "sha256": "db2bb0d9cd37f7e490e310b10d47de8a7a4fcd8cb9d37f81fda09a1666c46855"
+        }
+      ]
+    }
+  ],
+  "archives": [
+    {
+      "archive_bytes": 576,
+      "archive_sha256": "sha256:10a848a0921521e7c7d968ce53ef25eeee2e022b976a4245d0916b5f2b209851",
+      "expanded_bytes": 715,
+      "name": "m046-published-native-comparison"
+    },
+    {
+      "archive_bytes": 558488,
+      "archive_sha256": "sha256:3be4a861f23d1a20074703c25f073640bf5e224b3a24edab5798dd69221bb01c",
+      "expanded_bytes": 3352874,
+      "name": "m046-published-native-amd64"
+    },
+    {
+      "archive_bytes": 553869,
+      "archive_sha256": "sha256:d5f8ba37fa75d5baa3e9802da6c9b96111f577eeef12a932e040bf0773399b80",
+      "expanded_bytes": 3059718,
+      "name": "m046-published-native-arm64"
+    }
+  ],
+  "comparison": {
+    "acceptance": false,
+    "advisory_snapshot_sha256": "6f35665a596d4fd5b704de0ae692a9e4c35c322f9998638bff2287fac5248104",
+    "equal_canonical_cases": 64,
+    "image": "ghcr.io/sourcebastion/sourcebastion-scanner@sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6",
+    "remaining_acceptance": [
+      "complete execution/network observation",
+      "adversarial timeout/cancellation/controller-loss",
+      "development human acceptance",
+      "mixed-version rollback",
+      "all-slice acceptance"
+    ],
+    "resource_workload_bindings": 48,
+    "schema_version": "m046.published-native-comparison/1",
+    "source_sha": "957e1670d1552c0e1056c3bdf1cd2c78108abfc6",
+    "status": "finite-published-native-verified"
+  },
+  "driver_audit_source_sha256": "46838387deeddbc4df6e6f49a9223f6a18aa85cb2a4a5dcd46f3a9ca6ed7b771",
+  "driver_sha": "843ab4c7fc80612044078e31f28f6cfe6baac530",
+  "entrypoint_artifact_replay": [
+    {
+      "architecture": "amd64",
+      "canonical_and_export_bytes_equal": true,
+      "grype_matches": 18,
+      "recovery_exact_matches_equal": true,
+      "repeat": 1,
+      "required_source_advisory_groups": 10
+    },
+    {
+      "architecture": "amd64",
+      "canonical_and_export_bytes_equal": true,
+      "grype_matches": 18,
+      "recovery_exact_matches_equal": true,
+      "repeat": 2,
+      "required_source_advisory_groups": 10
+    },
+    {
+      "architecture": "amd64",
+      "canonical_and_export_bytes_equal": true,
+      "grype_matches": 18,
+      "recovery_exact_matches_equal": true,
+      "repeat": 3,
+      "required_source_advisory_groups": 10
+    },
+    {
+      "architecture": "arm64",
+      "canonical_and_export_bytes_equal": true,
+      "grype_matches": 18,
+      "recovery_exact_matches_equal": true,
+      "repeat": 1,
+      "required_source_advisory_groups": 10
+    },
+    {
+      "architecture": "arm64",
+      "canonical_and_export_bytes_equal": true,
+      "grype_matches": 18,
+      "recovery_exact_matches_equal": true,
+      "repeat": 2,
+      "required_source_advisory_groups": 10
+    },
+    {
+      "architecture": "arm64",
+      "canonical_and_export_bytes_equal": true,
+      "grype_matches": 18,
+      "recovery_exact_matches_equal": true,
+      "repeat": 3,
+      "required_source_advisory_groups": 10
+    }
+  ],
+  "entrypoint_replay_source_sha256": "dcc2c22faa5af0f466e9a9bd45aec7f33f438eb3d84be566548a77b99d90d23a",
+  "run_id": 38104916825,
+  "schema_version": "m046.independent-published-native-audit/1",
+  "scope": "Independent retained-byte and invocation audit of finite published native proof. Held-fd identity is supported by reviewed RuntimeBinding/Go binding hash and metadata guards, installed payload checks and pre/post proof; the fd path alone is not executable identity. Human acceptance and live rollback remain pending.",
+  "shared_inputs": {
+    "all_advisory_files_independently_hashed": true,
+    "archive_bytes": 530334409,
+    "archive_id": 11688904547,
+    "archive_sha256": "sha256:26e7528dfa2e3bca588cb1c0055320f9c70e49e7e4cda09e3099e04aceca020c",
+    "files": {
+      "6/import.json": {
+        "bytes": 269,
+        "sha256": "9283db12595325db2840b1ff253d40e6abe2388b4903349159f2566421d7e7a3"
+      },
+      "6/last_update_check": {
+        "bytes": 20,
+        "sha256": "b4386afda7deb492631a4d6cbed467258bd6d3b2c3dd7fd0dfbe633f19a49914"
+      },
+      "6/vulnerability.db": {
+        "bytes": 3222298624,
+        "sha256": "6dc0db567de1e2bc9d55bd4ba27850fad1afa752cd12b86d731bd83f221ac63f"
+      },
+      "snapshot.json": {
+        "bytes": 397,
+        "sha256": "c09b7d8059cf76f5d90295c5351beaddfba21926c57aaac03920fc4fe1265582"
+      }
+    },
+    "raw_published_index_equal": true,
+    "shared_manifest_sha256": "6f35665a596d4fd5b704de0ae692a9e4c35c322f9998638bff2287fac5248104",
+    "snapshot_file_sha256": "c09b7d8059cf76f5d90295c5351beaddfba21926c57aaac03920fc4fe1265582"
+  }
+}

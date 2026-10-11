@@ -45,7 +45,27 @@
     },
     "fix_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/419",
     "original_failure_preserved": true,
-    "post_fix_live_retest": "pending"
+    "post_fix_live_retest": "pending",
+    "fix_delivery": {
+      "state": "deployed_verified",
+      "reviewed_head": "31cde1d26f619b1f7380a760ea150383116c239f",
+      "merge_commit": "af1c361b32ae15ee11645d72e4f282c9f557ab1e",
+      "focused_tests_passed": 152,
+      "reviewed_head_checks": 31,
+      "reviewed_head_check_result": "all completed success or expected skip",
+      "normal_development_run": 38159496574,
+      "installed_verification": "passed: exact revision and fix file hashes, healthy service, keyring configured, normal worker resumed, persistent writer/reuse/recovery off and read presentation on",
+      "fresh_human_revoke_restore": "pending",
+      "normal_development_run_attempt": 2,
+      "normal_development_result": "success",
+      "installed_files_sha256": {
+        "ezappsec_platform/app.py": "a1fbfb1824314d7e93cc2183c0410e8694d6309688dd466aaccedaa5fe91ce35",
+        "ezappsec_platform/github/worker.py": "985a3770ed4b4e534e1a0cbf012667b38528edef16865ee65205994c2e3ebe38",
+        "ezappsec_platform/github_app.py": "a22b04f1df77aa2fb948e729f2f542f88be1c2b95c120b4d682f150092fff6ec"
+      },
+      "original_deployment_failure_retained": true,
+      "deployment_retry_storage_repair": "Two verified byte-identical historical advisory database copies share storage; every generation path, database byte and metadata receipt preserved; current symlink unchanged"
+    }
   },
   "restored_grant_original_download": "pending"
 }

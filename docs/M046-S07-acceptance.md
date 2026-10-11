@@ -5,8 +5,8 @@ available through 2026-10-11. Published native qualification is independently
 verified; automated live development and rollback proofs now pass. The designated
 human confirmed the signed-in foreign-account download returns 404 and the owner's
 downloaded K SBOM checksum matches the frozen expectation. The live revoked-grant
-check failed; the fix and its fresh retest, visible owner review and restored
-access remain pending.
+check failed; its fix is merged and deployed with installed verification. A fresh
+revocation retest, visible owner review and restored access remain pending.
 Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
 scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
@@ -487,10 +487,21 @@ list excludes the test repository, but its platform grant remains authorized.
 The durable webhook was marked applied with `repository_selection: selected`,
 `action: added`, six additions and an empty removal list. Explicit-delta handling
 did not revoke the omitted grant. [Platform #419](https://github.com/sourcebastion/sourcebastion-platform/pull/419)
-adds current-membership reconciliation and failure refusal. Its 151 focused tests
+adds current-membership reconciliation and failure refusal. Its 152 focused tests
 pass, including a retained-artifact download regression that fails on the
-baseline. Review, normal deployment and a fresh designated revoke/restore test
-remain required. The original failed observation is preserved independently;
+baseline and a mixed-case canonical account regression that failed on the first
+candidate. All 31 checks on reviewed head
+`31cde1d26f619b1f7380a760ea150383116c239f` passed or were skipped as expected.
+The fix merged as `af1c361b32ae15ee11645d72e4f282c9f557ab1e`; normal development
+[deployment 38159496574](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38159496574)
+passed on attempt 2, and installed verification confirms the exact reviewed fix
+files, healthy service, configured artifact keyring and resumed normal worker.
+Persistent writer/reuse/recovery remain off; read presentation remains on. The
+initial rollout failed refreshing Grype advisories; its failure is retained.
+Two verified byte-identical historical advisory database copies now share storage,
+preserving every generation path, database byte and metadata receipt, to recover
+6.4 GB before the same-source retry. A fresh designated revoke/restore test
+remains required. The original failed observation is preserved independently;
 neither the earlier foreign-account 404 nor the matching owner checksum proves
 this revoked-grant criterion.
 

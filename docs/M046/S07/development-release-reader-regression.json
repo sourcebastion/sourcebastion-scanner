@@ -1,0 +1,26 @@
+{
+  "acceptance": false,
+  "ci": "pending; first attempt exhausted runner disk",
+  "database": "disposable PostgreSQL 15; no application credentials or database used",
+  "focused_tests_passed": 85,
+  "live_read_only_candidate": "passed",
+  "live_retained_result_sha256": "8b9925f0be1294cb522eb5b670161387e572d7b77a5beab629e7074c83496942",
+  "normal_deployment": "pending",
+  "platform_candidate": "491ed24562b04b1fd2a88a60ac844a847c2e8331",
+  "platform_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/417",
+  "queue_adoption_enabled": false,
+  "results": {
+    "green": {
+      "log_sha256": "8910fdaf4944b3f255e2bae1a31ea13e4d1dd0838964730ed15d5d2a04631224",
+      "module_sha256": "49f0c9a0f10a3e1c0b9d64cf92bd57647723e2fb569abbf2978c19281b7da519",
+      "returncode": 0
+    },
+    "red": {
+      "log_sha256": "13ead4fa13e22df7d72da2feac19b6ecb92bbd41cfdb4b25da2c06c2cba36ab4",
+      "module_sha256": "524b8130a4cd34cded291379a9ac3b5b0594b9c39fc302683d278c25d625ab1c",
+      "returncode": 1
+    }
+  },
+  "source_archive_sha256": "6f0125d9cf6fa13dd5d6ed4c0e4446a7b27781e922402ac45cec281812d2720c",
+  "status": "passed"
+}

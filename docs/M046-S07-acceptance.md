@@ -305,9 +305,32 @@ annotation append was replayed and no original attempt was reset.
 [Platform #415](https://github.com/sourcebastion/sourcebastion-platform/pull/415)
 uses retained finding names/rules for nonempty annotation messages and permits
 the designated test preflight to retain a validated settled quarantine without
-classifying it as active work. Its 172 focused tests pass; CI, deployment and
-two successful fresh reuse submissions remain pending. The failed publication
+classifying it as active work. Its 172 focused tests and mandatory CI passed,
+and it merged as `1f182f47ef5c94ac86c2c38ba9cfb0c5bf9f36ae`. Deployment
+[38119437577](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38119437577)
+passed the scanner gate but refused application release: PostgreSQL JSON
+projection attempted to unescape unrelated finding content on the development
+SQL_ASCII database. The healthy application remained at the previous revision;
+the accepted result and quarantine were not rewritten.
+[Platform #417](https://github.com/sourcebastion/sourcebastion-platform/pull/417)
+reads bounded private JSON text and exports only the original result metadata.
+Its [retained regression proof](M046/S07/development-release-reader-regression.json)
+binds 85 focused tests, disposable PostgreSQL baseline failure/candidate success
+and a read-only candidate inventory of the actual development queue
+pass. Full CI and normal deployment remain pending; the first CI attempt ran
+out of runner disk and is rerunning unchanged after unused cache cleanup.
+Two successful fresh reuse submissions remain pending. The failed publication
 does not count as accepted fresh reuse.
+
+Inspection of the actual SBOM read authorization found that an existing
+provider repository grant was checked for presence but not its current
+`authorized` state. [Platform #416](https://github.com/sourcebastion/sourcebastion-platform/pull/416)
+adds that state check. Three route regressions revoke and restore the grant
+through the real capacity API; the baseline incorrectly returns 200 after
+revocation, while the candidate returns the uniform 404/no-store refusal and
+restores access to the original bytes after reauthorization. Its 110 focused
+tests and mandatory CI pass. Deployment and the designated human's live
+second-account/revoked-grant checks remain pending.
 
 Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)
 were mechanically derived from the frozen rich source oracle before the new

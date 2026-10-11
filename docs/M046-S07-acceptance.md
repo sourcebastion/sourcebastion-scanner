@@ -79,23 +79,36 @@ gh workflow run docker.yml --ref <reviewed-driver-ref> \
 
 The development host's deployment marker was independently read on 2026-10-10:
 `89f7e91b7a9dfb19804ccb35b512c4b19ea6fde0`. A merge is not a deployment.
-The user designated `sourcebastion/juice-shop` and an existing active development
-account before any fresh acceptance scan. Private read-only inspection found no
-registered repositories for that account and no `sourcebastion` App installation;
-normal signed-in project connection is pending. Account contact details remain
-private. A dated human review remains required after the visible results exist.
-No activation, customer replay or credit reset is established by these receipts.
+The user corrected the designated repository to `ez-appsec/juice-shop` before
+any acceptance scan was submitted. Read-only inspection using the platform's
+normalized account key confirms one owned, authorized, enabled and entitled
+project, with the account's active `ez-appsec` installation. Account contact
+information and database identifiers remain private. A dated human review remains
+required after visible results exist. No activation, customer replay or credit
+reset is established by these receipts.
 
-The [source-authored Juice Shop expectations](M046/S07/development-source-expectations-juice-shop.json)
-were written before submitting scans, from immutable commit
-`8fb217241af4f9970be17b621bb7ef51fa7891da`. Their SHA-256 is
-`3e73c6799d7d4100577ff7a366a13f8e62ef07c0cf6fcd6117bbdedc817a78b3`.
-The two npm manifests declare 175 occurrences, including six literal selected
-versions. There are no standard lockfiles and no evidenced package edges; ranges
-must remain unresolved and coverage incomplete. The backup lock filename is
-unconfigured. This source does not cover the required custom pip, mixed-language,
-empty, ignored and unsupported demonstrations; the oracle explicitly records
-those remaining cases. No expectation was derived from scanner output.
+The [corrected source-authored expectations](M046/S07/development-source-expectations-ez-appsec-juice-shop.json)
+were written before scans from immutable commit
+`0810fef353a6d0ed772890015e2d374715723328`. Their SHA-256 is
+`db704b7540fd724ac9ea3a8f179bcb661a32c1dad3bbd797b4c42a48686e9aad`.
+Two npm manifests declare 148 occurrences, including eight literal selected
+versions. There are no standard lockfiles or evidenced package edges; unresolved
+ranges and incomplete coverage must remain visible. The backup lock filename is
+unconfigured. The earlier [first-target oracle](M046/S07/development-source-expectations-juice-shop.json)
+is retained unchanged as a superseded designation, not evidence for this target.
+
+Additional source-authored development fixtures are prepared locally on the
+corrected repository at `0a5fa872ff8537366cb3da7ad47b9fcfeff5f372`, branch
+`test/m046-s07-development`. Their [pre-scan expectations](M046/S07/development-fixture-expectations-ez-appsec-juice-shop.json)
+hash to `df9dfad45661241ebf8cddba14851443126ffe17614e499c8f40d45084e3f049`.
+Thirteen additional inputs cover custom pip and two separate pip 26.0.1
+observations with four required advisory groups each, npm/Cargo lock edges,
+unresolved Go/Python declarations, empty application manifests, ignored prose,
+unsupported inputs and project-execution traps. Relative case expectations come
+from the frozen source-authored corpus at `4effe1897`; final comparisons must
+bind exact prefixed paths and contexts. The branch has not been pushed and no
+scan was submitted. Publication awaits runtime admission so the provider hook
+cannot silently turn preparation into an unqualified acceptance scan.
 
 [Platform #405](https://github.com/sourcebastion/sourcebastion-platform/pull/405)
 binds the companion installed validator to exact release source `4effe1897`.

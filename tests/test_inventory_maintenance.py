@@ -252,7 +252,7 @@ def test_resource_driver_removes_only_owned_container_on_failure(tmp_path, monke
     original_read = scope["read"]
     monkeypatch.setitem(scope, "read", lambda path: ("124" if str(path).endswith("/children") else "State:\tT") if str(path).startswith("/proc/") else original_read(path))
     args = SimpleNamespace(image="example", output=tmp_path / "proof", checkout=ROOT,
-                           provider=None, workload="stress", arm="flat-1000")
+                           provider=None, workload="stress", arm="flat-1000", observe_execution=False)
     assert execute(args) == 1
     removals = [args for args in calls if args[0] == "rm"]
     assert removals == [("rm", "--force", cid)]
@@ -350,7 +350,7 @@ def _driver(tmp_path, monkeypatch, *, logs_bytes=b'{"ok": true}\n', logs_returnc
 
     monkeypatch.setitem(scope, "read", read)
     args = SimpleNamespace(image="example", output=tmp_path / "proof", checkout=ROOT,
-                           provider=None, workload="stress", arm="flat-1000")
+                           provider=None, workload="stress", arm="flat-1000", observe_execution=False)
     args_holder["args"] = args
     return execute, args
 

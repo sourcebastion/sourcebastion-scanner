@@ -1,0 +1,1091 @@
+{
+  "commit": "0810fef353a6d0ed772890015e2d374715723328",
+  "coverage": {
+    "clean_result_allowed": false,
+    "ecosystems": [
+      "npm"
+    ],
+    "selected_version_fidelity": "incomplete: unresolved manifest ranges remain, and there are no standard lockfiles",
+    "standard_lockfiles": []
+  },
+  "declarations_and_occurrences": [
+    {
+      "declared_expression": "^1.19.0",
+      "expected_selected_version": null,
+      "name": "body-parser",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.1.0",
+      "expected_selected_version": null,
+      "name": "check-dependencies",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.12.4",
+      "expected_selected_version": null,
+      "name": "clarinet",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.0",
+      "expected_selected_version": null,
+      "name": "colors",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.7.4",
+      "expected_selected_version": null,
+      "name": "compression",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.3.0",
+      "expected_selected_version": null,
+      "name": "concurrently",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.3.1",
+      "expected_selected_version": null,
+      "name": "config",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.5",
+      "expected_selected_version": null,
+      "name": "cookie-parser",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.8.5",
+      "expected_selected_version": null,
+      "name": "cors",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.0.2",
+      "expected_selected_version": null,
+      "name": "dottie",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^8.0.0",
+      "expected_selected_version": null,
+      "name": "download",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.5.1",
+      "expected_selected_version": null,
+      "name": "errorhandler",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.17.1",
+      "expected_selected_version": null,
+      "name": "express",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "6.0.0",
+      "expected_selected_version": "6.0.0",
+      "name": "express-jwt",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.1.3",
+      "expected_selected_version": null,
+      "name": "express-rate-limit",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.4.1",
+      "expected_selected_version": null,
+      "name": "express-robots-txt",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.0.0",
+      "expected_selected_version": null,
+      "name": "express-security.txt",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.5.0",
+      "expected_selected_version": null,
+      "name": "feature-policy",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.5.7",
+      "expected_selected_version": null,
+      "name": "file-stream-rotator",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^12.4.2",
+      "expected_selected_version": null,
+      "name": "file-type",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.1.1",
+      "expected_selected_version": null,
+      "name": "finale-rest",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^9.0.1",
+      "expected_selected_version": null,
+      "name": "fs-extra",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.3.0",
+      "expected_selected_version": null,
+      "name": "fuzzball",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^7.1.6",
+      "expected_selected_version": null,
+      "name": "glob",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.1",
+      "expected_selected_version": null,
+      "name": "grunt",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.6.0",
+      "expected_selected_version": null,
+      "name": "grunt-contrib-compress",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.1.0",
+      "expected_selected_version": null,
+      "name": "grunt-replace-json",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.2.1",
+      "expected_selected_version": null,
+      "name": "hashids",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.0.0",
+      "expected_selected_version": null,
+      "name": "helmet",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.3.1",
+      "expected_selected_version": null,
+      "name": "html-entities",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.11.1",
+      "expected_selected_version": null,
+      "name": "i18n",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.1.1",
+      "expected_selected_version": null,
+      "name": "is-docker",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.0.0",
+      "expected_selected_version": null,
+      "name": "is-heroku",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.0.2",
+      "expected_selected_version": null,
+      "name": "is-windows",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.14.0",
+      "expected_selected_version": null,
+      "name": "js-yaml",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "5.0.0",
+      "expected_selected_version": "5.0.0",
+      "name": "jsonwebtoken",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.1.1",
+      "expected_selected_version": null,
+      "name": "jssha",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "~0.6.0",
+      "expected_selected_version": null,
+      "name": "juicy-chat-bot",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.26.4",
+      "expected_selected_version": null,
+      "name": "libxmljs2",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.6.11",
+      "expected_selected_version": null,
+      "name": "marsdb",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.10.0",
+      "expected_selected_version": null,
+      "name": "morgan",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.2",
+      "expected_selected_version": null,
+      "name": "multer",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.15.0",
+      "expected_selected_version": null,
+      "name": "node-pre-gyp",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.3.3",
+      "expected_selected_version": null,
+      "name": "notevil",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.3.0",
+      "expected_selected_version": null,
+      "name": "on-finished",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^12.0.1",
+      "expected_selected_version": null,
+      "name": "otplib",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.11.0",
+      "expected_selected_version": null,
+      "name": "pdfkit",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.2.0",
+      "expected_selected_version": null,
+      "name": "portscanner",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^12.0.0",
+      "expected_selected_version": null,
+      "name": "prom-client",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.0.0",
+      "expected_selected_version": null,
+      "name": "pug",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.0",
+      "expected_selected_version": null,
+      "name": "replace",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.88.2",
+      "expected_selected_version": null,
+      "name": "request",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.6.3",
+      "expected_selected_version": null,
+      "name": "sanitize-filename",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "2.3.2",
+      "expected_selected_version": "2.3.2",
+      "name": "sanitize-html",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^7.3.2",
+      "expected_selected_version": null,
+      "name": "semver",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.22.3",
+      "expected_selected_version": null,
+      "name": "sequelize",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.0.0",
+      "expected_selected_version": null,
+      "name": "sequelize-noupdate-attributes",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.9.1",
+      "expected_selected_version": null,
+      "name": "serve-index",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.0.0",
+      "expected_selected_version": null,
+      "name": "socket.io",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.0.0",
+      "expected_selected_version": null,
+      "name": "sqlite3",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.0",
+      "expected_selected_version": null,
+      "name": "svg-captcha",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.1.4",
+      "expected_selected_version": null,
+      "name": "swagger-ui-express",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "0.9.15",
+      "expected_selected_version": "0.9.15",
+      "name": "unzipper",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.3.3",
+      "expected_selected_version": null,
+      "name": "winston",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.2",
+      "expected_selected_version": null,
+      "name": "yaml-schema-validator",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.0.2",
+      "expected_selected_version": null,
+      "name": "z85",
+      "path": "package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.2.0",
+      "expected_selected_version": null,
+      "name": "chai",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.1.1",
+      "expected_selected_version": null,
+      "name": "chai-as-promised",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.0.3",
+      "expected_selected_version": null,
+      "name": "cross-spawn",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.1.2",
+      "expected_selected_version": null,
+      "name": "frisby",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.3.2",
+      "expected_selected_version": null,
+      "name": "grunt-cli",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.12.3",
+      "expected_selected_version": null,
+      "name": "http-server",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.6.1",
+      "expected_selected_version": null,
+      "name": "jasmine",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.6.0",
+      "expected_selected_version": null,
+      "name": "jasmine-core",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.3.2",
+      "expected_selected_version": null,
+      "name": "jasmine-reporters",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^26.2.2",
+      "expected_selected_version": null,
+      "name": "jest",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^8.1.1",
+      "expected_selected_version": null,
+      "name": "mocha",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "2.1.2",
+      "expected_selected_version": "2.1.2",
+      "name": "node-fetch",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^15.1.0",
+      "expected_selected_version": null,
+      "name": "nyc",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^7.0.0",
+      "expected_selected_version": null,
+      "name": "protractor",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.8.4",
+      "expected_selected_version": null,
+      "name": "shelljs",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^9.0.2",
+      "expected_selected_version": null,
+      "name": "sinon",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.5.0",
+      "expected_selected_version": null,
+      "name": "sinon-chai",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.3.0",
+      "expected_selected_version": null,
+      "name": "socket.io-client",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^14.3.4",
+      "expected_selected_version": null,
+      "name": "standard",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^12.1.7",
+      "expected_selected_version": null,
+      "name": "webdriver-manager",
+      "path": "package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^0.1000.5",
+      "expected_selected_version": null,
+      "name": "@angular-devkit/build-angular",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.0.0",
+      "expected_selected_version": null,
+      "name": "@angular-material-extensions/password-strength",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/animations",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.1.2",
+      "expected_selected_version": null,
+      "name": "@angular/cdk",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.0.5",
+      "expected_selected_version": null,
+      "name": "@angular/cli",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/common",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/compiler",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/compiler-cli",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/core",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "10.0.0-beta.32",
+      "expected_selected_version": "10.0.0-beta.32",
+      "name": "@angular/flex-layout",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/forms",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^8.0.0-beta.10",
+      "expected_selected_version": null,
+      "name": "@angular/http",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.1.2",
+      "expected_selected_version": null,
+      "name": "@angular/material",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/platform-browser",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/platform-browser-dynamic",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/router",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.30",
+      "expected_selected_version": null,
+      "name": "@fortawesome/fontawesome-svg-core",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.14.0",
+      "expected_selected_version": null,
+      "name": "@fortawesome/free-brands-svg-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.14.0",
+      "expected_selected_version": null,
+      "name": "@fortawesome/free-regular-svg-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^5.14.0",
+      "expected_selected_version": null,
+      "name": "@fortawesome/free-solid-svg-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "10.0.1",
+      "expected_selected_version": "10.0.1",
+      "name": "@nguniversal/express-engine",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^13.0.0",
+      "expected_selected_version": null,
+      "name": "@ngx-translate/core",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^6.0.0",
+      "expected_selected_version": null,
+      "name": "@ngx-translate/http-loader",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "~2.0.3",
+      "expected_selected_version": null,
+      "name": "anuglar2-qrcode",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.6.5",
+      "expected_selected_version": null,
+      "name": "core-js",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.0.2",
+      "expected_selected_version": null,
+      "name": "file-saver",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^3.5.0",
+      "expected_selected_version": null,
+      "name": "flag-icon-css",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.4.1",
+      "expected_selected_version": null,
+      "name": "font-mfizz",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.2.0",
+      "expected_selected_version": null,
+      "name": "jwt-decode",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.3.1",
+      "expected_selected_version": null,
+      "name": "material-icons",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.0.0-beta.0",
+      "expected_selected_version": null,
+      "name": "ng-mat-search-bar",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.3.0-beta.11",
+      "expected_selected_version": null,
+      "name": "ng-simple-slideshow",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.4.0",
+      "expected_selected_version": null,
+      "name": "ng2-file-upload",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^13.0.1",
+      "expected_selected_version": null,
+      "name": "ngx-clipboard",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.0.1",
+      "expected_selected_version": null,
+      "name": "ngx-cookie-service",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.0.1",
+      "expected_selected_version": null,
+      "name": "ngx-spinner",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^4.14.1",
+      "expected_selected_version": null,
+      "name": "node-sass",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "6.6.2",
+      "expected_selected_version": "6.6.2",
+      "name": "rxjs",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^1.2.2",
+      "expected_selected_version": null,
+      "name": "snarkdown",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^2.3.0",
+      "expected_selected_version": null,
+      "name": "socket.io-client",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "~3.9.7",
+      "expected_selected_version": null,
+      "name": "typescript",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^0.10.3",
+      "expected_selected_version": null,
+      "name": "zone.js",
+      "path": "frontend/package.json",
+      "section": "dependencies"
+    },
+    {
+      "declared_expression": "^10.2.3",
+      "expected_selected_version": null,
+      "name": "@angular/language-service",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^4.17.9",
+      "expected_selected_version": null,
+      "name": "@types/express-serve-static-core",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.0.1",
+      "expected_selected_version": null,
+      "name": "@types/file-saver",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.5.12",
+      "expected_selected_version": null,
+      "name": "@types/jasmine",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.0.8",
+      "expected_selected_version": null,
+      "name": "@types/jasminewd2",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^2.2.1",
+      "expected_selected_version": null,
+      "name": "@types/jwt-decode",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^14.14.7",
+      "expected_selected_version": null,
+      "name": "@types/node",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.4.33",
+      "expected_selected_version": null,
+      "name": "@types/socket.io-client",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^6.0.0",
+      "expected_selected_version": null,
+      "name": "codelyzer",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^3.6.1",
+      "expected_selected_version": null,
+      "name": "jasmine",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~3.6.0",
+      "expected_selected_version": null,
+      "name": "jasmine-core",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~5.0.2",
+      "expected_selected_version": null,
+      "name": "jasmine-spec-reporter",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~5.1.1",
+      "expected_selected_version": null,
+      "name": "karma",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~3.1.0",
+      "expected_selected_version": null,
+      "name": "karma-chrome-launcher",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~3.0.3",
+      "expected_selected_version": null,
+      "name": "karma-coverage-istanbul-reporter",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~3.3.1",
+      "expected_selected_version": null,
+      "name": "karma-jasmine",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^1.5.4",
+      "expected_selected_version": null,
+      "name": "karma-jasmine-html-reporter",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "^8.10.2",
+      "expected_selected_version": null,
+      "name": "ts-node",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~6.1.3",
+      "expected_selected_version": null,
+      "name": "tslint",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    },
+    {
+      "declared_expression": "~9.0.0",
+      "expected_selected_version": null,
+      "name": "tslint-config-standard",
+      "path": "frontend/package.json",
+      "section": "devDependencies"
+    }
+  ],
+  "designated_by": "user correction before scan submission",
+  "expected_occurrences": 148,
+  "expected_relationships": [],
+  "expected_selected_versions": 8,
+  "missing_s07_demonstrations": [
+    "custom pip inputs and four advisory groups",
+    "mixed Python/Node/Go/Rust",
+    "empty/unsupported/ignored inputs",
+    "dated human review",
+    "mixed-version rollback"
+  ],
+  "repository": "ez-appsec/juice-shop",
+  "scan_submitted": false,
+  "schema_version": "m046.designated-source-expectations/1",
+  "scope": "Source-authored manifest expectations; no dependency installation, resolution or scanner output used",
+  "source_files": [
+    {
+      "application_name": "juice-shop",
+      "application_version": "12.3.0",
+      "path": "package.json",
+      "section_counts": {
+        "dependencies": 66,
+        "devDependencies": 20,
+        "optionalDependencies": 0,
+        "peerDependencies": 0
+      },
+      "sha256": "93901e307fb6858b575b66588a4201b5df76e4a965efd282584bcb16335c93ff"
+    },
+    {
+      "application_name": "frontend",
+      "application_version": "12.3.0",
+      "path": "frontend/package.json",
+      "section_counts": {
+        "dependencies": 42,
+        "devDependencies": 20,
+        "optionalDependencies": 0,
+        "peerDependencies": 0
+      },
+      "sha256": "e51e17b28fd706285e279db39e1379dea515a6603ba9ee3c6a8950e851a51dd9"
+    }
+  ],
+  "written_before_scans": true
+}

@@ -1,0 +1,694 @@
+{
+  "additional_expected": {
+    "empty/package.json": {
+      "application": "m046-empty-fixture",
+      "application_version": "1.0.0",
+      "ecosystem": "npm",
+      "enumeration": "complete",
+      "enumeration_basis": "source-input",
+      "package_edges": 0,
+      "prefix": "s07-fixtures",
+      "selected_occurrences": 0
+    },
+    "execution-trap/setup.py": {
+      "coverage": "incomplete; never claim complete",
+      "disposition": "unsupported",
+      "ecosystem": "pypi",
+      "enumeration": "unknown",
+      "execution": "must never execute",
+      "package_edges": 0,
+      "prefix": "s07-fixtures",
+      "reason": "dynamic-metadata",
+      "selected_occurrences": 0
+    },
+    "project-hooks/package.json": {
+      "application": "m046-hook-fixture",
+      "application_version": "1.0.0",
+      "ecosystem": "npm",
+      "enumeration": "complete",
+      "enumeration_basis": "source-input",
+      "execution": "preinstall and postinstall must never execute",
+      "package_edges": 0,
+      "prefix": "s07-fixtures",
+      "selected_occurrences": 0
+    },
+    "unsupported/Gemfile": {
+      "disposition": "unsupported",
+      "ecosystem": "gem",
+      "enumeration": "unknown",
+      "package_edges": 0,
+      "prefix": "s07-fixtures",
+      "selected_occurrences": 0
+    }
+  },
+  "additional_inputs": [
+    {
+      "path": "s07-fixtures/empty/package.json",
+      "sha256": "31ad59ef6f4ee241dca73f52591f4df3e4cbb9a47f9c039456ce21b1bb154be7"
+    },
+    {
+      "path": "s07-fixtures/execution-trap/setup.py",
+      "sha256": "58ee8755c2e7cd31b0f2017890294d155f11e32e893bffa51fba32d0f0a5d9cf"
+    },
+    {
+      "path": "s07-fixtures/project-hooks/package.json",
+      "sha256": "63ce3c7c00679f1c51f29316e064de6aeae006e3176f565e7c4b96ba48ac182d"
+    },
+    {
+      "path": "s07-fixtures/unsupported/Gemfile",
+      "sha256": "eee10f0537d349943df65db2a0d542f9d3e4df3cfe3612b3aba54487ca9ac4b8"
+    }
+  ],
+  "base_commit": "0810fef353a6d0ed772890015e2d374715723328",
+  "base_expectations_sha256": "db704b7540fd724ac9ea3a8f179bcb661a32c1dad3bbd797b4c42a48686e9aad",
+  "cases": [
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "python-product-build-input",
+      "files": {
+        "scripts/python-build.in": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+      },
+      "prefix": "s07-fixtures/python-product-build-input",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [],
+        "declaration_records": [],
+        "declarations": [],
+        "disposition": "parsed",
+        "edges": [],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "unknown",
+          "parsing": "complete",
+          "version_selection": "complete"
+        },
+        "inputs": [
+          {
+            "disposition": "parsed",
+            "format": "pip-requirements",
+            "path": "scripts/python-build.in",
+            "reason": "static-input",
+            "roots": [
+              "scripts"
+            ],
+            "sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+          }
+        ],
+        "note": "",
+        "occurrences": [
+          {
+            "activation": "unconditional",
+            "declared_range": "==26.0.1",
+            "extras": [],
+            "hashes": [],
+            "locator": "line:1",
+            "marker": null,
+            "package": "pypi:pip@26.0.1",
+            "path": "scripts/python-build.in",
+            "relationship": "unknown",
+            "requires_python": null,
+            "root": "scripts",
+            "scope": "unknown",
+            "selection": "declared-pin"
+          }
+        ],
+        "packages": [
+          "pypi:pip@26.0.1"
+        ],
+        "references": [],
+        "relationships": [],
+        "roots": [
+          "scripts"
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    },
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "python-product-hidden-lock",
+      "files": {
+        ".github/python-locks/build.txt": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+      },
+      "prefix": "s07-fixtures/python-product-hidden-lock",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [],
+        "declaration_records": [],
+        "declarations": [],
+        "disposition": "parsed",
+        "edges": [],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "unknown",
+          "parsing": "complete",
+          "version_selection": "complete"
+        },
+        "inputs": [
+          {
+            "disposition": "parsed",
+            "format": "pip-requirements",
+            "path": ".github/python-locks/build.txt",
+            "reason": "static-input",
+            "roots": [
+              ".github/python-locks"
+            ],
+            "sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+          }
+        ],
+        "note": "Product filename/version regression; synthetic integrity hash.",
+        "occurrences": [
+          {
+            "activation": "unconditional",
+            "declared_range": "==26.0.1",
+            "extras": [],
+            "hashes": [
+              "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            ],
+            "locator": "line:1",
+            "marker": null,
+            "package": "pypi:pip@26.0.1",
+            "path": ".github/python-locks/build.txt",
+            "relationship": "unknown",
+            "requires_python": null,
+            "root": ".github/python-locks",
+            "scope": "unknown",
+            "selection": "declared-pin"
+          }
+        ],
+        "packages": [
+          "pypi:pip@26.0.1"
+        ],
+        "references": [],
+        "relationships": [],
+        "roots": [
+          ".github/python-locks"
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    },
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "python-pip-extension",
+      "files": {
+        "dependencies.pip": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+      },
+      "prefix": "s07-fixtures/python-pip-extension",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [],
+        "declaration_records": [],
+        "declarations": [],
+        "disposition": "parsed",
+        "edges": [],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "unknown",
+          "parsing": "complete",
+          "version_selection": "complete"
+        },
+        "inputs": [
+          {
+            "disposition": "parsed",
+            "format": "pip-requirements",
+            "path": "dependencies.pip",
+            "reason": "static-input",
+            "roots": [
+              "."
+            ],
+            "sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+          }
+        ],
+        "note": "",
+        "occurrences": [
+          {
+            "activation": "unconditional",
+            "declared_range": "==3.0.3",
+            "extras": [],
+            "hashes": [],
+            "locator": "line:1",
+            "marker": null,
+            "package": "pypi:flask@3.0.3",
+            "path": "dependencies.pip",
+            "relationship": "unknown",
+            "requires_python": null,
+            "root": ".",
+            "scope": "unknown",
+            "selection": "declared-pin"
+          }
+        ],
+        "packages": [
+          "pypi:flask@3.0.3"
+        ],
+        "references": [],
+        "relationships": [],
+        "roots": [
+          "."
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    },
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "node-npm-complete",
+      "files": {
+        "package-lock.json": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386",
+        "package.json": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+      },
+      "prefix": "s07-fixtures/node-npm-complete",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [
+          {
+            "identity": "npm:fixture@1.0.0",
+            "path": "package.json",
+            "root": "."
+          }
+        ],
+        "declaration_records": [
+          {
+            "classification": "direct-declared",
+            "extras": [],
+            "locator": "/dependencies/debug",
+            "marker": null,
+            "name": "npm:debug",
+            "path": "package.json",
+            "range": "^4.3.7",
+            "root": ".",
+            "scope": "runtime"
+          }
+        ],
+        "declarations": [],
+        "disposition": "parsed",
+        "edges": [
+          [
+            "npm:debug@4.3.7",
+            "npm:ms@2.1.3"
+          ]
+        ],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "evidenced-only",
+          "parsing": "complete",
+          "version_selection": "complete"
+        },
+        "inputs": [
+          {
+            "disposition": "parsed",
+            "format": "npm-manifest",
+            "path": "package.json",
+            "reason": "static-input",
+            "roots": [
+              "."
+            ],
+            "sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+          },
+          {
+            "disposition": "parsed",
+            "format": "npm-lock-v3",
+            "path": "package-lock.json",
+            "reason": "static-input",
+            "roots": [
+              "."
+            ],
+            "sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+          }
+        ],
+        "note": "Paired manifest/lock with first-party root. Synthetic registry sources, never resolved online.",
+        "occurrences": [
+          {
+            "activation": "unconditional",
+            "declared_range": "^4.3.7",
+            "extras": [],
+            "hashes": [],
+            "locator": "/packages/node_modules~1debug",
+            "marker": null,
+            "package": "npm:debug@4.3.7",
+            "path": "package-lock.json",
+            "relationship": "direct",
+            "requires_python": null,
+            "root": ".",
+            "scope": "runtime",
+            "selection": "locked"
+          },
+          {
+            "activation": "unconditional",
+            "declared_range": "^2.1.3",
+            "extras": [],
+            "hashes": [],
+            "locator": "/packages/node_modules~1ms",
+            "marker": null,
+            "package": "npm:ms@2.1.3",
+            "path": "package-lock.json",
+            "relationship": "transitive",
+            "requires_python": null,
+            "root": ".",
+            "scope": "runtime",
+            "selection": "locked"
+          }
+        ],
+        "packages": [
+          "npm:debug@4.3.7",
+          "npm:ms@2.1.3"
+        ],
+        "references": [],
+        "relationships": [
+          {
+            "child": "npm:ms@2.1.3",
+            "kind": "dependency",
+            "locator": "/packages/node_modules~1debug/dependencies/ms",
+            "parent": "npm:debug@4.3.7",
+            "path": "package-lock.json",
+            "root": "."
+          }
+        ],
+        "roots": [
+          "."
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    },
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "go-module",
+      "files": {
+        "go.mod": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+      },
+      "prefix": "s07-fixtures/go-module",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [],
+        "declaration_records": [
+          {
+            "classification": "direct-declared",
+            "extras": [],
+            "locator": "line:5",
+            "marker": null,
+            "name": "golang:golang.org/x/text",
+            "path": "go.mod",
+            "range": ">=v0.18.0",
+            "root": ".",
+            "scope": "unknown"
+          }
+        ],
+        "declarations": [
+          "golang:golang.org/x/text:>=v0.18.0"
+        ],
+        "disposition": "declaration-only",
+        "edges": [],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "unknown",
+          "parsing": "complete",
+          "version_selection": "partial"
+        },
+        "inputs": [
+          {
+            "disposition": "declaration-only",
+            "format": "go-mod",
+            "path": "go.mod",
+            "reason": "unresolved-module-graph",
+            "roots": [
+              "."
+            ],
+            "sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+          }
+        ],
+        "note": "go.mod require records a minimum; the transitive MVS graph is unavailable.",
+        "occurrences": [],
+        "packages": [],
+        "references": [],
+        "relationships": [],
+        "roots": [
+          "."
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    },
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "rust-edges",
+      "files": {
+        "Cargo.lock": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+      },
+      "prefix": "s07-fixtures/rust-edges",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [],
+        "declaration_records": [],
+        "declarations": [],
+        "disposition": "parsed",
+        "edges": [
+          [
+            "cargo:serde_json@1.0.128",
+            "cargo:itoa@1.0.11"
+          ]
+        ],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "evidenced-only",
+          "parsing": "complete",
+          "version_selection": "complete"
+        },
+        "inputs": [
+          {
+            "disposition": "parsed",
+            "format": "cargo-lock-v3",
+            "path": "Cargo.lock",
+            "reason": "static-input",
+            "roots": [
+              "."
+            ],
+            "sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+          }
+        ],
+        "note": "",
+        "occurrences": [
+          {
+            "activation": "unconditional",
+            "declared_range": null,
+            "extras": [],
+            "hashes": [],
+            "locator": "package[0]",
+            "marker": null,
+            "package": "cargo:serde_json@1.0.128",
+            "path": "Cargo.lock",
+            "relationship": "unknown",
+            "requires_python": null,
+            "root": ".",
+            "scope": "unknown",
+            "selection": "locked"
+          },
+          {
+            "activation": "unconditional",
+            "declared_range": null,
+            "extras": [],
+            "hashes": [],
+            "locator": "package[1]",
+            "marker": null,
+            "package": "cargo:itoa@1.0.11",
+            "path": "Cargo.lock",
+            "relationship": "unknown",
+            "requires_python": null,
+            "root": ".",
+            "scope": "unknown",
+            "selection": "locked"
+          }
+        ],
+        "packages": [
+          "cargo:serde_json@1.0.128",
+          "cargo:itoa@1.0.11"
+        ],
+        "references": [],
+        "relationships": [
+          {
+            "child": "cargo:itoa@1.0.11",
+            "kind": "dependency",
+            "locator": "package[0].dependencies[0]",
+            "parent": "cargo:serde_json@1.0.128",
+            "path": "Cargo.lock",
+            "root": "."
+          }
+        ],
+        "roots": [
+          "."
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    },
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "python-range",
+      "files": {
+        "requirements.txt": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+      },
+      "prefix": "s07-fixtures/python-range",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [],
+        "declaration_records": [
+          {
+            "classification": "unknown",
+            "extras": [],
+            "locator": "line:1",
+            "marker": null,
+            "name": "pypi:requests",
+            "path": "requirements.txt",
+            "range": ">=2.31,<3",
+            "root": ".",
+            "scope": "unknown"
+          }
+        ],
+        "declarations": [
+          "pypi:requests:>=2.31,<3"
+        ],
+        "disposition": "declaration-only",
+        "edges": [],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "unknown",
+          "parsing": "complete",
+          "version_selection": "partial"
+        },
+        "inputs": [
+          {
+            "disposition": "declaration-only",
+            "format": "pip-requirements",
+            "path": "requirements.txt",
+            "reason": "no-selected-version",
+            "roots": [
+              "."
+            ],
+            "sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+          }
+        ],
+        "note": "Do not match a range as an installed version.",
+        "occurrences": [],
+        "packages": [],
+        "references": [],
+        "relationships": [],
+        "roots": [
+          "."
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    },
+    {
+      "binding_policy": "Bind by exact prefixed source path and root context; compare declarations, occurrences and edges by source evidence, never merge equal names across roots.",
+      "case": "python-false-positive",
+      "files": {
+        "meeting-notes.txt": "8d70aaece6ad8a72e2d3e04993fd75ed0959a8b33f0b01d67518b7d65b74a364"
+      },
+      "prefix": "s07-fixtures/python-false-positive",
+      "source_authored_expected_relative_to_prefix": {
+        "applications": [],
+        "declaration_records": [],
+        "declarations": [],
+        "disposition": "ignored",
+        "edges": [],
+        "environment_records": [],
+        "fidelity": {
+          "discovery": "complete",
+          "enumeration": "complete",
+          "environment": "unconditional",
+          "graph": "unknown",
+          "parsing": "complete",
+          "version_selection": "complete"
+        },
+        "inputs": [
+          {
+            "disposition": "ignored",
+            "format": "unrecognized",
+            "path": "meeting-notes.txt",
+            "reason": "non-dependency-prose",
+            "roots": [
+              "."
+            ],
+            "sha256": "8d70aaece6ad8a72e2d3e04993fd75ed0959a8b33f0b01d67518b7d65b74a364"
+          }
+        ],
+        "note": "",
+        "occurrences": [],
+        "packages": [],
+        "references": [],
+        "relationships": [],
+        "roots": [
+          "."
+        ],
+        "semantic_schema": "m046-oracle-v4"
+      }
+    }
+  ],
+  "overall_coverage": "incomplete: original npm ranges, Go declaration-only graph, unresolved Python range and unsupported inputs must remain visible; no global clean-result claim",
+  "pip_regression": {
+    "alias_groups": [
+      [
+        {
+          "id": "GHSA-wf93-45jw-7689",
+          "namespace": "github:language:python"
+        },
+        {
+          "id": "CVE-2026-8643",
+          "namespace": "nvd:cpe"
+        }
+      ],
+      [
+        {
+          "id": "GHSA-qwm4-qh6w-59xr",
+          "namespace": "github:language:python"
+        },
+        {
+          "id": "CVE-2026-13346",
+          "namespace": "nvd:cpe"
+        }
+      ],
+      [
+        {
+          "id": "GHSA-jp4c-xjxw-mgf9",
+          "namespace": "github:language:python"
+        },
+        {
+          "id": "CVE-2026-6357",
+          "namespace": "nvd:cpe"
+        }
+      ],
+      [
+        {
+          "id": "GHSA-58qw-9mgm-455v",
+          "namespace": "github:language:python"
+        },
+        {
+          "id": "CVE-2026-3219",
+          "namespace": "nvd:cpe"
+        }
+      ]
+    ],
+    "policy": "Require all four groups independently on each exact recovered source occurrence; retain any additional findings and actual advisory identity. Textual hashes are source assertions, not downloaded integrity.",
+    "source_paths": [
+      "s07-fixtures/python-product-build-input/scripts/python-build.in",
+      "s07-fixtures/python-product-hidden-lock/.github/python-locks/build.txt"
+    ],
+    "version": "26.0.1"
+  },
+  "remaining": "Published runtime admission, normal project connection, fresh development worker execution, exact persisted comparisons, authorization/reuse, human review and mixed-version rollback.",
+  "repository": "ez-appsec/juice-shop",
+  "schema_version": "m046.development-authored-fixtures/1",
+  "scope": "Additional immutable test-branch inputs on the user-designated repository; no dependency installation or application execution",
+  "source_oracle_revision": "4effe1897114ef3e3c6cf17b52172d8ea3844986",
+  "source_oracle_sha256": "d0d126aea56d38be463ac1aca67104bb870f51cc852324339ba778c18a9a7dae",
+  "submitted": false,
+  "written_before_scans": true
+}

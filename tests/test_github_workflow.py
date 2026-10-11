@@ -79,14 +79,35 @@ def test_pull_request_build_never_publishes_images():
     workflow = DOCKER_WORKFLOW.read_text()
 
     assert "push:" not in workflow.split("on:", 1)[1].split("env:", 1)[0]
-    parsed = yaml.load(workflow, Loader=yaml.BaseLoader)
+    # Reusable jobs have `uses` instead of `steps`. Inspect their local
+    # workflows too, so moving a publisher into a callee cannot hide it.
+    pending = [DOCKER_WORKFLOW]
+    visited = set()
+    steps = []
+    repository = DOCKER_WORKFLOW.parents[2]
+    while pending:
+        path = pending.pop().resolve()
+        if path in visited:
+            continue
+        visited.add(path)
+        content = path.read_text()
+        assert "docker/login-action" not in content
+        parsed = yaml.load(content, Loader=yaml.BaseLoader)
+        for job in parsed['jobs'].values():
+            if 'uses' in job:
+                assert job['uses'].startswith('./.github/workflows/')
+                callee = (repository / job['uses']).resolve()
+                assert callee.parent == DOCKER_WORKFLOW.parent.resolve()
+                pending.append(callee)
+            else:
+                steps.extend(job['steps'])
     build_steps = [
-        step for job in parsed['jobs'].values() for step in job['steps']
+        step for step in steps
         if step.get('uses', '').startswith('docker/build-push-action@')
     ]
     assert not build_steps
     assert any(step.get('uses') == './.github/actions/build-with-retry'
-               for job in parsed['jobs'].values() for step in job['steps'])
+               for step in steps)
     assert all(step['with']['push'] == 'false' for step in build_steps)
     retry = yaml.load(
         (DOCKER_WORKFLOW.parent.parent / 'actions/build-with-retry/action.yml').read_text(),

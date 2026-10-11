@@ -190,7 +190,8 @@ def run(args):
         # Creating the exit file precedes both printf completing and SIGSTOP.
         # Observe the second stop before reading it or sending CONT, otherwise
         # an early CONT can be lost and leave the shell stopped forever.
-        while "State:\tT" not in read(Path(f"/proc/{shell}/status")):
+        while not (trace.workload_stopped(shell) if trace is not None
+                   else "State:\tT" in read(Path(f"/proc/{shell}/status"))):
             remaining()
             time.sleep(0.01)
         receipt.update(observe(root))

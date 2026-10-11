@@ -75,6 +75,21 @@ class ExecutionObservation:
         self.process = self.tracer = self.tracer_birth = None
         self.stream = None
 
+    def workload_stopped(self, shell):
+        status = proc_status(shell)
+        if status["State"].strip().startswith("T"):
+            return True
+        # A ptraced SIGSTOP group-stop appears as lowercase t. A syscall
+        # ptrace-stop also appears as t, so require strace's actual group-stop
+        # record for this exact shell after the workload's exit gate exists.
+        if (not status["State"].strip().startswith("t")
+                or int(status["TracerPid"]) != self.tracer):
+            return False
+        with self.trace.open("rb") as stream:
+            stream.seek(max(0, self.trace.stat().st_size - 4096))
+            tail = stream.read(4096)
+        return re.search(rb"(?:^|\n)" + str(shell).encode() + rb"\s+--- stopped by SIGSTOP ---\s*(?:\n|$)", tail) is not None
+
     def start(self, shell, deadline):
         status = proc_status(shell)
         if int(status["TracerPid"]) or not status["State"].strip().startswith("T"):

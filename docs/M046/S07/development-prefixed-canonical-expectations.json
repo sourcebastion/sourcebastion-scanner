@@ -1,0 +1,1034 @@
+{
+  "acceptance": false,
+  "cases": [
+    {
+      "case": "python-product-build-input",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [
+            "scope:0"
+          ],
+          "disposition": "parsed",
+          "ecosystem": "pypi",
+          "enumeration": "complete",
+          "enumeration_basis": "source-input",
+          "format": "pip-requirements",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.pip-requirements/1",
+          "reason": "static-input",
+          "root_ids": [],
+          "source_path": "s07-fixtures/python-product-build-input/scripts/python-build.in",
+          "source_sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+        }
+      ],
+      "prefix": "s07-fixtures/python-product-build-input",
+      "records": {
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "requirements-origin",
+            "source": {
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-product-build-input/scripts/python-build.in",
+              "source_sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+            }
+          }
+        ],
+        "applicability": [],
+        "applications": [],
+        "declarations": [
+          {
+            "analysis_scope_id": "scope:0",
+            "declared_range": "==26.0.1",
+            "ecosystem": "pypi",
+            "exact_version": "26.0.1",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "declaration:0",
+            "kind": "requirement",
+            "marker": null,
+            "name": "pip",
+            "root_id": null,
+            "scopes": [],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-product-build-input/scripts/python-build.in",
+              "source_sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+            }
+          }
+        ],
+        "dependency_selectors": [],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [
+          {
+            "activation": "active",
+            "analysis_scope_id": "scope:0",
+            "declared_range": "==26.0.1",
+            "directness": "unknown",
+            "ecosystem": "pypi",
+            "evidence_kind": "declared",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:0",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "pip",
+            "provider_references": [],
+            "purl": "pkg:pypi/pip@26.0.1",
+            "registry_source_sha256": null,
+            "root_id": null,
+            "scopes": [],
+            "selected_version": "26.0.1",
+            "selection_declaration_ids": [
+              "declaration:0"
+            ],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-product-build-input/scripts/python-build.in",
+              "source_sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+            }
+          }
+        ],
+        "relationships": [],
+        "roots": []
+      }
+    },
+    {
+      "case": "python-product-hidden-lock",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [
+            "scope:0"
+          ],
+          "disposition": "parsed",
+          "ecosystem": "pypi",
+          "enumeration": "complete",
+          "enumeration_basis": "source-input",
+          "format": "pip-requirements",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.pip-requirements/1",
+          "reason": "static-input",
+          "root_ids": [],
+          "source_path": "s07-fixtures/python-product-hidden-lock/.github/python-locks/build.txt",
+          "source_sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+        }
+      ],
+      "prefix": "s07-fixtures/python-product-hidden-lock",
+      "records": {
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "requirements-origin",
+            "source": {
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-product-hidden-lock/.github/python-locks/build.txt",
+              "source_sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+            }
+          }
+        ],
+        "applicability": [],
+        "applications": [],
+        "declarations": [
+          {
+            "analysis_scope_id": "scope:0",
+            "declared_range": "==26.0.1",
+            "ecosystem": "pypi",
+            "exact_version": "26.0.1",
+            "extras": [],
+            "groups": [],
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "id": "declaration:0",
+            "kind": "requirement",
+            "marker": null,
+            "name": "pip",
+            "root_id": null,
+            "scopes": [],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-product-hidden-lock/.github/python-locks/build.txt",
+              "source_sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+            }
+          }
+        ],
+        "dependency_selectors": [],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [
+          {
+            "activation": "active",
+            "analysis_scope_id": "scope:0",
+            "declared_range": "==26.0.1",
+            "directness": "unknown",
+            "ecosystem": "pypi",
+            "evidence_kind": "declared",
+            "extras": [],
+            "groups": [],
+            "hashes": [
+              {
+                "algorithm": "sha256",
+                "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "kind": "artifact"
+              }
+            ],
+            "id": "occurrence:0",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "pip",
+            "provider_references": [],
+            "purl": "pkg:pypi/pip@26.0.1",
+            "registry_source_sha256": null,
+            "root_id": null,
+            "scopes": [],
+            "selected_version": "26.0.1",
+            "selection_declaration_ids": [
+              "declaration:0"
+            ],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-product-hidden-lock/.github/python-locks/build.txt",
+              "source_sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+            }
+          }
+        ],
+        "relationships": [],
+        "roots": []
+      }
+    },
+    {
+      "case": "python-pip-extension",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [
+            "scope:0"
+          ],
+          "disposition": "parsed",
+          "ecosystem": "pypi",
+          "enumeration": "complete",
+          "enumeration_basis": "source-input",
+          "format": "pip-requirements",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.pip-requirements/1",
+          "reason": "static-input",
+          "root_ids": [],
+          "source_path": "s07-fixtures/python-pip-extension/dependencies.pip",
+          "source_sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+        }
+      ],
+      "prefix": "s07-fixtures/python-pip-extension",
+      "records": {
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "requirements-origin",
+            "source": {
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-pip-extension/dependencies.pip",
+              "source_sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+            }
+          }
+        ],
+        "applicability": [],
+        "applications": [],
+        "declarations": [
+          {
+            "analysis_scope_id": "scope:0",
+            "declared_range": "==3.0.3",
+            "ecosystem": "pypi",
+            "exact_version": "3.0.3",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "declaration:0",
+            "kind": "requirement",
+            "marker": null,
+            "name": "flask",
+            "root_id": null,
+            "scopes": [],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-pip-extension/dependencies.pip",
+              "source_sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+            }
+          }
+        ],
+        "dependency_selectors": [],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [
+          {
+            "activation": "active",
+            "analysis_scope_id": "scope:0",
+            "declared_range": "==3.0.3",
+            "directness": "unknown",
+            "ecosystem": "pypi",
+            "evidence_kind": "declared",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:0",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "flask",
+            "provider_references": [],
+            "purl": "pkg:pypi/flask@3.0.3",
+            "registry_source_sha256": null,
+            "root_id": null,
+            "scopes": [],
+            "selected_version": "3.0.3",
+            "selection_declaration_ids": [
+              "declaration:0"
+            ],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-pip-extension/dependencies.pip",
+              "source_sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+            }
+          }
+        ],
+        "relationships": [],
+        "roots": []
+      }
+    },
+    {
+      "case": "node-npm-complete",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [
+            "scope:lock"
+          ],
+          "disposition": "parsed",
+          "ecosystem": "npm",
+          "enumeration": "complete",
+          "enumeration_basis": "source-input",
+          "format": "npm-lock",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.npm-sources/1",
+          "reason": "static-input",
+          "root_ids": [
+            "root:fixture"
+          ],
+          "source_path": "s07-fixtures/node-npm-complete/package-lock.json",
+          "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+        },
+        {
+          "analysis_scope_ids": [
+            "scope:manifest"
+          ],
+          "disposition": "unresolved",
+          "ecosystem": "npm",
+          "enumeration": "partial",
+          "enumeration_basis": "source-input",
+          "format": "npm-manifest",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.npm-sources/1",
+          "reason": "no-selected-version",
+          "root_ids": [
+            "root:fixture"
+          ],
+          "source_path": "s07-fixtures/node-npm-complete/package.json",
+          "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+        }
+      ],
+      "prefix": "s07-fixtures/node-npm-complete",
+      "records": {
+        "analysis_scopes": [
+          {
+            "id": "scope:manifest",
+            "kind": "manifest-input",
+            "source": {
+              "locator": "manifest-input",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+            }
+          },
+          {
+            "id": "scope:lock",
+            "kind": "lock-input",
+            "source": {
+              "locator": "lock-input",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+            }
+          }
+        ],
+        "applicability": [],
+        "applications": [
+          {
+            "ecosystem": "npm",
+            "id": "application:fixture",
+            "name": "fixture",
+            "root_id": "root:fixture",
+            "source": {
+              "locator": "/name",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+            },
+            "version": "1.0.0"
+          }
+        ],
+        "declarations": [
+          {
+            "analysis_scope_id": "scope:manifest",
+            "declared_range": "^4.3.7",
+            "ecosystem": "npm",
+            "exact_version": null,
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "declaration:manifest",
+            "kind": "requirement",
+            "marker": null,
+            "name": "debug",
+            "root_id": "root:fixture",
+            "scopes": [
+              "runtime"
+            ],
+            "source": {
+              "locator": "/dependencies/debug",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+            }
+          },
+          {
+            "analysis_scope_id": "scope:lock",
+            "declared_range": "^4.3.7",
+            "ecosystem": "npm",
+            "exact_version": null,
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "declaration:lock",
+            "kind": "requirement",
+            "marker": null,
+            "name": "debug",
+            "root_id": "root:fixture",
+            "scopes": [
+              "runtime"
+            ],
+            "source": {
+              "locator": "/packages//dependencies/debug",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+            }
+          }
+        ],
+        "dependency_selectors": [
+          {
+            "activation": "unknown",
+            "child_id": "occurrence:ms",
+            "declared_range": "^2.1.3",
+            "dialect": "npm-semver-7.8.5",
+            "disposition": "resolved",
+            "ecosystem": "npm",
+            "exact_version": null,
+            "extra_selection": "requested",
+            "extras": [],
+            "groups": [],
+            "id": "selector:ms",
+            "marker": null,
+            "marker_semantics": "none",
+            "name": "ms",
+            "parent_id": "occurrence:debug",
+            "reason": "unique-source-endpoint",
+            "registry_source_sha256": null,
+            "scopes": [
+              "runtime"
+            ],
+            "source": {
+              "locator": "/packages/node_modules~1debug/dependencies/ms",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+            }
+          }
+        ],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [
+          {
+            "activation": "unknown",
+            "analysis_scope_id": "scope:manifest",
+            "declared_range": "^4.3.7",
+            "directness": "direct",
+            "ecosystem": "npm",
+            "evidence_kind": "declared",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:manifest",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "debug",
+            "provider_references": [],
+            "purl": "pkg:npm/debug",
+            "registry_source_sha256": null,
+            "root_id": "root:fixture",
+            "scopes": [
+              "runtime"
+            ],
+            "selected_version": null,
+            "selection_declaration_ids": [],
+            "source": {
+              "locator": "/dependencies/debug",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+            }
+          },
+          {
+            "activation": "unknown",
+            "analysis_scope_id": "scope:lock",
+            "declared_range": "^4.3.7",
+            "directness": "direct",
+            "ecosystem": "npm",
+            "evidence_kind": "locked",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:debug",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "debug",
+            "provider_references": [],
+            "purl": "pkg:npm/debug@4.3.7",
+            "registry_source_sha256": "bbe7fe2be8e53782ab31bd0dc81d24ea7891b9b9137bcf517c4ede7504fda1ce",
+            "root_id": "root:fixture",
+            "scopes": [
+              "runtime"
+            ],
+            "selected_version": "4.3.7",
+            "selection_declaration_ids": [],
+            "source": {
+              "locator": "/packages/node_modules~1debug",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+            }
+          },
+          {
+            "activation": "unknown",
+            "analysis_scope_id": "scope:lock",
+            "declared_range": null,
+            "directness": "transitive",
+            "ecosystem": "npm",
+            "evidence_kind": "locked",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:ms",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "ms",
+            "provider_references": [],
+            "purl": "pkg:npm/ms@2.1.3",
+            "registry_source_sha256": "ea74ed1a8d7264bf899e462717834286e101c04e1c62997779b984bae11d1f3d",
+            "root_id": "root:fixture",
+            "scopes": [
+              "runtime"
+            ],
+            "selected_version": "2.1.3",
+            "selection_declaration_ids": [],
+            "source": {
+              "locator": "/packages/node_modules~1ms",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+            }
+          }
+        ],
+        "relationships": [
+          {
+            "activation": "unknown",
+            "child_id": "occurrence:ms",
+            "evidence_status": "evidenced",
+            "extras": [],
+            "id": "relationship:ms",
+            "marker": null,
+            "parent_id": "occurrence:debug",
+            "scopes": [
+              "runtime"
+            ],
+            "selector_id": "selector:ms",
+            "source": {
+              "locator": "/packages/node_modules~1debug/dependencies/ms",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package-lock.json",
+              "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+            }
+          }
+        ],
+        "roots": [
+          {
+            "id": "root:fixture",
+            "kind": "project",
+            "path": "s07-fixtures/node-npm-complete",
+            "source": {
+              "locator": "/name",
+              "parser": "sourcebastion.npm-composition/1",
+              "path": "s07-fixtures/node-npm-complete/package.json",
+              "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": "go-module",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [
+            "scope:fixture"
+          ],
+          "disposition": "unsupported",
+          "ecosystem": "golang",
+          "enumeration": "unknown",
+          "enumeration_basis": "source-input",
+          "format": "go-mod",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.go-sources/1",
+          "reason": "unresolved-go-module-selection-and-graph",
+          "root_ids": [
+            "root:fixture"
+          ],
+          "source_path": "s07-fixtures/go-module/go.mod",
+          "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+        }
+      ],
+      "prefix": "s07-fixtures/go-module",
+      "records": {
+        "analysis_scopes": [
+          {
+            "id": "scope:fixture",
+            "kind": "manifest-input",
+            "source": {
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1",
+              "path": "s07-fixtures/go-module/go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+            }
+          }
+        ],
+        "applicability": [],
+        "applications": [
+          {
+            "ecosystem": "golang",
+            "id": "application:fixture",
+            "name": "example.test/fixture",
+            "root_id": "root:fixture",
+            "source": {
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1",
+              "path": "s07-fixtures/go-module/go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+            },
+            "version": null
+          }
+        ],
+        "declarations": [
+          {
+            "analysis_scope_id": "scope:fixture",
+            "declared_range": "v0.18.0",
+            "ecosystem": "golang",
+            "exact_version": null,
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "declaration:minimum",
+            "kind": "requirement",
+            "marker": null,
+            "name": "golang.org/x/text",
+            "root_id": "root:fixture",
+            "scopes": [
+              "unknown"
+            ],
+            "source": {
+              "locator": "require[0]:line[5]:bytes[38:71]",
+              "parser": "sourcebastion.go-composition/1",
+              "path": "s07-fixtures/go-module/go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+            }
+          }
+        ],
+        "dependency_selectors": [],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [
+          {
+            "activation": "unknown",
+            "analysis_scope_id": "scope:fixture",
+            "declared_range": "v0.18.0",
+            "directness": "unknown",
+            "ecosystem": "golang",
+            "evidence_kind": "declared",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:minimum",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "golang.org/x/text",
+            "provider_references": [],
+            "purl": "pkg:golang/golang.org/x/text",
+            "registry_source_sha256": null,
+            "root_id": "root:fixture",
+            "scopes": [
+              "unknown"
+            ],
+            "selected_version": null,
+            "selection_declaration_ids": [],
+            "source": {
+              "locator": "require[0]:line[5]:bytes[38:71]",
+              "parser": "sourcebastion.go-composition/1",
+              "path": "s07-fixtures/go-module/go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+            }
+          }
+        ],
+        "relationships": [],
+        "roots": [
+          {
+            "id": "root:fixture",
+            "kind": "project",
+            "path": "s07-fixtures/go-module",
+            "source": {
+              "locator": "module-input",
+              "parser": "sourcebastion.go-composition/1",
+              "path": "s07-fixtures/go-module/go.mod",
+              "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": "rust-edges",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [
+            "scope:0"
+          ],
+          "disposition": "parsed",
+          "ecosystem": "cargo",
+          "enumeration": "complete",
+          "enumeration_basis": "source-input",
+          "format": "cargo-lock",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.cargo-sources/1",
+          "reason": "static-input",
+          "root_ids": [],
+          "source_path": "s07-fixtures/rust-edges/Cargo.lock",
+          "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+        }
+      ],
+      "prefix": "s07-fixtures/rust-edges",
+      "records": {
+        "analysis_scopes": [
+          {
+            "id": "scope:0",
+            "kind": "lock-input",
+            "source": {
+              "locator": "lock-input",
+              "parser": "sourcebastion.cargo-composition/1",
+              "path": "s07-fixtures/rust-edges/Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+            }
+          }
+        ],
+        "applicability": [],
+        "applications": [],
+        "declarations": [],
+        "dependency_selectors": [
+          {
+            "activation": "unknown",
+            "child_id": "occurrence:1",
+            "declared_range": null,
+            "dialect": "cargo-lock-package-id-3-4",
+            "disposition": "resolved",
+            "ecosystem": "cargo",
+            "exact_version": "1.0.11",
+            "extra_selection": "requested",
+            "extras": [],
+            "groups": [],
+            "id": "selector:itoa",
+            "marker": null,
+            "marker_semantics": "none",
+            "name": "itoa",
+            "parent_id": "occurrence:0",
+            "reason": "unique-source-endpoint",
+            "registry_source_sha256": null,
+            "scopes": [
+              "unknown"
+            ],
+            "source": {
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.cargo-composition/1",
+              "path": "s07-fixtures/rust-edges/Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+            }
+          }
+        ],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [
+          {
+            "activation": "unknown",
+            "analysis_scope_id": "scope:0",
+            "declared_range": null,
+            "directness": "unknown",
+            "ecosystem": "cargo",
+            "evidence_kind": "locked",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:0",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "serde_json",
+            "provider_references": [],
+            "purl": "pkg:cargo/serde_json@1.0.128",
+            "registry_source_sha256": "c19b7c6f923b580ac259164a89f2577984ad5ab09ee9d583b888f934adbbe8d0",
+            "root_id": null,
+            "scopes": [
+              "unknown"
+            ],
+            "selected_version": "1.0.128",
+            "selection_declaration_ids": [],
+            "source": {
+              "locator": "package[0]",
+              "parser": "sourcebastion.cargo-composition/1",
+              "path": "s07-fixtures/rust-edges/Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+            }
+          },
+          {
+            "activation": "unknown",
+            "analysis_scope_id": "scope:0",
+            "declared_range": null,
+            "directness": "unknown",
+            "ecosystem": "cargo",
+            "evidence_kind": "locked",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:1",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "itoa",
+            "provider_references": [],
+            "purl": "pkg:cargo/itoa@1.0.11",
+            "registry_source_sha256": "c19b7c6f923b580ac259164a89f2577984ad5ab09ee9d583b888f934adbbe8d0",
+            "root_id": null,
+            "scopes": [
+              "unknown"
+            ],
+            "selected_version": "1.0.11",
+            "selection_declaration_ids": [],
+            "source": {
+              "locator": "package[1]",
+              "parser": "sourcebastion.cargo-composition/1",
+              "path": "s07-fixtures/rust-edges/Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+            }
+          }
+        ],
+        "relationships": [
+          {
+            "activation": "unknown",
+            "child_id": "occurrence:1",
+            "evidence_status": "evidenced",
+            "extras": [],
+            "id": "relationship:itoa",
+            "marker": null,
+            "parent_id": "occurrence:0",
+            "scopes": [
+              "unknown"
+            ],
+            "selector_id": "selector:itoa",
+            "source": {
+              "locator": "package[0].dependencies[0]",
+              "parser": "sourcebastion.cargo-composition/1",
+              "path": "s07-fixtures/rust-edges/Cargo.lock",
+              "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+            }
+          }
+        ],
+        "roots": []
+      }
+    },
+    {
+      "case": "python-range",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [
+            "scope:origin"
+          ],
+          "disposition": "unresolved",
+          "ecosystem": "pypi",
+          "enumeration": "partial",
+          "enumeration_basis": "source-input",
+          "format": "pip-requirements",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.pip-requirements/1",
+          "reason": "no-selected-version",
+          "root_ids": [],
+          "source_path": "s07-fixtures/python-range/requirements.txt",
+          "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+        }
+      ],
+      "prefix": "s07-fixtures/python-range",
+      "records": {
+        "analysis_scopes": [
+          {
+            "id": "scope:origin",
+            "kind": "requirements-origin",
+            "source": {
+              "locator": "origin",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-range/requirements.txt",
+              "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+            }
+          }
+        ],
+        "applicability": [],
+        "applications": [],
+        "declarations": [
+          {
+            "analysis_scope_id": "scope:origin",
+            "declared_range": ">=2.31,<3",
+            "ecosystem": "pypi",
+            "exact_version": null,
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "declaration:requirement",
+            "kind": "requirement",
+            "marker": null,
+            "name": "requests",
+            "root_id": null,
+            "scopes": [],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-range/requirements.txt",
+              "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+            }
+          }
+        ],
+        "dependency_selectors": [],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [
+          {
+            "activation": "active",
+            "analysis_scope_id": "scope:origin",
+            "declared_range": ">=2.31,<3",
+            "directness": "unknown",
+            "ecosystem": "pypi",
+            "evidence_kind": "declared",
+            "extras": [],
+            "groups": [],
+            "hashes": [],
+            "id": "occurrence:requirement",
+            "installed_environment_id": null,
+            "lock_optional": null,
+            "marker": null,
+            "name": "requests",
+            "provider_references": [],
+            "purl": "pkg:pypi/requests",
+            "registry_source_sha256": null,
+            "root_id": null,
+            "scopes": [],
+            "selected_version": null,
+            "selection_declaration_ids": [],
+            "source": {
+              "locator": "line:1",
+              "parser": "sourcebastion.requirements-composition/1",
+              "path": "s07-fixtures/python-range/requirements.txt",
+              "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+            }
+          }
+        ],
+        "relationships": [],
+        "roots": []
+      }
+    },
+    {
+      "case": "python-false-positive",
+      "coverage_inputs": [
+        {
+          "analysis_scope_ids": [],
+          "disposition": "ignored",
+          "ecosystem": "pypi",
+          "enumeration": "unknown",
+          "enumeration_basis": "source-input",
+          "format": "pip-requirements",
+          "installed_environment_ids": [],
+          "parser": "sourcebastion.pip-requirements/1",
+          "reason": "non-dependency-prose",
+          "root_ids": [],
+          "source_path": "s07-fixtures/python-false-positive/meeting-notes.txt",
+          "source_sha256": "8d70aaece6ad8a72e2d3e04993fd75ed0959a8b33f0b01d67518b7d65b74a364"
+        }
+      ],
+      "prefix": "s07-fixtures/python-false-positive",
+      "records": {
+        "analysis_scopes": [],
+        "applicability": [],
+        "applications": [],
+        "declarations": [],
+        "dependency_selectors": [],
+        "input_references": [],
+        "installed_environments": [],
+        "losses": [],
+        "occurrences": [],
+        "relationships": [],
+        "roots": []
+      }
+    }
+  ],
+  "fixture_oracle_sha256": "df9dfad45661241ebf8cddba14851443126ffe17614e499c8f40d45084e3f049",
+  "policy": "Exact record multisets, source paths, content hashes, context references and input coverage; generated IDs bound by unique source anchors. Shared global coverage/stages are assessed separately, not copied from isolated cases. Original oracles unchanged.",
+  "schema_version": "m046.development-prefixed-canonical-expectations/1",
+  "source_oracle_sha256": "0fe1f2177e2d4743e17794befaf10099a68439924b7b9d41e3e54ce834cc601b",
+  "written_at": "2026-10-11T04:13:14.541285+00:00",
+  "written_before_fresh_acceptance_submission": true
+}

@@ -1,0 +1,19 @@
+{
+  "acceptance": false,
+  "all_persisted_finding_fields_equal": true,
+  "contract_findings": 128,
+  "duplicates": [],
+  "envelope": "passed",
+  "invalid": [],
+  "platform_candidate": "c71ff73a93699b94a9a5d22dbc219341c0fc35aa",
+  "platform_pr": "https://github.com/sourcebastion/sourcebastion-platform/pull/414",
+  "raw_findings": 136,
+  "raw_other_sha256": "253d3b07062ec8d7548b5c768897e5dc575adb2b3fb5b9f4ac14163707bbacca",
+  "scanners": {
+    "grype": 20,
+    "kics": 87,
+    "semgrep": 21
+  },
+  "scope": "Retained live report replay only; deployed full/reuse validation pending",
+  "unbounded": 0
+}

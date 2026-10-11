@@ -1,0 +1,21 @@
+{
+  "acceptance": false,
+  "changed_range_oracle_sha256": "cf6d71aefc858dea4f93769bdb4d80131ac62371fd1d848f131093115fa49b1d",
+  "ecosystem": "pypi",
+  "exact_line": "requests==2.19.1",
+  "existing_diagnostic_file_ceiling": 67108864,
+  "expected_consumer_stage": "consumer_execution",
+  "expected_declarations": 6000,
+  "expected_selected_occurrences": 6000,
+  "frozen_before_source_edit_and_submission": true,
+  "line_count": 6000,
+  "matching_expectation": "unavailable after inventory and export; bounded consumer output is not an accepted matching report",
+  "name": "requests",
+  "original_source_oracles_unchanged": true,
+  "package_edges": [],
+  "schema_version": "m046.prospective-bounded-matching-source/1",
+  "selected_version": "2.19.1",
+  "source_bytes": 102000,
+  "source_path": "s07-fixtures/bounded-matcher/requirements.txt",
+  "source_sha256": "d810634faa4e0bd9ae18ec029c48c3367501eaf04a63e27f426fb9241319276d"
+}

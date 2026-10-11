@@ -1,0 +1,130 @@
+{
+  "schema_version": "m046.sanitized-human-review/1",
+  "observed_date": "2026-10-11",
+  "acceptance": true,
+  "case": "K",
+  "run_id": 123,
+  "source_commit": "d24770870ab6dda3eac4fe8bb33d5c9085229788",
+  "foreign_account_download": {
+    "status": "passed",
+    "evidence_source": "designated human reviewer, signed-in browser observation",
+    "request_path": "/account/sbom/download",
+    "same_designated_project_and_snapshot": true,
+    "reported_http_status": 404,
+    "reported_response": "Not available",
+    "earlier_workspace_status": 200,
+    "earlier_workspace_path": "/account/sbom",
+    "earlier_workspace_body": "empty SBOM page with no sources",
+    "clarification": "The workspace 200 was not a download result. The reviewer subsequently confirmed the actual download returns 404."
+  },
+  "owner_visible_coverage_and_findings_review": "passed",
+  "owner_actual_download_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+  "owner_download_integrity": {
+    "status": "passed",
+    "observed_date": "2026-10-11",
+    "evidence_source": "designated human reviewer pasted local checksum output for the downloaded file",
+    "filename": "sbom.cdx.json",
+    "expected_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+    "reported_sha256_matches_frozen_expectation": true
+  },
+  "revoked_grant_download_refusal": {
+    "status": "failed",
+    "observed_date": "2026-10-11",
+    "evidence_source": "designated reviewer report, corroborated by read-only provider, database and durable webhook inspection",
+    "reported_result": "The owner can still download the K SBOM after removing the test repository from the development GitHub App installation.",
+    "expected_http_status": 404,
+    "provider_current_membership_excludes_test_repository": true,
+    "recorded_repository_still_authorized": true,
+    "webhook": {
+      "event": "installation_repositories",
+      "action": "added",
+      "repository_selection": "selected",
+      "added_count": 6,
+      "removed_count": 0,
+      "inbox_status": "applied"
+    },
+    "fix_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/419",
+    "original_failure_preserved": true,
+    "post_fix_live_retest": "passed",
+    "fix_delivery": {
+      "state": "deployed_verified",
+      "reviewed_head": "31cde1d26f619b1f7380a760ea150383116c239f",
+      "merge_commit": "af1c361b32ae15ee11645d72e4f282c9f557ab1e",
+      "focused_tests_passed": 152,
+      "reviewed_head_checks": 31,
+      "reviewed_head_check_result": "all completed success or expected skip",
+      "normal_development_run": 38159496574,
+      "installed_verification": "passed: exact revision and fix file hashes, healthy service, keyring configured, normal worker resumed, persistent writer/reuse/recovery off and read presentation on",
+      "fresh_human_revoke_restore": "passed: revoked download404, then restored original K SBOM with matching actual checksum",
+      "normal_development_run_attempt": 2,
+      "normal_development_result": "success",
+      "installed_files_sha256": {
+        "ezappsec_platform/app.py": "a1fbfb1824314d7e93cc2183c0410e8694d6309688dd466aaccedaa5fe91ce35",
+        "ezappsec_platform/github/worker.py": "985a3770ed4b4e534e1a0cbf012667b38528edef16865ee65205994c2e3ebe38",
+        "ezappsec_platform/github_app.py": "a22b04f1df77aa2fb948e729f2f542f88be1c2b95c120b4d682f150092fff6ec"
+      },
+      "original_deployment_failure_retained": true,
+      "deployment_retry_storage_repair": "Two verified byte-identical historical advisory database copies share storage; every generation path, database byte and metadata receipt preserved; current symlink unchanged"
+    },
+    "post_fix_live_retest_observation": {
+      "status": "passed",
+      "observed_date": "2026-10-11",
+      "reported_http_status": 404,
+      "evidence_source": "designated reviewer confirmed 404 for the exact bound primary-owner download after repository deselection",
+      "platform_revision": "af1c361b32ae15ee11645d72e4f282c9f557ab1e",
+      "corroboration": "read-only inspection confirms the test-repository removal event applied and its bound grant was unauthorized with reason deselected",
+      "removed_event_applied_at": "2026-10-11 18:05:03+00:00",
+      "restored_download_after_this_refusal": "passed: fresh actual downloaded checksum matches frozen expectation"
+    }
+  },
+  "restored_grant_original_download": {
+    "status": "passed",
+    "observed_date": "2026-10-11",
+    "evidence_source": "designated reviewer pasted fresh local shasum output after the confirmed revoked-download404 and explicitly confirmed checksum matches",
+    "filename": "sbom.cdx.json",
+    "reported_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+    "matches_frozen_expectation": true,
+    "after_fresh_revoked_download_refusal": true,
+    "restored_event_applied_at": "2026-10-11 18:07:21+00:00",
+    "corroboration": "read-only inspection confirms the later test-repository addition applied and the bound grant is authorized"
+  },
+  "post_fix_actual_download_integrity": {
+    "status": "passed",
+    "observed_date": "2026-10-11",
+    "reported_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+    "matches_frozen_expectation": true,
+    "reported_before_fresh_revocation": true,
+    "does_not_establish_restoration_after_fresh_refusal": true
+  },
+  "final_signoff": {
+    "status": "accepted",
+    "recorded_at": "2026-10-11T20:50:43.976273+00:00",
+    "evidence_source": "designated requesting human reviewer, explicit conversation sign-off after the deployed tab review",
+    "reported_statement": "signed off",
+    "platform_pull_request": "https://github.com/sourcebastion/sourcebastion-platform/pull/420",
+    "platform_revision": "08d0b500fab703e64650658ec8906c2573191300",
+    "development_deployment_run": 38172712480,
+    "reviewed_cases": [
+      {
+        "case": "K",
+        "run_id": 123,
+        "source_commit": "d24770870ab6dda3eac4fe8bb33d5c9085229788",
+        "scope": "partial inventory with ready matching; dependency/input outcomes; four required pip advisory groups at both exact source paths"
+      },
+      {
+        "case": "J3",
+        "run_id": 122,
+        "source_commit": "3269d964a9641cd95e76745c411729eb82f7bed6",
+        "scope": "retained partial inventory and SBOM with unavailable matching, without a clean-scan claim"
+      },
+      {
+        "case": "H",
+        "run_id": 120,
+        "source_commit": "cb986d63831aa4a03920673f4dce90db0be10830",
+        "scope": "legacy inventory not recorded, unavailable matching and unavailable SBOM export"
+      }
+    ],
+    "download_checks_previously_completed": true,
+    "original_failures_and_frozen_expectations_preserved": true
+  }
+}

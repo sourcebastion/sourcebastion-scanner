@@ -1,0 +1,307 @@
+{
+  "acceptance": false,
+  "base_declarations": 148,
+  "base_selected_occurrences": 8,
+  "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+  "changed_range_oracle_sha256": null,
+  "consumer": {
+    "advisory_built": "2026-10-10T06:30:01Z",
+    "advisory_schema": "v6.1.10",
+    "advisory_snapshot_sha256": "b3e7126b69f01b59c69b145dc0942b0612f12e9e67c8ff7a9572ed969bd720f3",
+    "binary_sha256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e",
+    "config_sha256": "2b52589f5bd5f24c918e1f0d17fade98a20bd821b12dacd59d023565d90e8d24",
+    "version": "0.119.0"
+  },
+  "coverage": {
+    "discovery": "partial",
+    "enumeration": "partial",
+    "environment": "unknown",
+    "graph": "partial",
+    "inputs": [
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:e217917f44b0a38eb10429d742687c215e2ae8a0238265c632c1681adc02fab3"
+        ],
+        "disposition": "unresolved",
+        "ecosystem": "npm",
+        "enumeration": "partial",
+        "enumeration_basis": "source-input",
+        "format": "npm-manifest",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.npm-sources/1",
+        "reason": "no-selected-version",
+        "root_ids": [
+          "root:sha256:49f66ac5fd8a46892d6fa05857343c2f41689a7677cd053570fc7c0b09e2c850"
+        ],
+        "source_path": "frontend/package.json",
+        "source_sha256": "e51e17b28fd706285e279db39e1379dea515a6603ba9ee3c6a8950e851a51dd9"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:93f60cc1baec2009440b811f30007aba365db4933b3cf2012469097601657934"
+        ],
+        "disposition": "unsupported",
+        "ecosystem": "npm",
+        "enumeration": "unknown",
+        "enumeration_basis": "source-input",
+        "format": "npm-manifest",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.npm-sources/1",
+        "reason": "unsupported-npm-selection-controls",
+        "root_ids": [
+          "root:sha256:496a61d27179200e139ef9df12dff4ea2c754ebe5361ec4fff0254997522e705"
+        ],
+        "source_path": "package.json",
+        "source_sha256": "93901e307fb6858b575b66588a4201b5df76e4a965efd282584bcb16335c93ff"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:fa2e188f18efc3378ef7651cfd7fc47eb16ac1dbd8f93fba4071f3135a909b31"
+        ],
+        "disposition": "parsed",
+        "ecosystem": "npm",
+        "enumeration": "complete",
+        "enumeration_basis": "source-input",
+        "format": "npm-manifest",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.npm-sources/1",
+        "reason": "static-input",
+        "root_ids": [
+          "root:sha256:5268291b1719ff318ea5d49fc86a041200c3bbdf8740d97800fd7970184d30ea"
+        ],
+        "source_path": "s07-fixtures/empty/package.json",
+        "source_sha256": "31ad59ef6f4ee241dca73f52591f4df3e4cbb9a47f9c039456ce21b1bb154be7"
+      },
+      {
+        "analysis_scope_ids": [],
+        "disposition": "unsupported",
+        "ecosystem": "pypi",
+        "enumeration": "unknown",
+        "enumeration_basis": "source-input",
+        "format": "python-setup-static",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.python-manifests/1",
+        "reason": "dynamic-metadata",
+        "root_ids": [],
+        "source_path": "s07-fixtures/execution-trap/setup.py",
+        "source_sha256": "58ee8755c2e7cd31b0f2017890294d155f11e32e893bffa51fba32d0f0a5d9cf"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:b31599769214386ce55a469686045e60fdc212f15410343f466cfcf1553b6bdc"
+        ],
+        "disposition": "unsupported",
+        "ecosystem": "golang",
+        "enumeration": "unknown",
+        "enumeration_basis": "source-input",
+        "format": "go-mod",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.go-sources/1",
+        "reason": "unresolved-go-module-selection-and-graph",
+        "root_ids": [
+          "root:sha256:b31599769214386ce55a469686045e60fdc212f15410343f466cfcf1553b6bdc"
+        ],
+        "source_path": "s07-fixtures/go-module/go.mod",
+        "source_sha256": "81dfda89cb699917256fd21704a89ad9f1b4483b93abf7ccf4d200be4a07d6e9"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:4ed81fef8246e22e6add5fb0878c023882a18173920661e6f7f9399b752e5748"
+        ],
+        "disposition": "parsed",
+        "ecosystem": "npm",
+        "enumeration": "complete",
+        "enumeration_basis": "source-input",
+        "format": "npm-lock",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.npm-sources/1",
+        "reason": "static-input",
+        "root_ids": [
+          "root:sha256:4fa9a542129ac83c22fac638562dc33427b4baca3e41f7d3ae8839e21c4dcfed"
+        ],
+        "source_path": "s07-fixtures/node-npm-complete/package-lock.json",
+        "source_sha256": "13a5bf5142a11db70f140eb1a027543cf7b610a6d1490fc8dba5193114ad5386"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:1c34d2c776a57998d49bebdc17d8af560ec8b0990056d82aac3dbfe8c39126c3"
+        ],
+        "disposition": "unresolved",
+        "ecosystem": "npm",
+        "enumeration": "partial",
+        "enumeration_basis": "source-input",
+        "format": "npm-manifest",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.npm-sources/1",
+        "reason": "no-selected-version",
+        "root_ids": [
+          "root:sha256:4fa9a542129ac83c22fac638562dc33427b4baca3e41f7d3ae8839e21c4dcfed"
+        ],
+        "source_path": "s07-fixtures/node-npm-complete/package.json",
+        "source_sha256": "97f5cfcf30e654d5665630d4be5db7555b2f208f86bc001064cc3054083d33be"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:d0656000ec2442403a3d78d17ddf48c092f52f6d11876d24bc1ddcb3c8b5d3cd"
+        ],
+        "disposition": "parsed",
+        "ecosystem": "npm",
+        "enumeration": "complete",
+        "enumeration_basis": "source-input",
+        "format": "npm-manifest",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.npm-sources/1",
+        "reason": "static-input",
+        "root_ids": [
+          "root:sha256:fa16e81d050476c583169154201aaca5d39e2d9de5b55b5ce0ba11a38ecd47fd"
+        ],
+        "source_path": "s07-fixtures/project-hooks/package.json",
+        "source_sha256": "63ce3c7c00679f1c51f29316e064de6aeae006e3176f565e7c4b96ba48ac182d"
+      },
+      {
+        "analysis_scope_ids": [],
+        "disposition": "ignored",
+        "ecosystem": "pypi",
+        "enumeration": "unknown",
+        "enumeration_basis": "source-input",
+        "format": "pip-requirements",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.pip-requirements/1",
+        "reason": "non-dependency-prose",
+        "root_ids": [],
+        "source_path": "s07-fixtures/python-false-positive/meeting-notes.txt",
+        "source_sha256": "8d70aaece6ad8a72e2d3e04993fd75ed0959a8b33f0b01d67518b7d65b74a364"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:4900eae9108c216c241cfcc91b9e64a9377eb06be85f99eba16db3412a76f57e"
+        ],
+        "disposition": "parsed",
+        "ecosystem": "pypi",
+        "enumeration": "complete",
+        "enumeration_basis": "source-input",
+        "format": "pip-requirements",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.pip-requirements/1",
+        "reason": "static-input",
+        "root_ids": [],
+        "source_path": "s07-fixtures/python-pip-extension/dependencies.pip",
+        "source_sha256": "9c07c4225d35a82b6fb42f873d02ac383b4ac4e0aac95b536a56deac8610dfad"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:b07c4e9caeb0c87d11e2345702dff45ac4e15ea8bebb6aa021eda6a285b03c44"
+        ],
+        "disposition": "parsed",
+        "ecosystem": "pypi",
+        "enumeration": "complete",
+        "enumeration_basis": "source-input",
+        "format": "pip-requirements",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.pip-requirements/1",
+        "reason": "static-input",
+        "root_ids": [],
+        "source_path": "s07-fixtures/python-product-build-input/scripts/python-build.in",
+        "source_sha256": "884c07a93ef0e6b0192c4db56e7d3f886aeb8f574aacc260b4f130384f3f00a1"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:dfeb6efdd63dc08def920e01a59c113af35f34d3ee21b80215307c58a53e89cb"
+        ],
+        "disposition": "parsed",
+        "ecosystem": "pypi",
+        "enumeration": "complete",
+        "enumeration_basis": "source-input",
+        "format": "pip-requirements",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.pip-requirements/1",
+        "reason": "static-input",
+        "root_ids": [],
+        "source_path": "s07-fixtures/python-product-hidden-lock/.github/python-locks/build.txt",
+        "source_sha256": "c07b749dfc67776d34d249cfe2a08cc57a43b68139aa464c98d954c080758db3"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:98d9e25d7408376097655e6444747ae7244c9c8946593784efd36eacda9873ad"
+        ],
+        "disposition": "unresolved",
+        "ecosystem": "pypi",
+        "enumeration": "partial",
+        "enumeration_basis": "source-input",
+        "format": "pip-requirements",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.pip-requirements/1",
+        "reason": "no-selected-version",
+        "root_ids": [],
+        "source_path": "s07-fixtures/python-range/requirements.txt",
+        "source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a"
+      },
+      {
+        "analysis_scope_ids": [
+          "scope:sha256:566b167cfb4b70f50094323ed9eb249b70e943a0cb29e3bb3731d197a3365e05"
+        ],
+        "disposition": "parsed",
+        "ecosystem": "cargo",
+        "enumeration": "complete",
+        "enumeration_basis": "source-input",
+        "format": "cargo-lock",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.cargo-sources/1",
+        "reason": "static-input",
+        "root_ids": [],
+        "source_path": "s07-fixtures/rust-edges/Cargo.lock",
+        "source_sha256": "b2d593da40ccca47f698a6d5e486cfc3313262043d5c6108ac975be37a2f4e44"
+      },
+      {
+        "analysis_scope_ids": [],
+        "disposition": "unsupported",
+        "ecosystem": "gem",
+        "enumeration": "unknown",
+        "enumeration_basis": "source-input",
+        "format": "bundler-manifest",
+        "installed_environment_ids": [],
+        "parser": null,
+        "reason": "unsupported-format-adapter",
+        "root_ids": [],
+        "source_path": "s07-fixtures/unsupported/Gemfile",
+        "source_sha256": "eee10f0537d349943df65db2a0d542f9d3e4df3cfe3612b3aba54487ca9ac4b8"
+      }
+    ],
+    "refusal_codes": [],
+    "schema_version": "sourcebastion.inventory-coverage/1",
+    "version_resolution": "partial"
+  },
+  "exact_contextual_cases": [
+    "python-product-build-input",
+    "python-product-hidden-lock",
+    "python-pip-extension",
+    "node-npm-complete",
+    "go-module",
+    "rust-edges",
+    "python-range",
+    "python-false-positive"
+  ],
+  "expected_advisory_generation": "snapshot-xoas1lkc",
+  "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+  "http_authorization_checks": false,
+  "human_review": false,
+  "known_failures": [],
+  "matching_output_sha256": "e2f217806f977d1e4198f9ce18771f8942b6b8064da369a2f226f29360a4aece",
+  "persisted_inventory_rows_equal": 530,
+  "persisted_matching_rows_equal": 20,
+  "platform_revision": "58fdd2cf963db081f0e32f687570345446715787",
+  "prefixed_oracle_sha256": "0361ef2d9d4c7743369236aa746c1cd58da91b9b0934d1218f7a402907841509",
+  "recovery_identity_sha256": "953ec4af4a171b94dfe7667462a21a4229beb5d73c26457df7daf925fc25f476",
+  "replayed_matching_rows": 20,
+  "required_pip_source_advisory_groups": 8,
+  "scan_plan_persistence": "Full execution plan bound, but result envelope fell back; ScanRun planning fields absent; reuse baseline not qualified.",
+  "schema_version": "m046.live-development-independent-replay/1",
+  "source_commit": "4e7289a38feb4305f82370a54515e3ddf1f11242",
+  "source_sha256": "1c2f8b4834491e0f3c1c930f9d5c34c29978868d78c68feb92a13898e0a3974d",
+  "stages": {
+    "export": "not-run",
+    "inventory": "partial",
+    "matching": "not-run"
+  },
+  "status": "passed"
+}

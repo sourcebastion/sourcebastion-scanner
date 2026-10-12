@@ -1,0 +1,12 @@
+{
+  "content-hash": "0123456789abcdef0123456789abcdef",
+  "packages": [
+    {"name": "acme/mit", "version": "1.0.0", "license": ["MIT"]},
+    {"name": "acme/dual", "version": "1.0.0", "license": ["MIT", "GPL-3.0-or-later"]},
+    {"name": "acme/gpl", "version": "1.0.0", "license": ["GPL-3.0-only"]},
+    {"name": "acme/silent", "version": "1.0.0"},
+    {"name": "acme/proprietary", "version": "1.0.0", "license": ["proprietary"]},
+    {"name": "acme/ref", "version": "1.0.0", "license": ["LicenseRef-Acme-Internal"]}
+  ],
+  "packages-dev": []
+}

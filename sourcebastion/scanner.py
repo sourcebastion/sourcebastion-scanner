@@ -261,7 +261,9 @@ class SecurityScanner:
         license_result = None
         if self.license_check and self.config.license_policy:
             policy = self.config.license_policy.to_policy()
-            license_result = check_licenses(str(base_path), policy)
+            license_result = check_licenses(
+                str(base_path), policy, undetermined_severity=self.config.license_policy.undetermined_severity
+            )
             issues.extend(license_result["findings"])
 
         # Include container findings in the same complete snapshot used by

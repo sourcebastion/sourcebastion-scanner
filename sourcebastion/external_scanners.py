@@ -313,8 +313,8 @@ class ScannerWrapper(ABC):
         """
         import os as _os
 
-        # Imported here rather than at module scope: config imports
-        # license_checker, which imports this module.
+        # Imported lazily so loading the scanner wrappers never loads, or
+        # cycles through, configuration.
         from sourcebastion.config import MAX_SCANNER_TIMEOUT_SECONDS
 
         default = DEFAULT_COMPONENT_TIMEOUTS.get(self.name, {}).get(kind)

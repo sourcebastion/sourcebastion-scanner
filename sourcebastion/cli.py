@@ -44,7 +44,7 @@ def main():
 @click.option("--jira-project", envvar="SOURCEBASTION_JIRA_PROJECT", default=None, help="Jira project key for new issues")
 @click.option("--sbom/--no-sbom", default=False, help="Generate CycloneDX SBOM alongside scan results")
 @click.option("--sbom-output", type=click.Path(), default="sbom.cdx.json", help="Output path for SBOM file (default: sbom.cdx.json)")
-@click.option("--license-check", is_flag=True, default=False, help="Run license compliance check (requires syft)")
+@click.option("--license-check", is_flag=True, default=False, help="Check dependency licenses stated in lock and metadata files against license_policy (offline)")
 @click.option("--image", default=None, help="Container image to scan for OS-level CVEs (e.g. nginx:latest)")
 @click.option("--registry-auth", default=None, help="Private registry credentials in user:token format")
 @click.option("--rules", multiple=True, help="Custom rule packs to enable (python, ruby, java, javascript, php, or 'all')")
@@ -208,21 +208,30 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
         if results.get("license_summary"):
             ls = results["license_summary"]
             click.echo(f"\n  License check: {ls['total']} package(s) - "
-                        f"{ls['allowed']} allowed, {ls['denied']} denied, {ls['unknown']} unknown")
+                        f"{ls['permitted']} permitted, {ls['denied']} denied, {ls['undetermined']} undetermined")
+            if ls.get("declarations_not_assessed"):
+                click.echo(
+                    f"  ⚠ {ls['declarations_not_assessed']} declared dependenc(ies) were not license-checked: "
+                    "only locked or installed packages state a license. Commit a lockfile to check them."
+                )
+            if ls["coverage"] != "complete":
+                # Never let a clean count over partial coverage read as compliance.
+                click.echo(
+                    f"  ⚠ License coverage is {ls['coverage']}: {len(ls['unassessed_inputs'])} input(s) "
+                    "were not assessed, so packages may be missing from these counts."
+                )
             license_findings = [i for i in results['issues'] if i.get('category') == 'license_compliance']
             if ls["denied"] > 0:
-                click.echo(f"  ✗ {ls['denied']} denied license(s) found:", err=True)
+                click.echo(f"  ✗ {ls['denied']} package(s) with a denied license:", err=True)
                 for f in license_findings:
-                    if f['severity'] == 'high':
-                        extras = ""
-                        if len(f.get('all_licenses', [])) > 1:
-                            extras = f" (also declares: {', '.join(l for l in f['all_licenses'] if l != f['license'])})"
-                        click.echo(f"    - {f['package']}@{f['package_version']}: {f['license']}{extras}", err=True)
-            if ls["unknown"] > 0:
-                click.echo(f"  ⚠ {ls['unknown']} unknown license(s) - review and add to allowed_licenses or denied_licenses:")
+                    if f.get('license_result') == 'denied':
+                        click.echo(f"    - {f['package']}@{f['package_version']}: {f['license']}", err=True)
+            if ls["undetermined"] > 0:
+                click.echo(f"  ⚠ {ls['undetermined']} package(s) with an undetermined license - "
+                           "review and add to allowed_licenses or denied_licenses:")
                 for f in license_findings:
-                    if f['severity'] == 'medium':
-                        click.echo(f"    - {f['package']}@{f['package_version']}: {f['license']}")
+                    if f.get('license_result') == 'undetermined':
+                        click.echo(f"    - {f['package']}@{f['package_version']}: {f['license'] or 'no license stated'}")
 
         # Policy evaluation results
         if results.get("policy_violations") and results.get("policy_mode", "legacy") != "cedar":
@@ -372,7 +381,10 @@ severity: medium
 #     max_count: 5
 
 # License compliance - SPDX identifiers (see https://spdx.org/licenses/)
-# Supports wildcards: GPL* matches GPL-2.0, GPL-3.0-only, etc.
+# Entries are licenses, not expressions. Wildcards match one identifier:
+# GPL-* matches GPL-2.0-only and GPL-3.0-or-later, not LGPL-2.1-only.
+# "X WITH E" entries must be exact. Packages with no stated or no recognised
+# license are reported as undetermined (medium; set undetermined_severity: low).
 # Run with: sourcebastion scan --license-check
 # license_policy:
 #   allowed_licenses:
@@ -384,10 +396,10 @@ severity: medium
 #     - 0BSD
 #     - Unlicense
 #   denied_licenses:
-#     - GPL*
-#     - AGPL*
-#     - SSPL*
-#     - EUPL*
+#     - GPL-*
+#     - AGPL-*
+#     - SSPL-*
+#     - EUPL-*
 """
 
     with open(config_path, "w") as f:
@@ -539,6 +551,7 @@ def check_config(config_path):
             parts.append(f"{len(lp.allowed_licenses)} allowed")
         if lp.denied_licenses:
             parts.append(f"{len(lp.denied_licenses)} denied")
+        parts.append(f"undetermined severity {lp.undetermined_severity}")
         click.echo(f"  License policy: {', '.join(parts)}")
 
 

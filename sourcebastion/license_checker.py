@@ -1,302 +1,227 @@
-"""License compliance checker — extracts licenses from syft/grype output and
-checks them against configurable allowed/denied lists (PLAN-11)"""
+"""License policy over the canonical inventory (M048 S04).
 
-import json
+License evidence comes only from the canonical inventory (M048 D1): the values
+the inputs an adapter read actually state, composed locally with no network.
+Each package occurrence gets one result. ``permitted`` produces no finding,
+``denied`` and ``undetermined`` do. Undetermined (no license stated, unparsed
+text, an unlisted ``LicenseRef``) is never permitted.
+
+When an occurrence has several observations, the strictest wins: any denied
+observation denies it, and any undetermined one keeps it from being permitted.
+
+Only resolved packages are evaluated: locked, installed or imported
+occurrences. A manifest declaration names a dependency but never states that
+dependency's license, so it is counted as not assessed instead of reported as
+unstated beside the resolved package that does state one.
+"""
+
+from __future__ import annotations
+
+import hashlib
 import logging
-import subprocess
-import tempfile
-from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict
 
 from sourcebastion.external_scanners import ScannerExecutionError
+from sourcebastion.license_expression import (
+    DENIED,
+    PERMITTED,
+    UNDETERMINED,
+    LicensePolicy,
+    evaluate,
+)
 
 logger = logging.getLogger(__name__)
 
-
-def _normalize_license(license_id: str) -> str:
-    """Normalize a license identifier for comparison."""
-    return license_id.strip()
-
-
-def _matches_pattern(license_id: str, pattern: str) -> bool:
-    """Check if a license matches a pattern (supports wildcards like GPL*)."""
-    return fnmatch(license_id.upper(), pattern.upper())
+SCANNER = "license-checker"
+RESOLVED = frozenset({"locked", "installed", "imported"})
+PRODUCER = "sourcebastion-scanner-license-check"
 
 
-def _matches_any(license_id: str, patterns: List[str]) -> bool:
-    """Check if a license matches any pattern in the list."""
-    normalized = _normalize_license(license_id)
-    return any(_matches_pattern(normalized, p) for p in patterns)
+def compose_licensed_inventory(path: str):
+    """Compose a local inventory/2 for *path*; never published or uploaded."""
+    from sourcebastion import __version__
+    from sourcebastion.inventory.compose_source import compose_source
+    from sourcebastion.inventory.contract import Producer
+    from sourcebastion.inventory.inputs import Source
+    from sourcebastion.inventory.registry import REGISTRY_SHA256, DiscoveryConfig
 
-
-class LicensePolicy:
-    """Configurable license policy with allowed and denied lists."""
-
-    def __init__(
-        self,
-        allowed_licenses: Optional[List[str]] = None,
-        denied_licenses: Optional[List[str]] = None,
-    ):
-        self.allowed_licenses = allowed_licenses or []
-        self.denied_licenses = denied_licenses or []
-
-    def check(self, license_id: str) -> str:
-        """Check a license against the policy.
-
-        Returns: "allowed", "denied", or "unknown"
-        """
-        if not license_id or license_id.lower() in ("unknown", "none", ""):
-            return "unknown"
-
-        if self.denied_licenses and _matches_any(license_id, self.denied_licenses):
-            return "denied"
-
-        if self.allowed_licenses and _matches_any(license_id, self.allowed_licenses):
-            return "allowed"
-
-        if self.allowed_licenses:
-            return "unknown"
-
-        return "allowed"
-
-
-class PackageLicense:
-    """A package with its detected license(s)."""
-
-    def __init__(self, name: str, version: str, licenses: List[str], pkg_type: str = ""):
-        self.name = name
-        self.version = version
-        self.licenses = licenses
-        self.pkg_type = pkg_type
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "name": self.name,
-            "version": self.version,
-            "licenses": self.licenses,
-            "type": self.pkg_type,
-        }
-
-
-def extract_licenses_from_syft(syft_json: Dict[str, Any]) -> List[PackageLicense]:
-    """Extract package license information from syft JSON output.
-
-    Syft output contains an 'artifacts' array (syft < 1.0) or 'packages' array
-    (syft >= 1.0), each with a 'licenses' field.
-    """
-    packages = []
-    artifacts = syft_json.get("artifacts") or syft_json.get("packages") or []
-
-    for artifact in artifacts:
-        name = artifact.get("name", "")
-        version = artifact.get("version", "")
-        pkg_type = artifact.get("type", "")
-
-        license_ids = []
-        raw_licenses = artifact.get("licenses") or []
-
-        for lic in raw_licenses:
-            if isinstance(lic, str):
-                license_ids.append(lic)
-            elif isinstance(lic, dict):
-                spdx = lic.get("spdxExpression") or lic.get("value") or lic.get("name") or ""
-                if spdx:
-                    license_ids.append(spdx)
-
-        if not license_ids:
-            license_ids = ["UNKNOWN"]
-
-        packages.append(PackageLicense(
-            name=name,
-            version=version,
-            licenses=license_ids,
-            pkg_type=pkg_type,
-        ))
-
-    return packages
-
-
-def run_syft(path: str) -> Tuple[Optional[Dict[str, Any]], str]:
-    """Run syft on a path and return (parsed JSON, raw output path).
-
-    Returns (None, "") if syft is not installed or fails.
-
-    Note: Path is canonicalized to prevent directory traversal attacks.
-    """
-    try:
-        subprocess.run(["syft", "version"], capture_output=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        logger.warning("syft not installed — license check unavailable")
-        return None, ""
-
-    # Canonicalize path to prevent directory traversal (e.g., "../other-dir")
-    # Use resolve(strict=False) to allow non-existent paths (syft will validate)
-    # Handle case where cwd was deleted (e.g., by buggy test) by catching FileNotFoundError
-    try:
-        scan_path = str(Path(path).expanduser().absolute().resolve(strict=False))
-    except FileNotFoundError:
-        # cwd was deleted, path will be handled by syft (or fail appropriately)
-        scan_path = path
-
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-        raw_path = f.name
-
-    try:
-        result = subprocess.run(
-            ["syft", "dir:" + scan_path, "-o", "json", "--file", raw_path],
-            capture_output=True,
-            text=True,
-            timeout=300,
+    root = Path(path).expanduser().resolve()
+    if not root.is_dir():
+        root = root.parent
+    config = DiscoveryConfig()
+    identity = f"{PRODUCER}/{__version__}".encode()
+    producer = Producer(
+        name=PRODUCER,
+        version=__version__,
+        code_sha256=hashlib.sha256(identity).hexdigest(),
+        registry_sha256=REGISTRY_SHA256,
+        config_sha256=config.sha256,
+    )
+    with Source(str(root)) as source:
+        return compose_source(
+            source,
+            # A local check has no controller-admitted source digest; the
+            # inventory is evaluated in-process and never leaves it.
+            source_sha256=hashlib.sha256(str(root).encode()).hexdigest(),
+            producer=producer,
+            config=config,
+            licenses=True,
         )
-        if result.returncode != 0:
-            logger.error(f"syft exited with code {result.returncode}: {result.stderr.strip()}")
-            return None, raw_path
-        with open(raw_path) as f:
-            data = json.load(f)
-        return data, raw_path
-    except subprocess.TimeoutExpired:
-        logger.error("syft scan timed out after 300s")
-        return None, raw_path
-    except (json.JSONDecodeError, FileNotFoundError) as e:
-        logger.error(f"syft output error: {e}")
-        return None, raw_path
-    except Exception as e:
-        logger.error(f"syft scan failed: {e}")
-        return None, raw_path
 
 
 def check_licenses(
     path: str,
     policy: LicensePolicy,
-    syft_json: Optional[Dict[str, Any]] = None,
+    *,
+    undetermined_severity: str = "medium",
+    inventory=None,
 ) -> Dict[str, Any]:
-    """Run license compliance check on a path.
+    """Evaluate *policy* over the canonical inventory of *path*.
 
-    Args:
-        path: Directory to scan
-        policy: License policy to evaluate against
-        syft_json: Pre-existing syft output (if None, runs syft)
-
-    Returns dict with:
-        - findings: list of license_compliance finding dicts
-        - packages: list of all packages with licenses
-        - summary: {total, allowed, denied, unknown}
-
-    Note: Summary counts are per-license, not per-package. A dual-licensed
-    package (e.g., MIT+GPL-3.0) will increment multiple counters if licenses
-    differ in classification (e.g., 1 allowed, 1 denied).
+    A failed inventory fails the component, as any scanner failure does: a
+    clean license result over nothing would read as compliance.
     """
-    if syft_json is None:
-        raw_path = ""
+    if inventory is None:
         try:
-            syft_json, raw_path = run_syft(path)
-            if syft_json is None:
-                code = "not_installed" if not raw_path else "execution_failed"
-                raise ScannerExecutionError("license-checker", code)
-        finally:
-            if raw_path:
-                try:
-                    Path(raw_path).unlink()
-                except OSError:
-                    pass
+            inventory = compose_licensed_inventory(path)
+        except (OSError, ValueError) as error:
+            logger.error("license inventory composition failed: %s", type(error).__name__)
+            raise ScannerExecutionError(SCANNER, "execution_failed") from None
+    if inventory.stages.inventory == "failed":
+        # Fixed refusal codes only, never source text, e.g. the npm selector
+        # runtime missing on a host other than the Linux scanner image.
+        logger.error(
+            "license inventory could not be composed: %s",
+            ", ".join(inventory.coverage.refusal_codes) or "inventory-failed",
+        )
+        raise ScannerExecutionError(SCANNER, "scope_unresolved")
+    return evaluate_inventory(inventory, policy, undetermined_severity=undetermined_severity)
 
-    packages = extract_licenses_from_syft(syft_json)
 
-    findings = []
-    allowed_count = 0
-    denied_count = 0
-    unknown_count = 0
+def evaluate_inventory(inventory, policy: LicensePolicy, *, undetermined_severity: str = "medium"):
+    """Findings, per-package rows and a coverage-aware summary."""
+    if undetermined_severity not in ("medium", "low"):
+        raise ValueError("undetermined severity is medium or low")
+    observations: Dict[str, list] = {}
+    for row in inventory.licenses:
+        observations.setdefault(row.occurrence_id, []).append(row)
+    gaps = {row.occurrence_id: row for row in inventory.license_gaps}
 
-    for pkg in packages:
-        for lic in pkg.licenses:
-            verdict = policy.check(lic)
-
-            if verdict == "denied":
-                denied_count += 1
-                other_licenses = [l for l in pkg.licenses if l != lic]
-                desc = (
-                    f"Package {pkg.name}@{pkg.version} uses license '{lic}' "
-                    f"which is on the denied list."
-                )
-                if other_licenses:
-                    desc += (
-                        f" This package also declares: {', '.join(other_licenses)}. "
-                        f"If dual-licensed, you may be able to use it under an alternative license."
-                    )
-                solution = (
-                    f"Option 1: Replace {pkg.name} with a permissively-licensed alternative. "
-                    f"Option 2: Add an ignore rule (rule_id: license-denied-{lic}) with justification. "
-                    f"Option 3: If dual-licensed, confirm the alternative license applies to your usage."
-                )
-                findings.append({
-                    "type": "license_compliance",
-                    "category": "license_compliance",
-                    "title": f"Denied license: {lic} in {pkg.name}@{pkg.version}",
-                    "description": desc,
-                    "solution": solution,
-                    "file": f"dependency: {pkg.name}",
-                    "line": 0,  # License findings have no file/line context
-                    "severity": "high",
-                    "scanner": "license-checker",
-                    "rule_id": f"license-denied-{lic}",
-                    "license": lic,
-                    "all_licenses": pkg.licenses,
-                    "package": pkg.name,
-                    "package_version": pkg.version,
-                    "package_type": pkg.pkg_type,
-                })
-            elif verdict == "unknown":
-                unknown_count += 1
-                is_missing = lic.upper() == "UNKNOWN"
-                if is_missing:
-                    desc = (
-                        f"Package {pkg.name}@{pkg.version} has no license metadata. "
-                        f"This may indicate a private/internal package or missing LICENSE file."
-                    )
-                    solution = (
-                        f"Check the package source for a LICENSE file. "
-                        f"If the license is acceptable, add it to allowed_licenses in your config. "
-                        f"If the package is internal, add an ignore rule (rule_id: license-unknown-UNKNOWN)."
-                    )
-                else:
-                    desc = (
-                        f"Package {pkg.name}@{pkg.version} uses license '{lic}' "
-                        f"which is not on your allowed list. "
-                        f"Review whether this license is compatible with your project."
-                    )
-                    solution = (
-                        f"If '{lic}' is acceptable, add it to allowed_licenses in .sourcebastion.yaml. "
-                        f"If not acceptable, add it to denied_licenses to flag it as high severity. "
-                        f"To suppress: add an ignore rule (rule_id: license-unknown-{lic})."
-                    )
-                findings.append({
-                    "type": "license_compliance",
-                    "category": "license_compliance",
-                    "title": f"Unknown license: {lic} in {pkg.name}@{pkg.version}",
-                    "description": desc,
-                    "solution": solution,
-                    "file": f"dependency: {pkg.name}",
-                    "line": 0,  # License findings have no file/line context
-                    "severity": "medium",
-                    "scanner": "license-checker",
-                    "rule_id": f"license-unknown-{lic}",
-                    "license": lic,
-                    "all_licenses": pkg.licenses,
-                    "package": pkg.name,
-                    "package_version": pkg.version,
-                    "package_type": pkg.pkg_type,
-                })
-            else:
-                allowed_count += 1
+    findings, packages = [], []
+    counts = {PERMITTED: 0, DENIED: 0, UNDETERMINED: 0}
+    resolved = [row for row in inventory.occurrences if row.evidence_kind in RESOLVED]
+    for occurrence in sorted(resolved, key=lambda row: (row.name, row.selected_version or "", row.id)):
+        rows = sorted(observations.get(occurrence.id, ()), key=lambda row: row.id)
+        evaluated = [(row, evaluate(row.value_raw, policy)) for row in rows]
+        if any(e.result == DENIED for _, e in evaluated):
+            result = DENIED
+        elif not evaluated or any(e.result == UNDETERMINED for _, e in evaluated):
+            result = UNDETERMINED
+        else:
+            result = PERMITTED
+        counts[result] += 1
+        stated = [row.expression or row.value_raw for row in rows]
+        packages.append({
+            "name": occurrence.name,
+            "version": occurrence.selected_version,
+            "ecosystem": occurrence.ecosystem,
+            "licenses": stated,
+            "result": result,
+            "occurrence_id": occurrence.id,
+        })
+        if result == PERMITTED:
+            continue
+        findings.append(_finding(occurrence, result, evaluated, gaps.get(occurrence.id), stated, undetermined_severity))
 
     return {
         "findings": findings,
-        "packages": [p.to_dict() for p in packages],
+        "packages": packages,
         "summary": {
-            "total": len(packages),
-            "allowed": allowed_count,
-            "denied": denied_count,
-            "unknown": unknown_count,
+            "total": len(resolved),
+            # Declarations with no resolved package (e.g. requirements.txt
+            # without a lock) cannot be license-checked; they are not clean.
+            "declarations_not_assessed": len(inventory.occurrences) - len(resolved),
+            "permitted": counts[PERMITTED],
+            "denied": counts[DENIED],
+            "undetermined": counts[UNDETERMINED],
+            # Partial coverage means packages may exist that were never read.
+            # "0 denied" over partial coverage is not a compliant result.
+            "coverage": inventory.stages.inventory,
+            "unassessed_inputs": sorted(
+                row.source_path
+                for row in inventory.coverage.inputs
+                if row.disposition not in ("parsed", "ignored")
+            ),
+            "license_list_version": inventory.license_list_version,
         },
     }
+
+
+def _finding(occurrence, result, evaluated, gap, stated, undetermined_severity):
+    package = f"{occurrence.name}@{occurrence.selected_version or 'unresolved'}"
+    if result == DENIED:
+        row, evaluation = next((r, e) for r, e in evaluated if e.result == DENIED)
+        terms = ", ".join(str(t) for t in evaluation.denied_terms)
+        title = f"Denied license: {row.expression} in {package}"
+        description = (
+            f"{package} states the license '{row.expression}' ({row.evidence} in {row.source.path}). "
+            f"Denied by policy: {terms}."
+        )
+        solution = (
+            f"Replace {occurrence.name} with a package under a permitted license, or add an ignore rule "
+            f"(rule_id: license-denied-{row.expression}) with a justification."
+        )
+        severity, rule_id = "high", f"license-denied-{row.expression}"
+        license_value, location = row.expression, row.source
+    else:
+        undetermined = next((r for r, e in evaluated if e.result == UNDETERMINED), None)
+        if undetermined is None:
+            title = f"No license stated: {package}"
+            description = (
+                f"No input that was read states a license for {package} ({gap.reason if gap else 'unassessed'}). "
+                "An unstated license is not a permitted one."
+            )
+            key, license_value, location = "unstated", None, occurrence.source
+        elif undetermined.expression is None:
+            title = f"Unrecognized license in {package}"
+            description = (
+                f"{package} states '{undetermined.value_raw}' ({undetermined.evidence} in "
+                f"{undetermined.source.path}), which is not an SPDX license expression."
+            )
+            key, license_value, location = "unparsed", undetermined.value_raw, undetermined.source
+        else:
+            title = f"License not on the allowed list: {undetermined.expression} in {package}"
+            description = (
+                f"{package} states '{undetermined.expression}' ({undetermined.evidence} in "
+                f"{undetermined.source.path}), which the policy neither allows nor denies."
+            )
+            key, license_value, location = undetermined.expression, undetermined.expression, undetermined.source
+        solution = (
+            "Confirm the package's license. If acceptable, add it to allowed_licenses; if not, to "
+            f"denied_licenses. To suppress: add an ignore rule (rule_id: license-undetermined-{key})."
+        )
+        severity, rule_id = undetermined_severity, f"license-undetermined-{key}"
+    return {
+        "type": "license_compliance",
+        "category": "license_compliance",
+        "title": title,
+        "description": description,
+        "solution": solution,
+        "file": location.path,
+        "line": 0,  # Evidence is located by `license_locator`, not a line.
+        "license_locator": location.locator,
+        "severity": severity,
+        "scanner": SCANNER,
+        "rule_id": rule_id,
+        "license_result": result,
+        "license": license_value,
+        "all_licenses": stated,
+        "package": occurrence.name,
+        "package_version": occurrence.selected_version,
+        "package_type": occurrence.ecosystem,
+        "occurrence_id": occurrence.id,
+    }
+
+
+__all__ = ["LicensePolicy", "check_licenses", "compose_licensed_inventory", "evaluate_inventory"]

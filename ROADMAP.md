@@ -306,7 +306,7 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 **Problem:** Using a GPL dependency in a commercial product is a legal risk. Teams need to know what licenses their dependencies carry and whether any violate policy.
 
 **Scope:**
-- Extract license data from grype/syft SBOM output
+- Extract license data from the canonical inventory (superseded by M048; see docs/M048-scope.md)
 - Configurable allowed/denied license lists in `.sourcebastion.yaml`
 - License violations appear as `category: license_compliance` findings in `vulnerabilities.json`
 - Dashboard shows license breakdown by type
@@ -315,8 +315,8 @@ Plans are grouped into phases for orientation, but **each plan is independently 
 
 **Technical approach:**
 - New `sourcebastion/license_checker.py`
-- Syft (bundled with grype) outputs license data — parse from its JSON output
-- Map SPDX license identifiers to policy rules
+- License evidence comes from the canonical inventory (M048 S03); syft is not used
+- Parse SPDX expressions and evaluate them per term (M048 S02)
 
 **Done criteria:**
 - `tests/test_license_checker.py` covering: allowed license passes, denied license fails, unknown license warns, wildcard match (GPL*)

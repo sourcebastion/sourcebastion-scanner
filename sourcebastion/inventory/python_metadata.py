@@ -34,6 +34,8 @@ class Document:
     requirements: tuple = ()
     requires_python: str | None = None
     losses: tuple = ()
+    # (header locator, stated value) license claims, unparsed here.
+    licenses: tuple = ()
 
 
 class Refusal(ValueError):
@@ -50,6 +52,24 @@ def _field(value, check):
     # license-expression validation. No parser receives an unbounded expression.
     if not within_expression_budget(value):
         raise Refusal("metadata-expression-budget-exceeded")
+
+
+def _license_claims(raw):
+    """The distribution's own license claim, by PEP 639 precedence.
+
+    ``License-Expression`` supersedes ``License`` and license classifiers, so
+    when present it is the only claim. Otherwise ``License`` and then each
+    ``License ::`` classifier are retained for policy to treat as unparsed.
+    """
+    if raw.get("license_expression"):
+        return (("header:License-Expression[0]", raw["license_expression"]),)
+    if raw.get("license") and raw["license"].strip().upper() not in {"UNKNOWN", ""}:
+        return (("header:License[0]", raw["license"]),)
+    return tuple(
+        (f"header:Classifier[{ordinal}]", value)
+        for ordinal, value in enumerate(raw.get("classifiers", []))
+        if value.startswith("License ::")
+    )
 
 
 def parse(path, content, *, check):
@@ -217,6 +237,7 @@ def parse(path, content, *, check):
             tuple(requirements),
             requires_python or None,
             tuple(losses),
+            _license_claims(raw),
         )
     except InputRefusal:
         # Source epoch/deadline/shared accounting failures invalidate the whole

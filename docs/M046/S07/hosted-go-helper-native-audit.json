@@ -1,0 +1,23 @@
+{
+  "acceptance": false,
+  "elapsed_seconds": 338.47,
+  "expected_go_declaration_and_input_outcome": "passed",
+  "fresh_reuses": 2,
+  "full_worker": "passed",
+  "go_sha256": "2191d92e75e38999383daa068e19e67a99493d255a19ff4f4fd5b816d4db1dec",
+  "human_review": false,
+  "image": "ghcr.io/sourcebastion/sourcebastion-scanner@sha256:f007b57fb4ca3ad1ce432c5eabb4881ca84c64bbb4219a5b46379d36d61479a6",
+  "immutable_origin_rows_quota_expiry": "passed",
+  "junit_sha256": "3a301fe009e6e322ca7fe4ccde5c58a02a384591b71891e3cc3c8d4f517155b3",
+  "native_worker_receipt_sha256": "ce94d3c1ddbed1c812b1110f8e70f15b1bea36f9ad919e2ed2896b1193a9315e",
+  "platform_head": "8b1b68e18bd87f97b35c56727d4318d39cfd9ebd",
+  "platform_merge": "58fdd2cf963db081f0e32f687570345446715787",
+  "reuse_grype_statuses": [
+    "not_run",
+    "not_run"
+  ],
+  "scanner_source": "957e1670d1552c0e1056c3bdf1cd2c78108abfc6",
+  "schema_version": "m046.hosted-go-helper-native-audit/1",
+  "scope": "Actual pinned native Docker and production worker on isolated authored SQL fixtures; not a designated live account result, HTTP acceptance or human review",
+  "status": "passed"
+}

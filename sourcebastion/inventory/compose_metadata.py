@@ -4,6 +4,7 @@ from . import python_metadata
 from .contract import AnalysisScope, Applicability, Declaration, InputCoverage, Locator, Occurrence, ProjectionLoss
 from .contract import identifier, package_purl
 from .inputs import InputRefusal
+from .licenses import observe
 from packaging.version import Version
 
 VERSION = "sourcebastion.metadata-composition/1"
@@ -57,6 +58,11 @@ def extend(state):
         )
         occurrence = Occurrence(id=identifier("occurrence", {**values, "source": source.model_dump()}), **values)
         state.retain(state.occurrences, occurrence, state.limits.occurrences)
+        for locator, value in document.licenses:
+            state.step()
+            observed = observe(occurrence, locate(locator), value, "package-metadata")
+            if observed is not None:
+                state.retain(state.licenses, observed)
 
         def loss(source, dimension, reason):
             values = dict(source=source, dimension=dimension, reason=reason, occurrence_id=occurrence.id)

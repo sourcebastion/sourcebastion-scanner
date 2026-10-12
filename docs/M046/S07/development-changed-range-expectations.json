@@ -1,0 +1,112 @@
+{
+  "acceptance": false,
+  "case": {
+    "case": "python-range",
+    "coverage_inputs": [
+      {
+        "analysis_scope_ids": [
+          "scope:origin"
+        ],
+        "disposition": "unresolved",
+        "ecosystem": "pypi",
+        "enumeration": "partial",
+        "enumeration_basis": "source-input",
+        "format": "pip-requirements",
+        "installed_environment_ids": [],
+        "parser": "sourcebastion.pip-requirements/1",
+        "reason": "no-selected-version",
+        "root_ids": [],
+        "source_path": "s07-fixtures/python-range/requirements.txt",
+        "source_sha256": "a8dc766995bf9cf7992e2132f14c5b2a868a212513a0da7dd2c40458bda55332"
+      }
+    ],
+    "prefix": "s07-fixtures/python-range",
+    "records": {
+      "analysis_scopes": [
+        {
+          "id": "scope:origin",
+          "kind": "requirements-origin",
+          "source": {
+            "locator": "origin",
+            "parser": "sourcebastion.requirements-composition/1",
+            "path": "s07-fixtures/python-range/requirements.txt",
+            "source_sha256": "a8dc766995bf9cf7992e2132f14c5b2a868a212513a0da7dd2c40458bda55332"
+          }
+        }
+      ],
+      "applicability": [],
+      "applications": [],
+      "declarations": [
+        {
+          "analysis_scope_id": "scope:origin",
+          "declared_range": ">=2.32,<3",
+          "ecosystem": "pypi",
+          "exact_version": null,
+          "extras": [],
+          "groups": [],
+          "hashes": [],
+          "id": "declaration:requirement",
+          "kind": "requirement",
+          "marker": null,
+          "name": "requests",
+          "root_id": null,
+          "scopes": [],
+          "source": {
+            "locator": "line:1",
+            "parser": "sourcebastion.requirements-composition/1",
+            "path": "s07-fixtures/python-range/requirements.txt",
+            "source_sha256": "a8dc766995bf9cf7992e2132f14c5b2a868a212513a0da7dd2c40458bda55332"
+          }
+        }
+      ],
+      "dependency_selectors": [],
+      "input_references": [],
+      "installed_environments": [],
+      "losses": [],
+      "occurrences": [
+        {
+          "activation": "active",
+          "analysis_scope_id": "scope:origin",
+          "declared_range": ">=2.32,<3",
+          "directness": "unknown",
+          "ecosystem": "pypi",
+          "evidence_kind": "declared",
+          "extras": [],
+          "groups": [],
+          "hashes": [],
+          "id": "occurrence:requirement",
+          "installed_environment_id": null,
+          "lock_optional": null,
+          "marker": null,
+          "name": "requests",
+          "provider_references": [],
+          "purl": "pkg:pypi/requests",
+          "registry_source_sha256": null,
+          "root_id": null,
+          "scopes": [],
+          "selected_version": null,
+          "selection_declaration_ids": [],
+          "source": {
+            "locator": "line:1",
+            "parser": "sourcebastion.requirements-composition/1",
+            "path": "s07-fixtures/python-range/requirements.txt",
+            "source_sha256": "a8dc766995bf9cf7992e2132f14c5b2a868a212513a0da7dd2c40458bda55332"
+          }
+        }
+      ],
+      "relationships": [],
+      "roots": []
+    }
+  },
+  "expected_mode": "full despite reuse enabled",
+  "expected_package_edges": [],
+  "expected_selected_version": null,
+  "new_source_sha256": "a8dc766995bf9cf7992e2132f14c5b2a868a212513a0da7dd2c40458bda55332",
+  "new_source_text": "requests>=2.32,<3\n",
+  "original_prefixed_oracle_sha256": "0361ef2d9d4c7743369236aa746c1cd58da91b9b0934d1218f7a402907841509",
+  "previous_source_sha256": "dfb599a9b86d5de859901751a5562b7103217f4de74f4313c95998ea422c345a",
+  "purpose": "Future deliberate source-identity invalidation step F; prepared before editing/pushing that input or observing its output",
+  "schema_version": "m046.pre-scan-changed-source-expectations/1",
+  "source_path": "s07-fixtures/python-range/requirements.txt",
+  "written_at": "2026-10-11T05:17:36.828210+00:00"
+}

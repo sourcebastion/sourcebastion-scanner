@@ -1,0 +1,196 @@
+{
+  "acceptance": false,
+  "application_worker_resumed": true,
+  "cases": {
+    "J3": {
+      "accepted_artifact_sha256": "ea5c891feeeeaf051262cf129d6aaa985eb24bbf83f77c37ab2004c6d578d196",
+      "bounded_declarations": 2000,
+      "bounded_selected_occurrences": 2000,
+      "canonical_sha256": "a9d826d0e85b3693ecc51940c4fe5ebf9954d661d689c4f346fd7c11be45f2ec",
+      "controls_verified": true,
+      "dependency_cpu_usage_usec": 92603902,
+      "dependency_stages": {
+        "composition": "succeeded",
+        "consumer_execution": "succeeded",
+        "export": "succeeded",
+        "finalization": "not_run",
+        "inventory": "succeeded",
+        "recovery": "failed",
+        "runtime_admission": "succeeded"
+      },
+      "diagnostic_fact": {
+        "bytes": 37197995,
+        "name": "grype.json",
+        "sha256": "643e1be593700a0a7ddfbc8c2b41910b66e151ae4c2174271f2661ddf0a11560"
+      },
+      "diagnostic_only": true,
+      "direct_inventory_counts": {
+        "artifacts": 2,
+        "records": 4533,
+        "snapshots": 1
+      },
+      "exact_new_row_and_artifact_charges": true,
+      "export_components": 2015,
+      "export_sha256": "73d0556a18503dc9519de8cb3a7a1afd07be5cad7daefc839448a3dfaf1dd49f",
+      "first_compute_attempt": true,
+      "fresh_grype_findings": 0,
+      "independent_decode_refusal": "provider-input-node-budget-exceeded",
+      "inventory_outcome": {
+        "matching": "unavailable",
+        "payload_sha256": "eed828ed9013eb3f32a7adcd3622bdf44247c7e62d7a310276ba88cb19b8a717",
+        "runtime_sha256": "606f5a6a56520e2c0affa50602e042cc03040dd898b9bd04ecdca9dceadd5a54",
+        "source_sha256": "3b47ed9630dadd03fd01ea67cb67c663ad01889e0edc721abbc6e150115247b6",
+        "storage": "ready"
+      },
+      "official_schema": "offline-official-cyclonedx-validation-passed",
+      "owned_containers_removed": 3,
+      "persisted_matching_rows": 0,
+      "platform_revision": "2e3c7dc93e3ff09d251fec6d09168c593e78af6d",
+      "run_id": 122,
+      "sampled_memory_peak_bytes": 810201088,
+      "sampled_pids_peak": 30,
+      "samples_are_not_final_maxima": true,
+      "source_commit": "3269d964a9641cd95e76745c411729eb82f7bed6",
+      "zero_observed_swap_and_oom": true
+    },
+    "K": {
+      "accepted_artifact_sha256": "4aadeb17f151d8585cbf8b60250bba46aa19d4d6b0698b32a0767ca4f362dffb",
+      "all_source_and_required_pip_context_checks_passed": true,
+      "canonical_sha256": "c9dd8b04eac961fdbe1cd0c55e320e231933a83df0ebed14119cb0da2ad7b393",
+      "controls_verified": true,
+      "dependency_cpu_usage_usec": 32142781,
+      "dependency_stages": {
+        "composition": "succeeded",
+        "consumer_execution": "succeeded",
+        "export": "succeeded",
+        "finalization": "succeeded",
+        "inventory": "succeeded",
+        "recovery": "succeeded",
+        "runtime_admission": "succeeded"
+      },
+      "direct_inventory_counts": {
+        "artifacts": 2,
+        "records": 550,
+        "snapshots": 2
+      },
+      "exact_new_row_and_artifact_charges": true,
+      "exact_restored_source_tree": true,
+      "export_components": 15,
+      "export_sha256": "42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de",
+      "first_compute_attempt": true,
+      "inventory_outcome": {
+        "matching": "ready",
+        "payload_sha256": "d8d24dd0c57f8df58d315566b0474a813d68aea6adcb17136ef4c1983ea3f73a",
+        "runtime_sha256": "606f5a6a56520e2c0affa50602e042cc03040dd898b9bd04ecdca9dceadd5a54",
+        "source_sha256": "2be4669db6545c608143fed326508e2e743c4cbc9bb965d6d9577ec8651dd9f0",
+        "storage": "ready"
+      },
+      "official_schema": "offline-official-cyclonedx-validation-passed",
+      "owned_containers_removed": 3,
+      "persisted_matching_rows": 20,
+      "platform_revision": "2e3c7dc93e3ff09d251fec6d09168c593e78af6d",
+      "restored_canonical_and_export_equal_I": true,
+      "run_id": 123,
+      "sampled_memory_peak_bytes": 778182656,
+      "sampled_pids_peak": 30,
+      "samples_are_not_final_maxima": true,
+      "source_commit": "d24770870ab6dda3eac4fe8bb33d5c9085229788",
+      "zero_observed_swap_and_oom": true
+    }
+  },
+  "deployed_presentation_function": {
+    "H": {
+      "http_authorization_checks": false,
+      "human_review": false,
+      "platform_revision": "2e3c7dc93e3ff09d251fec6d09168c593e78af6d",
+      "receipt_sha256": "229c6eb31e208a8e3aa9c81980c48116664cd3cd38b809d8fee001d31e2d9010",
+      "status": {
+        "inventory": "unknown",
+        "matching": "unavailable",
+        "storage": "not-recorded"
+      }
+    },
+    "J3": {
+      "http_authorization_checks": false,
+      "human_review": false,
+      "platform_revision": "2e3c7dc93e3ff09d251fec6d09168c593e78af6d",
+      "receipt_sha256": "f4241c575c95615f39c942afe227bd5c059cead107beca3c7f4e0a34863ca466",
+      "status": {
+        "inventory": "partial",
+        "matching": "unavailable",
+        "storage": "ready"
+      }
+    },
+    "K": {
+      "http_authorization_checks": false,
+      "human_review": false,
+      "platform_revision": "2e3c7dc93e3ff09d251fec6d09168c593e78af6d",
+      "receipt_sha256": "89ade5d0ca80eeddb39d62e421e5822038436f8fffc1e34fbbb8989643529585",
+      "status": {
+        "inventory": "partial",
+        "matching": "ready",
+        "storage": "ready"
+      }
+    }
+  },
+  "historical_artifacts_expiry_and_bytes_unchanged": true,
+  "historical_origins": [
+    {
+      "canonical_sha256": "39bb5256295d7748a98613b88c9548d40e9ca553fd6775f2336fa272c0bc0f45",
+      "export_sha256": "1304ce2ca74710d4a9be47e7e1374730cc4a8ce26955427831ab616b4bfbe420",
+      "origin": "A",
+      "rows_snapshots_artifacts_expiry_equal": true,
+      "run_id": 109,
+      "source_commit": "e1d3ff87d05cd41e135b9db488ad66f6b1f4f8f1"
+    },
+    {
+      "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+      "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+      "origin": "A2",
+      "rows_snapshots_artifacts_expiry_equal": true,
+      "run_id": 110,
+      "source_commit": "4e7289a38feb4305f82370a54515e3ddf1f11242"
+    },
+    {
+      "canonical_sha256": "e62d6a3c746984904a473b0f49915c77df38b2a85512292b5fb5fe027fa572f5",
+      "export_sha256": "d45b6b6ddde4e058104c1596357c18f390df2afdf40b752fb6940c1f9a3df6e2",
+      "origin": "A4",
+      "rows_snapshots_artifacts_expiry_equal": true,
+      "run_id": 112,
+      "source_commit": "954c8f5ee8bb77dea2ac63dbe176a1c2575d9e5e"
+    }
+  ],
+  "http_authorization_checks": false,
+  "human_review": false,
+  "no_failed_attempt_replay_or_reset": true,
+  "no_runtime_limit_increase": true,
+  "normal_wakeups_restored": [
+    {
+      "repository": "sourcebastion/sourcebastion-platform",
+      "state": "active",
+      "workflow_id": 333657199
+    },
+    {
+      "repository": "ez-appsec/juice-shop",
+      "state": "active",
+      "workflow_id": 255610014
+    }
+  ],
+  "original_J_J2_expectations_unchanged_and_unmet": true,
+  "persistent_flags": {
+    "SOURCEBASTION_HOSTED_INVENTORY": "0",
+    "SOURCEBASTION_HOSTED_INVENTORY_REUSE": "0",
+    "SOURCEBASTION_INVENTORY_READS": "1",
+    "SOURCEBASTION_QUEUE_RECOVERY_ENABLED": "0",
+    "SOURCEBASTION_SBOM_WORKSPACE": "1"
+  },
+  "platform_fix": {
+    "deployment": 38127054354,
+    "merge": "2e3c7dc93e3ff09d251fec6d09168c593e78af6d",
+    "pull_request": 418,
+    "reviewed_head_checks_passed": 27
+  },
+  "schema_version": "m046.live-recovery-restoration-audit/1",
+  "status": "passed",
+  "worker_cron_restored": true
+}

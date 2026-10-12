@@ -22,6 +22,8 @@ _COLLECTIONS = (
     "input_references",
     "applicability",
     "dependency_selectors",
+    "licenses",
+    "license_gaps",
 )
 _CONTEXTS = (
     ("roots", "root"),
@@ -117,12 +119,26 @@ def _count_rows(snapshot, max_rows, check):
         count += size
 
     for field in _COLLECTIONS:
-        charge(len(getattr(snapshot, field)))
+        # License records are carried by their occurrence rows, not rows of
+        # their own; their facets are charged per occurrence below.
+        if field not in ("licenses", "license_gaps"):
+            charge(len(getattr(snapshot, field)))
     charge(len(snapshot.coverage.inputs))
     for record in snapshot.occurrences:
         for field in ("scopes", "groups", "extras"):
             check()
             charge(len(set(getattr(record, field))))
+    if snapshot.schema_version == "sourcebastion.inventory/2":
+        observations = {}
+        for row in snapshot.licenses:
+            observations.setdefault(row.occurrence_id, set()).add(row.expression)
+        gaps = {row.occurrence_id for row in snapshot.license_gaps}
+        for record in snapshot.occurrences:
+            check()
+            expressions = observations.get(record.id, set())
+            # One license_state facet each; a license facet only when stated.
+            stated = record.id not in gaps and len(expressions) == 1 and None not in expressions
+            charge(1 + int(stated))
     for record in snapshot.coverage.inputs:
         for field in ("root_ids", "analysis_scope_ids", "installed_environment_ids"):
             charge(len(getattr(record, field)))
@@ -140,6 +156,24 @@ def _locator(record):
             ("source_parser", "parser"),
         )
     )
+
+
+def _license_state(observations, gap):
+    """What the evidence states, never a policy verdict (policy is per scan).
+
+    ``stated``: every observation yields the same SPDX expression.
+    ``conflicting``: observations yield different expressions.
+    ``unparsed``: some value is not an SPDX expression.
+    ``unstated``: no input that was read states a license.
+    """
+    if gap or not observations:
+        return "unstated", None
+    expressions = {row["expression"] for row in observations}
+    if None in expressions:
+        return "unparsed", None
+    if len(expressions) > 1:
+        return "conflicting", None
+    return "stated", expressions.pop()
 
 
 def project_rows(inventory, *, max_rows, max_bytes, check):
@@ -214,6 +248,12 @@ def project_rows(inventory, *, max_rows, max_bytes, check):
     # Input records have their own rows so this detail is bounded independently
     # of the full input list; no per-context completeness is manufactured.
     metadata = {key: child for key, child in value.items() if key not in _COLLECTIONS}
+    licensed = value["schema_version"] == "sourcebastion.inventory/2"
+    observations, gaps = {}, {}
+    if licensed:
+        for record in value["licenses"]:
+            observations.setdefault(record["occurrence_id"], []).append(record)
+        gaps = {record["occurrence_id"]: record for record in value["license_gaps"]}
     metadata["coverage"] = {key: child for key, child in value["coverage"].items() if key != "inputs"}
     add(
         "snapshot",
@@ -272,7 +312,25 @@ def project_rows(inventory, *, max_rows, max_bytes, check):
             + (("name_version_rank", rank),)
             + _locator(record)
         )
-        add("occurrence", (record["id"],), columns, record)
+        detail = record
+        if licensed:
+            stated = observations.get(record["id"], [])
+            state, expression = _license_state(stated, record["id"] in gaps)
+            columns += (("license_state", state), ("license_expression", expression))
+            detail = {**record, "licenses": stated, "license_gap": gaps.get(record["id"])}
+            for facet, item in (("license_state", state), ("license", expression)):
+                if item is not None:
+                    add(
+                        "occurrence_facet",
+                        (record["id"], facet, item),
+                        (
+                            ("occurrence_id", record["id"]),
+                            ("facet", facet),
+                            ("value", item),
+                        ),
+                        None,
+                    )
+        add("occurrence", (record["id"],), columns, detail)
         for facet in ("scopes", "groups", "extras"):
             check()
             # DISTINCT facets are query membership, not a lossy rewrite of the

@@ -1,0 +1,86 @@
+{
+  "schema_version": "sourcebastion.m048-license-acceptance/1",
+  "corpus": "license-corpus",
+  "policy": "license-policy.yaml",
+  "license_list_version": "3.27.0",
+  "summary": {
+    "total": 16,
+    "declarations_not_assessed": 5,
+    "permitted": 5,
+    "denied": 2,
+    "undetermined": 9,
+    "coverage": "complete"
+  },
+  "packages": {
+    "acme/mit": {
+      "result": "permitted",
+      "why": "MIT is allowed"
+    },
+    "acme/dual": {
+      "result": "permitted",
+      "why": "Composer array is OR; the MIT branch is allowed"
+    },
+    "acme/gpl": {
+      "result": "denied",
+      "rule_id": "license-denied-GPL-3.0-only"
+    },
+    "acme/silent": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-unstated"
+    },
+    "acme/proprietary": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-unparsed"
+    },
+    "acme/ref": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-LicenseRef-Acme-Internal"
+    },
+    "left": {
+      "result": "denied",
+      "rule_id": "license-denied-MIT AND GPL-3.0-only",
+      "why": "conjunction with a denied term"
+    },
+    "right": {
+      "result": "permitted",
+      "why": "disjunction with an allowed branch"
+    },
+    "legacy": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-unparsed",
+      "why": "legacy npm license object is not an SPDX expression"
+    },
+    "bare": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-unstated"
+    },
+    "classpath": {
+      "result": "permitted",
+      "why": "exact X WITH E pair allowed despite GPL-* denial"
+    },
+    "pep639": {
+      "result": "permitted",
+      "why": "License-Expression supersedes the classifier"
+    },
+    "classified": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-unparsed",
+      "why": "classifiers are not SPDX expressions"
+    },
+    "unknowndefault": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-unstated",
+      "why": "License: UNKNOWN states nothing"
+    },
+    "isc": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-ISC",
+      "why": "not on the allowed list"
+    },
+    "acme-gem": {
+      "result": "undetermined",
+      "rule_id": "license-undetermined-unstated",
+      "why": "Gemfile.lock carries no license"
+    }
+  }
+}

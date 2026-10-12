@@ -23,6 +23,7 @@ from .contract import (
     package_purl,
 )
 from .inputs import InputRefusal
+from .licenses import observe
 
 VERSION = "sourcebastion.npm-composition/1"
 
@@ -308,6 +309,10 @@ def extend(state):
             )
             state.retain(state.occurrences, occurrence, state.limits.occurrences)
             occurrences[entry] = occurrence
+            if raw.license is not None:
+                observed = observe(occurrence, locate(raw.license[0]), raw.license[1], "lock-record")
+                if observed is not None:
+                    state.retain(state.licenses, observed)
         for parent_entry, raw, child_entry, reason, ordinal in planned:
             state.step()
             if answers[ordinal] in {"invalid-range", "invalid-version"}:

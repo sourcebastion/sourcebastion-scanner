@@ -63,7 +63,7 @@ See the `--slack-webhook` and `--teams-webhook` options on the `scan` command. S
 
 ## License Compliance
 
-ez-appsec can check dependency licenses against configurable allowed and denied lists. License data is extracted using [syft](https://github.com/anchore/syft) (bundled with grype).
+sourcebastion can check dependency licenses against allowed and denied lists. Licenses come from the dependency files the scanner already reads: the license each package states in `package-lock.json`, `composer.lock` and installed Python `METADATA`. Nothing is looked up online or guessed from a package name, and no extra tool is needed. The details are in [M048 S03](M048-license-evidence.md).
 
 ### Setup
 
@@ -78,48 +78,69 @@ license_policy:
     - BSD-3-Clause
     - ISC
   denied_licenses:
-    - GPL*
-    - AGPL*
-    - SSPL*
+    - GPL-*
+    - AGPL-*
+    - SSPL-*
+  undetermined_severity: medium   # or low
 ```
 
 ### How it works
 
-- **Allowed list**: Licenses that match are permitted. If an allowed list is configured, any license not matching is flagged as "unknown" (medium severity).
-- **Denied list**: Licenses that match are rejected (high severity). Denied takes priority over allowed.
-- **Wildcards**: Both lists support glob patterns (e.g., `GPL*` matches `GPL-2.0`, `GPL-3.0-only`, etc.).
-- **SPDX identifiers**: License values are matched using SPDX identifiers from the syft SBOM output.
+Each package gets one result: **permitted**, **denied** or **undetermined**.
+
+- **Expressions are parsed.** `MIT OR GPL-3.0-only` is a choice, so it's permitted when either branch is. `MIT AND GPL-3.0-only` requires both, so it's denied when either term is.
+- **Denied** (high severity): a term matches the denied list. Denied wins over allowed.
+- **Undetermined** (medium, or low if configured):
+  - no license is stated
+  - the stated value isn't an SPDX expression
+  - a `LicenseRef-*` isn't named in the policy
+  - with an allowed list, a license isn't on it
+
+  Undetermined is never treated as permitted.
+- **Entries are licenses, not expressions.** Wildcards match one identifier: `GPL-*` matches `GPL-3.0-only`, not `LGPL-2.1-only`. `X WITH E` entries must be exact. Allowing `X` allows it with any exception, but an exception never lifts a denial of `X` unless that exact pair is allowed.
+- **Conflicting claims:** when a package states more than one license, the strictest result applies.
+- **Vocabulary:** the SPDX license list pinned with the scanner (3.27.0).
 
 ### Running a license check
 
-Pass the `--license-check` flag to the `scan` command:
-
 ```bash
-ez-appsec scan . --license-check
+sourcebastion scan . --license-check
 ```
 
-License violations appear as `category: license_compliance` findings in the scan output alongside other security findings.
+License results appear as `category: license_compliance` findings. Each finding names the package, the file the license came from (`file`, `license_locator`) and its result (`license_result`).
+
+| Finding | `rule_id` |
+|---|---|
+| Denied | `license-denied-<canonical expression>` |
+| Not on the allowed list | `license-undetermined-<canonical expression>` |
+| Not an SPDX expression | `license-undetermined-unparsed` |
+| No license stated | `license-undetermined-unstated` |
+
+Suppress one with an ignore rule on its `rule_id`.
 
 ### Scan output
 
-When license checking is enabled, the scan result includes:
-
 | Field | Description |
 |---|---|
-| `license_summary.total` | Total packages scanned |
-| `license_summary.allowed` | Packages with allowed licenses |
-| `license_summary.denied` | Packages with denied licenses |
-| `license_summary.unknown` | Packages with unrecognized licenses |
-| `license_packages` | Full package list with license details |
+| `license_summary.total` | Resolved packages evaluated (locked, installed or imported) |
+| `license_summary.declarations_not_assessed` | Declared dependencies with no resolved package to read a license from (commit a lockfile to check them) |
+| `license_summary.permitted` / `denied` / `undetermined` | Packages per result |
+| `license_summary.coverage` | `complete` or `partial`. When partial, some dependency files weren't read and packages may be missing. |
+| `license_summary.unassessed_inputs` | Dependency files that weren't assessed |
+| `license_summary.license_list_version` | SPDX license list used |
+| `license_packages` | Every package with its stated licenses and result |
 
-### Prerequisites
+### Migrating from the syft-based check
 
-- **syft** must be installed: `brew install syft` or `curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh`
-- syft is already included in the ez-appsec Docker images that bundle grype
+- **Rule IDs changed.** `license-unknown-<value>` is now `license-undetermined-<canonical expression>`, `license-undetermined-unparsed` or `license-undetermined-unstated`. `license-denied-<value>` now uses the canonical expression, for example `license-denied-GPL-3.0-only` rather than the raw `gpl-3.0-only`. Old ignore rules don't match the new IDs; rewrite them.
+- **Wildcards match identifiers, not strings.** `GPL*` still matches `GPL-3.0-only` but no longer matches a whole expression string. Entries containing `AND`, `OR` or parentheses are refused when the config loads.
+- **Deny-only policies report undetermined packages.** A package that states no license, or `NOASSERTION`, is now reported instead of passing.
+- **Results are per package.** The summary counts packages, not licenses.
+- **syft is no longer used.**
 
 ### CI/CD example
 
 ```yaml
 - name: Scan with license compliance
-  run: ez-appsec scan . --license-check --output results.json
+  run: sourcebastion scan . --license-check --output results.json
 ```

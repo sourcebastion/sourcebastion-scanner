@@ -1,8 +1,13 @@
 # M046 S07 acceptance ledger
 
-Status: **open**. This ledger records the acceptance requirements and evidence
-available on 2026-10-10. No published-image, development or rollback acceptance
-is claimed. Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
+Status: **accepted on 2026-10-11**. Published native qualification,
+automated live development and rollback proofs pass. The designated reviewer
+accepted the visible K/J3/H coverage and K findings/source review after platform
+[#420](https://github.com/sourcebastion/sourcebastion-platform/pull/420) deployed.
+Foreign-account refusal, fresh post-fix revoked-grant refusal and restored access
+to the original K SBOM with its matching downloaded checksum pass. Original
+failed attempts and frozen expectations remain preserved.
+Tracking: [S07 #94](https://github.com/sourcebastion/sourcebastion-scanner/issues/94);
 scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/88).
 
 ## Slice prerequisites
@@ -12,10 +17,10 @@ scope: [M046 #88](https://github.com/sourcebastion/sourcebastion-scanner/issues/
 | S01 | Independent corpus, engine decision and frozen numerical ceilings, with reviewed immutable receipts | Accepted by #88; [architecture decision](../evaluation/m046/architecture-decision.md), [independent review](../evaluation/m046/evidence/S01-independent-review.md). Final release must retain this baseline rather than comparing only against its immediately preceding commit. |
 | S02 | Content validation, custom paths, exclusions and located discovery outcomes over the independent corpus | Accepted by #88 and [#90](https://github.com/sourcebastion/sourcebastion-scanner/issues/90). Revalidate against the published release. |
 | S03 | Selected-version, declaration, occurrence and graph semantics on supported ecosystems; explicit unsupported outcomes | Accepted by #88 and [#91](https://github.com/sourcebastion/sourcebastion-scanner/issues/91). The owner waived legacy scanner parity, not truthful semantics or the minimum corpus. |
-| S04 | Standards-valid CycloneDX, actual offline Grype, four pip advisory groups, matching identity and independent failure states | [Acceptance ledger](M046-S04-acceptance.md) records merged implementation and finite native evidence. #92 remains open; reconcile its acceptance record with reviewed evidence. SPDX moved to M048 #154. |
-| S05 | Immutable queryable rows, authorized artifact access, truthful root/ecosystem coverage, retention/reuse and development presentation | Foundation #403 and [platform #404](https://github.com/sourcebastion/sourcebastion-platform/pull/404) merged; platform merge `377f61d2c6e544b409b471250c20edcb40fa30f8`, reviewed head `402fd5b93058f3c1e291def04a520313731e65de`. [Scanner #162](https://github.com/sourcebastion/sourcebastion-scanner/pull/162) and [#165](https://github.com/sourcebastion/sourcebastion-scanner/pull/165) merged into `4effe1897114ef3e3c6cf17b52172d8ea3844986`; tested head `ea88bbd21a53ccbdab9eb35525f77ec38564d4e3`. Published runtime/validator binding, fresh development presentation, human acceptance and rollback remain open. |
+| S04 | Standards-valid CycloneDX, actual offline Grype, four pip advisory groups, matching identity and independent failure states | [Acceptance ledger](M046-S04-acceptance.md) records all five stated criteria met; #92 is closed. Published qualification below independently binds standards-valid export, real matching, the four original pip advisory groups and source equivalence to the release tuple. SPDX remains in M048 #154; live development and resource acceptance remain S07 requirements. |
+| S05 | Immutable queryable rows, authorized artifact access, truthful root/ecosystem coverage, retention/reuse and development presentation | Foundation #403 and [platform #404](https://github.com/sourcebastion/sourcebastion-platform/pull/404) merged; platform merge `377f61d2c6e544b409b471250c20edcb40fa30f8`, reviewed head `402fd5b93058f3c1e291def04a520313731e65de`. [Scanner #162](https://github.com/sourcebastion/sourcebastion-scanner/pull/162) and [#165](https://github.com/sourcebastion/sourcebastion-scanner/pull/165) merged as `4effe1897114ef3e3c6cf17b52172d8ea3844986` and `899f1255320241b9e9ef7f7cc77152da6374083c`; both are included in the published release. Accepted: development runtime/validator binding, persistence, reuse, capacity/key refusal and rollback proofs pass. Platform #419 fixes the retained live revocation failure; fresh signed-in foreign/revoked download refusals and restored original bytes pass. Platform #420 supplies the deployed tabs; the designated reviewer accepted coverage and findings on 2026-10-11. See the final decision and human receipt below. |
 | S06 | Verified native packaging, upgrade gates, numerical budgets, support/runbook, #54 coordination and release evidence | Implementation and release evidence accepted in the [S06 ledger](M046-S06-acceptance.md); S07 independently audited published native qualification and frozen-S01 growth below. [#163](https://github.com/sourcebastion/sourcebastion-scanner/pull/163) merged the distribution deferral to M049 #164; the obligation remains open there. |
-| S07 | All preceding slices accepted, published native proof, development human acceptance and rollback/mixed-version receipts | Open; required demonstrations below. |
+| S07 | All preceding slices accepted, published native proof, development human acceptance and rollback/mixed-version receipts | Accepted on 2026-10-11; all required demonstrations and designated human sign-off are recorded below. |
 
 Issue closure alone is insufficient. Each accepted slice must link its actual
 criterion-by-criterion evidence and bind that evidence to the qualifying release
@@ -169,9 +174,10 @@ observations with four required advisory groups each, npm/Cargo lock edges,
 unresolved Go/Python declarations, empty application manifests, ignored prose,
 unsupported inputs and project-execution traps. Relative case expectations come
 from the frozen source-authored corpus at `4effe1897`; final comparisons must
-bind exact prefixed paths and contexts. The branch has not been pushed and no
-scan was submitted. Publication awaits runtime admission so the provider hook
-cannot silently turn preparation into an unqualified acceptance scan.
+bind exact prefixed paths and contexts. The branch was subsequently pushed and [fixture PR #2](https://github.com/ez-appsec/juice-shop/pull/2)
+submitted genuine provider work after actual runtime admission. Failed live
+attempts and pending fresh acceptance evidence are recorded below; preparation
+and normal retries do not establish fresh scan acceptance.
 
 [Platform #405](https://github.com/sourcebastion/sourcebastion-platform/pull/405)
 merged as `8b331bef13ace72672282a53c45c22bccba338f1`. It binds the companion
@@ -191,19 +197,352 @@ reaped observed process birth identities, preserved source bytes and showed no
 later artifact writes. Neither entrypoint nor watchdog was paused or replaced.
 No live queue or accepted publication was involved.
 
-Development deployment remains pending: both automatic attempts failed the
-existing pinned legacy scanner check on the slow pool before changing the healthy
-application. The same source passed the mandatory hosted-runtime check on the
-established fast pool. [Platform #408](https://github.com/sourcebastion/sourcebastion-platform/pull/408)
-moves the unchanged scanner proof to that pool as a required deployment dependency
-and retains failure diagnostics. Actual application deployment stays on the slow
-pool. No resource-cause inference, scanner deadline change or bypass is claimed.
-The exact validator wheel must also be installed and proved in the real
-non-container application's environment, followed by a healthy service restart,
-before admission; an isolated proof environment does not establish that binding.
-The user designated themselves to perform the live foreign-account and
-revoked-grant download checks once fresh results are visible; those checks and
-the dated human review are not yet done.
+Development deployment and actual application binding are now verified.
+[Platform #408](https://github.com/sourcebastion/sourcebastion-platform/pull/408)
+retains the required scanner proof on the established fast pool while application
+deployment stays on the slow pool. Its scanner gate passed; deployment then
+refused advisory refresh. [Platform #409](https://github.com/sourcebastion/sourcebastion-platform/pull/409)
+validated reuse of a recent retained generation with independent pinned Grype
+hash/age checks and deployed successfully in
+[38108213701](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38108213701).
+The daily updater remains unconditional and seven-day retention is unchanged.
+
+The actual application Python 3.11 environment received exact validator wheel
+`27b1e71f2f42f509243112c57e84af7b5d4b9cc5e8e01642eb2182d93b6287b2`,
+its pinned pure-Python dependencies and a healthy service restart. Installed
+owned payloads, import origins, runtime manifest and stable artifact keys passed
+verification. Persistent inventory writer, reuse and queue-adoption flags remain
+disabled; read presentation is enabled. The existing allocation was independently
+verified from Proxmox as eight CPUs and 12 GiB RAM; dependency containers retain
+two CPUs, 2 GiB RAM, zero swap and 256 PIDs. No new allocation was made.
+
+The first genuine designated job refused before publication because inventory
+selection reacquired its job-row lock after commit, blocking independent lease
+polling. [Platform #410](https://github.com/sourcebastion/sourcebastion-platform/pull/410)
+releases that transaction boundary. A real PostgreSQL red/green regression and
+mandatory CI pass; actual deployment
+[38109834411](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38109834411)
+passed at `db3e67c8beb565c2235724307065f8320ac86317`.
+
+The existing job's normal retry passed that boundary, then exhausted the
+dependency allowance hashing advisories with a PostgreSQL lease query every
+64 KiB. It was cooperatively drained without publication or remaining admitted
+compute. [Platform #411](https://github.com/sourcebastion/sourcebastion-platform/pull/411)
+keeps complete byte hashing and bounded reads, polls leases at file boundaries
+and every 250 ms of streaming progress, and enforces the unchanged dependency
+deadline on every read. All CI passed and it merged as
+`858862b654b268d8b97aa0bf74f8340a71914d82`. Its exact candidate hashed the full
+3,222,298,624-byte frozen database to the same SHA-256 in 17.53 seconds with 77
+read-only database checks. That callback proof is not an executing scan lease.
+Actual deployment passed in
+[38111127532](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38111127532),
+and the installed validator, keyring and disabled persistent writer/reuse/adoption
+defaults were verified again against the healthy deployed revision.
+
+The third owned compute attempt completed dependency scanning, then spent minutes
+projecting inventory because its 128,419 cancellation callbacks each queried
+PostgreSQL. The same unpublished canonical bytes projected locally in 0.70 seconds.
+The attempt was cooperatively drained; the original job exhausted its three
+compute attempts and was finalized as terminal failed through the normal provider
+path. No inventory or accepted result was published by that job.
+[Platform #412](https://github.com/sourcebastion/sourcebastion-platform/pull/412)
+bounds inventory cancellation polling to 250 ms while preserving immediate
+known-loss, expiry, drain and phase/generation checks and every durable effect
+fence. Its 138 focused tests and all CI, including the PostgreSQL contract, passed.
+It merged as `50c366049c48e4f96c02377c6e5bf61c369901b2` and deployed successfully in
+[38112428605 attempt 2](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38112428605).
+The first attempt refused an advisory refresh at the required scanner gate;
+that failure is retained separately. Post-deployment validator/keyring/defaults,
+healthy marker, empty queue and absence of active containers were verified.
+
+Fresh provider commit `e1d3ff87d05cd41e135b9db488ad66f6b1f4f8f1` completed and
+published a result, but [its independent comparison](M046/S07/development-first-published-audit.json)
+failed the pre-scan Go expectations. The hosted controller hard-coded
+`go_sha256=None`, yielding a truthful `go-parser-runtime-unavailable` outcome
+instead of the image helper's source declarations. The remaining seven contextual
+cases, 148 base declarations, eight selected base versions, all 522 inventory rows,
+20 recovered matching rows and eight required pip advisory/path combinations
+passed diagnostic replay. The actual exported bytes passed the pinned offline
+official CycloneDX schema. This result remains intact and is not acceptance.
+[Platform #413](https://github.com/sourcebastion/sourcebastion-platform/pull/413)
+wires the installed helper and authenticates its digest through finalization,
+with changed reuse compatibility to refuse pre-fix snapshots. Its 100 focused
+tests and all CI pass. The [exact-head native proof](M046/S07/hosted-go-helper-native-audit.json)
+passed the actual Docker worker with a Go module, then two successive reuse passes
+with unchanged origin rows, artifact charges and expiry (338.47 seconds). These
+remain isolated authored SQL fixtures rather than live account acceptance.
+It merged as `58fdd2cf963db081f0e32f687570345446715787` and deployed successfully
+in [38114332666](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38114332666).
+Fresh commit `4e7289a38feb4305f82370a54515e3ddf1f11242` completed and
+[passed the frozen content audit](M046/S07/development-go-fixed-content-audit.json),
+including all eight contextual cases, 530 inventory rows, 20 matching rows and
+the official CycloneDX schema. Its execution bound a full plan, but the findings
+envelope fell back and ScanRun planning fields remain absent; it cannot qualify
+as a reuse baseline. Same-byte diagnostic commit
+`08bd160437f19787a9b32d4415edf40288fe0d0d` retained the complete other-scanner
+report and reproduced `duplicate_finding`: KICS emitted eight repeated identities
+that ordinary storage already reduces by its first-observation rule.
+[Platform #414](https://github.com/sourcebastion/sourcebastion-platform/pull/414)
+applies that same rule before constructing the hosted envelope. Its 98 focused
+tests pass, and [the exact retained report replay](M046/S07/development-envelope-dedup-replay.json)
+produces a valid 128-finding envelope with all persisted finding fields equal.
+It merged as `d321f8885754051bb692c97eca2d76f8e9c15761` after CI passed and
+deployed successfully in
+[38117244954](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38117244954),
+attempt 2. The first attempt failed pip bootstrap before the scanner image proof
+ran; its failed log and digest-verified artifact remain retained separately.
+Fresh commit `954c8f5ee8bb77dea2ac63dbe176a1c2575d9e5e` then completed with a
+persisted qualifying full plan. The [full-scan and publication audit](M046/S07/development-full-and-reuse-publication-audit.json)
+verifies all eight frozen contextual cases, 530 inventory rows, 20 matching
+rows, the eight required pip source/advisory groups, and the official CycloneDX
+schema. The original source expectations remain unchanged.
+
+The first fresh reuse commit `c9de07d5eddc1b1482336c6f21e20a7594c74a77`
+persisted incremental run 113 with origin run 112, identical canonical/export
+bytes and unchanged row/artifact quotas. Publication failed: nine carried
+findings had no title or description, so their annotations had empty messages.
+GitHub returned the correlated failure check with zero annotations. Recomputing
+the exact old nine-annotation body reproduces its recorded intent digest;
+the returned content does not. Normal finalization exhausted its three attempts,
+retained the accepted artifact and unconfirmed provider journal, released
+admission, and settled the execution failed/unknown/unavailable. No uncertain
+annotation append was replayed and no original attempt was reset.
+[Platform #415](https://github.com/sourcebastion/sourcebastion-platform/pull/415)
+uses retained finding names/rules for nonempty annotation messages and permits
+the designated test preflight to retain a validated settled quarantine without
+classifying it as active work. Its 172 focused tests and mandatory CI passed,
+and it merged as `1f182f47ef5c94ac86c2c38ba9cfb0c5bf9f36ae`. Deployment
+[38119437577](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38119437577)
+passed the scanner gate but refused application release: PostgreSQL JSON
+projection attempted to unescape unrelated finding content on the development
+SQL_ASCII database. The healthy application remained at the previous revision;
+the accepted result and quarantine were not rewritten.
+[Platform #417](https://github.com/sourcebastion/sourcebastion-platform/pull/417)
+reads bounded private JSON text and exports only the original result metadata.
+Its [retained regression proof](M046/S07/development-release-reader-regression.json)
+binds 85 focused tests, disposable PostgreSQL baseline failure/candidate success
+and a read-only candidate inventory of the actual development queue
+pass. All CI passed on the unchanged commit after unused runner cache cleanup,
+and it merged as `9bb1f59cb6389bb0a2ab4b02f0638d4cc3f248d9`. Normal development
+deployment [38121640429](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38121640429),
+attempt 2, passed; attempt 1 refused an advisory refresh before changing development
+and its digest-verified diagnostic artifact is retained separately. The actual
+deployed validator, keyring, retained settled quarantine and disabled persistent
+writer/reuse/adoption defaults passed verification with the worker paused/drained.
+Fresh commits `7b9b9584611b055e5888449a769eba904f8b1790` and
+`bcf221b651a80fd842b1704301a06587a15fc7f7` then completed and published normally,
+on their first compute attempts. The [independent successive-reuse audit](M046/S07/development-live-reuse-audit.json)
+verifies runs 114 and 115 both reuse origin run 112, skip Grype execution, create
+zero direct inventory rows/snapshots/artifacts, and retain byte-identical original
+records, snapshots, artifacts, expiry and account quota charges. Both pass the
+frozen contextual content/matching audit and official CycloneDX schema. The
+failed predecessor remains intact and is excluded from these two demonstrations.
+
+Inspection of the actual SBOM read authorization found that an existing
+provider repository grant was checked for presence but not its current
+`authorized` state. [Platform #416](https://github.com/sourcebastion/sourcebastion-platform/pull/416)
+adds that state check. Three route regressions revoke and restore the grant
+through the real capacity API; the baseline incorrectly returns 200 after
+revocation, while the candidate returns the uniform 404/no-store refusal and
+restores access to the original bytes after reauthorization. Its 110 focused
+tests and mandatory CI pass. It merged as
+`02a8e6c3ed9bbf999fc55b2decea823e5da76ecf` and normal development deployment
+[38122770228](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38122770228)
+passed. The deployed validator, keyring, retained quarantine and disabled persistent
+defaults were verified again with the hosted worker paused/drained. The designated
+human's live second-account/revoked-grant checks remain pending.
+
+Eight [prefixed canonical case expectations](M046/S07/development-prefixed-canonical-expectations.json)
+were mechanically derived from the frozen rich source oracle before the new
+fresh acceptance commit was pushed. They preserve complete contextual records
+and per-input outcomes, binding generated IDs by unique source anchors. Shared
+global coverage and stage status are assessed separately; neither original
+oracle was changed to match scan output.
+
+The [live invalidation audit](M046/S07/development-live-invalidation-audit.json)
+verifies three successive fresh provider commits and full runs 116–118. Changing
+only the predeclared runtime row limit, then the frozen advisory file identity,
+then the source range bytes refuses reuse. Each run creates its own 550 records,
+two snapshots and two artifacts with exact new row/byte/artifact charges, and
+passes contextual content, matching and official schema checks. Runtime/advisory
+changes alter the component key; source equality is a separate mandatory guard.
+The auditor's initial contrary key assertion and failed output are retained;
+its correction checks that separate source guard and fresh plan without changing
+the frozen source expectations. Capacity, key, bounded matching and rollback
+cases follow below.
+
+The [live capacity/key/rollback audit](M046/S07/development-live-capacity-key-rollback-audit.json)
+verifies the predeclared one-row account limit refuses storage with
+`inventory_row_quota_exceeded`, zero direct inventory publication and unchanged
+row/artifact charges. A fresh scan on the retained prior `707fc32a` image with
+writer/reuse disabled completes; the actual deployed presentation reports
+inventory unknown and matching unavailable. Restoring the qualifying candidate
+first refuses missing artifact keys before claim, with the queued row unchanged,
+zero attempts and no owned container or worker receipt. The same fresh job then
+completes as a full scan with exact new charges, all contextual/matching checks
+and official schema validation passing. Pure read-only captures after both
+transitions preserve the rows, artifacts, expiry and exact bytes of three earlier
+stored origins, including the qualifying full baseline. No keyring rotation,
+quota reset or historical attempt replay was used. Original bounded-attempt
+failures and the separate fresh recovery demonstration are recorded below.
+
+The predeclared 6,000-line bounded case instead reached the unchanged aggregate
+CPU ceiling. Its [terminal refusal audit](M046/S07/development-live-cpu-refusal-audit.json)
+retains the supervisor's 120,044,568 microseconds, one failed compute attempt,
+no accepted run and unchanged quotas and earlier artifacts. It is not counted
+as inventory-present/matching-unavailable acceptance. Its original source oracle
+remains unchanged. A separate [2,000-line source expectation](M046/S07/development-bounded-matching-2000-expectations.json)
+is frozen before any corresponding source edit or submission, to reach the
+consumer boundary within the same runtime limits. No existing attempt is reset
+or replayed and no numerical ceiling is increased.
+
+The 2,000-line case J2 also remains failed with its original expectation unmet.
+Its [capture-refusal audit](M046/S07/development-live-J2-capture-refusal-audit.json)
+records a terminal job without an accepted run. An isolated replay using the
+same source and published image finished Grype, then refused recovery at the
+unchanged provider node budget. The parent tried to materialize the resulting
+37,197,996-byte diagnostic through its 16 MiB capture bound, discarding usable
+canonical inventory/export. [Platform #418](https://github.com/sourcebastion/sourcebastion-platform/pull/418)
+stream-verifies this diagnostic without making it matching input, preserving
+all original integrity/resource guards. Its 89 focused checks and immutable
+isolated artifact replay pass. All 27 checks passed for reviewed head
+`ae0af4970ae44ea464425ba78e9612fa55cc8f56`; merge
+`2e3c7dc93e3ff09d251fec6d09168c593e78af6d` normally deployed in successful run
+[38127054354](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38127054354).
+The actual application validator, keyring, queue and persistent defaults passed
+post-deployment verification.
+
+A separate [prospective recovery-refusal oracle](M046/S07/development-bounded-recovery-expectations.json)
+defines fresh case J3 using the same authored 2,000-line source, before its new
+commit or submission. It requires successful inventory/export, unavailable
+matching, the real recovery node-budget refusal, and no accepted matcher input
+or fresh Grype findings. Both original J/J2 oracles remain byte-for-byte unchanged;
+their failures are not relabelled as passes.
+
+The [fresh recovery/restoration audit](M046/S07/development-live-recovery-restoration-audit.json)
+now passes through the real worker, accepted handoff and finalizer. J3 at source
+`3269d964a9641cd95e76745c411729eb82f7bed6` finishes its first compute attempt with
+4,533 exact inventory rows, one inventory snapshot, two stored artifacts and
+zero matching rows or fresh Grype findings. Its 2,000 located declarations and
+selected occurrences agree with the prospective oracle. The independently
+retained 37,197,995-byte diagnostic reproduces the unchanged provider node-budget
+refusal; the authenticated capsule contains no accepted matching input. Inventory
+and the standards-valid 2,015-component SBOM remain available. Dependency CPU is
+within the unchanged 120-second ceiling, and all owned containers are removed.
+
+The final fresh K scan at source `d24770870ab6dda3eac4fe8bb33d5c9085229788`
+restores exact earlier tree `8c5e1cd8bf31f9f17aa760eaee9ea77bd83d4b50` and passes
+as a full scan: 530 inventory rows, 20 matching rows, two snapshots and two
+artifacts. All original contextual cases, 148 base declarations, eight base
+selected versions and all eight pip source/advisory groups pass. Its official
+CycloneDX validation passes with 15 components, and canonical/export bytes equal
+the preceding normal I restoration. Both J3 and K incur exactly their new row
+and artifact charges. Existing rows, snapshots, artifact bytes and expiry for
+three earlier origins remain unchanged through the final transition.
+
+Read captures of the actual deployed presentation function distinguish K's
+partial inventory/ready matching, J3's partial inventory/unavailable matching,
+and the legacy H result's unknown inventory/unavailable matching. These captures
+forbid SQL writes and roll back all transactions; they do not establish browser
+or human acceptance. After verified quiescence, both temporarily disabled GitHub
+workflows were restored to active, the application worker cron reinstalled and
+the worker resumed. Persistent inventory writer/reuse/M044 adoption remain off;
+inventory read presentation remains on. At restoration, all designated signed-in
+download checks, the actual downloaded checksum and dated human review were pending.
+
+At that preparation checkpoint, the requesting user was designated to perform
+the live second-account and revoked-grant refusal checks and review coverage,
+findings and the authorized download. Their subsequent observations and final
+sign-off are recorded below.
+Failed attempts and normal retries are retained separately and
+cannot substitute for fresh designated acceptance work.
+
+### Human download checks (2026-10-11)
+
+The designated reviewer signed in with the designated second development account
+and confirmed that the exact K snapshot download request returns **404**, with
+the response **Not available**. The earlier reported 200 was clarified to belong
+to `/account/sbom`, which rendered an empty workspace; it was not a download
+response. The [sanitized human observation](M046/S07/development-human-download-review.json)
+records the result separately from the automated proofs. This is a user-reported
+browser observation, not an agent-authenticated request.
+
+The designated owner subsequently downloaded K's SBOM and pasted the local
+checksum output for `sbom.cdx.json`. Its actual SHA-256 is
+`42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de`,
+which equals the frozen expected digest of the accepted K artifact. This actual
+download observation is separate from the earlier source-side integrity proofs.
+
+The foreign-account refusal and owner-download integrity criteria passed at
+this checkpoint. Acceptance still required the owner to review K/J3/H coverage
+and K findings, confirm 404 after revoking only the test repository grant, and
+restore access to the original download bytes. Those subsequent results and
+final sign-off are recorded below. No account identifiers, session credentials or
+private snapshot links are included in the public receipt.
+
+The subsequent owner revoke test **failed**: the K SBOM remained downloadable
+after the test repository was deselected from the development App installation.
+Read-only inspection confirms that the provider's complete current repository
+list excludes the test repository, but its platform grant remains authorized.
+The durable webhook was marked applied with `repository_selection: selected`,
+`action: added`, six additions and an empty removal list. Explicit-delta handling
+did not revoke the omitted grant. [Platform #419](https://github.com/sourcebastion/sourcebastion-platform/pull/419)
+adds current-membership reconciliation and failure refusal. Its 152 focused tests
+pass, including a retained-artifact download regression that fails on the
+baseline and a mixed-case canonical account regression that failed on the first
+candidate. All 31 checks on reviewed head
+`31cde1d26f619b1f7380a760ea150383116c239f` passed or were skipped as expected.
+The fix merged as `af1c361b32ae15ee11645d72e4f282c9f557ab1e`; normal development
+[deployment 38159496574](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38159496574)
+passed on attempt 2, and installed verification confirms the exact reviewed fix
+files, healthy service, configured artifact keyring and resumed normal worker.
+Persistent writer/reuse/recovery remain off; read presentation remains on. The
+initial rollout failed refreshing Grype advisories; its failure is retained.
+Two verified byte-identical historical advisory database copies now share storage,
+preserving every generation path, database byte and metadata receipt, to recover
+6.4 GB before the same-source retry. At that deployment checkpoint, a fresh
+designated revoke/restore test remained required. The original failed observation
+is preserved independently;
+neither the earlier foreign-account 404 nor the matching owner checksum proves
+this revoked-grant criterion.
+
+On 2026-10-11 the designated reviewer confirmed HTTP 404 on the exact K download
+while the test repository was deselected after the deployed fix. Read-only
+corroboration records the removal delivery applied at `2026-10-11 18:05:03+00:00`
+and the bound repository grant unauthorized with reason `deselected`. This fresh
+revoked-grant refusal passes independently of the preserved original failure.
+An additional actual K checksum report also matches the frozen expected digest;
+that report preceded this latest revocation and does not establish subsequent
+restoration. The designated reviewer subsequently confirmed the K SBOM is present,
+pasted fresh local `shasum -a 256 sbom.cdx.json` output equal to
+`42363ae7885516f71bbcb7d578ab0d912d4084324e6d70b0229aa765c32e22de`,
+and explicitly confirmed the checksum matches. Read-only corroboration records
+the later repository addition applied at `2026-10-11 18:07:21+00:00` and the
+bound grant authorized. Restored access to the original bytes after the fresh
+404 passes. The remaining visible K/J3/H coverage and K findings review was
+subsequently accepted by the designated reviewer, as recorded below.
+
+### Deployed tabs and final human sign-off (2026-10-11)
+
+[Platform #420](https://github.com/sourcebastion/sourcebastion-platform/pull/420)
+renders stored occurrences and per-input outcomes in Dependencies, and accepted
+matching rows with recorded fixes and exact package/source details in SCA.
+All 31 pre-merge checks on reviewed head
+`c23905c1ebc27c3cfbc5ae2e8120914c760c1e53` passed or were skipped as expected.
+Merge `08d0b500fab703e64650658ec8906c2573191300` normally deployed in
+[run 38172712480](https://github.com/sourcebastion/sourcebastion-platform/actions/runs/38172712480),
+attempt 1. Read-only installed verification confirmed source hashes, service
+health, keyring, restored test grant and resumed normal worker. Installed rendering
+confirmed all eight K pip source/advisory associations, J3 unavailable matching
+with inventory retained, and H unknown inventory with no export. Automated
+rendering is recorded separately from human acceptance.
+
+After this deployment and the exact review instructions, the designated requesting
+reviewer explicitly reported **"signed off"**. This accepts the remaining visible
+K/J3/H coverage and K findings/source review. The dated, source-bound
+[human receipt](M046/S07/development-human-download-review.json) records this
+sign-off separately from the already completed download/refusal observations.
+No repeated download test, source change, quota reset or rescan was needed.
 
 ## Native CI evidence independently inspected
 
@@ -289,8 +628,9 @@ python3 scripts/audit-m046-native-ci.py \
 The qualifying published release inspected is
 [v1.8.1](https://github.com/sourcebastion/sourcebastion-scanner/releases/tag/v1.8.1),
 source `957e1670d1552c0e1056c3bdf1cd2c78108abfc6`, published 2026-10-11 UTC.
-Its identity and finite native qualification are verified above; live development
-acceptance and mixed-version rollback remain open. The prior admitted development image remains preserved for rollback.
+Its identity and finite native qualification are verified above; automated live
+development, mixed-version rollback and designated human acceptance pass.
+The prior admitted development image remains preserved for rollback.
 
 After normal release review, bind one qualifying tuple to immutable receipts:
 scanner source SHA and release tag; OCI index and AMD64/ARM64 manifest/config
@@ -304,9 +644,9 @@ admitted tuple for rollback. A moving `latest` tag cannot identify either tuple.
 | Required check | Execution and retained evidence | State |
 | --- | --- | --- |
 | Published native binaries | Pull the reviewed digest on actual native Linux AMD64 and ARM64. Validate installed payloads and run the independent corpus using those payloads, without replacing them with checkout modules. Record architecture/kernel, image/native hashes, expected/observed records and canonical per-case digests. | Passed on both published native images; 64 equal cases |
-| Frozen advisory matching | Admit reviewed frozen inputs before the workload, disable scan-time refresh/network, and run actual Grype on the canonical SBOM. Record all four pip advisory groups per selected occurrence, matching identity, distinct incomplete-inventory/matcher-failure states and standards validation. | Published matching/schema and required advisory groups passed; live matcher-failure presentation remains pending |
+| Frozen advisory matching | Admit reviewed frozen inputs before the workload, disable scan-time refresh/network, and run actual Grype on the canonical SBOM. Record all four pip advisory groups per selected occurrence, matching identity, distinct incomplete-inventory/matcher-failure states and standards validation. | Published and live matching/schema and required advisory groups passed; live unavailable-matching presentation verified and designated human review accepted on 2026-10-11 |
 | No mutation/execution/install/forge calls | Read-only source and filesystem policies, denied network, actual source pre/post hashes and execution observations covering adversarial fixtures. Record allowed tool invocations and child lifecycle; read-only/network settings alone do not prove every no-execution requirement. | Eight published raw traces reviewed with allowed invocations and no observed network syscalls; source guards and installed pre/post payloads passed |
-| Bounds, cancellation and child cleanup | Three fresh-cgroup repeats per architecture of corpus, stress and actual installed entrypoint; inherited outer deadline, finite child/resource observers. Exercise timeout, cancellation and controller loss; prove owned descendants/containers reaped, no late publication and explicit refused/partial states. | All 48 published normal-exit resource bindings passed; actual installed AMD64 deadline/cancellation/controller-loss proof passed in development isolation; live queue refusal remains pending |
+| Bounds, cancellation and child cleanup | Three fresh-cgroup repeats per architecture of corpus, stress and actual installed entrypoint; inherited outer deadline, finite child/resource observers. Exercise timeout, cancellation and controller loss; prove owned descendants/containers reaped, no late publication and explicit refused/partial states. | All 48 published normal-exit resource bindings passed; actual installed AMD64 deadline/cancellation/controller-loss proof passed in development isolation; live CPU, capacity and key refusals plus final restoration passed |
 | Cumulative image growth | Compare verified compressed OCI descriptors against the reviewed frozen S01 baseline, bound to each published native manifest. Record baseline identity and byte totals. | Passed against frozen S01: 206,007,354 bytes AMD64; 201,263,464 bytes ARM64 |
 | Numerical exceptions | Compare actual aggregate work with [frozen budgets](../evaluation/m046/release-budgets-v1.json); link any explicit reviewed exception. Do not increase ceilings silently or treat a refused arm as a complete result. | No new exception proposed |
 
@@ -386,3 +726,33 @@ release, both native receipts, designated development/human acceptance and mixed
 version/rollback receipts here and in #94/#88. Production rollout remains a
 separate approval; M044 recovery and M045 measurement/usage acceptance remain open
 under their own scopes.
+
+## Final acceptance decision — 2026-10-11
+
+All seven slices have accepted evidence. S04 and S06 retain their own linked
+criterion ledgers; S05's remaining development coverage/download criteria and
+S07's human gate are now accepted by the designated reviewer. The finite
+release/development evidence satisfies the unchanged requirements above:
+
+| Acceptance requirement | Retained evidence | Result |
+| --- | --- | --- |
+| Published native corpus, real matching/schema, execution observations and frozen resource/image budgets | [Published native audit](M046/S07/published-native-audit-38104916825.json) and verified v1.8.1 release tuple above | Passed on AMD64 and ARM64; no new budget exception |
+| Source-authored inventory, contextual outcomes, pip advisories and immutable successive reuse/publication | [Full scan](M046/S07/development-full-and-reuse-publication-audit.json), [successive reuse](M046/S07/development-live-reuse-audit.json) | Passed with original expectations and origins unchanged |
+| Runtime/advisory/source invalidation, capacity/key refusal and legacy rollback/restoration | [Invalidation](M046/S07/development-live-invalidation-audit.json), [capacity/key/rollback](M046/S07/development-live-capacity-key-rollback-audit.json) | Passed; refused work did not publish or charge inventory |
+| Honest bounded matching failure and final source restoration | [J3/K audit](M046/S07/development-live-recovery-restoration-audit.json) | Passed; J3 preserves inventory/SBOM with unavailable matching, K restores full matching |
+| Human-visible coverage/findings and actual authorized/foreign/revoked/restored download checks | [Designated human review](M046/S07/development-human-download-review.json) | Accepted; original K download SHA-256 matches the frozen expectation |
+| Supported behavior, maintenance and rollback instructions | [Support matrix](M046-support-matrix.md), [maintenance runbook](M046-maintenance-runbook.md), [S06 ledger](M046-S06-acceptance.md) | Linked to the qualified implementation and release |
+
+Original J CPU and J2 diagnostic-capture refusals remain failed with their
+unchanged unmet expectations. J3 uses a separate prospective oracle and supplies
+the required honest matching-unavailable demonstration; K supplies restoration.
+The initial revoked-grant download failure remains recorded as failed; platform
+#419 and a fresh designated 404 followed by restored matching bytes satisfy that
+criterion. Historical automated receipts keep `acceptance: false` because they
+were not human acceptance; this final decision and the human receipt supply it.
+
+S07 and M046 are accepted for the stated development scope. Persistent inventory
+writer/reuse/M044 adoption remain disabled, read presentation remains enabled,
+and normal workers/workflows are resumed. Production rollout, M044/M045, M047's
+full browser acceptance, M048 SPDX, M049 distribution and M050 process work retain
+their separately recorded scope and decisions.

@@ -4,7 +4,16 @@ from .compose_requirements import _compose
 
 
 def compose_source(
-    source, *, source_sha256, producer, environment=None, config=None, limits=None, go_runtime=None, budget=None
+    source,
+    *,
+    source_sha256,
+    producer,
+    environment=None,
+    config=None,
+    limits=None,
+    go_runtime=None,
+    budget=None,
+    licenses=False,
 ):
     """Compose static Python and npm declarations and source lock evidence."""
     return _compose(
@@ -17,4 +26,5 @@ def compose_source(
         manifest_inputs=True,
         go_runtime=go_runtime,
         budget=budget,
+        licenses=licenses,
     )

@@ -20,6 +20,8 @@ from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from sourcebastion.license_expression import SPDX_LICENSE_LIST_VERSION, parse_license
+
 from .inputs import relative_path
 
 SHA256 = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
@@ -397,6 +399,44 @@ class Occurrence(Record):
         return self
 
 
+class LicenseObservation(Record):
+    """A located license claim about one occurrence, never an inference.
+
+    A declared manifest license is the project's claim about itself and
+    package metadata is the published package's claim; neither is the license
+    of a built artifact. ``evidence`` keeps them apart and nothing merges them.
+    Conflicting observations for one occurrence are all retained.
+    """
+
+    id: ID
+    occurrence_id: ID
+    source: Locator
+    evidence: Literal["declared-manifest", "package-metadata", "lock-record", "provider", "imported-claim"]
+    value_raw: Text
+    expression: Optional[Text]
+    parse: Literal["canonical", "deprecated", "licenseref", "unparsed"]
+
+    @model_validator(mode="after")
+    def agrees_with_pinned_list(self):
+        # Structural agreement with the pinned SPDX list, so a producer cannot
+        # assert a canonical expression its own raw value does not yield.
+        value = parse_license(self.value_raw)
+        if value.expression != self.expression or value.parse != self.parse:
+            raise ValueError("contradictory-license-parse")
+        return self
+
+
+class LicenseGap(Record):
+    """No input the producer read states a license for this occurrence.
+
+    Distinct from an observed ``NOASSERTION`` or ``NONE``, which is a claim.
+    """
+
+    id: ID
+    occurrence_id: ID
+    reason: Reason
+
+
 class DependencySelector(Record):
     """Located lock selector, including those without an unambiguous endpoint.
 
@@ -607,8 +647,15 @@ class InventoryLimits(Record):
         return value
 
 
+INVENTORY_V1 = "sourcebastion.inventory/1"
+INVENTORY_V2 = "sourcebastion.inventory/2"
+LICENSE_FIELDS = ("licenses", "license_gaps", "license_list_version")
+
+
 class Inventory(Record):
-    schema_version: Literal["sourcebastion.inventory/1"] = "sourcebastion.inventory/1"
+    # /2 adds license evidence (M048). /1 remains readable and byte-identical;
+    # it carries no license fields and asserts nothing about licenses.
+    schema_version: Literal["sourcebastion.inventory/1", "sourcebastion.inventory/2"] = INVENTORY_V1
     # This is a controller assertion of its admitted source, not a digest
     # inferred from the subset of inputs a parser happened to recognize.
     source_sha256: SHA256
@@ -627,6 +674,11 @@ class Inventory(Record):
     input_references: tuple[InputReference, ...] = Field(default=(), max_length=100000)
     applicability: tuple[Applicability, ...] = Field(default=(), max_length=100000)
     dependency_selectors: tuple[DependencySelector, ...] = Field(default=(), max_length=500000)
+    licenses: tuple[LicenseObservation, ...] = Field(default=(), max_length=400000)
+    license_gaps: tuple[LicenseGap, ...] = Field(default=(), max_length=100000)
+    # The SPDX list the observations were parsed against. It is a compatibility
+    # input: another list version recognises different identifiers.
+    license_list_version: Optional[Name] = None
     coverage: Coverage
     stages: StageStates
 
@@ -651,6 +703,8 @@ class Inventory(Record):
             ("input-reference", self.input_references),
             ("applicability", self.applicability),
             ("selector", self.dependency_selectors),
+            ("license", self.licenses),
+            ("license-gap", self.license_gaps),
         ):
             ids = {row.id for row in records}
             if len(ids) != len(records) or any(not key.startswith(kind + ":sha256:") for key in ids):
@@ -677,6 +731,7 @@ class Inventory(Record):
             self.input_references,
             self.applicability,
             self.dependency_selectors,
+            self.licenses,
         ):
             for record in records:
                 covered = inputs.get(record.source.path)
@@ -843,7 +898,37 @@ class Inventory(Record):
             raise ValueError("incomplete-coverage-cannot-be-promoted")
         if self.stages.inventory == "failed" and (self.occurrences or self.relationships or self.dependency_selectors):
             raise ValueError("failed-inventory-cannot-admit-graph")
+        self._license_evidence(occurrence_index)
         return self
+
+    def _license_evidence(self, occurrence_index):
+        if self.schema_version == INVENTORY_V1:
+            if self.licenses or self.license_gaps or self.license_list_version is not None:
+                raise ValueError("license-evidence-requires-inventory-v2")
+            return
+        if self.license_list_version != SPDX_LICENSE_LIST_VERSION:
+            raise ValueError("license-list-version-mismatch")
+        observed, gaps = {}, set()
+        for row in self.licenses:
+            occurrence = occurrence_index.get(row.occurrence_id)
+            if occurrence is None:
+                raise ValueError("unbound-license-occurrence")
+            if (row.evidence == "imported-claim") != (occurrence.evidence_kind == "imported"):
+                raise ValueError("imported-license-requires-imported-occurrence")
+            if row.evidence == "provider" and not occurrence.provider_references:
+                raise ValueError("provider-license-requires-provider-reference")
+            observed.setdefault(row.occurrence_id, 0)
+            observed[row.occurrence_id] += 1
+        for row in self.license_gaps:
+            if row.occurrence_id not in occurrence_index:
+                raise ValueError("unbound-license-occurrence")
+            if row.occurrence_id in gaps or row.occurrence_id in observed:
+                raise ValueError("contradictory-license-gap")
+            gaps.add(row.occurrence_id)
+        # /2 asserts license evidence was assessed for every occurrence: each
+        # has observations or exactly one gap, so silence never reads as clean.
+        if any(key not in observed and key not in gaps for key in occurrence_index):
+            raise ValueError("unassessed-occurrence-license")
 
 
 def _record_values(record):
@@ -923,8 +1008,14 @@ def canonical_bytes(inventory, *, max_bytes=64 * 1024 * 1024, max_nodes=2000000)
         "input_references",
         "applicability",
         "dependency_selectors",
+        "licenses",
+        "license_gaps",
     ):
         data[field].sort(key=lambda row: row["id"])
+    if data["schema_version"] == INVENTORY_V1:
+        # /1 bytes stay exactly what /1 producers emitted before M048.
+        for field in LICENSE_FIELDS:
+            del data[field]
     for row in data["occurrences"]:
         row["selection_declaration_ids"].sort()
     data["coverage"]["inputs"].sort(key=lambda row: row["source_path"])

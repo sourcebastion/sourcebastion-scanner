@@ -1,0 +1,2169 @@
+{
+  "$defs": {
+    "AnalysisScope": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "requirements-origin",
+            "manifest-input",
+            "lock-input",
+            "provider-directory",
+            "imported-sbom-input"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "source"
+      ],
+      "title": "AnalysisScope",
+      "type": "object"
+    },
+    "Applicability": {
+      "additionalProperties": false,
+      "description": "An evidenced selection condition, independent of the worker target.",
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "kind": {
+          "enum": [
+            "python-version",
+            "marker",
+            "group"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "dialect": {
+          "enum": [
+            "pep440",
+            "pep508",
+            "poetry-core-2.1.3",
+            "group-name"
+          ],
+          "title": "Dialect",
+          "type": "string"
+        },
+        "expression": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Expression",
+          "type": "string"
+        },
+        "root_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Root Id"
+        },
+        "analysis_scope_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Analysis Scope Id"
+        },
+        "occurrence_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occurrence Id"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "kind",
+        "dialect",
+        "expression"
+      ],
+      "title": "Applicability",
+      "type": "object"
+    },
+    "Application": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "root_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Root Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "ecosystem": {
+          "enum": [
+            "pypi",
+            "npm",
+            "golang",
+            "cargo",
+            "maven",
+            "nuget",
+            "gem",
+            "composer"
+          ],
+          "title": "Ecosystem",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Version"
+        }
+      },
+      "required": [
+        "id",
+        "root_id",
+        "source",
+        "ecosystem",
+        "name",
+        "version"
+      ],
+      "title": "Application",
+      "type": "object"
+    },
+    "ContentHash": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "sha1",
+            "sha256",
+            "sha384",
+            "sha512",
+            "go-h1"
+          ],
+          "title": "Algorithm",
+          "type": "string"
+        },
+        "digest": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Digest",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "artifact",
+            "integrity",
+            "module-tree"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "digest",
+        "kind"
+      ],
+      "title": "ContentHash",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "sourcebastion.inventory-coverage/1",
+          "default": "sourcebastion.inventory-coverage/1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "discovery": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "Discovery",
+          "type": "string"
+        },
+        "enumeration": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "Enumeration",
+          "type": "string"
+        },
+        "version_resolution": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "Version Resolution",
+          "type": "string"
+        },
+        "graph": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "Graph",
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/InputCoverage"
+          },
+          "maxItems": 100000,
+          "title": "Inputs",
+          "type": "array"
+        },
+        "refusal_codes": {
+          "default": [],
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "title": "Refusal Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "discovery",
+        "enumeration",
+        "version_resolution",
+        "graph",
+        "environment",
+        "inputs"
+      ],
+      "title": "Coverage",
+      "type": "object"
+    },
+    "Declaration": {
+      "additionalProperties": false,
+      "description": "A source requirement/constraint, separately from package enumeration.",
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "kind": {
+          "enum": [
+            "requirement",
+            "constraint"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "ecosystem": {
+          "enum": [
+            "pypi",
+            "npm",
+            "golang",
+            "cargo",
+            "maven",
+            "nuget",
+            "gem",
+            "composer"
+          ],
+          "title": "Ecosystem",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Name",
+          "type": "string"
+        },
+        "declared_range": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Range"
+        },
+        "exact_version": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exact Version"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marker"
+        },
+        "extras": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Extras",
+          "type": "array"
+        },
+        "hashes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ContentHash"
+          },
+          "maxItems": 4096,
+          "title": "Hashes",
+          "type": "array"
+        },
+        "scopes": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Scopes",
+          "type": "array"
+        },
+        "groups": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Groups",
+          "type": "array"
+        },
+        "root_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Root Id"
+        },
+        "analysis_scope_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Analysis Scope Id"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "kind",
+        "ecosystem",
+        "name"
+      ],
+      "title": "Declaration",
+      "type": "object"
+    },
+    "DependencySelector": {
+      "additionalProperties": false,
+      "description": "Located lock selector, including those without an unambiguous endpoint.\n\nA resolved selector evidences a source edge, never installed reachability.\nThe adapter proves range/dialect selection within the same lock input.",
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "parent_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Parent Id",
+          "type": "string"
+        },
+        "child_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Child Id"
+        },
+        "ecosystem": {
+          "default": "pypi",
+          "enum": [
+            "pypi",
+            "npm",
+            "cargo",
+            "nuget"
+          ],
+          "title": "Ecosystem",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Name",
+          "type": "string"
+        },
+        "declared_range": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Range"
+        },
+        "dialect": {
+          "default": "pep440",
+          "enum": [
+            "pep440",
+            "poetry-core-2.1.3",
+            "npm-semver-7.8.5",
+            "cargo-lock-package-id-3-4",
+            "nuget-release-range-1"
+          ],
+          "title": "Dialect",
+          "type": "string"
+        },
+        "exact_version": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exact Version"
+        },
+        "registry_source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registry Source Sha256"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marker"
+        },
+        "extra_selection": {
+          "default": "requested",
+          "enum": [
+            "requested",
+            "variant-exact"
+          ],
+          "title": "Extra Selection",
+          "type": "string"
+        },
+        "marker_semantics": {
+          "default": "pep508",
+          "enum": [
+            "pep508",
+            "relative-to-lock-python",
+            "none"
+          ],
+          "title": "Marker Semantics",
+          "type": "string"
+        },
+        "extras": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Extras",
+          "type": "array"
+        },
+        "scopes": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Scopes",
+          "type": "array"
+        },
+        "groups": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Groups",
+          "type": "array"
+        },
+        "activation": {
+          "default": "unknown",
+          "enum": [
+            "active",
+            "inactive",
+            "unknown"
+          ],
+          "title": "Activation",
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "resolved",
+            "unresolved"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "parent_id",
+        "name",
+        "disposition",
+        "reason"
+      ],
+      "title": "DependencySelector",
+      "type": "object"
+    },
+    "Environment": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "sourcebastion.environment/1",
+          "default": "sourcebastion.environment/1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "policy": {
+          "default": "preserve-alternatives",
+          "enum": [
+            "preserve-alternatives",
+            "explicit-target"
+          ],
+          "title": "Policy",
+          "type": "string"
+        },
+        "python_implementation": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Python Implementation"
+        },
+        "python_version": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Python Version"
+        },
+        "platform": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Platform"
+        },
+        "architecture": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Architecture"
+        },
+        "marker_inputs": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "maxLength": 512,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+                "type": "string"
+              },
+              {
+                "maxLength": 16384,
+                "minLength": 1,
+                "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 32,
+          "title": "Marker Inputs",
+          "type": "array"
+        }
+      },
+      "title": "Environment",
+      "type": "object"
+    },
+    "InputCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "source_path": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Source Path",
+          "type": "string"
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Sha256"
+        },
+        "format": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Format"
+        },
+        "parser": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Parser"
+        },
+        "disposition": {
+          "enum": [
+            "discovered",
+            "parsed",
+            "ignored",
+            "unsupported",
+            "failed",
+            "bounded-omission",
+            "unresolved"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        },
+        "ecosystem": {
+          "anyOf": [
+            {
+              "enum": [
+                "pypi",
+                "npm",
+                "golang",
+                "cargo",
+                "maven",
+                "nuget",
+                "gem",
+                "composer"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ecosystem"
+        },
+        "enumeration": {
+          "default": "unknown",
+          "enum": [
+            "complete",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "Enumeration",
+          "type": "string"
+        },
+        "enumeration_basis": {
+          "default": "unknown",
+          "enum": [
+            "source-input",
+            "unknown"
+          ],
+          "title": "Enumeration Basis",
+          "type": "string"
+        },
+        "root_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 128,
+            "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "title": "Root Ids",
+          "type": "array"
+        },
+        "analysis_scope_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 128,
+            "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "title": "Analysis Scope Ids",
+          "type": "array"
+        },
+        "installed_environment_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 128,
+            "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "title": "Installed Environment Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_path",
+        "source_sha256",
+        "format",
+        "parser",
+        "disposition",
+        "reason"
+      ],
+      "title": "InputCoverage",
+      "type": "object"
+    },
+    "InputReference": {
+      "additionalProperties": false,
+      "description": "Located include/constraint provenance, never a dependency edge.",
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "analysis_scope_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Analysis Scope Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "include",
+            "constraint"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "requirement",
+            "constraint"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "target_path": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Target Path"
+        },
+        "target_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Target Sha256"
+        },
+        "disposition": {
+          "enum": [
+            "discovered",
+            "parsed",
+            "ignored",
+            "unsupported",
+            "failed",
+            "bounded-omission",
+            "unresolved"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "analysis_scope_id",
+        "kind",
+        "role",
+        "target_path",
+        "target_sha256",
+        "disposition",
+        "reason"
+      ],
+      "title": "InputReference",
+      "type": "object"
+    },
+    "InstalledEnvironment": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "kind": {
+          "const": "installed-metadata",
+          "default": "installed-metadata",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source"
+      ],
+      "title": "InstalledEnvironment",
+      "type": "object"
+    },
+    "InventoryLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "sourcebastion.inventory-limits/1",
+          "default": "sourcebastion.inventory-limits/1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "cpu_quota": {
+          "default": 2.0,
+          "exclusiveMinimum": 0,
+          "maximum": 2,
+          "title": "Cpu Quota",
+          "type": "number"
+        },
+        "gomaxprocs": {
+          "default": 2,
+          "maximum": 2,
+          "minimum": 1,
+          "title": "Gomaxprocs",
+          "type": "integer"
+        },
+        "cataloger_concurrency": {
+          "default": 2,
+          "maximum": 2,
+          "minimum": 1,
+          "title": "Cataloger Concurrency",
+          "type": "integer"
+        },
+        "charged_memory_bytes": {
+          "default": 2147483648,
+          "maximum": 2147483648,
+          "minimum": 1,
+          "title": "Charged Memory Bytes",
+          "type": "integer"
+        },
+        "swap_bytes": {
+          "const": 0,
+          "default": 0,
+          "title": "Swap Bytes",
+          "type": "integer"
+        },
+        "aggregate_cpu_seconds": {
+          "default": 120.0,
+          "exclusiveMinimum": 0,
+          "maximum": 120,
+          "title": "Aggregate Cpu Seconds",
+          "type": "number"
+        },
+        "pipeline_wall_seconds": {
+          "default": 150.0,
+          "exclusiveMinimum": 0,
+          "maximum": 150,
+          "title": "Pipeline Wall Seconds",
+          "type": "number"
+        },
+        "pids": {
+          "default": 256,
+          "maximum": 256,
+          "minimum": 1,
+          "title": "Pids",
+          "type": "integer"
+        },
+        "traversal_entries": {
+          "default": 100000,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Traversal Entries",
+          "type": "integer"
+        },
+        "traversal_depth": {
+          "default": 64,
+          "maximum": 64,
+          "minimum": 1,
+          "title": "Traversal Depth",
+          "type": "integer"
+        },
+        "source_file_bytes": {
+          "default": 2097152,
+          "maximum": 2097152,
+          "minimum": 1,
+          "title": "Source File Bytes",
+          "type": "integer"
+        },
+        "parsed_text_bytes": {
+          "default": 268435456,
+          "maximum": 268435456,
+          "minimum": 1,
+          "title": "Parsed Text Bytes",
+          "type": "integer"
+        },
+        "include_depth": {
+          "default": 64,
+          "maximum": 64,
+          "minimum": 1,
+          "title": "Include Depth",
+          "type": "integer"
+        },
+        "include_targets_per_origin": {
+          "default": 4096,
+          "maximum": 4096,
+          "minimum": 1,
+          "title": "Include Targets Per Origin",
+          "type": "integer"
+        },
+        "occurrences": {
+          "default": 100000,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Occurrences",
+          "type": "integer"
+        },
+        "relationships": {
+          "default": 500000,
+          "maximum": 500000,
+          "minimum": 1,
+          "title": "Relationships",
+          "type": "integer"
+        },
+        "semantic_checks": {
+          "default": 5000000,
+          "maximum": 5000000,
+          "minimum": 1,
+          "title": "Semantic Checks",
+          "type": "integer"
+        },
+        "inventory_bytes": {
+          "default": 67108864,
+          "maximum": 67108864,
+          "minimum": 1,
+          "title": "Inventory Bytes",
+          "type": "integer"
+        },
+        "sbom_bytes": {
+          "default": 67108864,
+          "maximum": 67108864,
+          "minimum": 1,
+          "title": "Sbom Bytes",
+          "type": "integer"
+        },
+        "diagnostic_file_bytes": {
+          "default": 67108864,
+          "maximum": 67108864,
+          "minimum": 1,
+          "title": "Diagnostic File Bytes",
+          "type": "integer"
+        },
+        "diagnostic_job_bytes": {
+          "default": 268435456,
+          "maximum": 268435456,
+          "minimum": 1,
+          "title": "Diagnostic Job Bytes",
+          "type": "integer"
+        },
+        "export_nodes": {
+          "default": 2000000,
+          "maximum": 2000000,
+          "minimum": 1,
+          "title": "Export Nodes",
+          "type": "integer"
+        },
+        "export_depth": {
+          "default": 32,
+          "maximum": 32,
+          "minimum": 1,
+          "title": "Export Depth",
+          "type": "integer"
+        },
+        "export_string_bytes": {
+          "default": 2097152,
+          "maximum": 2097152,
+          "minimum": 1,
+          "title": "Export String Bytes",
+          "type": "integer"
+        },
+        "added_compressed_image_bytes": {
+          "default": 262144000,
+          "maximum": 262144000,
+          "minimum": 1,
+          "title": "Added Compressed Image Bytes",
+          "type": "integer"
+        }
+      },
+      "title": "InventoryLimits",
+      "type": "object"
+    },
+    "LicenseGap": {
+      "additionalProperties": false,
+      "description": "No input the producer read states a license for this occurrence.\n\nDistinct from an observed ``NOASSERTION`` or ``NONE``, which is a claim.",
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "occurrence_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Occurrence Id",
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "occurrence_id",
+        "reason"
+      ],
+      "title": "LicenseGap",
+      "type": "object"
+    },
+    "LicenseObservation": {
+      "additionalProperties": false,
+      "description": "A located license claim about one occurrence, never an inference.\n\nA declared manifest license is the project's claim about itself and\npackage metadata is the published package's claim; neither is the license\nof a built artifact. ``evidence`` keeps them apart and nothing merges them.\nConflicting observations for one occurrence are all retained.",
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "occurrence_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Occurrence Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "evidence": {
+          "enum": [
+            "declared-manifest",
+            "package-metadata",
+            "lock-record",
+            "provider",
+            "imported-claim"
+          ],
+          "title": "Evidence",
+          "type": "string"
+        },
+        "value_raw": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Value Raw",
+          "type": "string"
+        },
+        "expression": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expression"
+        },
+        "parse": {
+          "enum": [
+            "canonical",
+            "deprecated",
+            "licenseref",
+            "unparsed"
+          ],
+          "title": "Parse",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "occurrence_id",
+        "source",
+        "evidence",
+        "value_raw",
+        "expression",
+        "parse"
+      ],
+      "title": "LicenseObservation",
+      "type": "object"
+    },
+    "Locator": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Path",
+          "type": "string"
+        },
+        "source_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Source Sha256",
+          "type": "string"
+        },
+        "locator": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Locator",
+          "type": "string"
+        },
+        "parser": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Parser",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "source_sha256",
+        "locator",
+        "parser"
+      ],
+      "title": "Locator",
+      "type": "object"
+    },
+    "Occurrence": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "ecosystem": {
+          "enum": [
+            "pypi",
+            "npm",
+            "golang",
+            "cargo",
+            "maven",
+            "nuget",
+            "gem",
+            "composer"
+          ],
+          "title": "Ecosystem",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Name",
+          "type": "string"
+        },
+        "purl": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Purl"
+        },
+        "evidence_kind": {
+          "enum": [
+            "declared",
+            "locked",
+            "installed",
+            "imported"
+          ],
+          "title": "Evidence Kind",
+          "type": "string"
+        },
+        "selected_version": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Selected Version"
+        },
+        "declared_range": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Range"
+        },
+        "hashes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ContentHash"
+          },
+          "maxItems": 4096,
+          "title": "Hashes",
+          "type": "array"
+        },
+        "registry_source_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registry Source Sha256"
+        },
+        "lock_optional": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lock Optional"
+        },
+        "provider_references": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProviderReference"
+          },
+          "maxItems": 256,
+          "title": "Provider References",
+          "type": "array"
+        },
+        "selection_declaration_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 128,
+            "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "title": "Selection Declaration Ids",
+          "type": "array"
+        },
+        "root_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Root Id"
+        },
+        "installed_environment_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Installed Environment Id"
+        },
+        "analysis_scope_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Analysis Scope Id"
+        },
+        "directness": {
+          "default": "unknown",
+          "enum": [
+            "direct",
+            "transitive",
+            "unknown"
+          ],
+          "title": "Directness",
+          "type": "string"
+        },
+        "scopes": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Scopes",
+          "type": "array"
+        },
+        "groups": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Groups",
+          "type": "array"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marker"
+        },
+        "extras": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Extras",
+          "type": "array"
+        },
+        "activation": {
+          "default": "unknown",
+          "enum": [
+            "active",
+            "inactive",
+            "unknown"
+          ],
+          "title": "Activation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "ecosystem",
+        "name",
+        "purl",
+        "evidence_kind",
+        "selected_version"
+      ],
+      "title": "Occurrence",
+      "type": "object"
+    },
+    "Producer": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Version",
+          "type": "string"
+        },
+        "code_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Code Sha256",
+          "type": "string"
+        },
+        "registry_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Registry Sha256",
+          "type": "string"
+        },
+        "config_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Config Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "code_sha256",
+        "registry_sha256",
+        "config_sha256"
+      ],
+      "title": "Producer",
+      "type": "object"
+    },
+    "ProjectionLoss": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "dimension": {
+          "enum": [
+            "identity",
+            "version",
+            "graph",
+            "environment",
+            "scope"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "reason": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        },
+        "occurrence_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Occurrence Id"
+        },
+        "relationship_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Relationship Id"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "dimension",
+        "reason"
+      ],
+      "title": "ProjectionLoss",
+      "type": "object"
+    },
+    "ProviderReference": {
+      "additionalProperties": false,
+      "properties": {
+        "provider_output_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Provider Output Sha256",
+          "type": "string"
+        },
+        "raw_record_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Raw Record Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_output_sha256",
+        "raw_record_sha256"
+      ],
+      "title": "ProviderReference",
+      "type": "object"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "selector_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selector Id"
+        },
+        "parent_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Parent Id",
+          "type": "string"
+        },
+        "child_id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Child Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        },
+        "evidence_status": {
+          "enum": [
+            "evidenced",
+            "unassessed"
+          ],
+          "title": "Evidence Status",
+          "type": "string"
+        },
+        "scopes": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Scopes",
+          "type": "array"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marker"
+        },
+        "extras": {
+          "default": [],
+          "items": {
+            "maxLength": 512,
+            "minLength": 1,
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+            "type": "string"
+          },
+          "maxItems": 256,
+          "title": "Extras",
+          "type": "array"
+        },
+        "activation": {
+          "default": "unknown",
+          "enum": [
+            "active",
+            "inactive",
+            "unknown"
+          ],
+          "title": "Activation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "parent_id",
+        "child_id",
+        "source",
+        "evidence_status"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "Root": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "pattern": "^[a-z-]+:sha256:[a-f0-9]{64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "title": "Path",
+          "type": "string"
+        },
+        "kind": {
+          "const": "project",
+          "default": "project",
+          "title": "Kind",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Locator"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "source"
+      ],
+      "title": "Root",
+      "type": "object"
+    },
+    "StageStates": {
+      "additionalProperties": false,
+      "properties": {
+        "inventory": {
+          "enum": [
+            "complete",
+            "partial",
+            "failed"
+          ],
+          "title": "Inventory",
+          "type": "string"
+        },
+        "export": {
+          "default": "not-run",
+          "enum": [
+            "not-run",
+            "succeeded",
+            "failed"
+          ],
+          "title": "Export",
+          "type": "string"
+        },
+        "matching": {
+          "default": "not-run",
+          "enum": [
+            "not-run",
+            "succeeded",
+            "failed"
+          ],
+          "title": "Matching",
+          "type": "string"
+        }
+      },
+      "required": [
+        "inventory"
+      ],
+      "title": "StageStates",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "sourcebastion.inventory/1",
+      "enum": [
+        "sourcebastion.inventory/1",
+        "sourcebastion.inventory/2"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Source Sha256",
+      "type": "string"
+    },
+    "producer": {
+      "$ref": "#/$defs/Producer"
+    },
+    "limits": {
+      "$ref": "#/$defs/InventoryLimits"
+    },
+    "environment": {
+      "$ref": "#/$defs/Environment"
+    },
+    "environment_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Environment Sha256",
+      "type": "string"
+    },
+    "roots": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Root"
+      },
+      "maxItems": 100000,
+      "title": "Roots",
+      "type": "array"
+    },
+    "analysis_scopes": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AnalysisScope"
+      },
+      "maxItems": 100000,
+      "title": "Analysis Scopes",
+      "type": "array"
+    },
+    "installed_environments": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/InstalledEnvironment"
+      },
+      "maxItems": 100000,
+      "title": "Installed Environments",
+      "type": "array"
+    },
+    "occurrences": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Occurrence"
+      },
+      "maxItems": 100000,
+      "title": "Occurrences",
+      "type": "array"
+    },
+    "relationships": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Relationship"
+      },
+      "maxItems": 500000,
+      "title": "Relationships",
+      "type": "array"
+    },
+    "applications": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Application"
+      },
+      "maxItems": 100000,
+      "title": "Applications",
+      "type": "array"
+    },
+    "losses": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ProjectionLoss"
+      },
+      "maxItems": 100000,
+      "title": "Losses",
+      "type": "array"
+    },
+    "declarations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Declaration"
+      },
+      "maxItems": 100000,
+      "title": "Declarations",
+      "type": "array"
+    },
+    "input_references": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/InputReference"
+      },
+      "maxItems": 100000,
+      "title": "Input References",
+      "type": "array"
+    },
+    "applicability": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Applicability"
+      },
+      "maxItems": 100000,
+      "title": "Applicability",
+      "type": "array"
+    },
+    "dependency_selectors": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DependencySelector"
+      },
+      "maxItems": 500000,
+      "title": "Dependency Selectors",
+      "type": "array"
+    },
+    "licenses": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/LicenseObservation"
+      },
+      "maxItems": 400000,
+      "title": "Licenses",
+      "type": "array"
+    },
+    "license_gaps": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/LicenseGap"
+      },
+      "maxItems": 100000,
+      "title": "License Gaps",
+      "type": "array"
+    },
+    "license_list_version": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "License List Version"
+    },
+    "coverage": {
+      "$ref": "#/$defs/Coverage"
+    },
+    "stages": {
+      "$ref": "#/$defs/StageStates"
+    }
+  },
+  "required": [
+    "source_sha256",
+    "producer",
+    "environment",
+    "environment_sha256",
+    "coverage",
+    "stages"
+  ],
+  "title": "Inventory",
+  "type": "object"
+}

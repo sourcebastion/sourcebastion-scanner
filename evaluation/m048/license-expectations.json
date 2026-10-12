@@ -77,7 +77,7 @@
       "rule_id": "license-undetermined-ISC",
       "why": "not on the allowed list"
     },
-    "rack": {
+    "acme-gem": {
       "result": "undetermined",
       "rule_id": "license-undetermined-unstated",
       "why": "Gemfile.lock carries no license"

@@ -28,7 +28,7 @@ published-image acceptance is pending a release.**
 | D2: no SPDX document output | Only CycloneDX is emitted. Exports stay timestamp-free and byte-reproducible with license data. | `tests/test_inventory_cyclonedx_licenses.py::test_identity_is_byte_reproducible_with_license_data` |
 | D3: expressions are parsed | `OR`/`AND`/`WITH`, `LicenseRef-*` and unparsed values are evaluated per term. The four defects recorded on `main` 7052913 are regression tests. | `tests/test_license_expression.py::TestRecordedDefects`; corpus rows `left`, `right`, `classpath`, `acme/ref`, `legacy` |
 | D4: the pinned list is a compatibility input | `/2` binds `license_list_version` in its canonical bytes and refuses another version. The platform requires `inventory_license_list_version` under `local-inventory-licenses-v1`. | `tests/test_inventory_license_contract.py::test_license_list_version_is_pinned`; platform `tests/test_scanner_identity.py::test_a_license_inventory_must_pin_its_license_list_version` |
-| D5: undetermined is never permitted | Unstated, unparsed, unlisted `LicenseRef` and off-list values are undetermined under every policy shape, including deny-only. | corpus rows `acme/silent`, `acme/proprietary`, `bare`, `unknowndefault`, `rack`; `test_deny_only_policy_still_reports_unstated` |
+| D5: undetermined is never permitted | Unstated, unparsed, unlisted `LicenseRef` and off-list values are undetermined under every policy shape, including deny-only. | corpus rows `acme/silent`, `acme/proprietary`, `bare`, `unknowndefault`, `acme-gem`; `test_deny_only_policy_still_reports_unstated` |
 | D6: evidence rules | Every `/2` occurrence has observations or exactly one gap. Conflicts are retained, and nothing is inferred. Imported claims stay on imported occurrences. | `tests/test_inventory_license_contract.py`, `tests/test_inventory_license_evidence.py` |
 | D7: platform surface in the Dependencies tab | The tab shows the stated expression or evidence state, a whole-snapshot breakdown, a filter by state, and per-observation evidence. | platform `tests/test_sbom_license_evidence.py`; ad hoc real-inventory render below |
 | D8: owner answers | Interim refusal (#173), now superseded by S04. `inventory/2` with explicit `/1` handling. Rule IDs changed with a migration note only. | `docs/integrations.md` migration notes; `tests/test_inventory_license_contract.py::TestInventoryV1` |
@@ -43,7 +43,7 @@ records each package's expected result and rule ID.
 `scripts/verify-m048-license-acceptance.py` composes the corpus offline,
 evaluates it and exits non-zero on any mismatch.
 
-### Local image run (2026-10-11)
+### Local image run (2026-10-12)
 
 - **Image:** `sourcebastion-scanner:m048-s07-local`, built from
   `images/Dockerfile` at the S06 scanner commit plus the S04 fix, image ID
@@ -54,12 +54,16 @@ evaluates it and exits non-zero on any mismatch.
   16 resolved packages: 5 permitted, 2 denied, 9 undetermined. 5 declarations
   were not assessed, and the license list is 3.27.0.
 
-This run found a defect, which was fixed before acceptance. Declared
+Both runs were repeated after the corpus's Bundler fixture changed from the
+real `rack@3.1.7`, whose published advisories failed GitHub dependency
+review, to a fictional `acme-gem`. Results were identical.
+
+An earlier run found a defect, which was fixed before acceptance. Declared
 `package.json` dependencies were reported as "no license stated" beside their
 locked packages. `27e4abe` now evaluates only resolved packages and counts
 declarations separately.
 
-### Full CLI scan in the local image (2026-10-11)
+### Full CLI scan in the local image (2026-10-12)
 
 `sourcebastion scan /scan --license-check` ran in the same image against the
 corpus, with the policy as `.sourcebastion.yaml`. Network access was allowed,

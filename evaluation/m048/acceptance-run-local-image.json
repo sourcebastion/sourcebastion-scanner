@@ -3,6 +3,7 @@
   "inventory_state": "complete",
   "mismatches": [],
   "packages": {
+    "acme-gem": "undetermined",
     "acme/dual": "permitted",
     "acme/gpl": "denied",
     "acme/mit": "permitted",
@@ -16,7 +17,6 @@
     "left": "denied",
     "legacy": "undetermined",
     "pep639": "permitted",
-    "rack": "undetermined",
     "right": "permitted",
     "unknowndefault": "undetermined"
   },

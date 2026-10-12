@@ -5,6 +5,23 @@
 * **breaking for license policies:** `scan --license-check` now evaluates licenses from the canonical inventory (the values stated in `package-lock.json`, `composer.lock` and installed Python `METADATA`) instead of running `syft`, so it works in the published image and never reaches the network. SPDX expressions are parsed (`AND`/`OR`/`WITH`), and undetermined licenses (unstated, non-SPDX or unlisted) are never permitted, even under a deny-only policy. Findings are per package and bound to the file that states the license. Rule IDs use the canonical expression (`license-denied-GPL-3.0-only`, `license-undetermined-unstated`), so existing license ignore rules must be rewritten; see the migration notes in `docs/integrations.md`. `license_summary` reports `permitted`/`denied`/`undetermined` and `coverage`, and policy entries that are expressions are refused (M048 S04, #178)
 * a merged version bump now requests its own release. `release.yml` had always accepted a `repository_dispatch` of type `scanner-release` from `sourcebastion-bot[bot]`, but nothing sent it -- the initiator was semantic-release, removed in the same commit that introduced the gate -- so every release ran through the owner path, whose input was named `break_glass_reason`. The new `Release dispatch` workflow supplies the missing initiator, and that input is now `release_reason`: dispatching by hand is the documented fallback, not an incident. Nothing about what is checked changes, including the second approval on the `release` environment
 
+## [2.0.0] - 2026-10-12
+
+### What's Changed
+* docs(m046): bind S06 release evidence to published v1.8.1 by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/171
+* ci(m046): qualify published native images against frozen S01 by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/168
+* Accept M046 S07 with development human sign-off by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/172
+* feat(license): evaluate parsed SPDX expressions per term (M048 S02) by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/181
+* feat(inventory): add inventory/2 license evidence contract (M048 S01) by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/182
+* feat(inventory): record license observations from read inputs (M048 S03) by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/183
+* feat(license)!: evaluate license policy over the canonical inventory (M048 S04) by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/184
+* feat(inventory): carry license evidence through CycloneDX export and import (M048 S05) by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/185
+* feat(inventory): carry license evidence in inventory/2 row projection (M048 S06) by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/186
+* test(m048): license acceptance corpus, verifier and ledger (M048 S07) by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/187
+
+
+**Full Changelog**: https://github.com/sourcebastion/sourcebastion-scanner/compare/v1.8.1...v2.0.0
+
 ## [1.8.1] - 2026-10-10
 
 - Repair hosted smoke-test cleanup after successful installed-entrypoint proofs: restore directory write access within the private scratch tree before removing sealed control records, preserve the scan exit status, and leave external retained evidence untouched. Release v1.8.0 remained a draft after both native smoke jobs failed at cleanup; v1.8.1 includes the M046 and M050 changes listed below.

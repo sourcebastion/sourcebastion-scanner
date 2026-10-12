@@ -163,6 +163,14 @@ jobs:
     name: Validate release images and runtime
     needs: prepare-release
     if: needs.prepare-release.outputs.release_ready == 'true'
+    # docker.yml's published-image qualification job (#168) requests these
+    # read scopes. A called workflow may not exceed its caller, and GitHub
+    # checks that before any job runs, skipped ones included, so without them
+    # every release fails at startup.
+    permissions:
+      contents: read
+      actions: read
+      packages: read
     uses: ./.github/workflows/docker.yml
     with:
       build_images: true

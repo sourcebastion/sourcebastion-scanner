@@ -1,11 +1,11 @@
 ## Unreleased
 
+## [2.0.0] - 2026-10-12
+
 ### Changed
 
 * **breaking for license policies:** `scan --license-check` now evaluates licenses from the canonical inventory (the values stated in `package-lock.json`, `composer.lock` and installed Python `METADATA`) instead of running `syft`, so it works in the published image and never reaches the network. SPDX expressions are parsed (`AND`/`OR`/`WITH`), and undetermined licenses (unstated, non-SPDX or unlisted) are never permitted, even under a deny-only policy. Findings are per package and bound to the file that states the license. Rule IDs use the canonical expression (`license-denied-GPL-3.0-only`, `license-undetermined-unstated`), so existing license ignore rules must be rewritten; see the migration notes in `docs/integrations.md`. `license_summary` reports `permitted`/`denied`/`undetermined` and `coverage`, and policy entries that are expressions are refused (M048 S04, #178)
 * a merged version bump now requests its own release. `release.yml` had always accepted a `repository_dispatch` of type `scanner-release` from `sourcebastion-bot[bot]`, but nothing sent it -- the initiator was semantic-release, removed in the same commit that introduced the gate -- so every release ran through the owner path, whose input was named `break_glass_reason`. The new `Release dispatch` workflow supplies the missing initiator, and that input is now `release_reason`: dispatching by hand is the documented fallback, not an incident. Nothing about what is checked changes, including the second approval on the `release` environment
-
-## [2.0.0] - 2026-10-12
 
 ### What's Changed
 * docs(m046): bind S06 release evidence to published v1.8.1 by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/171

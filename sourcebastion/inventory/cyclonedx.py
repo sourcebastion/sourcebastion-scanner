@@ -168,6 +168,12 @@ def export(inventory, *, deadline, check):
     ):
         metadata.extend((field, row) for row in data[field])
     metadata.extend(("input", row) for row in data["coverage"]["inputs"])
+    licenses, license_gaps = {}, {}
+    if data["schema_version"] == "sourcebastion.inventory/2":
+        metadata.append(("license-list-version", data["license_list_version"]))
+        for row in data["licenses"]:
+            licenses.setdefault(row["occurrence_id"], []).append(row)
+        license_gaps = {row["occurrence_id"]: row for row in data["license_gaps"]}
     components, selected, omitted = [], {}, 0
     for row in data["occurrences"]:
         _guard(deadline, check)
@@ -181,6 +187,22 @@ def export(inventory, *, deadline, check):
             occurrence["line"] = int(source["locator"].split(":")[1])
         # Retain canonical namespace/name in purl. CycloneDX's display name
         # carries the same asserted canonical name, not an inferred project.
+        losses = ["cyclonedx-default-required-scope-unassessed"]
+        properties = [("occurrence", row)]
+        declared = None
+        if data["schema_version"] == "sourcebastion.inventory/2":
+            observed = licenses.get(row["id"], [])
+            properties += [("license-observation", item) for item in observed]
+            if row["id"] in license_gaps:
+                properties.append(("license-gap", license_gaps[row["id"]]))
+            expressions = {item["expression"] for item in observed}
+            if observed and None not in expressions and len(expressions) == 1:
+                declared = expressions.pop()
+            else:
+                # Unstated, unparsed or conflicting evidence has no faithful
+                # standard form; the observations above stay authoritative.
+                losses.append("license-evidence-not-representable")
+        properties.append(("projection-losses", losses))
         component = {
             "type": "library",
             "bom-ref": row["id"],
@@ -188,13 +210,12 @@ def export(inventory, *, deadline, check):
             "version": row["selected_version"],
             "purl": row["purl"],
             "evidence": {"occurrences": [occurrence]},
-            "properties": _properties(
-                [("occurrence", row), ("projection-losses", ["cyclonedx-default-required-scope-unassessed"])],
-                limits,
-                deadline,
-                check,
-            ),
+            "properties": _properties(properties, limits, deadline, check),
         }
+        if declared is not None:
+            # The expression form is used even for one identifier: the pinned
+            # SPDX list knows identifiers the CycloneDX 1.6 enumeration lacks.
+            component["licenses"] = [{"expression": declared, "acknowledgement": "declared"}]
         components.append(component)
         selected[row["id"]] = row
     adjacency, omitted_edges = {}, 0

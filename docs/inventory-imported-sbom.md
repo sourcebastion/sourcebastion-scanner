@@ -129,3 +129,18 @@ admitting components.
 
 The export, matching and real-Grype proofs are unchanged. Native resource
 acceptance remains open.
+
+## License claims (M048 S05)
+
+`project` reads each projected component's `licenses` entries as
+`imported-claim` observations, returned on `ImportedProjection.licenses` and
+located at `imported-sbom:/components/<i>/licenses/<j>`.
+
+- An `expression` entry is its expression.
+- A `license` entry is its `id` or, failing that, its `name`.
+- Anything else is kept as an unparsed claim.
+
+License text, URLs and acknowledgement aren't read as claims. Claims attach
+only to imported occurrences (the S01 contract refuses anything else) and are
+never promoted to evidence about a declared dependency. A skipped component's
+claims are dropped with it.

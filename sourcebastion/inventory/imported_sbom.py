@@ -78,6 +78,9 @@ class ImportedProjection:
     occurrences: tuple
     skipped: int
     duplicates: int = 0
+    #: `imported-claim` license observations: what the document says, never
+    #: promoted to scanner evidence about the declared dependency.
+    licenses: tuple = ()
 
 
 def _decode(raw, limits, check):
@@ -227,8 +230,8 @@ def project(raw, *, limits, check, path=None, source_sha256=None):
         kind="imported-sbom-input",
         source=locator,
     )
-    occurrences, seen, skipped, duplicates = [], set(), 0, 0
-    for component in document.get("components", []):
+    occurrences, seen, skipped, duplicates, licenses = [], set(), 0, 0, []
+    for index, component in enumerate(document.get("components", [])):
         check()
         if type(component) is not dict:
             skipped += 1
@@ -273,6 +276,7 @@ def project(raw, *, limits, check, path=None, source_sha256=None):
             continue
         seen.add(row.id)
         occurrences.append(row)
+        licenses.extend(_license_claims(row, component, locator, index, check))
     check()
     return ImportedProjection(
         admitted=admitted,
@@ -280,4 +284,38 @@ def project(raw, *, limits, check, path=None, source_sha256=None):
         occurrences=tuple(occurrences),
         skipped=skipped,
         duplicates=duplicates,
+        licenses=tuple(licenses),
     )
+
+
+def _license_claims(occurrence, component, locator, index, check):
+    """Each declared license entry, read as the document's claim.
+
+    An expression entry is its expression; a license entry is its ``id`` or,
+    failing that, its ``name``. Text, URLs and acknowledgement are not license
+    claims and are not read. Malformed entries are recorded as what they are.
+    """
+    from .licenses import observe
+
+    entries = component.get("licenses")
+    if type(entries) is not list:
+        return []
+    claims = []
+    for position, entry in enumerate(entries):
+        check()
+        value = entry
+        if type(entry) is dict and type(entry.get("expression")) is str:
+            value = entry["expression"]
+        elif type(entry) is dict and type(entry.get("license")) is dict:
+            named = entry["license"]
+            value = named.get("id") if type(named.get("id")) is str else named.get("name", named)
+        source = Locator(
+            path=locator.path,
+            source_sha256=locator.source_sha256,
+            locator=f"imported-sbom:/components/{index}/licenses/{position}",
+            parser=locator.parser,
+        )
+        observed = observe(occurrence, source, value, "imported-claim")
+        if observed is not None:
+            claims.append(observed)
+    return claims

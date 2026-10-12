@@ -13,6 +13,8 @@ from packaging.utils import canonicalize_name
 from packaging.version import Version
 from pydantic import TypeAdapter
 
+from sourcebastion.license_expression import within_expression_budget
+
 from .inputs import InputRefusal
 from .requirements import parse_requirement
 from .contract import Text, package_purl
@@ -46,17 +48,7 @@ def _field(value, check):
         raise Refusal("invalid-metadata-control")
     # Preflight before eager maintained Version, Requirement, marker and
     # license-expression validation. No parser receives an unbounded expression.
-    if re.search(r"\d{129,}", value):
-        raise Refusal("metadata-expression-budget-exceeded")
-    depth = 0
-    for c in value:
-        if c == "(":
-            depth += 1
-            if depth > 32:
-                raise Refusal("metadata-expression-budget-exceeded")
-        elif c == ")":
-            depth -= 1
-    if len(re.findall(r"\b(?:and|or|AND|OR)\b", value)) > 128:
+    if not within_expression_budget(value):
         raise Refusal("metadata-expression-budget-exceeded")
 
 

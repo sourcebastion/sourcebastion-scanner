@@ -4,8 +4,8 @@ Slice S07 of [M048](M048-scope.md) ([#180](https://github.com/sourcebastion/sour
 decision to its implementation and to the evidence that it holds. It records
 what was observed and what remains open.
 
-Status: **implemented on unmerged branches. Local-image acceptance passes, and
-published-image acceptance is pending a release.**
+Status: **accepted.** Merged to `main` in both repositories and released as
+**v2.0.0**. Acceptance passes in the published image on amd64 and arm64.
 
 ## Implementation
 
@@ -42,6 +42,24 @@ records each package's expected result and rule ID.
 
 `scripts/verify-m048-license-acceptance.py` composes the corpus offline,
 evaluates it and exits non-zero on any mismatch.
+
+### Published image run, v2.0.0 (2026-10-13)
+
+- **Release:** `v2.0.0` at `41e030d`, published 2026-10-13T01:17:52Z. Image
+  `ghcr.io/sourcebastion/sourcebastion-scanner:v2.0.0`, index
+  `sha256:adf1b8d2c695574d658ac6666a8b40179249d10f9f50959fc70ef04637c57d77`.
+- **Command:** `scripts/verify-m048-license-acceptance.py` ran inside the
+  image, pulled by digest, with `--network none`:
+
+  | Platform | Manifest | Result |
+  |---|---|---|
+  | linux/arm64 | `sha256:7d146a1fe3f807b7156c82e778c2369dffc43ff3ce72df20a465246f9830b66a` | exit 0, no mismatches |
+  | linux/amd64 | `sha256:b730dfc46ed254a98adeafe4cad2706c47b0d38c0226a74fabddd097453fe898` | exit 0, no mismatches |
+
+- **Result on both:** `inventory/2`, coverage `complete`, 16 resolved packages:
+  5 permitted, 2 denied, 9 undetermined. 5 declarations were not assessed,
+  and the license list is 3.27.0. This is identical to the local-image run.
+- **Reports:** `evaluation/m048/acceptance-run-published-v2.0.0-{arm64,amd64}.json`.
 
 ### Local image run (2026-10-12)
 
@@ -96,14 +114,11 @@ the released version.
 
 ## Open
 
-- **Published-image acceptance.** Requires merging these branches and a
-  release. Then rerun the verifier against
-  `ghcr.io/sourcebastion/sourcebastion-scanner` and record the digest here.
 - **Hosted inventory producer.** It still emits `/1`. Enabling `/2` in the
   hosted pipeline requires these steps:
-  1. Merge platform `97c3203`/`57fa00b` (migration 0107 and the compatibility
-     identity).
-  2. Bump the platform's scanner pin.
+  1. ~~Merge platform migration 0107 and the compatibility identity.~~ Done:
+     sourcebastion/sourcebastion-platform#428, merge `1747479`.
+  2. Bump the platform's scanner pin to v2.0.0.
   3. Make the scanner identity declare `local-inventory-licenses-v1` with
      `inventory_license_list_version`.
   4. Pass `licenses=True` in the dependency job.

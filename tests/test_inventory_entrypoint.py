@@ -334,6 +334,46 @@ def test_strict_typed_controller_fields_do_not_invent_authority(mounted, path, v
         entry._typed(record)
 
 
+@pytest.mark.parametrize("version,licenses", [
+    ("sourcebastion.inventory-control/1", False),
+    ("sourcebastion.inventory-control/2", True),
+])
+def test_control_version_alone_selects_the_inventory_schema(mounted, monkeypatch, version, licenses):
+    control, _, _, record = mounted
+    record["schema_version"] = version
+    install(control, record)
+    seen = []
+
+    def run(_source, **kwargs):
+        seen.append(kwargs["licenses"])
+        return dependency_job.DependencyResult(b"{}", True)
+
+    monkeypatch.setattr(dependency_job, "run_dependency", run)
+    assert entry._run(time.monotonic(), Event())[1] == 0
+    assert seen == [licenses] and type(seen[0]) is bool
+
+
+@pytest.mark.parametrize("version", [
+    "sourcebastion.inventory-control/3", "sourcebastion.inventory-control/2 ", ["sourcebastion.inventory-control/2"],
+    {"v": 2}, 2, None,
+])
+def test_unknown_or_non_string_control_versions_refuse(mounted, version):
+    record = copy.deepcopy(mounted[3])
+    record["schema_version"] = version
+    with pytest.raises(entry.Refusal, match="inventory-control-invalid"):
+        entry._typed(record)
+
+
+def test_control_v2_cannot_carry_an_extra_license_field(mounted, monkeypatch):
+    control, _, _, record = mounted
+    record["schema_version"] = "sourcebastion.inventory-control/2"
+    record["licenses"] = True
+    install(control, record)
+    monkeypatch.setattr(dependency_job, "run_dependency", lambda *_a, **_k: pytest.fail("job must not run"))
+    with pytest.raises(entry.Refusal, match="inventory-control-invalid"):
+        entry._run(time.monotonic(), Event())
+
+
 @pytest.mark.parametrize("value", [True, False, None, "150", -1, 0, float("inf"), float("nan")])
 def test_strict_absolute_deadline(value):
     with pytest.raises(entry.Refusal, match="inventory-control-invalid"):

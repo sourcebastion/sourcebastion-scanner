@@ -217,7 +217,12 @@ def _typed(value):
     from .inventory.go_sources import Runtime as GoRuntime
     from .inventory.registry import DiscoveryConfig, REGISTRY_SHA256
 
-    if value["schema_version"] != "sourcebastion.inventory-control/1":
+    # Control /1 composes inventory/1. Only a controller that stores /2 and pins
+    # its license identity sends /2; a newer image never upgrades a /1 request.
+    licenses = {"sourcebastion.inventory-control/1": False,
+                "sourcebastion.inventory-control/2": True}.get(value["schema_version"]) \
+        if type(value["schema_version"]) is str else None
+    if licenses is None:
         raise Refusal("inventory-control-invalid")
     source_sha = value["source_sha256"]
     if type(source_sha) is not str or len(source_sha) != 64 or any(c not in "0123456789abcdef" for c in source_sha):
@@ -249,7 +254,7 @@ def _typed(value):
         raise Refusal("inventory-control-invalid")
     spec = RuntimeSpec(**{**runtime, "advisory_files": tuple(tuple(row) for row in runtime["advisory_files"])})
     go = None if value["go_sha256"] is None else GoRuntime(GO_BINARY, value["go_sha256"])
-    return source_sha, config, producer, environment, spec, go
+    return source_sha, config, producer, environment, spec, go, licenses
 
 
 def _run(started, cancelled):
@@ -270,7 +275,7 @@ def _run(started, cancelled):
             value = _decode(control.raw, check)
             deadline = min(deadline, _deadline(value["deadline_monotonic"]))
             check()
-            source_sha, config, producer, environment, runtime, go = _typed(value)
+            source_sha, config, producer, environment, runtime, go, licenses = _typed(value)
             check()
             from .inventory.artifacts import ArtifactStore
             from .inventory.budget import PipelineBudget
@@ -289,6 +294,7 @@ def _run(started, cancelled):
                 source, budget=budget, config=config, producer=producer,
                 source_sha256=source_sha, store=store, runtime=runtime,
                 environment=environment, go_runtime=go, cancelled=cancelled,
+                licenses=licenses,
             )
             control.validate()
             if (

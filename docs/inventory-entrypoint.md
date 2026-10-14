@@ -8,9 +8,19 @@ and `/control/job.json`; the optional Go parser path is fixed to
 separate release prerequisite; null helper identity preserves explicit
 unsupported Go coverage instead of running customer tooling.
 
-The exact controller-only record fields are `schema_version` (exactly
-`sourcebastion.inventory-control/1`), `deadline_monotonic`, `source_sha256`,
-`producer`, `discovery`, `environment`, `runtime`, and `go_sha256` (nullable).
+The exact controller-only record fields are `schema_version`, `deadline_monotonic`,
+`source_sha256`, `producer`, `discovery`, `environment`, `runtime`, and
+`go_sha256` (nullable). `schema_version` alone selects the inventory schema:
+
+- `sourcebastion.inventory-control/1` composes `sourcebastion.inventory/1`,
+  unchanged.
+- `sourcebastion.inventory-control/2` composes `sourcebastion.inventory/2`,
+  which adds license evidence parsed against the pinned SPDX license list.
+
+The field set is the same for both, and any other version refuses. A controller
+sends `/2` only once it stores `/2` artifacts and pins the license-list version
+in its compatibility identity (`local-inventory-licenses-v1`). A newer image
+never upgrades a `/1` request on its own.
 Discovery has the five exact `DiscoveryConfig` fields, with mappings/ignores
 as JSON arrays. Environment and Producer retain their canonical schemas;
 producer registry/config identity must agree with the current registry and

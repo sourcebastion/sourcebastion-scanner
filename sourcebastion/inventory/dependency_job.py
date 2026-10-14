@@ -54,6 +54,7 @@ def run_dependency(
     environment=None,
     go_runtime=None,
     cancelled=None,
+    licenses=False,
 ):
     """Finalize child facts with one admission ledger and held runtime custody.
 
@@ -73,6 +74,7 @@ def run_dependency(
             go_runtime=go_runtime,
             cancelled=cancelled,
             lifetime=lifetime,
+            licenses=licenses,
         )
 
 
@@ -89,6 +91,7 @@ def _run_dependency(
     go_runtime,
     cancelled,
     lifetime,
+    licenses=False,
 ):
     """Use one admission-time Source/ledger through actual matching and recovery.
 
@@ -103,6 +106,8 @@ def _run_dependency(
     budget.bind(source, config)
     if type(runtime) is not RuntimeSpec or (cancelled is not None and type(cancelled) is not Event):
         raise TypeError("controller-runtime-and-cancellation-required")
+    if type(licenses) is not bool:
+        raise TypeError("controller-license-selection-required")
     if store._names or store.reserved_bytes:
         raise ValueError("fresh-artifact-store-required")
     if type(source_sha256) is not str or re.fullmatch(r"[a-f0-9]{64}", source_sha256) is None:
@@ -227,6 +232,7 @@ def _run_dependency(
                 limits=store.limits,
                 go_runtime=go_runtime,
                 budget=budget,
+                licenses=licenses,
             )
             inventory_state, environment_sha = value.stages.inventory, value.environment_sha256
             stages[stage] = "succeeded"

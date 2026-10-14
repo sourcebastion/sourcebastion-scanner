@@ -16,7 +16,7 @@ from sourcebastion.inventory.registry import DiscoveryConfig, REGISTRY_SHA256
 from tests.test_inventory_consumer_runtime import prepared
 
 
-def exercise(tmp_path, monkeypatch, *, failure=None, deadline=None, cancelled=None):
+def exercise(tmp_path, monkeypatch, *, failure=None, deadline=None, cancelled=None, licenses=None):
     spec, _binary, root = prepared(tmp_path, monkeypatch)
     monkeypatch.setattr(job, "ADVISORIES", root)
     source_root, output = tmp_path / "source", tmp_path / "output"
@@ -96,6 +96,7 @@ def exercise(tmp_path, monkeypatch, *, failure=None, deadline=None, cancelled=No
                 store=store,
                 runtime=spec,
                 cancelled=cancelled,
+                **({} if licenses is None else {"licenses": licenses}),
             )
             return result, json.loads(result.receipt), output, captures, budget.deadline
 
@@ -126,6 +127,29 @@ def test_fixed_controller_preserves_canonical_states_and_separates_parent_author
     assert configuration["yaml_sha256"] == hashlib.sha256((output / "grype.yaml").read_bytes()).hexdigest()
     assert configuration["environment"] == captures[-1][1]["environment"]
     assert configuration["cwd"] == str(captures[-1][1]["cwd"])
+
+
+def test_inventory_v1_remains_the_default_and_v2_is_an_explicit_selection(tmp_path, monkeypatch):
+    from sourcebastion.license_expression import SPDX_LICENSE_LIST_VERSION
+
+    (tmp_path / "v1").mkdir()
+    (tmp_path / "v2").mkdir()
+    _result, _receipt, output, _captures, _deadline = exercise(tmp_path / "v1", monkeypatch)
+    default = json.loads((output / "inventory.json").read_bytes())
+    assert default["schema_version"] == "sourcebastion.inventory/1" and "licenses" not in default
+    result, receipt, output, _captures, _deadline = exercise(tmp_path / "v2", monkeypatch, licenses=True)
+    assert result.finalized and receipt["reason"] is None
+    assert set(receipt["stages"].values()) == {"succeeded"}
+    canonical = json.loads((output / "inventory.json").read_bytes())
+    assert canonical["schema_version"] == "sourcebastion.inventory/2"
+    assert canonical["license_list_version"] == SPDX_LICENSE_LIST_VERSION
+    assert len(canonical["occurrences"]) == 2
+
+
+@pytest.mark.parametrize("licenses", [1, 0, "true", 0.0])
+def test_license_selection_must_be_an_explicit_boolean(tmp_path, monkeypatch, licenses):
+    with pytest.raises(TypeError, match="controller-license-selection-required"):
+        exercise(tmp_path, monkeypatch, licenses=licenses)
 
 
 @pytest.mark.parametrize(

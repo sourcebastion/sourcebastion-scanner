@@ -1,0 +1,35 @@
+{
+  "inventory_schema": "sourcebastion.inventory/2",
+  "inventory_state": "complete",
+  "mismatches": [],
+  "packages": {
+    "acme-gem": "undetermined",
+    "acme/dual": "permitted",
+    "acme/gpl": "denied",
+    "acme/mit": "permitted",
+    "acme/proprietary": "undetermined",
+    "acme/ref": "undetermined",
+    "acme/silent": "undetermined",
+    "bare": "undetermined",
+    "classified": "undetermined",
+    "classpath": "permitted",
+    "isc": "undetermined",
+    "left": "denied",
+    "legacy": "undetermined",
+    "pep639": "permitted",
+    "right": "permitted",
+    "unknowndefault": "undetermined"
+  },
+  "refusal_codes": [],
+  "schema_version": "sourcebastion.m048-license-acceptance-run/1",
+  "summary": {
+    "coverage": "complete",
+    "declarations_not_assessed": 5,
+    "denied": 2,
+    "license_list_version": "3.27.0",
+    "permitted": 5,
+    "total": 16,
+    "unassessed_inputs": [],
+    "undetermined": 9
+  }
+}

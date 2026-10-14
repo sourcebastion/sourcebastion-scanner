@@ -1,5 +1,16 @@
 ## Unreleased
 
+## [2.1.0] - 2026-10-14
+
+### What's Changed
+* docs(m048): record license scanning and compliance scope by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/174
+* docs(m048): record published-image acceptance for v2.0.0 by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/192
+* chore(deps): verified Semgrep 1.180.0 by @sourcebastion-bot[bot] in https://github.com/sourcebastion/sourcebastion-scanner/pull/191
+* feat(inventory): let the controller request inventory/2 from the hosted entrypoint by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/193
+
+
+**Full Changelog**: https://github.com/sourcebastion/sourcebastion-scanner/compare/v2.0.0...v2.1.0
+
 ## [2.0.0] - 2026-10-12
 
 ### Changed

@@ -92,3 +92,28 @@ def test_refresh_switches_generation_without_editing_running_snapshot(tmp_path):
     assert (root / "current").resolve() == second
     assert first != second and (first / "data").read_text() == "1"
     assert (second / "data").read_text() == "2"
+
+
+def test_refresh_keeps_one_previous_generation_and_removes_partials(tmp_path):
+    root = tmp_path / "advisories"
+    counter = 0
+
+    def success(command, **kwargs):
+        nonlocal counter
+        directory = Path(kwargs["env"]["GRYPE_DB_CACHE_DIR"])
+        if command[-1] == "update":
+            counter += 1
+            (directory / "data").write_text(str(counter))
+        return subprocess.CompletedProcess(command, 0, json.dumps({"valid": True}))
+
+    first = refresh(root, runner=success)
+    second = refresh(root, runner=success)
+    partial = root / "snapshot-killed"
+    partial.mkdir()
+    (partial / "db").write_text("incomplete")
+    (root / ".current-stale").symlink_to(second.name, target_is_directory=True)
+    third = refresh(root, runner=success)
+    assert (root / "current").resolve() == third
+    assert sorted(root.glob("snapshot-*")) == sorted([second, third])
+    assert not first.exists() and not partial.exists()
+    assert not (root / ".current-stale").exists()

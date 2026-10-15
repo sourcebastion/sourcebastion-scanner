@@ -4,7 +4,7 @@ Run with the scanner image's Python: python -m sourcebastion.grype_database /db.
 Scans bind the resolved current directory read-only; refresh never edits it.
 """
 import argparse
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import fcntl
 import json
 import os
@@ -14,6 +14,9 @@ import stat
 import subprocess
 import tempfile
 import uuid
+
+# Published generations kept besides the new one.
+KEEP_PREVIOUS = 1
 
 
 def refresh(directory: Path, *, runner=subprocess.run, now=None) -> Path:
@@ -60,18 +63,33 @@ def refresh(directory: Path, *, runner=subprocess.run, now=None) -> Path:
                 os.fsync(root_fd)
             finally:
                 os.close(root_fd)
-            # Keep seven days: far longer than the worker's bounded scan lease.
-            # The current generation and unfinished/foreign directories survive.
+            # Keep the new generation and the newest previous one: a scan that
+            # resolved `current` before this swap may still read it. Older
+            # generations go. The exclusive lock means no other refresh is
+            # writing, so a snapshot without a receipt, or a staged `.current-`
+            # link, was left by a killed refresh and is removed. Directories
+            # owned by another identity or with a foreign receipt survive.
+            previous = []
             for candidate in directory.glob("snapshot-*"):
-                if candidate == snapshot or candidate.is_symlink():
+                if candidate == snapshot or candidate.is_symlink() or not candidate.is_dir():
                     continue
                 try:
+                    if candidate.lstat().st_uid != os.getuid():
+                        continue
                     saved = json.loads((candidate / "snapshot.json").read_text())
                     created = datetime.fromisoformat(saved["refreshed_at"])
-                    if created.tzinfo is not None and created < timestamp - timedelta(days=7):
-                        shutil.rmtree(candidate)
+                    if created.tzinfo is not None:
+                        previous.append((created, candidate))
+                except FileNotFoundError:
+                    shutil.rmtree(candidate, ignore_errors=True)
                 except (OSError, ValueError, KeyError, TypeError):
                     continue
+            previous.sort(reverse=True)
+            for _, candidate in previous[KEEP_PREVIOUS:]:
+                shutil.rmtree(candidate, ignore_errors=True)
+            for staged in directory.glob(".current-*"):
+                if staged != link and staged.is_symlink():
+                    staged.unlink(missing_ok=True)
             return snapshot
         finally:
             link.unlink(missing_ok=True)

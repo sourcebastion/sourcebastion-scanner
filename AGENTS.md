@@ -56,6 +56,14 @@ useful information is hidden without a secrecy or privacy reason. Prefer a contr
   show the integration count and cost when proposing options.
 - **Least privilege by default,** with privileged operations confined to
   purposeful, root-owned locations.
+- **Minimize the time a PR stays open (cross-review).** The author never
+  merges their own PR. Claude reviews and merges Codex's PRs; Codex reviews
+  and merges Claude's. Review between tasks, before starting new work: an
+  open PR blocks more than new work advances. Merge as soon as CI is green and
+  the review is clean. A flaky check gets one rerun, then a fix. Docs-only PRs
+  may be reviewed and merged by whichever agent or owner is available first.
+  Keep PRs small and rebased. Escalate to the owner only for decisions,
+  disagreements between agents, or actions the permissions reserve for them.
 - **Live actions** follow the standing authorization in the active milestone's
   README (for M044: staging allowed, development read-only/disposable,
   production none).

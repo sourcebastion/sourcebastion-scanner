@@ -1,5 +1,13 @@
 ## Unreleased
 
+## [2.1.1] - 2026-10-16
+
+### What's Changed
+* fix(grype): keep one previous snapshot and remove partial refreshes by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/195
+
+
+**Full Changelog**: https://github.com/sourcebastion/sourcebastion-scanner/compare/v2.1.0...v2.1.1
+
 ## [2.1.0] - 2026-10-14
 
 ### What's Changed

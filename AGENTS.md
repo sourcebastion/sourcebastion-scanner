@@ -22,16 +22,24 @@ backup and recovery, and so on) to run itself, within hard limits.
    validates. Never borrow, share or copy another subsystem's credentials.
 4. **Resilient and fail-closed.** It survives its own faults. When it cannot
    proceed safely, it stops and reports rather than widening its own authority.
-5. **Observable.** It reports its state and what it needs, so humans and other
-   subsystems can see it without reaching inside.
+5. **Observable and transparent: observe broadly, act narrowly.** Information
+   is not hidden. Every subsystem publishes its state, decisions, failures and
+   needs in a form humans and other subsystems can read without reaching
+   inside it, and a subsystem gets read access to the data it needs to do its
+   job well. Authority to *change* things stays bounded (rule 2); visibility
+   does not. The exceptions are secrets (credentials and keys are never
+   exposed, only their identities and health) and customers' private data
+   (source code, findings and personal data are visible only to the
+   subsystems that serve that customer).
 6. **Humans keep the system in balance.** People resolve conflicts between
    subsystems, set priorities and budgets, approve new contracts and
    cross-boundary authority, and decide what the milestones don't record.
 
 When proposing or reviewing a design, answer: what does this subsystem own,
 what can it affect outside itself, how does it recover on its own, and what
-escalates to a human? Flag any design where one subsystem needs authority over
-another. Prefer a contract or an escalation to a shared credential.
+escalates to a human? What does it publish, and what data does it need to
+see? Flag any design where one subsystem needs authority over another, or where
+useful information is hidden without a secrecy or privacy reason. Prefer a contract or an escalation to a shared credential.
 
 ## Working rules
 

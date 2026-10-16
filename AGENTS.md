@@ -60,7 +60,10 @@ useful information is hidden without a secrecy or privacy reason. Prefer a contr
   merges their own PR. Claude reviews and merges Codex's PRs; Codex reviews
   and merges Claude's. Reviewing the other agent's PRs **takes priority over
   your own work**: check for them before starting or resuming a task, because
-  an open PR blocks more than new work advances. Merge as soon as CI is green and
+  an open PR blocks more than new work advances.
+  Work the queue **oldest first: any PR open for more than a day goes to the
+  front**. A stale draft gets finished, split or closed by its author, not
+  left open. Merge as soon as CI is green and
   the review is clean. A flaky check gets one rerun, then a fix. Docs-only PRs
   may be reviewed and merged by whichever agent or owner is available first.
   Keep PRs small and rebased. Escalate to the owner only for decisions,

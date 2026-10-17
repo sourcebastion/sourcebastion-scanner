@@ -83,8 +83,6 @@ def dependency_text(text, group, target, lock):
         if name in names:
             raise ValueError('duplicate dependency')
         names.add(name)
-        if (NOTICES / name).is_symlink():
-            raise ValueError('native notice directory must not be a symlink')
     if not names or ('semgrep' in names) != (group == 'semgrep'):
         raise ValueError('wrong dependency group')
     return text
@@ -203,6 +201,8 @@ def verify_native_notices(libraries):
         if not re.fullmatch(r'[a-z0-9][a-z0-9.+-]*', name) or name in names:
             raise ValueError('invalid or duplicate native notice component')
         names.add(name)
+        if (NOTICES / name).is_symlink():
+            raise ValueError('native notice directory must not be a symlink')
         if not component['license_files'] or not component['license']:
             raise ValueError('native component has no retained license')
         for filename, digest in component['license_files'].items():

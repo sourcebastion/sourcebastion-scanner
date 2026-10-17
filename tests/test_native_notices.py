@@ -77,3 +77,13 @@ def test_committed_notices_cover_both_reviewed_architectures():
     manifest = json.loads((root / '.github/bundled-native-libraries.json').read_text())
     for libraries in manifest['targets'].values():
         artifacts.verify_native_notices(libraries)
+
+
+def test_redirected_component_directory_refuses(notices):
+    root, _ = notices
+    original = root / 'example-1.0'
+    renamed = root / 'elsewhere'
+    original.rename(renamed)
+    original.symlink_to(renamed, target_is_directory=True)
+    with pytest.raises(ValueError, match='directory must not be a symlink'):
+        artifacts.verify_native_notices([{'sha256': 'a' * 64}])

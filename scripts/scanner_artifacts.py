@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
@@ -28,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK = ROOT / '.github/semgrep-artifacts.json'
 PINS = ROOT / '.github/scanner-versions.json'
 DEPENDENCIES = ROOT / '.github/python-locks'
+NATIVES = ROOT / '.github/bundled-native-libraries.json'
 def configure_python(version):
     global PYTHON_FULL, PYTHON, ABI
     if not re.fullmatch(r'3\.[0-9]+\.[0-9]+', version):
@@ -118,6 +120,69 @@ def verify_dependencies(directory, lock):
                     '-r', str(directory / lock_name(group, target)),
                 ], check=True, timeout=600)
                 verify_closure(wheels, group, target, lock)
+                if group == 'semgrep' and target.startswith('musllinux_'):
+                    verify_bundled_natives(wheels, target)
+
+
+def bundled_natives(wheels):
+    """Read bundled shared libraries as ZIP data; never load or execute them.
+
+    Inspect every wheel in the resolved runtime closure, not only the four
+    distributions previously known to vendor libraries. Extension modules are
+    not the separately vendored libraries tracked by M049.
+    """
+    from email.parser import BytesParser
+    from packaging.utils import canonicalize_name
+
+    result = []
+    for wheel in sorted(wheels.glob('*.whl')):
+        with zipfile.ZipFile(wheel) as archive:
+            members = archive.namelist()
+            if len(members) != len(set(members)):
+                raise ValueError('duplicate wheel member: ' + wheel.name)
+            metadata = [p for p in members if p.count('/') == 1
+                        and p.endswith('.dist-info/METADATA')]
+            if len(metadata) != 1:
+                raise ValueError('wheel must contain exactly one metadata record')
+            item = BytesParser().parsebytes(archive.read(metadata[0]))
+            if not item['Name'] or not item['Version']:
+                raise ValueError('missing wheel distribution identity')
+            wheel_digest = None
+            for member in sorted(members):
+                path = Path(member)
+                vendored = any(part.endswith('.libs') for part in path.parts[:-1])
+                vendored |= '/semgrep/bin/libs/' in '/' + member
+                vendored |= path.name.startswith('lib') and '.so' in path.name
+                if member.endswith('/') or not vendored or '.so' not in path.name:
+                    continue
+                raw = archive.read(member)
+                if not raw.startswith(b'\x7fELF'):
+                    raise ValueError('bundled library is not ELF: ' + member)
+                if wheel_digest is None:
+                    wheel_digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
+                result.append({'distribution': canonicalize_name(item['Name']),
+                               'version': item['Version'], 'wheel': wheel.name,
+                               'wheel_sha256': wheel_digest, 'path': member,
+                               'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()})
+    return result
+
+
+def verify_bundled_natives(wheels, target):
+    """A reviewed lock bump cannot silently change vendored native bytes."""
+    manifest = json.loads(NATIVES.read_text())
+    if (manifest.get('schema_version') != 1
+            or set(manifest.get('targets', {})) != {t for t in TARGETS if t.startswith('musllinux_')}):
+        raise ValueError('invalid bundled native manifest targets')
+    expected = manifest['targets'][target]
+    observed = bundled_natives(wheels)
+    if observed != expected:
+        old = {(row['wheel'], row['path'], row['sha256']) for row in expected}
+        new = {(row['wheel'], row['path'], row['sha256']) for row in observed}
+        raise ValueError('bundled native library drift for ' + target
+                         + '; removed/changed=' + repr(sorted(old - new))
+                         + '; added/changed=' + repr(sorted(new - old))
+                         + '; review manifest, notices and source coverage before updating')
+    return observed
 
 
 def verify_closure(wheels, group, target, lock):

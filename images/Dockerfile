@@ -65,6 +65,7 @@ COPY .github/inventory-runtime-pins.json /usr/local/share/sourcebastion/inventor
 COPY --from=inventory-go /inventory-go/sourcebastion-go-source /usr/local/bin/sourcebastion-go-source
 COPY --from=inventory-go /inventory-go/manifest.json /usr/local/share/sourcebastion/inventory-go.json
 COPY --from=inventory-go /inventory-go/notices/ /usr/local/share/sourcebastion/inventory-go-notices/
+COPY third-party-notices/ /usr/local/share/sourcebastion/third-party-notices/
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=scanners /usr/local/bin/gitleaks /usr/local/bin/grype /usr/local/bin/
 COPY --from=scanners /usr/local/share/sast-rules /usr/local/share/sast-rules

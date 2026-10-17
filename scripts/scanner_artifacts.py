@@ -30,6 +30,7 @@ LOCK = ROOT / '.github/semgrep-artifacts.json'
 PINS = ROOT / '.github/scanner-versions.json'
 DEPENDENCIES = ROOT / '.github/python-locks'
 NATIVES = ROOT / '.github/bundled-native-libraries.json'
+NOTICES = ROOT / 'third-party-notices'
 def configure_python(version):
     global PYTHON_FULL, PYTHON, ABI
     if not re.fullmatch(r'3\.[0-9]+\.[0-9]+', version):
@@ -82,6 +83,8 @@ def dependency_text(text, group, target, lock):
         if name in names:
             raise ValueError('duplicate dependency')
         names.add(name)
+        if (NOTICES / name).is_symlink():
+            raise ValueError('native notice directory must not be a symlink')
     if not names or ('semgrep' in names) != (group == 'semgrep'):
         raise ValueError('wrong dependency group')
     return text
@@ -121,7 +124,7 @@ def verify_dependencies(directory, lock):
                 ], check=True, timeout=600)
                 verify_closure(wheels, group, target, lock)
                 if group == 'semgrep' and target.startswith('musllinux_'):
-                    verify_bundled_natives(wheels, target)
+                    verify_native_notices(verify_bundled_natives(wheels, target))
 
 
 def bundled_natives(wheels):
@@ -183,6 +186,42 @@ def verify_bundled_natives(wheels, target):
                          + '; added/changed=' + repr(sorted(new - old))
                          + '; review manifest, notices and source coverage before updating')
     return observed
+
+
+def verify_native_notices(libraries):
+    """Require retained, unchanged license files for each bundled byte set.
+
+    Notice coverage is not corresponding-source or release acceptance.
+    """
+    manifest = json.loads((NOTICES / 'manifest.json').read_text())
+    if manifest.get('schema_version') != 1 or not isinstance(manifest.get('components'), list):
+        raise ValueError('invalid native notice manifest')
+    covered = set()
+    names = set()
+    for component in manifest['components']:
+        name = component['id']
+        if not re.fullmatch(r'[a-z0-9][a-z0-9.+-]*', name) or name in names:
+            raise ValueError('invalid or duplicate native notice component')
+        names.add(name)
+        if not component['license_files'] or not component['license']:
+            raise ValueError('native component has no retained license')
+        for filename, digest in component['license_files'].items():
+            if Path(filename).name != filename or filename in ('.', '..'):
+                raise ValueError('invalid native license filename')
+            path = NOTICES / name / filename
+            if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                raise ValueError('native license missing or changed: ' + name + '/' + filename)
+        if not component['source_url'].startswith('https://') or not re.fullmatch(
+                r'[0-9a-f]{64}', component['source_sha256']):
+            raise ValueError('native component has no pinned upstream source reference')
+        for digest in component['native_sha256']:
+            if not re.fullmatch(r'[0-9a-f]{64}', digest) or digest in covered:
+                raise ValueError('invalid or ambiguous native notice binding')
+            covered.add(digest)
+    missing = {row['sha256'] for row in libraries} - covered
+    if missing:
+        raise ValueError('bundled native bytes lack retained notices: ' + repr(sorted(missing)))
+    return covered
 
 
 def verify_closure(wheels, group, target, lock):

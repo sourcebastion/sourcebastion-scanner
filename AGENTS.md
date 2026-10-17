@@ -41,6 +41,55 @@ escalates to a human? What does it publish, and what data does it need to
 see? Flag any design where one subsystem needs authority over another, or where
 useful information is hidden without a secrecy or privacy reason. Prefer a contract or an escalation to a shared credential.
 
+## Guardrails: standard practice, budgets, shipped outcomes
+
+These come first. They exist because M044 spent 17 days and about 110k lines
+rebuilding what Kubernetes, PostgreSQL and GitHub already do, and shipped
+nothing. Each new proof obligation became another implementation task, and
+merged components were treated as progress.
+
+1. **Standard practice first.** Before designing or building, name the
+   standard tool for the concern (Kubernetes, PostgreSQL, GitHub, the existing
+   providers) and use it. A custom component needs a short written reason and
+   owner approval *before* work starts. If a task asks you to build something
+   a standard tool already does, stop and propose the standard tool instead,
+   even if the milestone says otherwise.
+2. **One outcome, explicit exclusions, and a trust statement.** A milestone
+   states one user-visible outcome ("staging serves the new build and passes
+   smoke") and lists what it excludes. It names trusted administrators,
+   supported faults, data-loss limits and manual recovery. It never states a
+   proof of absence ("no path can bypass"). A standard tool doesn't satisfy a
+   stronger requirement automatically, so say which requirement it meets.
+3. **Budgets cover everything, with a stop rule.** The budget includes design,
+   tests, evidence, reviews, splits and diagnostics. If there's no live
+   accepted result at half the budget, stop and return a specific owner
+   decision. Renaming or re-scoping a milestone doesn't reset the clock. A new
+   unresolved prerequisite stops that branch and goes to the owner. It doesn't
+   automatically become another slice.
+4. **Evidence must close a decision.** Evidence is worth producing when it
+   closes a named release or risk decision: restore verification, migration
+   timing, an incident's original logs. Reuse unchanged qualifications. Don't
+   add bespoke receipt layers, proof-package-only PRs or PRs that only
+   re-split earlier PRs.
+5. **Small vertical slices, few open at once.** The roughly 800-line PR guide
+   applies to a bounded behaviour change. A large design split into many green
+   PRs is still a large unvalidated design. Keep at most one unfinished
+   component stack per milestone. Check the live result before adding
+   siblings.
+6. **Review for necessity as well as correctness.** Reviewers ask "is this
+   needed, and is there a standard way?" before "is this correct?"
+7. **Daily owner checkpoint.** Long-running goals report daily:
+   - shipped behaviour (what works now that didn't);
+   - the current critical blocker;
+   - time and token spend;
+   - the next demo.
+
+   Accepted outcomes count as progress; code completion and issue counts
+   don't. Infra milestones get a human design review before implementation.
+
+The subsystem direction above is built from standard tools. Bounded authority
+means RBAC, database roles and scoped credentials, not custom controllers.
+
 ## Working rules
 
 - **Milestone → slice → task.** Plan and track work as `Mxxx/Sxx/Txx` in
@@ -73,5 +122,8 @@ useful information is hidden without a secrecy or privacy reason. Prefer a contr
   integration — rather than one PR of thousands of lines. Escalate to the owner only for decisions,
   disagreements between agents, or actions the permissions reserve for them.
 - **Live actions** follow the standing authorization in the active milestone's
-  README (for M044: staging allowed, development read-only/disposable,
-  production none).
+  README. For M051: staging allowed; development read-only and disposable
+  fixtures only, with every live change owner-run; production none.
+  Deleting retained data or keys, credential rotation, provider dashboards,
+  anything with cost, new contract or protocol versions, and unrecorded
+  decisions are always owner-only.

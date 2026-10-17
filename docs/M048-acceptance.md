@@ -4,8 +4,12 @@ Slice S07 of [M048](M048-scope.md) ([#180](https://github.com/sourcebastion/sour
 decision to its implementation and to the evidence that it holds. It records
 what was observed and what remains open.
 
-Status: **accepted.** Merged to `main` in both repositories and released as
-**v2.0.0**. Acceptance passes in the published image on amd64 and arm64.
+Status: **accepted for the scoped implementation and published-image corpus.**
+Merged to `main` in both repositories and released as **v2.0.0**. Acceptance
+passes in the published image on amd64 and arm64. Hosted cutover source has
+since merged; live development publication and human UI acceptance remain
+separate, unverified follow-up items below. Release/deployment commitments are
+[outside the accepted M048 scope](M048-scope.md#out-of-scope).
 
 ## Implementation
 
@@ -112,15 +116,65 @@ This was an ad hoc check, run with the S07 scanner on `PYTHONPATH`. It isn't
 a committed platform test, because the platform's scanner dependency is still
 the released version.
 
-## Open
+## Hosted cutover source — completed
 
-- **Hosted inventory producer.** It still emits `/1`. Enabling `/2` in the
-  hosted pipeline requires these steps:
-  1. ~~Merge platform migration 0107 and the compatibility identity.~~ Done:
-     sourcebastion/sourcebastion-platform#428, merge `1747479`.
-  2. Bump the platform's scanner pin to v2.0.0.
-  3. Make the scanner identity declare `local-inventory-licenses-v1` with
-     `inventory_license_list_version`.
-  4. Pass `licenses=True` in the dependency job.
-- **Development human acceptance** of the Dependencies-tab license surface
-  on a deployed environment.
+The original hosted-producer follow-up is implemented; it no longer emits only
+`/1` in the reviewed source:
+
+- [platform #428](https://github.com/sourcebastion/sourcebastion-platform/pull/428)
+  merged storage, format admission, compatibility identity and the Dependencies
+  tab license surface.
+- [scanner #193](https://github.com/sourcebastion/sourcebastion-scanner/pull/193)
+  added the private `sourcebastion.inventory-control/2` selection, released as
+  v2.1.0. The `/2` control composes license-bearing inventory/2; `/1` controls
+  retain their explicit compatibility path.
+- [platform #439](https://github.com/sourcebastion/sourcebastion-platform/pull/439),
+  merged 2026-10-15, requests control `/2`, advances the scanner and installed
+  validator together, and tests composition through stored license-evidence
+  rows. This replaces the old instruction to pass `licenses=True` directly in
+  the hosted dependency job: the private control selects that behavior.
+- The planner identity is deliberately conservative, not hand-authored to
+  advertise an unmeasured component identity. It still declares neither
+  inventory feature and falls back to full scans; the hosted inventory path
+  skips that planner. The license-list compatibility validation remains tested.
+- [platform #450](https://github.com/sourcebastion/sourcebastion-platform/pull/450)
+  subsequently advances default image/validator pins to v2.1.1. It deliberately
+  leaves `run-m048-designated-development.py` pinned to the v2.1.0 image/source
+  qualified for that procedure. Do not substitute current defaults into that
+  historical qualification.
+
+The [platform S06 record](https://github.com/sourcebastion/sourcebastion-platform/blob/main/docs/M048-S06-license-evidence.md)
+retains the v2.1.0 source-bound checks, Docker worker qualification on disposable
+stores, and preservation of the retained v1.8.1 validator. Reuse those unchanged
+qualifications within their stated scope. They do not establish the current
+live deployment, a successful provider-submitted development inventory/2
+snapshot, or human acceptance of that snapshot.
+
+## Open: live development acceptance
+
+The milestone's scoped implementation and published-image acceptance above are
+complete. The following previously recorded follow-up remains open; neither a
+merged PR nor a passing disposable worker test closes it:
+
+1. Verify the actual deployed platform revision, installed validator, runtime
+   manifest/image and findings schema. The two historical `0107` migrations
+   require the reviewed forward reconciliation; a revision marker alone does
+   not establish inventory/2 admission. Coordinate the live migration/rollout
+   prerequisite tracked in
+   [platform #430](https://github.com/sourcebastion/sourcebastion-platform/issues/430)
+   through the current release procedure rather than assuming it is complete.
+2. Use the existing designated development procedure for a genuine
+   provider-submitted fresh job only after its paused/drained-worker and exact
+   source/image/manifest prerequisites hold. Preserve the quarantined result's
+   original validator and custody; keep global recovery settings unchanged.
+3. Reconcile a real stored inventory/2 snapshot, counts, evidence-state filters,
+   per-observation details and authorized download bytes. Check explicit legacy
+   inventory/1 handling and account isolation. Evidence states are not policy
+   verdicts; unstated or undetermined must never appear permitted.
+4. Record the deployed revision, job/snapshot identity and dated human sign-off
+   for the Dependencies-tab license surface, including conflicting/unrecognized/
+   unstated evidence and safe rendering of untrusted strings.
+
+Current repository guidance reserves every live development change to the
+owner. This update executes no migration, deployment, job submission, worker
+transition, credential operation or host action, and records no live sign-off.

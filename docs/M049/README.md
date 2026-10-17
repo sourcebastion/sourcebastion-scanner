@@ -26,9 +26,13 @@ coverage for GCC; these are recorded scope decisions, not a legal clearance.
   verification refuses additions, removals or changed owner/wheel/library bytes.
   Notice coverage and a reviewable weekly candidate diff remain open.
 
-Budget: owner decision requested; no total duration or accepted half-budget
-checkpoint is invented here. Initial implementation is limited to the existing
-artifact verifier's bundled-set guard. No image/source publication is performed.
+Budget: **one engineering day total**, approved by the owner on 2026-10-17.
+This includes work already performed, design, implementation, tests, evidence,
+reviews and verification. The clock does not restart for a split or scope change.
+If there is no accepted shipped result at **half an engineering day**, stop and
+return a specific owner decision instead of adding prerequisites. The first
+increment is the existing artifact verifier's bundled-set guard; no image/source
+publication has been performed.
 
 ## Trust, effects and recovery
 

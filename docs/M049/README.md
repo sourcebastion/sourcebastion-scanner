@@ -19,8 +19,9 @@ coverage for GCC; these are recorded scope decisions, not a legal clearance.
   Version-specific texts, native-byte bindings and Docker inclusion are prepared.
   Actual image verification and complete source directions remain open. Do not
   publish an offer pointing to a source mirror which does not exist.
-- **S02: Digest-verified source mirror.** Open. Include the appropriate upstream
-  sources, build scripts and patches for each actual compiler/library lineage.
+- [**S02: Digest-verified source mirror**](S02-PLAN.md). Source and recipe
+  archives are pinned; publication and correspondence review remain open. Include
+  the appropriate sources, build scripts and patches for each actual lineage.
   Do not equate an Alpine version match with complete build provenance.
 - [**S03: Drift detection and architecture evidence**](S03-PLAN.md). Started:
   #202 is reviewed and merged. Current musllinux wheels are bound per architecture; existing dependency

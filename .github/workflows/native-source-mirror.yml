@@ -1,0 +1,110 @@
+name: Mirror bundled native sources
+
+on:
+  pull_request:
+    paths:
+      - .github/native-source-pins.json
+      - .github/workflows/native-source-mirror.yml
+      - scripts/native_sources.py
+      - tests/test_native_sources.py
+      - third-party-notices/manifest.json
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/native-source-pins.json
+      - .github/workflows/native-source-mirror.yml
+      - scripts/native_sources.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-source-mirror-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Test refusal and source coverage
+        run: |
+          python3 -m pip install pytest
+          python3 -m pytest -q tests/test_native_sources.py
+      - name: Prepare and verify all source bytes before publication
+        run: python3 scripts/native_sources.py prepare
+      - name: Install verified ORAS release
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --proto '=https' --proto-redir '=https' \
+            https://github.com/oras-project/oras/releases/download/v1.3.4/oras_1.3.4_linux_amd64.tar.gz -o /tmp/oras.tar.gz
+          echo 'f27adb935022d94df8dc77719c322dda592c78a0d57a6f7dcdd8d900b248c454  /tmp/oras.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/oras.tar.gz -C /tmp oras
+      - name: Prepare pinned OCI layout without registry access
+        working-directory: native-sources
+        run: |
+          set -euo pipefail
+          /tmp/oras push --oci-layout ../source-layout:sources \
+            --artifact-type application/vnd.oci.image.layer.v1.tar \
+            --annotation org.opencontainers.image.created=2026-10-17T00:00:00Z \
+            --annotation org.opencontainers.image.source=https://github.com/sourcebastion/sourcebastion-scanner \
+            --export-manifest manifest.json native-sources.tar:application/vnd.oci.image.layer.v1.tar
+          python3 - <<'PYTHON'
+          import hashlib, json
+          from pathlib import Path
+          pins = json.loads(Path('../.github/native-source-pins.json').read_text())
+          actual = 'sha256:' + hashlib.sha256(Path('manifest.json').read_bytes()).hexdigest()
+          if actual != pins['manifest_digest']:
+              raise SystemExit('OCI manifest disagrees with reviewed source pin')
+          print('Verified OCI source manifest ' + actual)
+          PYTHON
+      - name: Retain verified OCI layout for the main-only publisher
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: native-source-layout
+          path: source-layout/
+          retention-days: 1
+
+  publish:
+    needs: prepare
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: native-source-layout
+          path: source-layout
+      - name: Install verified ORAS release
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --proto '=https' --proto-redir '=https' \
+            https://github.com/oras-project/oras/releases/download/v1.3.4/oras_1.3.4_linux_amd64.tar.gz -o /tmp/oras.tar.gz
+          echo 'f27adb935022d94df8dc77719c322dda592c78a0d57a6f7dcdd8d900b248c454  /tmp/oras.tar.gz' | sha256sum -c -
+          tar -xzf /tmp/oras.tar.gz -C /tmp oras
+      - name: Publish only the reviewed manifest and verify an anonymous download
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          reference=$(python3 scripts/native_sources.py reference)
+          digest=${reference##*@}
+          /tmp/oras manifest fetch --oci-layout "source-layout@$digest" >/dev/null
+          printf '%s' "$TOKEN" | /tmp/oras login ghcr.io --username "${{ github.actor }}" --password-stdin
+          /tmp/oras cp --from-oci-layout "source-layout@$digest" "${reference%@*}:native-sources-${digest#sha256:}"
+          # Empty auth configuration proves recipients need no package credentials.
+          printf '{"auths":{}}' > /tmp/anonymous-registry.json
+          /tmp/oras pull --registry-config /tmp/anonymous-registry.json "$reference" -o retrieved-sources
+          python3 scripts/native_sources.py verify --directory retrieved-sources
+          echo "Source mirror verified: $reference" >> "$GITHUB_STEP_SUMMARY"

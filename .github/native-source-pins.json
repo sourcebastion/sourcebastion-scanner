@@ -1,0 +1,90 @@
+{
+  "repository": "ghcr.io/sourcebastion/sourcebastion-scanner",
+  "bundle_sha256": "47c099826215dc33520595a9a51d47df05a633078d28adb9cc8ce9680d896d63",
+  "manifest_digest": "sha256:88740e3f4ef899fc63aad828497bf0f1cf535fb1878098c66a4ca3a768a2dbf2",
+  "archives": [
+    {
+      "filename": "aports-3.21-4d7e25e.tar.gz",
+      "url": "https://github.com/alpinelinux/aports/archive/4d7e25ebf8869f10fb59b74b0cb2d9063d7e82a8.tar.gz",
+      "bytes": 13674384,
+      "sha256": "39c9174e7eeb3a58fc63d3fcd60ee9e52cd10d1668301a9e931019821ae19422",
+      "components": [
+        "gcc-14.2.0"
+      ]
+    },
+    {
+      "filename": "aports-3.23-cb29f3b.tar.gz",
+      "url": "https://github.com/alpinelinux/aports/archive/cb29f3b5d8475895cb6a6920b317a56cba3a05d2.tar.gz",
+      "bytes": 14402665,
+      "sha256": "0155e7c44cde3e39cf43f6b6f2dac82d0e96805a818d8908da4db855bc377d8c",
+      "components": [
+        "gmp-6.3.0",
+        "elfutils-0.194",
+        "gcc-15.2.0"
+      ]
+    },
+    {
+      "filename": "elfutils-0.194.tar.bz2",
+      "url": "https://sourceware.org/elfutils/ftp/0.194/elfutils-0.194.tar.bz2",
+      "sha256": "09e2ff033d39baa8b388a2d7fbc5390bfde99ae3b7c67c7daaf7433fbcf0f01e",
+      "bytes": 12003321,
+      "components": [
+        "elfutils-0.194"
+      ]
+    },
+    {
+      "filename": "gcc-12.4.0.tar.xz",
+      "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-12.4.0/gcc-12.4.0.tar.xz",
+      "sha256": "704f652604ccbccb14bdabf3478c9511c89788b12cb3bbffded37341916a9175",
+      "bytes": 83377372,
+      "components": [
+        "gcc-12.4.0"
+      ]
+    },
+    {
+      "filename": "gcc-14.2.0.tar.xz",
+      "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-14.2.0/gcc-14.2.0.tar.xz",
+      "sha256": "a7b39bc69cbf9e25826c5a60ab26477001f7c08d85cec04bc0e29cabed6f3cc9",
+      "bytes": 92306460,
+      "components": [
+        "gcc-14.2.0"
+      ]
+    },
+    {
+      "filename": "gcc-15.2.0.tar.xz",
+      "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-15.2.0/gcc-15.2.0.tar.xz",
+      "sha256": "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e",
+      "bytes": 101056276,
+      "components": [
+        "gcc-15.2.0"
+      ]
+    },
+    {
+      "filename": "gmp-6.3.0.tar.xz",
+      "url": "https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz",
+      "sha256": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898",
+      "bytes": 2094196,
+      "components": [
+        "gmp-6.3.0"
+      ]
+    },
+    {
+      "filename": "musl-cross-make-227df8b.tar.gz",
+      "url": "https://github.com/richfelker/musl-cross-make/archive/227df8b99103f9c59f6570babf892978e293082f.tar.gz",
+      "bytes": 221234,
+      "sha256": "bb3fc7851088e1e5e1274ee56a0ab6ae176043d160fdf0b71027934b091f208a",
+      "components": [
+        "gcc-12.4.0"
+      ]
+    },
+    {
+      "filename": "rust-musl-cross-80d14ae.tar.gz",
+      "url": "https://github.com/rust-cross/rust-musl-cross/archive/80d14aebe943277b51552d65b289e49e922677d3.tar.gz",
+      "bytes": 34067,
+      "sha256": "9485c76ff7d04ee5cc9dcff44dbb89233cba91b94135c22af30e42af51f9af63",
+      "components": [
+        "gcc-12.4.0"
+      ]
+    }
+  ]
+}

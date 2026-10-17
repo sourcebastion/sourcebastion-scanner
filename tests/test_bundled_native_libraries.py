@@ -105,3 +105,64 @@ def test_existing_dependency_verification_stops_on_new_vendor(baseline, monkeypa
     monkeypatch.setattr(artifacts.subprocess, 'run', download)
     with pytest.raises(ValueError, match='bundled native library drift'):
         artifacts.verify_dependencies(baseline, {})
+
+
+def test_candidate_observation_does_not_authorize_new_vendor(baseline, monkeypatch, tmp_path):
+    original = artifacts.NATIVES.read_bytes()
+    monkeypatch.setattr(artifacts, 'GROUPS', ('semgrep',))
+    monkeypatch.setattr(artifacts, 'TARGETS', (TARGET, 'musllinux_1_2_x86_64'))
+    monkeypatch.setattr(artifacts, 'validate_dependencies', lambda *args: None)
+    monkeypatch.setattr(artifacts, 'verify_closure', lambda *args: None)
+    monkeypatch.setattr(artifacts, 'verify_native_notices', lambda *args: None)
+    def download(command, **kwargs):
+        destination = Path(command[command.index('--dest') + 1])
+        wheel(destination, name='new-vendor', member='new-vendor.libs/libnew.so.1')
+    monkeypatch.setattr(artifacts.subprocess, 'run', download)
+    proposal = tmp_path / 'bundled-native-proposal.json'
+    artifacts.verify_dependencies(baseline, {}, native_proposal=proposal)
+    assert artifacts.NATIVES.read_bytes() == original
+    observed = json.loads(proposal.read_text())['targets']
+    assert set(observed) == set(artifacts.TARGETS)
+    assert all(rows[0]['distribution'] == 'new-vendor' for rows in observed.values())
+    with pytest.raises(ValueError, match='library drift'):
+        artifacts.verify_dependencies(baseline, {})
+
+
+def test_unchanged_native_candidate_does_not_create_a_spurious_pr(tmp_path):
+    observed = json.loads(artifacts.NATIVES.read_text())['targets']
+    proposal = tmp_path / 'bundled-native-proposal.json'
+    proposal.write_text('stale proposal')
+    artifacts.write_native_proposal(observed, proposal)
+    assert not proposal.exists()
+
+
+def test_native_proposal_cannot_overwrite_release_manifest(tmp_path, monkeypatch):
+    path = tmp_path / 'bundled-native-proposal.json'
+    path.write_text('original')
+    monkeypatch.setattr(artifacts, 'NATIVES', path)
+    with pytest.raises(ValueError, match='separate proposal'):
+        artifacts.write_native_proposal({}, path)
+    assert path.read_text() == 'original'
+
+
+def test_candidate_observation_still_refuses_invalid_closure(baseline, monkeypatch, tmp_path):
+    monkeypatch.setattr(artifacts, 'GROUPS', ('semgrep',))
+    monkeypatch.setattr(artifacts, 'TARGETS', (TARGET, 'musllinux_1_2_x86_64'))
+    monkeypatch.setattr(artifacts, 'validate_dependencies', lambda *args: None)
+    monkeypatch.setattr(artifacts.subprocess, 'run', lambda *args, **kwargs: None)
+    def invalid(*args):
+        raise ValueError('incomplete dependency lock')
+    monkeypatch.setattr(artifacts, 'verify_closure', invalid)
+    proposal = tmp_path / 'bundled-native-proposal.json'
+    with pytest.raises(ValueError, match='incomplete dependency lock'):
+        artifacts.verify_dependencies(baseline, {}, native_proposal=proposal)
+    assert not proposal.exists()
+
+
+@pytest.mark.parametrize('command', ['verify-dependencies', 'lock-dependencies', 'verify', 'install'])
+def test_proposal_mode_cannot_be_used_by_release_commands(monkeypatch, command):
+    monkeypatch.setattr(artifacts.sys, 'argv', ['scanner_artifacts.py', command,
+                                             '--native-proposal', 'bundled-native-proposal.json'])
+    with pytest.raises(SystemExit) as error:
+        artifacts.main()
+    assert error.value.code == 2

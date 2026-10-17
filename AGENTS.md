@@ -66,7 +66,11 @@ useful information is hidden without a secrecy or privacy reason. Prefer a contr
   left open. Merge as soon as CI is green and
   the review is clean. A flaky check gets one rerun, then a fix. Docs-only PRs
   may be reviewed and merged by whichever agent or owner is available first.
-  Keep PRs small and rebased. Escalate to the owner only for decisions,
+  Keep PRs small and rebased: **aim for under about 800 changed lines of
+  code per PR** (generated evidence, fixtures and lockfiles excluded), each one
+  mergeable on its own. Split larger work into a stack of reviewable units —
+  for example contract and validation first, then the component, then
+  integration — rather than one PR of thousands of lines. Escalate to the owner only for decisions,
   disagreements between agents, or actions the permissions reserve for them.
 - **Live actions** follow the standing authorization in the active milestone's
   README (for M044: staging allowed, development read-only/disposable,

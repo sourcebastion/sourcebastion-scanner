@@ -43,6 +43,14 @@ original build instructions and patches. Upstream archive digests were checked
 against the respective APKBUILD SHA512 sums before recording SHA256 here.
 The GCC 12.4.0 archive was checked against GCC's published release SHA512 sum.
 
+Additional read-only comparison on 2026-10-17 checked both architectures'
+Semgrep GCC 15.2.0 runtime files against Alpine libgcc/libstdc++ 15.2.0-r2,
+and cryptography's against Alpine libgcc 14.2.0-r4. All ELF sections match
+except auditwheel-affected dynamic symbol/string/dynamic sections; cryptography
+also differs in the GNU build-ID note. Executable text and read-only data match
+in all six comparisons. This supports the recipe/version correspondence and
+does not claim a byte-identical repaired wheel or a reproducible build.
+
 The rpds 2026.9.1 release workflow's pinned maturin action selects
 rust-musl-cross for musllinux; its retained config selects GCC 12.4.0.
 The retained musl-cross-make snapshot includes build scripts and patches.

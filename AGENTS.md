@@ -122,5 +122,8 @@ means RBAC, database roles and scoped credentials, not custom controllers.
   integration — rather than one PR of thousands of lines. Escalate to the owner only for decisions,
   disagreements between agents, or actions the permissions reserve for them.
 - **Live actions** follow the standing authorization in the active milestone's
-  README (for M044: staging allowed, development read-only/disposable,
-  production none).
+  README. For M051: staging allowed; development read-only and disposable
+  fixtures only, with every live change owner-run; production none.
+  Deleting retained data or keys, credential rotation, provider dashboards,
+  anything with cost, new contract or protocol versions, and unrecorded
+  decisions are always owner-only.

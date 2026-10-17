@@ -2,8 +2,10 @@
 
 ## Tasks
 
-- [ ] **T01: Compare both musllinux runtime wheel closures to reviewed bytes.**
-  Initial implementation is ready for cross-review. The existing
+- [x] **T01: Compare both musllinux runtime wheel closures to reviewed bytes.**
+  [#202](https://github.com/sourcebastion/sourcebastion-scanner/pull/202) was
+  independently approved and merged with green artifact verification and both
+  architecture image builds. The existing
   `scanner_artifacts.py verify-dependencies` checks the complete resolved
   Semgrep/runtime closure, then compares every separately vendored shared
   library against `.github/bundled-native-libraries.json`. It refuses changed

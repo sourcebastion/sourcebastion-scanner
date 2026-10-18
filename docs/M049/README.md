@@ -16,7 +16,8 @@ coverage for GCC; these are recorded scope decisions, not a legal clearance.
 ## Current work
 
 - [**S01: Notices and written source directions in the image**](S01-PLAN.md).
-  Version-specific texts, native-byte bindings and Docker inclusion are prepared.
+  Version-specific texts, native-byte bindings and Docker inclusion merged in
+  [#203](https://github.com/sourcebastion/sourcebastion-scanner/pull/203).
   Actual image verification and complete source directions remain open. Do not
   publish an offer pointing to a source mirror which does not exist.
 - [**S02: Digest-verified source mirror**](S02-PLAN.md). Source and recipe
@@ -26,7 +27,8 @@ coverage for GCC; these are recorded scope decisions, not a legal clearance.
 - [**S03: Drift detection and architecture evidence**](S03-PLAN.md). Started:
   #202 is reviewed and merged. Current musllinux wheels are bound per architecture; existing dependency
   verification refuses additions, removals or changed owner/wheel/library bytes.
-  Notice coverage and a reviewable weekly candidate diff remain open.
+  Notice coverage merged in #203; the reviewable weekly candidate diff is
+  prepared in #205. Released-image acceptance remains required.
 
 Budget: **one engineering day total**, approved by the owner on 2026-10-17.
 This includes work already performed, design, implementation, tests, evidence,

@@ -8,10 +8,18 @@ fi
 image=$1
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 expected_python="$(python3 "$root/scripts/python_version.py" current)"
-docker run --rm -i --entrypoint python3 "$image" - "$expected_python" <<'PY'
+docker run --rm -i --entrypoint python3 "$image" - "$expected_python" \
+  "$(cat "$root/.github/bundled-native-libraries.json")" \
+  "$(cat "$root/third-party-notices/manifest.json")" \
+  "$(sha256sum "$root/third-party-notices/SOURCE-AVAILABILITY.md")" <<'PY'
+import hashlib
+import importlib.metadata
 import importlib.util
+import json
 import os
+import platform
 import pwd
+import re
 import shutil
 import sys
 import tempfile
@@ -31,5 +39,39 @@ for executable in ["npm", "gitleaks", "grype", "kics", "semgrep", "sourcebastion
 for executable in ["gcc", "g++", "make", "rustc"]:
     assert not shutil.which(executable), f"unexpected build tool: {executable}"
 assert not Path("/app/setup.py").exists(), "build context leaked into runtime"
+# Inspect installed wheel data without loading any bundled shared library.
+notices = Path("/usr/local/share/sourcebastion/third-party-notices")
+manifest = json.loads((notices / "manifest.json").read_text())
+assert manifest == json.loads(sys.argv[3]), "wrong retained notice manifest"
+availability = hashlib.sha256((notices / "SOURCE-AVAILABILITY.md").read_bytes()).hexdigest()
+assert availability == sys.argv[4].split()[0], "wrong source directions"
+covered = set()
+for component in manifest["components"]:
+    for name, digest in component["license_files"].items():
+        actual = hashlib.sha256((notices / component["id"] / name).read_bytes()).hexdigest()
+        assert actual == digest, f"missing/changed license: {component['id']}/{name}"
+    covered.update(component["native_sha256"])
+observed = []
+for distribution in importlib.metadata.distributions():
+    for member in distribution.files or []:
+        path = Path(str(member))
+        vendored = any(part.endswith(".libs") for part in path.parts[:-1])
+        vendored |= "/semgrep/bin/libs/" in "/" + str(member)
+        vendored |= path.name.startswith("lib") and ".so" in path.name
+        if not vendored or ".so" not in path.name:
+            continue
+        raw = distribution.locate_file(member).read_bytes()
+        assert raw.startswith(b"\x7fELF"), f"non-ELF bundled library: {member}"
+        digest = hashlib.sha256(raw).hexdigest()
+        assert digest in covered, f"bundled library lacks retained notice: {member}"
+        observed.append({"distribution": re.sub(r"[-_.]+", "-", distribution.metadata["Name"]).lower(),
+                         "version": distribution.version, "path": str(member),
+                         "bytes": len(raw), "sha256": digest})
+target = "musllinux_1_2_" + platform.machine()
+expected = [{key: row[key] for key in ("distribution", "version", "path", "bytes", "sha256")}
+            for row in json.loads(sys.argv[2])["targets"][target]]
+order = lambda row: (row["distribution"], row["path"])
+assert sorted(observed, key=order) == sorted(expected, key=order), "installed bundled native set differs from reviewed manifest"
+print(f"{target}: {len(observed)} bundled native files, retained licenses and source directions verified")
 print(f"sourcebastion user, Python {sys.argv[1]}, writable scan/cache paths and runtime-only contents verified")
 PY

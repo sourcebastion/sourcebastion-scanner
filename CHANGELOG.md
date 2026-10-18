@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.2] - 2026-10-17
+
+Retain bundled native library licenses and immutable source download directions in both scanner architectures. Publish checksum-pinned GCC, GMP and elfutils sources with build recipes through the existing GHCR package. Verify bundled native bytes and notices in the staged release image, and surface native drift in draft weekly dependency proposals. Scanner engine pins and shipped native binaries are unchanged.
+
 ## [2.1.1] - 2026-10-16
 
 ### What's Changed

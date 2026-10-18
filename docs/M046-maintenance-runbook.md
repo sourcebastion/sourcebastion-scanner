@@ -98,6 +98,28 @@ unapproved change the log summarizes the changed/missing/added cases and prints
 the exact entry to paste. Inspect the full retained diff, verify every change
 against source evidence, and fill in the rationale and pull request number.
 Approval is a reviewed commit containing that entry, not a CI rerun or label.
+The log names changed dimensions/cases and finding counts; these are a summary,
+not a substitute for inspecting the retained full diff.
+
+1. Run the gate against the immutable base oracle and the actual native proof.
+   Use complete paired finding reports under the same admitted snapshot when
+   checking findings. A failed evidence/identity check must be fixed; it cannot
+   be turned into an approval by adding an entry.
+2. For `review-required`, inspect the retained report and source evidence for
+   every semantic change. The candidate proof must agree with the source-authored
+   oracle. Do not generate an oracle from observations or edit either oracle to
+   hide a regression.
+3. Append the printed object to the existing ledger's JSON array. Fill its
+   `reason` and actual `pull_request` number, preserving the exact three identity
+   fields and prior entries. Review this commit and its semantic change through
+   the normal pull-request process. A copied block alone is not a correctness review.
+4. After the reviewed commit, rerun the gate with a **fresh `--output` path**
+   (CI uses a fresh workspace). The gate deliberately refuses overwriting its
+   previous report; retain that original diff. A passing result records the
+   exact matched approval and preserves the original differences for audit.
+
+[M050 acceptance](M050/ACCEPTANCE.md) records the first transition and the
+real native proof replay of this process.
 The first entry records #162's independently reviewed 222 additions of the three
 input ecosystem/enumeration fields, after the partial-input validator fix.
 

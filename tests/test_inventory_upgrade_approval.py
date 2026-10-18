@@ -62,6 +62,9 @@ def test_printed_entry_can_be_completed_and_pasted_back(evidence):
     printed = json.loads(result.stdout[result.stdout.index("{"):result.stdout.rindex("}") + 1])
     assert printed == report["proposed_approval"]
     assert "reviewed pull request" in result.stdout and "1 changed cases" in result.stdout
+    assert "Changed dimensions: coverage" in result.stdout
+    assert report["corpus"]["changes"][0]["case"] in result.stdout
+    assert "fresh --output path" in result.stdout and "retain this original diff" in result.stdout
     entry = approve(evidence, report)
     result, accepted = invoke(evidence, "accepted")
     assert result.returncode == 0 and accepted["status"] == "passed"
@@ -129,6 +132,7 @@ def test_corpus_approval_cannot_approve_new_findings(evidence):
     ))
     assert result.returncode == 1 and report["status"] == "review-required"
     assert report["findings"]["status"] == "review-required"
+    assert "Findings: 0 removed; 1 added." in result.stdout
 
 
 def test_equal_findings_preserve_corpus_approval_despite_raw_report_metadata(evidence):

@@ -68,11 +68,22 @@ def main():
         corpus = report["corpus"]
         print(f"{len(corpus['changes'])} changed cases; {len(corpus['missing_cases'])} missing; "
               f"{len(corpus['added_cases'])} added. Inspect the full retained diff: {args.output}")
+        if corpus["changes"]:
+            dimensions = sorted({name for change in corpus["changes"] for name in change["dimensions"]})
+            print("Changed dimensions: " + ", ".join(dimensions))
+            print("Changed cases: " + ", ".join(change["case"] for change in corpus["changes"]))
+        for label, key in (("Missing cases", "missing_cases"), ("Added cases", "added_cases")):
+            if corpus[key]:
+                print(label + ": " + ", ".join(corpus[key]))
+        findings = report["findings"]
+        if findings["status"] == "review-required":
+            print(f"Findings: {len(findings['removed'])} removed; {len(findings['added'])} added.")
         print("To approve this exact transition, add the following entry to "
               "evaluation/m046/accepted-upgrades.json in a reviewed pull request. "
               "Fill in the reason and pull_request number:")
         print(json.dumps(report["proposed_approval"], indent=2, sort_keys=True))
         print("Approval stops applying if either oracle or any observed difference changes.")
+        print("After the reviewed commit, rerun with a fresh --output path; retain this original diff.")
     elif report.get("reason"):
         print(report["reason"])
     return 0 if report["status"] == "passed" else 1

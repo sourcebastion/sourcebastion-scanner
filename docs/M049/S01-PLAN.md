@@ -2,7 +2,7 @@
 
 ## Tasks
 
-- [ ] **T01: Retain version-specific license texts and source pointers.**
+- [x] **T01: Retain version-specific license texts and source pointers.**
   Prepared for the 19 vendored files per architecture, grouped into 15
   component/version directories under `third-party-notices/`. Texts are copied
   verbatim from source archives verified against Alpine's pinned APKBUILD
@@ -15,11 +15,9 @@
   pinned upstream source reference. New native bytes, missing/changed license
   text, ambiguous bindings and symlinked notice paths refuse. Qualification of
   the actual resulting image remains required after review.
-- [ ] **T03: Publish truthful source directions beside the notices.** Open with
-  S02. `SOURCE-AVAILABILITY.md` states that the controlled source mirror and
-  complete corresponding-source qualification are pending; it is not a written
-  offer pointing at an anticipated or nonexistent artifact. Replace that status
-  with the verified immutable mirror location/download command when available.
+- [ ] **T03: Publish truthful source directions beside the notices.** Source publication and anonymous retrieval passed in main run 39106864706.
+  `SOURCE-AVAILABILITY.md` now names that exact immutable mirror and download
+  checksums. Confirm these directions survive into both released architectures.
 
 ## Identified sources
 

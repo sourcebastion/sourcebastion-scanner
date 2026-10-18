@@ -18,12 +18,13 @@ coverage for GCC; these are recorded scope decisions, not a legal clearance.
 - [**S01: Notices and written source directions in the image**](S01-PLAN.md).
   Version-specific texts, native-byte bindings and Docker inclusion merged in
   [#203](https://github.com/sourcebastion/sourcebastion-scanner/pull/203).
-  Actual image verification and complete source directions remain open. Do not
-  publish an offer pointing to a source mirror which does not exist.
+  Source directions now name the published immutable mirror. Actual released-image
+  verification remains open until v2.1.2 passes the normal release workflow.
 - [**S02: Digest-verified source mirror**](S02-PLAN.md). Source and recipe
-  archives are pinned; publication and correspondence review remain open. Include
-  the appropriate sources, build scripts and patches for each actual lineage.
-  Do not equate an Alpine version match with complete build provenance.
+  archives were reviewed and published by [main run 39106864706](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/39106864706),
+  including a successful anonymous digest-verified download. The immutable source
+  manifest is `sha256:88740e3f4ef899fc63aad828497bf0f1cf535fb1878098c66a4ca3a768a2dbf2`.
+  Recipe/source coverage is separate from historical build-container attestation.
 - [**S03: Drift detection and architecture evidence**](S03-PLAN.md). Started:
   #202 is reviewed and merged. Current musllinux wheels are bound per architecture; existing dependency
   verification refuses additions, removals or changed owner/wheel/library bytes.
@@ -35,8 +36,7 @@ This includes work already performed, design, implementation, tests, evidence,
 reviews and verification. The clock does not restart for a split or scope change.
 If there is no accepted shipped result at **half an engineering day**, stop and
 return a specific owner decision instead of adding prerequisites. The first
-increment is the existing artifact verifier's bundled-set guard; no image/source
-publication has been performed.
+increment is the existing artifact verifier's bundled-set guard; source publication is now verified; released-image acceptance is still pending.
 
 ## Trust, effects and recovery
 
@@ -54,7 +54,8 @@ silently become another implementation slice.
 
 ## Acceptance
 
-No M049 slice is accepted yet. All three owner-scope outcomes must be recorded
-against the released image and source availability before closing #164.
+Source publication and source/notice review are verified. Final acceptance still
+requires released-image checks and exercising the weekly proposer. All three
+owner-scope outcomes must be recorded before closing #164.
 The current wheel evidence is not a fresh published-image observation and does
 not establish provenance or discharge redistribution obligations by itself.

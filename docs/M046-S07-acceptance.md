@@ -68,8 +68,9 @@ baseline oracle `3fd21f9d1e0b4f9ae128a0dceb2a94a6043d780faa8c09e0ea85a320b1bb5ab
 candidate oracle `0fe1f2177e2d4743e17794befaf10099a68439924b7b9d41e3e54ce834cc601b`,
 exact transition `cb6a613f4f17191352191ae49339afad36283df9298cf46d18c5d044af4aca18`.
 It recomputes the difference against the archived immutable base oracle and
-requires the exact committed approval. The minimal gate in #162 does not close
-M050 #167 or replace its planned formal process.
+requires the exact committed approval. [M050](M050/ACCEPTANCE.md) now records
+qualification of that existing approval path and its operational review process;
+the historical S07 evidence is retained unchanged.
 
 `.github/workflows/m046-published-proof.yml` prepares a finite published-image
 qualification path. It requires an already published stable tag, its exact

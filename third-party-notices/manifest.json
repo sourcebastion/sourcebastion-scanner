@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "components": [
+    {
+      "id": "bzip2-1.0.8",
+      "license": "bzip2-1.0.6",
+      "source_url": "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz",
+      "source_sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/bzip2",
+      "license_files": {
+        "LICENSE": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3"
+      },
+      "native_sha256": [
+        "d15198e066b63fc9b64160c51a0c7428761aea03624200620b9016aa2eb87628",
+        "d69519dfb7bca25be2defcdabb2e20f1cd9bf192b653292494a7ae743a2fb40e"
+      ]
+    },
+    {
+      "id": "elfutils-0.194",
+      "license": "LGPL-3.0-or-later",
+      "source_url": "https://sourceware.org/elfutils/ftp/0.194/elfutils-0.194.tar.bz2",
+      "source_sha256": "09e2ff033d39baa8b388a2d7fbc5390bfde99ae3b7c67c7daaf7433fbcf0f01e",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/elfutils",
+      "license_files": {
+        "COPYING": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+        "COPYING-LGPLV3": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+        "AUTHORS": "a12e829266d6f307c952720e80df170834f28f369e30753fae6568b7887ef90f"
+      },
+      "native_sha256": [
+        "5f00cb1cc7a8eab7b00a040344518f0e8cadb8601e4ceee42e8f3e64896cc18e",
+        "7afe0ef4a6728361b272d58f4e8baae1ea1caa51ab64ab4b743164aa5f081192",
+        "dee760ef63f233b02c0ff4a3a5fa84abfdb8f571a3e94a44b538cf9863fe3885",
+        "e68132be880dd9d5a5b6eaebd2406af951e83e26a2a0920b36d1124d40e58c18"
+      ]
+    },
+    {
+      "id": "gcc-12.4.0",
+      "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+      "source_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-12.4.0/gcc-12.4.0.tar.xz",
+      "source_sha256": "704f652604ccbccb14bdabf3478c9511c89788b12cb3bbffded37341916a9175",
+      "build_reference": "https://github.com/crate-py/rpds/blob/v2026.9.1/.github/workflows/CI.yml",
+      "license_files": {
+        "COPYING3": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+        "COPYING.RUNTIME": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+      },
+      "native_sha256": [
+        "91a43de5877248a317d14faa35490ef474a1b33a83e235b52fb1eabf7108108e",
+        "f33db50df5fb0591ee20b789e7f26cb4593e3a36a3dcd45c668d5af03a3f5a87"
+      ]
+    },
+    {
+      "id": "gcc-14.2.0",
+      "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+      "source_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-14.2.0/gcc-14.2.0.tar.xz",
+      "source_sha256": "a7b39bc69cbf9e25826c5a60ab26477001f7c08d85cec04bc0e29cabed6f3cc9",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/4d7e25ebf8869f10fb59b74b0cb2d9063d7e82a8/main/gcc",
+      "license_files": {
+        "COPYING3": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+        "COPYING.RUNTIME": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+      },
+      "native_sha256": [
+        "35d3a03b621ff2ba18dcf4a727cd42b016b5ae332f37fb963c2a3f5744e1c046",
+        "42b5f2c8ca13e5e173d837f5117a04b6c042437548112bde7879251ae8dcff8f"
+      ]
+    },
+    {
+      "id": "gcc-15.2.0",
+      "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+      "source_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-15.2.0/gcc-15.2.0.tar.xz",
+      "source_sha256": "438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/gcc",
+      "license_files": {
+        "COPYING3": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+        "COPYING.RUNTIME": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74"
+      },
+      "native_sha256": [
+        "05dc15e433d3d04f30f93831168cb8731ef57b65435c80255b3f2cb00e5a8481",
+        "7b290615eaed5256ff7e0ba856bd7e1119e2d6ba9c5d4d4c70c366184fabf97f",
+        "8bc69978318cb9ea59b113143afc9904966e66be66ae1c9de7bbd871657cc5f9",
+        "cf8fbe9f144cf6a8ebb70c463fe01941058b898ed80798851e15654f0d9cb9e6"
+      ]
+    },
+    {
+      "id": "gmp-6.3.0",
+      "license": "LGPL-3.0-or-later",
+      "source_url": "https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz",
+      "source_sha256": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/gmp",
+      "license_files": {
+        "COPYING": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+        "COPYING.LESSERv3": "a853c2ffec17057872340eee242ae4d96cbf2b520ae27d903e1b2fef1a5f9d1c",
+        "COPYINGv3": "e6037104443f9a7829b2aa7c5370d0789a7bda3ca65a0b904cdc0c2e285d9195",
+        "AUTHORS": "da5870e2f0482c5dc15b4cfed8bbfb51ce1279c8f8fc52bdb8c13c7cee949c32"
+      },
+      "native_sha256": [
+        "242123811d11f6de930f09bf8ddba6c9d1c27d8ea8f0d0b3e32bb34d48530119",
+        "6978b66f386b3074de88f445dd1c6d1b7411d3cf164a0ca37ab03ac21b033caa"
+      ]
+    },
+    {
+      "id": "libev-4.33",
+      "license": "BSD-2-Clause",
+      "source_url": "https://dist.schmorp.de/libev/Attic/libev-4.33.tar.gz",
+      "source_sha256": "507eb7b8d1015fbec5b935f34ebed15bf346bed04a11ab82b8eee848c4205aea",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/libev",
+      "license_files": {
+        "LICENSE": "c4dd1a5bc38b041a320b93c5d6c08f5c41a63f2ce718ee16cfcb757fad448199"
+      },
+      "native_sha256": [
+        "198e2b77fcab316246bdc232d22b72810b3f17c245facccd21f3ebb263dc3ec3",
+        "4a94f7c1a617a5969d2bbfaa17d5f2bb6eefc8ad1447f5b6ee08c5763ec34d8b"
+      ]
+    },
+    {
+      "id": "libunwind-1.8.1",
+      "license": "MIT",
+      "source_url": "https://github.com/libunwind/libunwind/releases/download/v1.8.1/libunwind-1.8.1.tar.gz",
+      "source_sha256": "ddf0e32dd5fafe5283198d37e4bf9decf7ba1770b6e7e006c33e6df79e6a6157",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/libunwind",
+      "license_files": {
+        "COPYING": "6a0dbbdaec2b3136b7bf045586f4212bdf74e7af688bf9dfe9154607cf5ec156",
+        "AUTHORS": "4c76ea80d2b50837f948cd5348efcf1cdf41693049a657d8e6cc21ea849d4aa6"
+      },
+      "native_sha256": [
+        "dc13535fda6c87e5417247d9d88e84285af5a026c3b9d16c56deb643d200ec78",
+        "ddf4bc42a9b920ebb65ef522f4e491c1b8f503ee1fe7365ea361c85c84c873d2"
+      ]
+    },
+    {
+      "id": "musl-fts-1.2.7",
+      "license": "BSD-3-Clause",
+      "source_url": "https://github.com/void-linux/musl-fts/archive/refs/tags/v1.2.7.tar.gz",
+      "source_sha256": "49ae567a96dbab22823d045ffebe0d6b14b9b799925e9ca9274d47d26ff482a6",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/musl-fts",
+      "license_files": {
+        "COPYING": "55af87e4017668f54467a3380e7ebbac5e672d8c763bfe95e6fc882a6fdc4046",
+        "AUTHORS": "729e34df01732e5d38d92e167514abf25bf3d9ddbcf17c209d4d806d3cfeb69c"
+      },
+      "native_sha256": [
+        "08efaa24e061fa3c04a22380b7c108e3d278821e02579d821d878e381c3f8f0a",
+        "4131315e4cf1ff1a14c674b8fda63f8e6d271f4a408b9a6b69fdbdad213ccda8"
+      ]
+    },
+    {
+      "id": "openssl-3.5.9",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+      "source_sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/openssl",
+      "license_files": {
+        "LICENSE.txt": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+        "AUTHORS.md": "b9f638dfc06b59c2d3b808186c3b30f713805a5db390f5b77b1703ac58acb83e"
+      },
+      "native_sha256": [
+        "13f8b3a3423a1c8745b533fa29f7efabf8a1bf6fc7157844880ab0b2d1162928",
+        "53fc1b834d32e23cccd76fd02e62827ba9bf238bc56ed54139ce492c1f5c7595",
+        "76f07b63a7572d0fc1ead253cdd0de348700ab88c88506e946a710c3e1b8dcf3",
+        "c2427d6b050c8869275d4040ed027a1a53927158b20e0efa17635fea1851e35a"
+      ]
+    },
+    {
+      "id": "pcre2-10.49",
+      "license": "BSD-3-Clause",
+      "source_url": "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.bz2",
+      "source_sha256": "53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/pcre2",
+      "license_files": {
+        "COPYING": "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+        "LICENCE.md": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+        "AUTHORS.md": "412ace3355a4d6a4d835c350a7df172903811eafda7b13500dacf58429ee757e"
+      },
+      "native_sha256": [
+        "09db3c053f706d395d8a9892957cab16b6d58ba47dd2ec6fc448da3d84ab6ade",
+        "d327ce9c27bcecb7737c38823e99b3711bae0d8c9dcd0a15f94e31f1879c34c0"
+      ]
+    },
+    {
+      "id": "tree-sitter-0.26.3",
+      "license": "MIT",
+      "source_url": "https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v0.26.3.tar.gz",
+      "source_sha256": "7f4a7cf0a2cd217444063fe2a4d800bc9d21ed609badc2ac20c0841d67166550",
+      "build_reference": "https://github.com/semgrep/semgrep/blob/v1.180.0/libs/ocaml-tree-sitter-semgrep/core/scripts/download-tree-sitter",
+      "license_files": {
+        "LICENSE": "c5cfb43042b6b72045f4ba997834d0a7786d2793d91680868b5815b39f14fc78"
+      },
+      "native_sha256": [
+        "45c5c113e3e81c34133fe7f0756b520a5dc5826806a505ae3230e1e6ab474168",
+        "93ce2dded6fe5d4aa109c8283752d1156077279d2a2adea941c94df9006e8443"
+      ]
+    },
+    {
+      "id": "xz-5.8.4",
+      "license": "0BSD",
+      "source_url": "https://github.com/tukaani-project/xz/archive/refs/tags/v5.8.4/xz-5.8.4.tar.gz",
+      "source_sha256": "b6b34c52e672e810d339db14e0c10b5b6f5f67a30d8d05cdac5d8cb4d82f78d5",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/xz",
+      "license_files": {
+        "COPYING": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8",
+        "COPYING.0BSD": "0b01625d853911cd0e2e088dcfb743261034a091bb379246cb25a14cc4c74bf1",
+        "AUTHORS": "01e6df90d71d591f4307db3f397a5a4fac93b18533f5a3862156f1a0a7dc8610"
+      },
+      "native_sha256": [
+        "2f826d7f90095f6059a3ac35191652477d19721241945668058d83254cc84b37",
+        "e0ed8cb2b62ff925cced6eec73fc95d531e9e0830f5d68b622ea1fcf44c8c594"
+      ]
+    },
+    {
+      "id": "zlib-1.3.2",
+      "license": "Zlib",
+      "source_url": "https://zlib.net/fossils/zlib-1.3.2.tar.gz",
+      "source_sha256": "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/zlib",
+      "license_files": {
+        "LICENSE": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2"
+      },
+      "native_sha256": [
+        "833d1fe0ee2f08ed0b34f60263174766050f7b5751568323816df591ddd1201e",
+        "d91fd6353e8d1996349c9ae8934e2d6ad4baa47fd3187bbbeb45aa595dfcdbc4"
+      ]
+    },
+    {
+      "id": "zstd-1.5.7",
+      "license": "BSD-3-Clause",
+      "source_url": "https://github.com/facebook/zstd/archive/v1.5.7.tar.gz",
+      "source_sha256": "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3",
+      "build_reference": "https://github.com/alpinelinux/aports/tree/cb29f3b5d8475895cb6a6920b317a56cba3a05d2/main/zstd",
+      "license_files": {
+        "LICENSE": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8"
+      },
+      "native_sha256": [
+        "5321777c248937ed788f437a61352571cbf4f87d0d223f686fa4882f7a0a53a3",
+        "b3e4acef5e6e7746312fb0b0aeadba520dcaa5c14e166f2b09aaae30bf627a4d"
+      ]
+    }
+  ]
+}

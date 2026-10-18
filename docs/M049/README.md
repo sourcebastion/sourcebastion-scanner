@@ -15,14 +15,15 @@ coverage for GCC; these are recorded scope decisions, not a legal clearance.
 
 ## Current work
 
-- **S01: Notices and written source directions in the image.** Open. Bind them
-  to current bytes, not the older ARM64-only observation. Do not publish an
-  offer that points to a source mirror which does not exist.
+- [**S01: Notices and written source directions in the image**](S01-PLAN.md).
+  Version-specific texts, native-byte bindings and Docker inclusion are prepared.
+  Actual image verification and complete source directions remain open. Do not
+  publish an offer pointing to a source mirror which does not exist.
 - **S02: Digest-verified source mirror.** Open. Include the appropriate upstream
   sources, build scripts and patches for each actual compiler/library lineage.
   Do not equate an Alpine version match with complete build provenance.
 - [**S03: Drift detection and architecture evidence**](S03-PLAN.md). Started:
-  current musllinux wheels are bound per architecture; existing dependency
+  #202 is reviewed and merged. Current musllinux wheels are bound per architecture; existing dependency
   verification refuses additions, removals or changed owner/wheel/library bytes.
   Notice coverage and a reviewable weekly candidate diff remain open.
 

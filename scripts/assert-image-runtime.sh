@@ -70,8 +70,18 @@ for distribution in importlib.metadata.distributions():
 target = "musllinux_1_2_" + platform.machine()
 expected = [{key: row[key] for key in ("distribution", "version", "path", "bytes", "sha256")}
             for row in json.loads(sys.argv[2])["targets"][target]]
+# Wheel installers spread .data/{purelib,platlib} into site-packages (PEP 427).
+# Keep the file's installed path, owner, version, size and bytes exact.
+def installed_native_path(path):
+    return re.sub(r"^[^/]+\.data/(?:purelib|platlib)/", "", path)
+
+for row in expected:
+    row["path"] = installed_native_path(row["path"])
 order = lambda row: (row["distribution"], row["path"])
-assert sorted(observed, key=order) == sorted(expected, key=order), "installed bundled native set differs from reviewed manifest"
+if sorted(observed, key=order) != sorted(expected, key=order):
+    print("Expected bundled natives:", json.dumps(sorted(expected, key=order)))
+    print("Observed bundled natives:", json.dumps(sorted(observed, key=order)))
+    raise AssertionError("installed bundled native set differs from reviewed manifest")
 print(f"{target}: {len(observed)} bundled native files, retained licenses and source directions verified")
 print(f"sourcebastion user, Python {sys.argv[1]}, writable scan/cache paths and runtime-only contents verified")
 PY

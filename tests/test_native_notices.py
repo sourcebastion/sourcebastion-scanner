@@ -87,3 +87,21 @@ def test_redirected_component_directory_refuses(notices):
     original.symlink_to(renamed, target_is_directory=True)
     with pytest.raises(ValueError, match='directory must not be a symlink'):
         artifacts.verify_native_notices([{'sha256': 'a' * 64}])
+
+
+def test_runtime_comparison_accounts_for_standard_wheel_spreading():
+    # Exercise the helper embedded in the actual image runtime assertion.
+    import ast
+    import re
+    script = (ROOT / 'scripts/assert-image-runtime.sh').read_text().split("<<'PY'\n", 1)[1].rsplit('\nPY', 1)[0]
+    tree = ast.parse(script)
+    helper = next(node for node in tree.body if isinstance(node, ast.FunctionDef)
+                  and node.name == 'installed_native_path')
+    namespace = {'re': re}
+    exec(compile(ast.Module(body=[helper], type_ignores=[]), '<runtime helper>', 'exec'), namespace)
+    normalize = namespace['installed_native_path']
+    assert normalize('semgrep-1.180.0.data/purelib/semgrep/bin/libs/libelf.so.1') == 'semgrep/bin/libs/libelf.so.1'
+    assert normalize('example-1.data/platlib/example.libs/libfoo.so.1') == 'example.libs/libfoo.so.1'
+    for path in ['cryptography.libs/libgcc_s.so.1', 'example-1.data/scripts/libfoo.so.1',
+                 'nested/example-1.data/purelib/libfoo.so.1']:
+        assert normalize(path) == path

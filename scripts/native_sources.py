@@ -85,7 +85,7 @@ def download(value, cache):
         try:
             subprocess.run(["curl", "--fail", "--location", "--silent", "--show-error",
                             "--proto", "=https", "--proto-redir", "=https",
-                            "--retry", "2", "--max-time", "600",
+                            "--retry", "2", "--connect-timeout", "20", "--max-time", "600",
                             "--max-filesize", str(item["bytes"]),
                             "--output", str(temporary), item["url"]], check=True)
             if temporary.stat().st_size != item["bytes"] or sha256(temporary) != item["sha256"]:

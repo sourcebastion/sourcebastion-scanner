@@ -362,7 +362,9 @@ jobs:
       - name: Require a real offline scan from the staged digest
         env:
           RELEASE_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build-docker-standard.outputs.image_digest }}
-        run: bash scripts/smoke-scan-hosted.sh "$RELEASE_IMAGE"
+        run: |
+          bash scripts/assert-image-runtime.sh "$RELEASE_IMAGE"
+          bash scripts/smoke-scan-hosted.sh "$RELEASE_IMAGE"
 
   promote-images:
     name: Promote validated image tags

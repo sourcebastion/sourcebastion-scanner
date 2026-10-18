@@ -105,8 +105,9 @@ def validate_dependencies(directory, lock):
     return metadata
 
 
-def verify_dependencies(directory, lock):
+def verify_dependencies(directory, lock, native_proposal=None):
     validate_dependencies(directory, lock)
+    observed = {}
     with tempfile.TemporaryDirectory(prefix='sourcebastion-wheels-') as temporary:
         for group in GROUPS:
             for target in TARGETS:
@@ -122,7 +123,12 @@ def verify_dependencies(directory, lock):
                 ], check=True, timeout=600)
                 verify_closure(wheels, group, target, lock)
                 if group == 'semgrep' and target.startswith('musllinux_'):
-                    verify_native_notices(verify_bundled_natives(wheels, target))
+                    if native_proposal is None:
+                        verify_native_notices(verify_bundled_natives(wheels, target))
+                    else:
+                        observed[target] = bundled_natives(wheels)
+    if native_proposal is not None:
+        write_native_proposal(observed, native_proposal)
 
 
 def bundled_natives(wheels):
@@ -184,6 +190,33 @@ def verify_bundled_natives(wheels, target):
                          + '; added/changed=' + repr(sorted(new - old))
                          + '; review manifest, notices and source coverage before updating')
     return observed
+
+
+def write_native_proposal(observed, path):
+    """Candidate-only data for review; never replace the release baseline.
+
+    Publisher identity, wheel hashes and dependency closure still must pass.
+    Changed native bytes leave release verification red until separately reviewed.
+    """
+    if (path.name != 'bundled-native-proposal.json' or path.is_symlink()
+            or path.resolve() == NATIVES.resolve()):
+        raise ValueError('native proposal must be a separate proposal file')
+    baseline = json.loads(NATIVES.read_text())
+    targets = {t for t in TARGETS if t.startswith('musllinux_')}
+    if (baseline.get('schema_version') != 1 or set(baseline.get('targets', {})) != targets
+            or set(observed) != targets):
+        raise ValueError('invalid bundled native proposal targets')
+    # Existing retained licenses must remain valid even for a proposal.
+    for libraries in baseline['targets'].values():
+        verify_native_notices(libraries)
+    if observed == baseline['targets']:
+        path.unlink(missing_ok=True)
+        print('Bundled native libraries unchanged on both architectures')
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({'schema_version': 1, 'targets': observed}, indent=2) + '\n')
+    print('NATIVE REVIEW REQUIRED: ' + str(path)
+          + '; proposed bytes only; release baseline, notices and source pins unchanged')
 
 
 def verify_native_notices(libraries):
@@ -276,7 +309,7 @@ def verify_closure(wheels, group, target, lock):
                     pending.append(child)
 
 
-def generate_dependencies(lock, directory):
+def generate_dependencies(lock, directory, native_proposal=None):
     """Resolve target markers without running candidate code; verify before publication."""
     directory.mkdir(parents=True, exist_ok=True)
     metadata = {'schema_version': 1, 'python': PYTHON_FULL, 'semgrep_version': lock['version'], 'files': {}}
@@ -314,7 +347,10 @@ def generate_dependencies(lock, directory):
                 (directory / name).write_bytes(data)
                 metadata['files'][name] = hashlib.sha256(data).hexdigest()
     (directory / 'manifest.json').write_text(json.dumps(metadata, indent=2) + '\n')
-    verify_dependencies(directory, lock)
+    if native_proposal is None:
+        verify_dependencies(directory, lock)
+    else:
+        verify_dependencies(directory, lock, native_proposal=native_proposal)
 
 
 def fetch(url, limit=200 * 1024 * 1024):
@@ -447,21 +483,29 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('candidate', 'verify', 'install', 'lock-dependencies', 'verify-dependencies'))
     parser.add_argument('--version')
+    parser.add_argument('--native-proposal', type=Path,
+                        help='candidate only: report native drift without changing the release baseline')
     parser.add_argument('--libc', choices=('musl', 'glibc'))
     parser.add_argument('--lock', type=Path, default=LOCK)
     parser.add_argument('--pins', type=Path, default=PINS)
     parser.add_argument('--dependencies', type=Path, default=DEPENDENCIES)
     parser.add_argument('--group', choices=GROUPS, default='semgrep')
     args = parser.parse_args()
+    if args.native_proposal is not None and args.command != 'candidate':
+        parser.error('--native-proposal is allowed only for candidate discovery')
     try:
         pins = json.loads(args.pins.read_text())
         if args.command == 'candidate':
             lock = candidate(args.version)
             verify(lock)
-            # Do not change reviewed files until every target dependency set verifies.
+            # Stage every target and verify publisher/hash/closure before proposing files.
+            # Optional native observations never replace the reviewed release baseline.
             with tempfile.TemporaryDirectory(prefix='sourcebastion-candidate-') as temporary:
                 staged = Path(temporary)
-                generate_dependencies(lock, staged)
+                if args.native_proposal is None:
+                    generate_dependencies(lock, staged)
+                else:
+                    generate_dependencies(lock, staged, native_proposal=args.native_proposal)
                 args.dependencies.mkdir(parents=True, exist_ok=True)
                 for path in staged.iterdir():
                     (args.dependencies / path.name).write_bytes(path.read_bytes())

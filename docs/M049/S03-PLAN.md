@@ -16,11 +16,13 @@
   with S01/S02; a byte digest or compiler string is identification, not source
   provenance. Confirm libelf's actual version from its source/package binding.
 - [ ] **T03: Surface proposed changes in the weekly candidate PR.** The current
-  proposer calls the existing dependency verifier, so drift now stops before
-  reviewed pins are written. It prints added/removed/changed paths and digests.
-  A candidate report/PR that preserves that refusal while exposing the proposed
-  set for notice/source review is still needed; do not automatically accept a
-  newly observed manifest.
+  proposer now has a candidate-only observation option: all publisher, hash and
+  closure checks still pass before it writes a separate per-architecture
+  `bundled-native-proposal.json`. Drift opens a draft PR containing proposed
+  locks and that observation, leaving the release manifest/notices/source pins
+  untouched. Release verification still refuses the changed set. An unchanged
+  native set produces no proposal file. Cross-review and a workflow exercise
+  remain open; do not automatically accept a newly observed manifest.
 
 ## Current checks (2026-10-17)
 

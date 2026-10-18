@@ -12,8 +12,8 @@ Docker builds install the exact wheel from this lock after independently
 checking its hash. They do not select the newest version at build time. This
 artifact lock establishes provenance for Semgrep itself. Separate
 `.github/python-locks/` requirements locks cover Python build tools, the
-SourceBastion runtime, and Semgrep plus the SourceBastion runtime, for CPython
-3.11 on each of the four Linux targets. These provide **hash integrity, not
+SourceBastion runtime, and Semgrep plus the SourceBastion runtime, for the reviewed CPython
+version on each of the four Linux targets. These provide **hash integrity, not
 publisher provenance**, for transitive dependencies. Neither lock covers OS
 packages, base images, bundled bootstrap pip/ensurepip, other scanner binaries,
 or externally downloaded rule packs. It is not proof of a
@@ -81,7 +81,7 @@ python scripts/scanner_artifacts.py verify-dependencies
 This verifies Semgrep provenance first, resolves and verifies all dependency
 sets in temporary storage, and only then replaces reviewed files. Review hash
 and version changes before merging. Re-run the integrity workflow and release
-image/runtime validation; ordinary PR checks do not build scanner images.
+image/runtime validation; image-affecting PRs run both native image builds.
 
 Network reads retry at most three times (5/15-second delays) for connection
 errors, HTTP 429, and selected 5xx responses. Missing attestations, unexpected
@@ -123,3 +123,33 @@ after successful verification):
 ```sh
 python scripts/scanner_artifacts.py candidate --version 1.178.0
 ```
+
+## Bundled native library notices and sources
+
+`.github/bundled-native-libraries.json` records each architecture's separately
+vendored library bytes, wheel identity and owning distribution. Dependency
+verification rejects additions, removals and changes. `third-party-notices/`
+binds those bytes to retained original license texts and source references;
+missing or changed license files also reject the candidate.
+
+The weekly proposer uses `candidate --native-proposal
+.github/bundled-native-proposal.json` to surface native drift in a separate
+observation file and a draft PR. That file does not update the release baseline
+or authorize a release. Review the old/new library sets, exact upstream source
+and recipes, notices and conservative copyleft coverage together before changing
+the baseline. Release verification remains strict.
+
+`.github/native-source-pins.json` binds original upstream source/recipe archives,
+the deterministic bundle and its OCI manifest. `Mirror bundled native sources`
+checks all bytes before its separate main-only publisher receives package-write
+authority; PR preparation cannot publish. A source change must pass preparation,
+then publication and anonymous re-download on main before updating the image's
+`third-party-notices/SOURCE-AVAILABILITY.md` directions. A digest mismatch stops
+publication; do not replace a pin to conceal a mismatch. Retain source artifacts
+for the scanner releases they accompany.
+
+Native image CI and both staged-release hosted-scan jobs run
+`scripts/assert-image-runtime.sh`, checking installed bundled bytes and all
+retained texts against the reviewed manifests, including the source directions.
+Image publication and host deployment are separate actions. See [M049](M049/README.md)
+for distribution scope and the release acceptance record.

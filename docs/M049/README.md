@@ -2,60 +2,54 @@
 
 [Owner scope and decisions: scanner #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164).
 
-Outcome: the distributed scanner image retains the required bundled-library
-notices and source directions, with retrievable, digest-verified source for the
-conservative copyleft set. Candidate changes cannot silently alter that set.
-No shipped binary is modified or removed. Customer license scanning, legal
-opinions, new providers and production changes are excluded.
+**Complete for [v2.1.2](https://github.com/sourcebastion/sourcebastion-scanner/releases/tag/v2.1.2),
+published 2026-10-18.** [Acceptance and immutable identities](ACCEPTANCE.md).
 
-Use the existing pinned wheel downloader, Python ZIP/hash inspection, Docker
-COPY convention and existing OCI mirror tooling. No new service or controller.
-The owner elected permissive license arms where offered and conservative source
-coverage for GCC; these are recorded scope decisions, not a legal clearance.
+The distributed scanner image retains bundled-library licenses and source
+directions. The conservative copyleft source set is publicly retrievable by
+digest from the same GHCR package. Native dependency changes require review.
+No scanner engine pin or shipped native binary was modified or removed.
+Customer license-scanning features, legal opinions, new providers and host or
+production deployment changes remain excluded.
 
-## Current work
+## Accepted slices
 
-- [**S01: Notices and written source directions in the image**](S01-PLAN.md).
-  Version-specific texts, native-byte bindings and Docker inclusion merged in
-  [#203](https://github.com/sourcebastion/sourcebastion-scanner/pull/203).
-  Source directions now name the published immutable mirror. Actual released-image
-  verification remains open until v2.1.2 passes the normal release workflow.
-- [**S02: Digest-verified source mirror**](S02-PLAN.md). Source and recipe
-  archives were reviewed and published by [main run 39106864706](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/39106864706),
-  including a successful anonymous digest-verified download. The immutable source
-  manifest is `sha256:88740e3f4ef899fc63aad828497bf0f1cf535fb1878098c66a4ca3a768a2dbf2`.
-  Recipe/source coverage is separate from historical build-container attestation.
-- [**S03: Drift detection and architecture evidence**](S03-PLAN.md). Started:
-  #202 is reviewed and merged. Current musllinux wheels are bound per architecture; existing dependency
-  verification refuses additions, removals or changed owner/wheel/library bytes.
-  Notice coverage merged in #203; the reviewable weekly candidate diff is
-  prepared in #205. Released-image acceptance remains required.
+- [S01: Notices and source directions in the image](S01-PLAN.md): all 19
+  separately vendored native files on each architecture have retained notices
+  and source pointers; both released architectures were checked.
+- [S02: Digest-verified source mirror](S02-PLAN.md): original source and build
+  recipes for GMP, elfutils and the three observed GCC families were reviewed,
+  published and anonymously retrieved with matching digests.
+- [S03: Drift detection and architecture evidence](S03-PLAN.md): strict release
+  verification checks both architecture baselines; the weekly proposer produced
+  a real draft observation and strict verification refused its unreviewed bindings.
 
-Budget: **one engineering day total**, approved by the owner on 2026-10-17.
-This includes work already performed, design, implementation, tests, evidence,
-reviews and verification. The clock does not restart for a split or scope change.
-If there is no accepted shipped result at **half an engineering day**, stop and
-return a specific owner decision instead of adding prerequisites. The first
-increment is the existing artifact verifier's bundled-set guard; source publication is now verified; released-image acceptance is still pending.
+## Budget
 
-## Trust, effects and recovery
+The owner approved **one engineering day total** on 2026-10-17, including prior
+work, design, implementation, tests, evidence, review and verification. Splits
+or scope changes do not restart the clock. The stop rule was half an engineering
+day without an accepted shipped result. The initial increment was the existing
+artifact verifier's bundled-set guard in #202; the final released-image and
+source acceptance is recorded here, without resetting that budget.
 
-Existing artifact pins and publisher verification remain authoritative inputs.
-Pip downloads only hash-locked wheels; ZIP inspection never imports or runs
-their code. This guard owns comparison against the reviewed manifest and can
-stop the existing verifier/proposer. It cannot change pins, release an image,
-publish source, change credentials or authorize a license/source claim.
+## Trust, authority and recovery
 
-On drift, the verifier reports removed/changed and added/changed paths/digests,
-then stops. A reviewer updates the manifest only alongside the appropriate
-notices/source review. The old baseline stays unchanged on failure. Missing
-provenance or broader scope/budget decisions go to the owner; they do not
-silently become another implementation slice.
+Repository maintainers, reviewed artifact/source pins, upstream publisher
+verification, GitHub/GHCR and standard OCI digest verification are trusted.
+The verifier reads hash-locked wheel ZIP data without executing candidate code.
+The separate source publisher uses a main-only workflow and the existing
+repository token to publish source artifacts in the existing scanner package.
+The existing bot workflow proposes dependency changes; it does not approve or
+merge them.
+No new service, controller, provider or credential was introduced.
 
-## Acceptance
+On native or source drift, verification reports the differences and stops.
+The release baseline, notices and source pins stay unchanged until reviewed
+together. Source publication and anonymous retrieval precede updating the
+image's download directions. Retain immutable source artifacts with their
+scanner releases. Missing provenance or broader scope remains an owner decision.
 
-Source publication and source/notice review are verified. Final acceptance still
-requires released-image checks and exercising the weekly proposer. All three
-owner-scope outcomes must be recorded before closing #164.
-The current wheel evidence is not a fresh published-image observation and does
-not establish provenance or discharge redistribution obligations by itself.
+This records source/recipe coverage and actual image retention, not a legal
+opinion, reproducible build or historical wheel-container attestation. The older
+M046 ARM64 observation remains historical; old image digests were not altered.

@@ -1,48 +1,46 @@
 # M049 S03: Detect bundled-library drift
 
+Accepted for v2.1.2; [release and integration evidence](ACCEPTANCE.md).
+
 ## Tasks
 
 - [x] **T01: Compare both musllinux runtime wheel closures to reviewed bytes.**
-  [#202](https://github.com/sourcebastion/sourcebastion-scanner/pull/202) was
-  independently approved and merged with green artifact verification and both
-  architecture image builds. The existing
-  `scanner_artifacts.py verify-dependencies` checks the complete resolved
-  Semgrep/runtime closure, then compares every separately vendored shared
-  library against `.github/bundled-native-libraries.json`. It refuses changed
-  wheel identity/version/digest, library paths, sizes and digests. It examines
-  previously unseen distributions too; extension modules themselves are outside
-  this separately vendored-library set. No ZIP member is extracted or executed.
-- [ ] **T02: Bind reviewed notices and exact source coverage.** Remains open
-  with S01/S02; a byte digest or compiler string is identification, not source
-  provenance. Confirm libelf's actual version from its source/package binding.
-- [ ] **T03: Surface proposed changes in the weekly candidate PR.** The current
-  proposer now has a candidate-only observation option: all publisher, hash and
-  closure checks still pass before it writes a separate per-architecture
-  `bundled-native-proposal.json`. Drift opens a draft PR containing proposed
-  locks and that observation, leaving the release manifest/notices/source pins
-  untouched. Release verification still refuses the changed set. An unchanged
-  native set produces no proposal file. Cross-review and a workflow exercise
-  remain open; do not automatically accept a newly observed manifest.
+  #202 merged the guard into existing dependency verification. Each architecture
+  has 19 separately vendored libraries in the complete 70-wheel locked runtime
+  closure. New distributions/vendors are inspected too. The guard rejects
+  changed owner/version/wheel identity, paths, sizes or library digests.
+  ZIP data is inspected without importing or executing candidate code.
+- [x] **T02: Bind reviewed notices and exact source coverage.** Every reviewed
+  native byte set has retained original texts and source/build references.
+  Copyleft source and recipes were published and anonymously checksum-verified.
+  Libelf was confirmed as 0.194 against official Alpine code/read-only/build-ID
+  sections. Both exact staged release architectures checked actual installed
+  native bytes and source directions before publication.
+- [x] **T03: Surface proposed changes in the weekly candidate PR.**
+  [Main run 39109145980](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/39109145980)
+  passed publisher, wheel-hash and closure verification and opened
+  [draft #206](https://github.com/sourcebastion/sourcebastion-scanner/pull/206)
+  for Semgrep 1.181.0. Its separate observation reports both architectures;
+  the release baseline, notices and source pins were untouched.
+  [Strict verification 39109214153](https://github.com/sourcebastion/sourcebastion-scanner/actions/runs/39109214153)
+  rejected the unreviewed wheel/owner bindings. No candidate was accepted.
 
-## Current checks (2026-10-17)
+## Qualification
 
-All 70 hash-locked runtime wheels for each architecture were downloaded with
-the existing target marker/ABI options and checked by the existing dependency
-closure verifier. Each architecture has 19 separately vendored library files:
-16 in Semgrep 1.180.0 and one each in cryptography 50.0.2, pydantic-core 2.50.1
-and rpds-py 2026.9.1. The baseline binds actual pip-selected cp311-abi3
-cryptography wheels, not the other compatible cp39 wheels.
+The released baseline is Semgrep 1.180.0, cryptography 50.0.2, pydantic-core
+2.50.1 and rpds-py 2026.9.1. The manifest records actual pip-selected
+cp311-abi3 cryptography wheels. The older M046 ARM64 image record remains
+historical, not evidence substituted for the current release.
 
-The original [ARM64 image observation](../M046/S06-bundled-natives-arm64.json)
-was Semgrep 1.179.0/pydantic-core 2.46.5 and remains historical. Current compiler
-strings identify different GCC families: Semgrep's 15.2.0, cryptography's
-14.2.0 and rpds/pydantic's 12.4.0. These are not interchangeable source claims.
-The [Semgrep release Dockerfile](https://github.com/semgrep/semgrep/blob/v1.180.0/Dockerfile)
-uses Alpine 3.23 for Semgrep, but that does not establish the other wheels'
-build environments or all patches used for their runtime copies.
+The real 1.181.0 proposal has 19 libraries per architecture with no added,
+removed or changed library bytes; its Semgrep wheel/version/path bindings
+changed and still require review. Strict release commands cannot opt into
+proposal mode. The observation never replaces the release baseline.
 
-Focused tests cover unchanged bindings, added/removed/renamed libraries,
-same-size changed bytes, a new vendor outside known packages/directories,
-wrong architecture, duplicate/non-ELF members and refusal through the existing
-dependency-verification entry point. This is drift detection only; no image was
-built, altered, executed or published and no source mirror was published.
+Focused tests cover synthetic additions/removals/renames, same-size byte
+changes, new vendors outside known packages, wrong architecture, duplicate and
+non-ELF members, changed/missing notices, protected-baseline refusal and
+candidate observation followed by strict release refusal. Native runtime checks
+account for standard wheel purelib/platlib spreading without changing bytes.
+All 116 focused tests and full native CI39107423289 passed. The normal release
+workflow then checked both exact staged architectures and published v2.1.2.

@@ -1,6 +1,10 @@
 # M046 S06 distribution closure: bundled native libraries
 
-Status: **open, and wider than recorded.** This document is the evidence the
+Update 2026-10-18: current distribution closure is accepted for v2.1.2 in
+[M049](M049/ACCEPTANCE.md). The older ARM64 observations below are retained
+as historical evidence; older image digests were not changed.
+
+Historical investigation status: **open, and wider than recorded.** This document is the evidence the
 S06 runbook asks for -- the actual bundled bytes, identified and bound to
 digests. It is **not a licence clearance**, and it does not close S06.
 

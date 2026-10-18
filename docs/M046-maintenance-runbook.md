@@ -272,33 +272,24 @@ wheel versions and `.libs` contents, identify each bundled native library's
 publisher/source, and bind any clearance to those bytes. Moving optional
 SPDX/licensing product work to M048 does not waive distribution obligations.
 
-**Deferred to M049, by decision.** This section originally held that S06
-release acceptance remains blocked without closure. That condition was
-self-imposed here rather than required by
-[S06 #93](https://github.com/sourcebastion/sourcebastion-scanner/issues/93),
-whose acceptance sentence names native release jobs, upgrade gates, numeric
-budgets, this runbook, exact-head CI and release evidence -- not closure. The
-condition is therefore amended: closure is tracked as
-[M049 #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164)
-and does not gate S06.
+**Current distribution: M049 accepted v2.1.2 on 2026-10-18.** The released
+AMD64 and ARM64 images retain the original native notices and actual immutable
+source directions; the source mirror is anonymously digest-verified and the
+weekly proposer exposes native drift. See [M049 acceptance](M049/ACCEPTANCE.md)
+for exact image/source identities and [maintenance instructions](scanner-artifact-integrity.md#bundled-native-library-notices-and-sources).
 
-This is a deferral, not a resolution. The obligation is live now, because the
-image is published for `docker pull` today. The investigation is complete and
-recorded in
-[the closure evidence](M046-S06-distribution-closure.md): 19 vendored native
-libraries across four packages, bound to digests, with provenance established
-as Alpine 3.23 `aports`. What remains is notices, a source mirror and drift
-detection -- mechanical work with no legal opinion sought, which is why it can
-be sequenced after S06 rather than inside it.
-
-Anyone reading S06 as accepted should not read it as compliant. Those are
-separate claims and this paragraph exists to keep them separate.
+Historically, the owner deferred distribution closure out of S06 to
+[M049 #164](https://github.com/sourcebastion/sourcebastion-scanner/issues/164),
+because #93's acceptance sentence did not require that additional runbook gate.
+The [older ARM64 investigation](M046-S06-distribution-closure.md) remains
+historical. Acceptance of the new release is not a retroactive claim that old
+image digests contained these notices, nor a blanket legal clearance.
 
 Before S06 acceptance, retain exact source head, native image/manifest digests,
 pin/module maps, all 64 corpus comparisons, full finding evidence, three-repeat
 resource arms and frozen-baseline compressed-growth receipts. Distribution
-closure is deferred to M049 as recorded above, so it is not part of this
-retention set. All required current-head CI must pass. An unmerged
+closure was separately accepted in M049 for v2.1.2; the original S06 retention
+set remains unchanged. All required current-head CI must pass. An unmerged
 implementation or a local unit test run is not accepted release evidence.
 
 For rollback, restore the previously admitted immutable image/config/parser/

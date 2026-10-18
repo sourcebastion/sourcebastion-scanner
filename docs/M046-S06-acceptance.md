@@ -1,5 +1,9 @@
 # M046 S06 acceptance ledger
 
+Update 2026-10-18: [M049](M049/ACCEPTANCE.md) records current distribution
+closure for v2.1.2. This ledger retains the original v1.8.1 acceptance and
+its historical deferral; old image digests were not altered.
+
 Status: **every acceptance criterion S06 states is met**, with executable
 evidence, and all of its implementation is on `main`. Exact-head CI, the
 numeric budgets, coordination with

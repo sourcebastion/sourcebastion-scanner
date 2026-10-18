@@ -1,43 +1,39 @@
 # M049 S01: Retain native-library notices
 
+Accepted for v2.1.2; [release evidence](ACCEPTANCE.md).
+
 ## Tasks
 
 - [x] **T01: Retain version-specific license texts and source pointers.**
-  Prepared for the 19 vendored files per architecture, grouped into 15
-  component/version directories under `third-party-notices/`. Texts are copied
-  verbatim from source archives verified against Alpine's pinned APKBUILD
-  SHA-512 values, GCC's release SHA-512 lists, or Semgrep's tree-sitter source
-  SHA-256. The notice manifest records source SHA-256, build references and
-  license-file digests, binding each native byte set to its retained texts.
-  The runtime Dockerfile copies this directory beside the existing Go notices.
-- [ ] **T02: Verify notice coverage and drift.** The existing dependency verifier
-  requires every bundled byte set to have an unchanged retained license and a
-  pinned upstream source reference. New native bytes, missing/changed license
-  text, ambiguous bindings and symlinked notice paths refuse. Qualification of
-  the actual resulting image remains required after review.
-- [ ] **T03: Publish truthful source directions beside the notices.** Source publication and anonymous retrieval passed in main run 39106864706.
-  `SOURCE-AVAILABILITY.md` now names that exact immutable mirror and download
-  checksums. Confirm these directions survive into both released architectures.
+  `third-party-notices/` contains 15 component/version groups and 30 original
+  license/author texts, bound to all 19 vendored files per architecture.
+  All texts matched pinned original upstream archives. Source SHA-256,
+  APKBUILD/build references, license-file hashes and native hashes are recorded
+  in its manifest. Docker copies the directory beside the existing Go notices.
+- [x] **T02: Verify notice coverage and drift.** The existing dependency verifier
+  rejects uncovered native bytes, missing/changed texts, ambiguous bindings
+  and redirected notice paths. Both exact staged image architectures verified
+  all 19 installed native records and retained license/source-direction bytes;
+  the same immutable index was promoted to v2.1.2.
+- [x] **T03: Publish truthful source directions beside the notices.**
+  Source publication and anonymous checksum verification passed before
+  `SOURCE-AVAILABILITY.md` was changed. The released file names the actual
+  immutable OCI source reference and bundle/archive verification commands.
 
-## Identified sources
+## Identified sources and choices
 
-The permissive-arm elections for libev and zstd are recorded alongside their
-original terms. XZ's licensing summary identifies liblzma as 0BSD separately
-from its command-line tools. GCC runtime coverage remains conservative.
+The BSD elections for libev and zstd are retained. XZ's original summary
+identifies liblzma as 0BSD separately from its command-line tools. GCC runtime
+coverage remains conservative, without deciding the Runtime Library Exception.
 
-The v1.180.0 Semgrep source explicitly builds tree-sitter **0.26.3**, including
-the pinned source tarball hash, rather than Alpine 3.23's tree-sitter 0.25.10.
-That fixes the source reference for `libtree-sitter.so.0.26`.
-
-For libelf, the x86_64 wheel's `.text`, `.rodata`, GNU build ID and all other
-sections except `.dynsym`, `.dynstr` and `.dynamic` match the official Alpine
-`libelf-0.194-r0.apk` member `usr/lib/libelf-0.194.so`. The `.text` SHA-256 is
+Semgrep v1.180.0 pins tree-sitter **0.26.3**, including its source hash;
+Alpine's different tree-sitter package is not substituted as its source.
+The x86_64 libelf `.text`, `.rodata` and GNU build-ID sections match official
+Alpine `libelf-0.194-r0.apk`, resolving the misleading `1.3.1` string.
+Its `.text` SHA-256 is
 `29773b7f0405f92b7b71a873aee0c1ba0abce6f32ddaa229e094a7ea5820ae7a`.
-This resolves the misleading embedded `1.3.1` string; it is not the libelf
-package version. Comparison used pyelftools on bytes, without loading a library.
-The dynamic-section differences remain explicit; no binary reproducibility or
-complete build-provenance claim follows.
+ELF inspection reads data and never loads a library.
 
-The source references distinguish GCC 12.4.0, 14.2.0 and 15.2.0. Exact compiler
-image/build-recipe/patch lineage, especially the GNU 12.4.0 runtime copies,
-still needs source-mirror review; a compiler string alone does not close S02.
+GCC 12.4.0, 14.2.0 and 15.2.0 remain distinct source identities. Source/recipe
+review and its limits are recorded in S02 and the acceptance ledger; a compiler
+string alone is not treated as a complete historical build attestation.

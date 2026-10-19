@@ -157,6 +157,11 @@ def test_weekly_refresh_includes_dependency_only_updates():
     assert 'uv==0.11.0' in text
     assert 'git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks' in text
     assert 'git add .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks' in text
+    for step in ('git diff --quiet --', 'git add '):
+        command = next(line for line in text.splitlines() if step in line)
+        assert '.github/bundled-native-libraries.json' in command
+    upload = text.split('name: verified-scanner-pins', 1)[1].split('- name:', 1)[0]
+    assert '.github/bundled-native-libraries.json' in upload
     assert '${version}-${lock_digest}' in text
     # A digest in the branch name must not defeat the single-candidate guard:
     # matching the full name would open a second PR beside the one under

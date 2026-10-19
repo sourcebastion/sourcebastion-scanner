@@ -21,8 +21,8 @@ reproducible build or that the source has no vulnerabilities.
 
 `Propose verified scanner artifacts` runs Mondays at 06:37 UTC on main. It
 discovers a stable PyPI version, rejects yanked/missing platforms, verifies all
-wheels without installing or executing them, then proposes only the Semgrep
-artifact/version and dependency-lock changes in a PR. Dependency-only updates
+wheels without installing or executing them, then proposes the Semgrep
+artifact/version, dependency-lock and matching native-manifest changes in a PR. Dependency-only updates
 are detected even when the Semgrep version stays unchanged; the proposed
 branch includes the lock manifest digest. It never approves, merges, or
 releases changes. No reviewed files change if verification fails. A candidate artifact is retained
@@ -133,9 +133,18 @@ binds those bytes to retained original license texts and source references;
 missing or changed license files also reject the candidate.
 
 The weekly proposer uses `candidate --native-proposal
-.github/bundled-native-proposal.json` to surface native drift in a separate
-observation file and a draft PR. That file does not update the release baseline
-or authorize a release. Review the old/new library sets, exact upstream source
+.github/bundled-native-proposal.json`. When each architecture's installed
+library paths, owning distributions, counts, sizes and SHA-256 hashes are
+unchanged, it automatically refreshes the native manifest's wheel/version
+bindings in the same PR as the dependency locks. Standard wheel spreading of
+the versioned `.data/{purelib,platlib}/` prefix is accounted for; installed paths
+remain exact. Existing notice/source bindings are retained and checked. All
+verification finishes in temporary storage before candidate files are written.
+Release verification still compares the complete manifest exactly.
+
+Native additions, removals, ownership, installed-path or byte changes instead
+produce a separate observation file and a draft PR, leaving the native baseline
+unchanged. That file does not authorize a release. Review the old/new library sets, exact upstream source
 and recipes, notices and conservative copyleft coverage together before changing
 the baseline. Release verification remains strict.
 

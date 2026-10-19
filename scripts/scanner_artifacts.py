@@ -5,6 +5,7 @@ KICS is deliberately not updated until its publisher provenance is established.
 """
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import os
@@ -192,15 +193,19 @@ def verify_bundled_natives(wheels, target):
     return observed
 
 
+def validate_native_proposal_path(path):
+    if (path.name != 'bundled-native-proposal.json' or path.is_symlink()
+            or path.resolve() == NATIVES.resolve()):
+        raise ValueError('native proposal must be a separate proposal file')
+
+
 def write_native_proposal(observed, path):
     """Candidate-only data for review; never replace the release baseline.
 
     Publisher identity, wheel hashes and dependency closure still must pass.
     Changed native bytes leave release verification red until separately reviewed.
     """
-    if (path.name != 'bundled-native-proposal.json' or path.is_symlink()
-            or path.resolve() == NATIVES.resolve()):
-        raise ValueError('native proposal must be a separate proposal file')
+    validate_native_proposal_path(path)
     baseline = json.loads(NATIVES.read_text())
     targets = {t for t in TARGETS if t.startswith('musllinux_')}
     if (baseline.get('schema_version') != 1 or set(baseline.get('targets', {})) != targets
@@ -217,6 +222,38 @@ def write_native_proposal(observed, path):
     path.write_text(json.dumps({'schema_version': 1, 'targets': observed}, indent=2) + '\n')
     print('NATIVE REVIEW REQUIRED: ' + str(path)
           + '; proposed bytes only; release baseline, notices and source pins unchanged')
+
+
+def refresh_native_metadata(proposal, destination):
+    """Stage new wheel bindings only when the reviewed native set is identical.
+
+    Wheel spreading removes the versioned .data/{purelib,platlib} prefix.
+    Compare installed paths, owners, sizes and hashes on each architecture;
+    counts matter, so duplicate entries cannot conceal a removed library.
+    New bytes, owners or paths remain a proposal requiring source/notice review.
+    """
+    if not proposal.exists():
+        return
+    baseline = json.loads(NATIVES.read_text())
+    candidate = json.loads(proposal.read_text())
+    targets = {t for t in TARGETS if t.startswith('musllinux_')}
+    if any(value.get('schema_version') != 1 or set(value.get('targets', {})) != targets
+           for value in (baseline, candidate)):
+        raise ValueError('invalid bundled native update targets')
+
+    def identity(row):
+        path = re.sub(r'^[^/]+\.data/(?:purelib|platlib)/', '', row['path'])
+        return row['distribution'], path, row['bytes'], row['sha256']
+
+    for target in targets:
+        old, new = baseline['targets'][target], candidate['targets'][target]
+        if Counter(map(identity, old)) != Counter(map(identity, new)):
+            return
+    for rows in candidate['targets'].values():
+        verify_native_notices(rows)
+    destination.write_text(json.dumps(candidate, indent=2) + '\n')
+    proposal.unlink()
+    print('Bundled native bytes unchanged on both architectures; refreshed wheel bindings')
 
 
 def verify_native_notices(libraries):
@@ -499,16 +536,29 @@ def main():
             lock = candidate(args.version)
             verify(lock)
             # Stage every target and verify publisher/hash/closure before proposing files.
-            # Optional native observations never replace the reviewed release baseline.
+            # Stage native bindings too; verification failures publish no candidate files.
             with tempfile.TemporaryDirectory(prefix='sourcebastion-candidate-') as temporary:
-                staged = Path(temporary)
+                staged = Path(temporary) / 'python-locks'
+                staged.mkdir()
+                proposal = Path(temporary) / 'bundled-native-proposal.json'
+                native_manifest = Path(temporary) / NATIVES.name
                 if args.native_proposal is None:
                     generate_dependencies(lock, staged)
                 else:
-                    generate_dependencies(lock, staged, native_proposal=args.native_proposal)
+                    validate_native_proposal_path(args.native_proposal)
+                    generate_dependencies(lock, staged, native_proposal=proposal)
+                    refresh_native_metadata(proposal, native_manifest)
                 args.dependencies.mkdir(parents=True, exist_ok=True)
                 for path in staged.iterdir():
                     (args.dependencies / path.name).write_bytes(path.read_bytes())
+                if native_manifest.exists():
+                    NATIVES.write_bytes(native_manifest.read_bytes())
+                if args.native_proposal is not None:
+                    if proposal.exists():
+                        args.native_proposal.parent.mkdir(parents=True, exist_ok=True)
+                        args.native_proposal.write_bytes(proposal.read_bytes())
+                    else:
+                        args.native_proposal.unlink(missing_ok=True)
             args.lock.write_text(json.dumps(lock, indent=2) + '\n')
             pins['semgrep']['version'] = lock['version']
             args.pins.write_text(json.dumps(pins, indent=2) + '\n')

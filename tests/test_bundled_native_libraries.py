@@ -1,4 +1,5 @@
 """Vendored-set changes must stop a reviewed dependency closure update."""
+import copy
 import hashlib
 import importlib.util
 import json
@@ -166,3 +167,101 @@ def test_proposal_mode_cannot_be_used_by_release_commands(monkeypatch, command):
     with pytest.raises(SystemExit) as error:
         artifacts.main()
     assert error.value.code == 2
+
+
+@pytest.fixture
+def metadata_update(tmp_path):
+    candidate = json.loads(artifacts.NATIVES.read_text())
+    for rows in candidate['targets'].values():
+        for row in rows:
+            row.update(version='2.0', wheel='new-wheel.whl', wheel_sha256='f' * 64)
+            # PEP 427 spreading removes this prefix at installation.
+            if '.data/purelib/' in row['path']:
+                row['path'] = 'new-2.0.data/purelib/' + row['path'].split('.data/purelib/', 1)[1]
+    proposal = tmp_path / 'bundled-native-proposal.json'
+    proposal.write_text(json.dumps(candidate))
+    return candidate, proposal, tmp_path / 'bundled-native-libraries.json'
+
+
+def test_refreshes_exact_native_bytes_in_new_wheels(metadata_update):
+    candidate, proposal, destination = metadata_update
+    artifacts.refresh_native_metadata(proposal, destination)
+    assert json.loads(destination.read_text()) == candidate
+    assert not proposal.exists()
+
+
+@pytest.mark.parametrize('change', ['bytes', 'size', 'owner', 'path', 'add', 'remove',
+                                  'duplicate', 'architecture'])
+def test_real_native_drift_stays_a_draft_proposal(metadata_update, change):
+    candidate, proposal, destination = metadata_update
+    rows = candidate['targets'][TARGET]
+    if change == 'add':
+        row = copy.deepcopy(rows[0])
+        row['path'] += '.new'
+        rows.append(row)
+    elif change == 'remove':
+        rows.pop()
+    elif change == 'duplicate':
+        rows.append(copy.deepcopy(rows[0]))
+    elif change == 'architecture':
+        candidate['targets'][TARGET] = candidate['targets']['musllinux_1_2_x86_64']
+    else:
+        field = {'bytes': 'sha256', 'size': 'bytes', 'owner': 'distribution', 'path': 'path'}[change]
+        rows[0][field] = rows[0][field] + 1 if field == 'bytes' else 'changed'
+    proposal.write_text(json.dumps(candidate))
+    original = proposal.read_bytes()
+    artifacts.refresh_native_metadata(proposal, destination)
+    assert not destination.exists()
+    assert proposal.read_bytes() == original
+
+
+def test_metadata_refresh_still_checks_retained_notices(metadata_update, monkeypatch):
+    _, proposal, destination = metadata_update
+    def refuse(_):
+        raise ValueError('native license missing or changed')
+    monkeypatch.setattr(artifacts, 'verify_native_notices', refuse)
+    with pytest.raises(ValueError, match='license missing'):
+        artifacts.refresh_native_metadata(proposal, destination)
+    assert proposal.exists()
+    assert not destination.exists()
+
+
+@pytest.mark.parametrize('fail', [False, True])
+def test_candidate_publishes_manifests_together_after_verification(metadata_update, monkeypatch, tmp_path, fail):
+    candidate, proposal, native = metadata_update
+    original_native = artifacts.NATIVES.read_bytes()
+    native.write_bytes(original_native)
+    monkeypatch.setattr(artifacts, 'NATIVES', native)
+    pins = tmp_path / 'pins.json'
+    pins.write_bytes((ROOT / '.github/scanner-versions.json').read_bytes())
+    lock = json.loads((ROOT / '.github/semgrep-artifacts.json').read_text())
+    output = tmp_path / 'artifacts.json'
+    output.write_text('original lock')
+    dependencies = tmp_path / 'locks'
+    dependencies.mkdir()
+    (dependencies / 'manifest.json').write_text('original dependencies')
+    proposal.write_text('prior observation')
+    originals = {p: p.read_bytes() for p in (pins, output, native, proposal, dependencies / 'manifest.json')}
+    monkeypatch.setattr(artifacts, 'candidate', lambda _: lock)
+    monkeypatch.setattr(artifacts, 'verify', lambda _: None)
+    def generate(_lock, directory, native_proposal):
+        assert native_proposal != proposal  # Observation is staged, too.
+        (directory / 'manifest.json').write_text('verified dependencies')
+        artifacts.write_native_proposal(candidate['targets'], native_proposal)
+        if fail:
+            raise ValueError('last target closure failed')
+    monkeypatch.setattr(artifacts, 'generate_dependencies', generate)
+    monkeypatch.setattr(artifacts.sys, 'argv', ['scanner_artifacts.py', 'candidate',
+                        '--pins', str(pins), '--lock', str(output), '--dependencies', str(dependencies),
+                        '--native-proposal', str(proposal)])
+    if fail:
+        with pytest.raises(SystemExit) as error:
+            artifacts.main()
+        assert error.value.code == 1
+        assert all(p.read_bytes() == content for p, content in originals.items())
+    else:
+        artifacts.main()
+        assert json.loads(native.read_text()) == candidate
+        assert json.loads(output.read_text()) == lock
+        assert (dependencies / 'manifest.json').read_text() == 'verified dependencies'
+        assert not proposal.exists()

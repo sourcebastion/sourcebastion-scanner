@@ -6,6 +6,7 @@ enabled concurrency of up to ten scanner tools per source tree on 2026-10-19.
 Use the existing thread pool, subprocess wrappers and reviewed image release.
 
 - [S03: common concurrency plan](S03-PLAN.md)
+- [S04: coherent automated scanner updates](S04-PLAN.md)
 - [Acceptance status](ACCEPTANCE.md)
 
 Shared checkout/scan Pods need a workspace-storage decision and remain outside

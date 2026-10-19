@@ -40,12 +40,13 @@ jobs:
             .github/semgrep-artifacts.json
             .github/scanner-versions.json
             .github/python-locks/
+            .github/bundled-native-libraries.json
             .github/bundled-native-proposal.json
       - name: Check for a verified version change
         id: changes
         run: |
           set -euo pipefail
-          if git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks && [ ! -f .github/bundled-native-proposal.json ]; then
+          if git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks .github/bundled-native-libraries.json && [ ! -f .github/bundled-native-proposal.json ]; then
             echo 'No verified artifact or dependency change.'
             exit 0
           fi
@@ -96,7 +97,7 @@ jobs:
           git switch -c "$branch"
           git config user.name 'sourcebastion-bot[bot]'
           git config user.email 'sourcebastion-bot[bot]@users.noreply.github.com'
-          git add .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks
+          git add .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks .github/bundled-native-libraries.json
           draft=()
           if [ -f .github/bundled-native-proposal.json ]; then
             git add .github/bundled-native-proposal.json
@@ -106,4 +107,4 @@ jobs:
           git -c credential.helper='!gh auth git-credential' push origin "$branch"
           gh pr create "${draft[@]}" --base main --head "$branch" \
             --title "chore(deps): verified Semgrep ${version}" \
-            --body 'All four Linux wheels passed SHA-256 and publisher-attestation verification. KICS is unchanged. Human review and successful checks are required. Created by the SourceBastion bot App so normal pull_request checks run. Release verification remains mandatory. A bundled-native-proposal.json file is observation only: compare it with bundled-native-libraries.json and review notices and corresponding source before updating the release baseline or marking the draft ready. Changed native bytes intentionally fail release verification until that review.'
+            --body 'All four Linux wheels passed SHA-256 and publisher-attestation verification. KICS is unchanged. Unchanged bundled library bytes retain their reviewed notices and sources; their native manifest wheel/version bindings are refreshed with the dependency locks. Human review and successful checks are required. Created by the SourceBastion bot App so normal pull_request checks run. Release verification remains mandatory. A bundled-native-proposal.json file indicates native additions, removals, ownership, installed-path or byte changes requiring notice/source review before updating the baseline or marking the draft ready.'

@@ -1,7 +1,7 @@
 # SourceBastion Scan
 
 [![Latest published release](https://img.shields.io/github/v/release/sourcebastion/sourcebastion-scanner?sort=date&label=latest%20published%20release)](https://github.com/sourcebastion/sourcebastion-scanner/releases/latest)
-[![Release publication date](https://img.shields.io/github/release-date/sourcebastion/sourcebastion-scanner?display_date=published_at&label=published)](https://github.com/sourcebastion/sourcebastion-scanner/releases/latest)
+[![Release publication date](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fsourcebastion%2Fsourcebastion-scanner%2Freleases%2Flatest&query=%24.published_at&label=published%20UTC&color=blue)](https://github.com/sourcebastion/sourcebastion-scanner/releases/latest)
 
 **Deterministic application security scanning** — free, open-source, works with GitHub and GitLab.
 

@@ -1522,7 +1522,7 @@ def test_parallel_plan_overlaps_tools_and_preserves_failure_and_plan_order(tmp_p
             return []
         return run
 
-    monkeypatch.setenv("SOURCEBASTION_SCANNER_WORKERS", "3")
+    monkeypatch.setenv("SOURCEBASTION_MAX_CONCURRENT_SCANNERS", "3")
     for cls, name in [(SemgrepScanner, "semgrep"), (KicsScanner, "kics"), (GrypeScanner, "grype")]:
         monkeypatch.setattr(cls, "scan", scan(name))
     envelope = execute_scan_plan(str(source), plan, scanner_image=SCANNER_IMAGE)
@@ -1551,7 +1551,7 @@ def test_parallel_partial_plan_keeps_scope_validation(tmp_path, monkeypatch, out
         return [{"scanner": self.name, "rule_id": "synthetic-rule", "line": 1,
                  "file": "outside.py" if out_of_scope else "app.py"}]
 
-    monkeypatch.setenv("SOURCEBASTION_SCANNER_WORKERS", "3")
+    monkeypatch.setenv("SOURCEBASTION_MAX_CONCURRENT_SCANNERS", "3")
     monkeypatch.setattr(GitleaksScanner, "scan_paths", scan_paths)
     monkeypatch.setattr(SemgrepScanner, "scan_paths", scan_paths)
     envelope = execute_scan_plan(str(source), plan, scanner_image=SCANNER_IMAGE)

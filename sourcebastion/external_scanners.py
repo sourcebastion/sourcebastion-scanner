@@ -18,6 +18,23 @@ from abc import ABC, abstractmethod
 from sourcebastion.schema import compute_finding_id
 
 logger = logging.getLogger(__name__)
+MAX_SCANNER_CONCURRENCY = 10
+
+
+def configured_scanner_concurrency() -> int:
+    """One per-source tool limit shared by local and container orchestration."""
+    raw = os.environ.get("SOURCEBASTION_MAX_CONCURRENT_SCANNERS")
+    if raw is None:
+        raw = os.environ.get("SOURCEBASTION_SCANNER_WORKERS")
+        if raw is not None:
+            logger.warning("SOURCEBASTION_SCANNER_WORKERS is deprecated; use "
+                           "SOURCEBASTION_MAX_CONCURRENT_SCANNERS")
+        else:
+            raw = str(MAX_SCANNER_CONCURRENCY)
+    if (not raw.isascii() or not raw.isdecimal()
+            or not 1 <= int(raw) <= MAX_SCANNER_CONCURRENCY):
+        raise ValueError("SOURCEBASTION_MAX_CONCURRENT_SCANNERS must be between 1 and 10")
+    return int(raw)
 
 
 @contextmanager
@@ -1856,12 +1873,9 @@ class ExternalScannerManager:
             enabled_scanners: List of scanner names to enable (None = all)
         """
         if max_workers is None:
-            raw = os.environ.get("SOURCEBASTION_SCANNER_WORKERS", "1")
-            if not raw.isdigit():
-                raise ValueError("SOURCEBASTION_SCANNER_WORKERS must be between 1 and 3")
-            max_workers = int(raw)
-        if isinstance(max_workers, bool) or not isinstance(max_workers, int) or not 1 <= max_workers <= 3:
-            raise ValueError("scanner workers must be between 1 and 3")
+            max_workers = configured_scanner_concurrency()
+        if isinstance(max_workers, bool) or not isinstance(max_workers, int) or not 1 <= max_workers <= MAX_SCANNER_CONCURRENCY:
+            raise ValueError("scanner concurrency must be between 1 and 10")
         self.max_workers = max_workers
         self.scanners = {
             "gitleaks": GitleaksScanner(),

@@ -200,17 +200,29 @@ SourceBastion namespace.
 
 ### Parallel scanner components
 
-Set `SOURCEBASTION_SCANNER_WORKERS=3` to run up to three enabled scanner tools
-at once within a single scan. Values from 1 to 3 are accepted; the default is
-1. For Docker, pass `-e SOURCEBASTION_SCANNER_WORKERS=3` to the scanner container.
-This applies to both `scan` and `contract-scan`, including partial component
-execution. It does not change the number of repository jobs running at once.
+`SOURCEBASTION_MAX_CONCURRENT_SCANNERS` limits the number of enabled scanner
+tools running **at the same time on one source tree**. Values from **1 to 10**
+are accepted; the default is **10**, so component concurrency is enabled without
+an environment-specific code path. Only available enabled scanners are started;
+a limit of 10 does not create ten copies of each scanner.
+
+For Docker, override it with `-e SOURCEBASTION_MAX_CONCURRENT_SCANNERS=2` when a
+worker needs a smaller CPU/memory working set. Set the same environment variable
+on the scanner container in Kubernetes. `1` selects serial execution. This
+applies to `scan` and `contract-scan`, including partial component execution;
+it does not change the number of repository scan jobs running at once.
+
+`SOURCEBASTION_SCANNER_WORKERS` remains a deprecated fallback for one migration
+cycle so an existing explicit resource limit is preserved. The new name wins
+when both are set. Migrate maintained deployment and CI configuration now;
+remove the fallback at the next scanner minor release after maintained consumers
+use the descriptive name.
 
 Findings keep their configured or plan order. Component timeouts and the scan
 plan deadline still apply, and any failed component prevents a complete scan.
 Already-running tools finish within their existing timeouts before failed raw
 outputs are removed. Parallel tools share CPU and memory, so measure throughput
-and memory on the intended worker before enabling this setting.
+and memory on the intended worker when choosing the limit.
 
 ### External advisories for hosted and offline scans
 

@@ -148,18 +148,18 @@ git -C "$work/source" add .
 git -C "$work/source" -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm fixture
 
 # Exercise both execution modes with the same immutable inputs and advisory generation.
-for scanner_workers in 1 3; do
-mkdir -m 700 "$work/output/$scanner_workers"
-echo "Hosted scanner component workers: $scanner_workers"
+for scanner_concurrency in 1 10; do
+mkdir -m 700 "$work/output/$scanner_concurrency"
+echo "Hosted scanner component concurrency: $scanner_concurrency"
 docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
-  -e "SOURCEBASTION_SCANNER_WORKERS=$scanner_workers" \
+  -e "SOURCEBASTION_MAX_CONCURRENT_SCANNERS=$scanner_concurrency" \
   -e SOURCEBASTION_SCAN_OFFLINE=1 -e GRYPE_DB_AUTO_UPDATE=false \
   -e GRYPE_CHECK_FOR_APP_UPDATE=false -e GRYPE_DB_CACHE_DIR=/advisories \
   --network none -v "$work/source:/workspace:ro" \
-  -v "$database:/advisories:ro" -v "$work/output/$scanner_workers:/out" \
+  -v "$database:/advisories:ro" -v "$work/output/$scanner_concurrency:/out" \
   -w /workspace "$image" scan . --severity all --output /out/vulnerabilities.json
 
-python3 - "$work/output/$scanner_workers/vulnerabilities.json" <<'PY'
+python3 - "$work/output/$scanner_concurrency/vulnerabilities.json" <<'PY'
 import collections
 import json
 import sys
@@ -178,7 +178,7 @@ print(f'Offline hosted scan reported findings from all four components: {dict(co
 PY
 done
 
-python3 - "$work/output/1/vulnerabilities.json" "$work/output/3/vulnerabilities.json" <<'PY'
+python3 - "$work/output/1/vulnerabilities.json" "$work/output/10/vulnerabilities.json" <<'PY'
 from collections import Counter
 import json
 import sys

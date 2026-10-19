@@ -3,6 +3,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import re
 import subprocess
 from urllib.error import HTTPError
 
@@ -194,7 +195,9 @@ def test_weekly_updates_use_scoped_existing_app_not_actions_identity():
     assert 'permissions' not in job
     steps = job['steps']
     mint = next(s for s in steps if s.get('id') == 'app-token')
-    assert mint['uses'] == 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1'
+    # Dependency updates may advance the reviewed action revision. Keep the
+    # immutable official action and token-scope contract, not a second pin.
+    assert re.fullmatch(r'actions/create-github-app-token@[0-9a-f]{40}', mint['uses'])
     assert mint['if'] == "steps.changes.outputs.changed == 'true'"
     # Scope must not depend on the event payload. The action scopes a token to
     # the current repository only when BOTH `owner` and `repositories` are

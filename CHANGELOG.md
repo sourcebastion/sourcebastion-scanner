@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [2.1.4] - 2026-10-19
+
+- Update Semgrep to 1.181.0 with attested wheels and complete Python/native manifests; embedded native library bytes and their retained notices/sources are unchanged.
+- Refresh GitHub Actions artifact upload/download, CodeQL and repository-scoped bot-token actions from Dependabot #197, including matching CodeQL pins in shipped/generated workflows.
+- Keep automated native metadata updates coherent with dependency locks while retaining review for real native drift.
+
 ## [2.1.3] - 2026-10-19
 
 ### Changed

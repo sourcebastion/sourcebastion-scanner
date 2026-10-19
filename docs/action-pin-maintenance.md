@@ -1,8 +1,9 @@
 # Maintaining GitHub Action pins
 
 Dependabot updates third-party Actions in root `.github/workflows` files. This
-repository also ships workflows from `dashboard/`, `github/dashboard/`, and
-`github/templates/`, and generates one from `sourcebastion/org_manager.py`.
+repository also ships its own dashboard workflows from `dashboard/` and
+`github/dashboard/`. Customer workflow templates
+and organization installation now belong to sourcebastion-platform.
 Dependabot does not discover every one of those locations.
 
 The weekly `Action pin audit` workflow closes that gap. It resolves every
@@ -17,7 +18,7 @@ To update a pin:
 1. Review the upstream release and confirm that the tag resolves within the
    expected Action repository.
 2. Replace the commit for every occurrence of that Action/version pair. Find
-   them with `rg 'uses: OWNER/REPOSITORY@' .github dashboard github sourcebastion`.
+   them with `rg 'uses: OWNER/REPOSITORY@' .github dashboard github`.
 3. Keep the trailing version comment; it is the key the audit resolves.
 4. Run `pytest -q tests/test_workflow_action_pins.py`.
 

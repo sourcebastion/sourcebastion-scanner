@@ -20,3 +20,13 @@ substitution, notice failure and staged publication. Replay #206's observed
 candidate through the updated preparation and strict native verification.
 Normal PR/native CI remains required. No environment deployment or source
 bundle update is needed for this automation repair.
+
+
+**T03 (owner revision 2026-10-19):** Separate components before the next release.
+Scanner #211 includes Dependabot #197 and the repaired manifests. Publication
+run 39334854663 was cancelled before its draft/tag/image existed. Platform
+[#481](https://github.com/sourcebastion/sourcebastion-platform/issues/481) owns
+organization discovery/config/installation; sourcebastion-action owns runner
+orchestration; scanner keeps scanning and report generation. Keep own repository
+build/test/release workflows. No provider installation or credentials are moved.
+README version/date badges read published releases, excluding the pending VERSION.

@@ -2,6 +2,12 @@
 
 ## [2.1.4] - 2026-10-19
 
+- Move organization/workflow installation to sourcebastion-platform and use the
+  reusable sourcebastion-action for CI execution. The old org-sync command prints
+  migration instructions; scanner provisioning copies are removed.
+- Show the latest published version and publication date beneath the README title.
+
+
 - Update Semgrep to 1.181.0 with attested wheels and complete Python/native manifests; embedded native library bytes and their retained notices/sources are unchanged.
 - Refresh GitHub Actions artifact upload/download, CodeQL and repository-scoped bot-token actions from Dependabot #197, including matching CodeQL pins in shipped/generated workflows.
 - Keep automated native metadata updates coherent with dependency locks while retaining review for real native drift.

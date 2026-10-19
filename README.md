@@ -1,5 +1,8 @@
 # SourceBastion Scan
 
+[![Latest published release](https://img.shields.io/github/v/release/sourcebastion/sourcebastion-scanner?sort=date&label=latest%20published%20release)](https://github.com/sourcebastion/sourcebastion-scanner/releases/latest)
+[![Release publication date](https://img.shields.io/github/release-date/sourcebastion/sourcebastion-scanner?display_date=published_at&label=published)](https://github.com/sourcebastion/sourcebastion-scanner/releases/latest)
+
 **Deterministic application security scanning** — free, open-source, works with GitHub and GitLab.
 
 The CLI, Python package, and existing container images retain the `ez-appsec`

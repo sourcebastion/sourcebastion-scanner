@@ -1147,53 +1147,18 @@ def rotate_secrets_cmd(repo, platform, findings, repo_path, gitlab_url, dry_run,
 
 
 @main.command("org-sync")
-@click.option("--org", required=True, help="GitHub organization name")
-@click.option("--config-repo", default=None, help="Config repo (default: <org>/.ez-appsec-config)")
-@click.option("--dry-run", is_flag=True, help="Show what would be changed without making changes")
+@click.option("--org", required=True)
+@click.option("--config-repo", default=None)
+@click.option("--dry-run", is_flag=True)
 def org_sync(org, config_repo, dry_run):
-    """Sync ez-appsec across all repositories in a GitHub organization
+    """Moved to the platform's sourcebastion-org-sync operator command."""
+    raise click.ClickException(
+        "org-sync moved to sourcebastion-platform. Install the platform and run "
+        "sourcebastion-org-sync with the same options. "
+        "See https://github.com/sourcebastion/sourcebastion-platform/blob/main/docs/organization-workflows.md. "
+        "The scanner does not install workflows or use provider writer tokens."
+    )
 
-    Discovers all repos in the org, merges org-level and repo-level configs,
-    and installs/updates the ez-appsec scan workflow in each repository.
 
-    Requires GITHUB_TOKEN with org:read and repo:write permissions.
-    """
-    from sourcebastion.org_manager import OrgManager
-
-    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
-    if not token:
-        click.echo("✗ GITHUB_TOKEN environment variable is required", err=True)
-        sys.exit(1)
-
-    try:
-        manager = OrgManager(org, token, config_repo=config_repo)
-
-        click.echo(f"Discovering repos in {org}...")
-        results = manager.sync_all(dry_run=dry_run)
-
-        if not results:
-            click.echo(f"No repositories found in {org}.")
-            return
-
-        prefix = "[dry-run] " if dry_run else ""
-        success = 0
-        errors = 0
-
-        for r in results:
-            if r.get("error"):
-                click.echo(f"  ✗ {r['repo']}: {r['error']}", err=True)
-                errors += 1
-            else:
-                for action in r["actions"]:
-                    click.echo(f"  {prefix}{r['repo']}: {action}")
-                success += 1
-
-        click.echo(f"\n{prefix}✓ {success} repo(s) synced")
-        if errors:
-            click.echo(f"  ⚠ {errors} repo(s) failed", err=True)
-
-    except Exception as e:
-        click.echo(f"✗ Error: {str(e)}", err=True)
-        sys.exit(1)
 if __name__ == "__main__":
     main()

@@ -1,104 +1,20 @@
-# Enterprise: Multi-Tenant Organization Management
+# Organization workflow management moved to platform
 
-ez-appsec supports org-wide deployment across all repositories in a GitHub organization. A single `org-sync` command discovers repos, merges configuration, and installs scan workflows — no per-repo setup required.
+Starting with scanner 2.1.4, organization discovery, inherited configuration and
+workflow installation live in [sourcebastion-platform](https://github.com/sourcebastion/sourcebastion-platform).
+Install that project and replace `ez-appsec org-sync` with
+`sourcebastion-org-sync`, retaining `--org`, `--config-repo` and `--dry-run`.
+The old scanner command exits with migration instructions and performs no
+provider requests.
 
-## Quick Start
+See the [operator guide](https://github.com/sourcebastion/sourcebastion-platform/blob/main/docs/organization-workflows.md)
+for permissions and dry-run/install examples. Existing workflow files and the
+legacy configuration repository name remain compatible. The platform generates
+workflows using the reusable [sourcebastion-action](https://github.com/sourcebastion/sourcebastion-action);
+the scanner only scans source and produces reports.
 
-```bash
-export GITHUB_TOKEN=ghp_your_token_here
-
-# Preview what would change (no writes)
-ez-appsec org-sync --org mycompany --dry-run
-
-# Install/update across all repos
-ez-appsec org-sync --org mycompany
-```
-
-## Configuration Inheritance
-
-ez-appsec uses a two-tier config model:
-
-1. **Org-level config** — stored in a dedicated config repo (default: `<org>/.ez-appsec-config/.sourcebastion.yaml`)
-2. **Repo-level config** — each repo's own `.sourcebastion.yaml`
-
-### Merge rules
-
-- Repo keys **override** org keys (repo wins on conflict)
-- Keys present only in org config are **inherited**
-- Keys present only in repo config are **kept as-is**
-
-### Example
-
-**Org config** (`mycompany/.ez-appsec-config/.sourcebastion.yaml`):
-```yaml
-severity: high
-languages:
-  - python
-  - javascript
-policy:
-  - severity: critical
-    action: fail
-    max_count: 0
-```
-
-**Repo config** (`mycompany/api-service/.sourcebastion.yaml`):
-```yaml
-severity: medium
-languages:
-  - python
-  - go
-```
-
-**Merged result** for `mycompany/api-service`:
-```yaml
-severity: medium          # repo wins
-languages:                # repo wins
-  - python
-  - go
-policy:                   # inherited from org
-  - severity: critical
-    action: fail
-    max_count: 0
-```
-
-## Command Reference
-
-### `ez-appsec org-sync`
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--org` | GitHub organization name | *required* |
-| `--config-repo` | Repo containing org-level `.sourcebastion.yaml` | `<org>/.ez-appsec-config` |
-| `--dry-run` | Preview changes without writing | `false` |
-
-### What it does
-
-1. **Discovers** all non-archived, non-fork repos in the org via `GET /orgs/{org}/repos`
-2. **Fetches** org-level config from the config repo
-3. **For each repo:**
-   - Fetches repo-level config (if any)
-   - Merges configs (repo overrides org)
-   - Creates or updates `.github/workflows/ez-appsec-scan.yml`
-
-## Required Permissions
-
-The `GITHUB_TOKEN` needs these scopes:
-
-| Scope | Why |
-|-------|-----|
-| `repo` | Read repo configs, write workflow files |
-| `read:org` | List organization repositories |
-
-For GitHub App installations, the app needs:
-- **Repository permissions:** Contents (read/write), Metadata (read)
-- **Organization permissions:** Members (read)
-
-## Scan Workflow
-
-The installed workflow (`.github/workflows/ez-appsec-scan.yml`) runs:
-
-- On push to `main`
-- On pull requests targeting `main`
-- Weekly on Monday at 06:00 UTC
-
-Results are uploaded as SARIF to GitHub's Security tab via `github/codeql-action/upload-sarif`.
+Provider provisioning helpers (`scripts/provision.py`, `scripts/mint-token.py`,
+`github/scripts/*`, `github/templates/scan.yml`) already have maintained platform
+counterparts. Use those from the platform repository. The scanner's obsolete
+App Install Provisioner workflow is removed; it no longer accepts installation
+dispatches. No credentials or existing customer workflows are moved automatically.

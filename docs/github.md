@@ -211,6 +211,7 @@ ez-appsec check-config path/to/config.yaml  # validates a specific file
 ## Verify with the test script
 
 ```bash
+# Run from the sourcebastion-platform checkout:
 bash github/scripts/github-pipeline-test.sh \
   --repo owner/repo \
   --check-dashboard \

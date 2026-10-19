@@ -12,9 +12,8 @@ WORKFLOW_ROOTS = (
     ROOT / ".github" / "workflows",
     ROOT / "dashboard" / ".github" / "workflows",
     ROOT / "github" / "dashboard",
-    ROOT / "github" / "templates",
 )
-GENERATORS = (ROOT / "sourcebastion" / "org_manager.py",)
+GENERATORS = ()
 REMOTE_USE = re.compile(
     r"^\s*(?:-\s*)?uses:\s+(?!\./)([^@\s]+)@([^\s#]+)(?:\s+#\s*(\S+))?\s*$"
 )

@@ -46,31 +46,29 @@ Your codebase
 
 ---
 
-## Quickstart with Claude Code
+## Quickstart with GitHub Actions
 
-The fastest way to add SourceBastion Scan to any repository is through the Claude Code skill.
+The reusable [sourcebastion-action](https://github.com/sourcebastion/sourcebastion-action)
+owns CI execution and result delivery; the scanner supplies the scanning engine.
 
-**Step 1 — Install the skill** (one-time, works in every project):
-
-```bash
-git clone https://github.com/sourcebastion/sourcebastion-skills.git
-cd sourcebastion-skills && ./install.sh --global
+```yaml
+name: SourceBastion
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: sourcebastion/sourcebastion-action@192c82af06a9b003aaed816d948e3e2768d7b7fc
 ```
 
-The skills live in `sourcebastion/sourcebastion-skills`, which is private, so
-`curl | bash` cannot fetch them anonymously -- clone and run the installer.
-
-**Step 2 — Add SourceBastion Scan to a repository:**
-
-```
-# GitHub
-/ez-appsec install-app owner/repo
-
-# GitLab
-/ez-appsec install /path/to/repo
-```
-
-That's it. The skill provisions the workflow, sets secrets, and triggers the first scan automatically.
+For organization installation, use the platform's `sourcebastion-org-sync`
+operator command; see the [migration guide](docs/enterprise.md). Legacy private
+skills that dispatch the scanner's removed `app-install.yml` must be updated
+before use. Repository writer credentials belong to platform provisioning,
+not the scanner image.
 
 ---
 
@@ -85,7 +83,7 @@ That's it. The skill provisions the workflow, sets secrets, and triggers the fir
 
 ---
 
-## SourceBastion Scan Skills Reference
+## Legacy SourceBastion Scan Skills Reference
 
 The `/ez-appsec` Claude Code skill is a dispatcher — the first word routes to the right subcommand.
 

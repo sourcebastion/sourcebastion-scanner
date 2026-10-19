@@ -17,7 +17,6 @@ from sourcebastion.converters import (
 SELF_SCAN_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "self-scan.yml"
 SCANNER_VERSIONS = Path(__file__).parents[1] / ".github" / "scanner-versions.json"
 CUSTOMER_SCAN_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "github-scan.yml"
-CUSTOMER_SCAN_TEMPLATE = Path(__file__).parents[1] / "github" / "templates" / "scan.yml"
 DOCKER_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "docker.yml"
 RELEASE_WORKFLOW = Path(__file__).parents[1] / ".github" / "workflows" / "release.yml"
 
@@ -53,14 +52,11 @@ def test_customer_workflow_dogfoods_checked_out_scanner_only_in_this_repository(
 
 def test_public_workflows_use_sourcebastion_scan_branding():
     customer_workflow = CUSTOMER_SCAN_WORKFLOW.read_text()
-    customer_template = CUSTOMER_SCAN_TEMPLATE.read_text()
     self_scan_workflow = SELF_SCAN_WORKFLOW.read_text()
     release_workflow = RELEASE_WORKFLOW.read_text()
 
     assert "name: SourceBastion Scan" in customer_workflow
     assert "## 🔒 SourceBastion Scan" in customer_workflow
-    assert "name: SourceBastion Scan" in customer_template
-    assert "ghcr.io/sourcebastion/sourcebastion-scanner:latest" in customer_template
     assert "name: SourceBastion Self-Scan" in self_scan_workflow
     assert "## 🔒 SourceBastion Self-Scan Results" in self_scan_workflow
     assert "scanned with SourceBastion Scan" in release_workflow

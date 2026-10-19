@@ -32,7 +32,7 @@ jobs:
       - name: Test candidate lock and rejection behavior
         run: python -m pytest -q tests/test_scanner_artifacts.py tests/test_python_dependency_locks.py tests/test_scanner_pins.py tests/test_bundled_native_libraries.py tests/test_native_notices.py
       - name: Upload verified candidate for review or manual recovery
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: verified-scanner-pins
           include-hidden-files: true
@@ -54,7 +54,7 @@ jobs:
       - name: Mint repository-scoped SourceBastion bot token
         if: steps.changes.outputs.changed == 'true'
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           app-id: ${{ secrets.SOURCEBASTION_BOT_APP_ID }}
           private-key: ${{ secrets.SOURCEBASTION_BOT_PRIVATE_KEY }}

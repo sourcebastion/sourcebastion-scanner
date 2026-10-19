@@ -66,25 +66,11 @@ JSON Schema for plan files. See the `_example` field for a complete sample.
 
 ## Infrastructure Scripts
 
-### provision.py
+### GitHub provider provisioning
 
-Idempotent provisioner — pushes the sourcebastion scan workflow and sets secrets/variables in target repos. Uses Libsodium encryption (PyNaCl) for secrets.
-
-```bash
-python3 provision.py \
-  --token <installation_token> \
-  --repos owner/repo1,owner/repo2 \
-  --app-id 123456 \
-  --private-key /path/to/key.pem
-```
-
-### mint-token.py
-
-Generates a short-lived GitHub App installation token (~1 hour TTL).
-
-```bash
-python3 mint-token.py <app_id> <private_key_pem_or_path> <installation_id>
-```
+`provision.py` and `mint-token.py` moved to sourcebastion-platform. Run the
+maintained copies there; the scanner repository does not install workflows or
+hold provider writer credentials. See [organization workflow migration](../docs/enterprise.md).
 
 ### update-index.py / aggregate-index.py
 
@@ -138,5 +124,3 @@ gh api graphql -f query='
 - Python 3.10+
 - [gh CLI](https://cli.github.com) authenticated with `repo`, `project`, `read:org` scopes
 - `~/git/.env` with `GITHUB_ACCESS_TOKEN`
-- PyNaCl (auto-installed by `provision.py`)
-- PyJWT[crypto] (auto-installed by `mint-token.py`)

@@ -1,27 +1,27 @@
 {
   "schema_version": 1,
   "project": "semgrep",
-  "version": "1.180.0",
+  "version": "1.181.0",
   "artifacts": {
     "manylinux_2_34_x86_64": {
-      "filename": "semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_x86_64.whl",
-      "url": "https://files.pythonhosted.org/packages/7c/1f/f4af9cc92651f04ab973eac214a62ed23260da9e0696c105b4b9734da453/semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_x86_64.whl",
-      "sha256": "16db2e2706ab814a975eeec25debfad49abba846b7c513d88e041447152f8447"
+      "filename": "semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/b0/1d/aed54e9cea5491f0dd54286126216f97ef817a356734d3c9d5e40c124c34/semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_x86_64.whl",
+      "sha256": "c142ec04a2ed144970cb0a92f6877651dd3c088505eec737bb7f4db7ae5f0ffa"
     },
     "manylinux_2_34_aarch64": {
-      "filename": "semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_aarch64.whl",
-      "url": "https://files.pythonhosted.org/packages/38/60/66135de6020e792491b0973d95efc89ef729a38c58106394b2798bf58dda/semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_aarch64.whl",
-      "sha256": "cba06f64b10e5ec86a0b3a9757cfdfdf3ce6c2bbdb5e98762aa2a4b0a296f8ca"
+      "filename": "semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_aarch64.whl",
+      "url": "https://files.pythonhosted.org/packages/88/c5/f5346177cafd8c3a68d6e133f9d579c39c47ec9aad2c4b93135bc609908f/semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-manylinux_2_34_aarch64.whl",
+      "sha256": "6dedd7d72dd7f7bd314439f469e143d57d84508c57c29246793378cccc2b90dc"
     },
     "musllinux_1_2_x86_64": {
-      "filename": "semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_x86_64.whl",
-      "url": "https://files.pythonhosted.org/packages/a1/40/21fefcbf9fe3d9670e98504f71a0974805812bbb308ddee5a31a7c5ba12b/semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_x86_64.whl",
-      "sha256": "d19b447b5d49c435dda099fd5f9d96ec7822e98a8ea6df16630f4f0596ed27ed"
+      "filename": "semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/7d/5b/153698c00a6fc51267710f5c3efdc454dfe5d8ae0e928932bd72398f74f8/semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_x86_64.whl",
+      "sha256": "9ef478d031105158e97a4491ecd349ecea011193e6b4be618d515a0a71bb6884"
     },
     "musllinux_1_2_aarch64": {
-      "filename": "semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_aarch64.whl",
-      "url": "https://files.pythonhosted.org/packages/37/c5/e712830b05b596fee47c4c8e5382c0439c2ac3aa46272f27818479216f38/semgrep-1.180.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_aarch64.whl",
-      "sha256": "1bab359e562f0af00217f9f827531c2e1375499b8559c90bed9690007e82565d"
+      "filename": "semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_aarch64.whl",
+      "url": "https://files.pythonhosted.org/packages/9b/c8/d7767f2f8abf70d6b479afe31f64b063e77444b7653a83ac3e99586fa725/semgrep-1.181.0-cp310.cp311.cp312.cp313.cp314.py310.py311.py312.py313.py314-none-musllinux_1_2_aarch64.whl",
+      "sha256": "3defc5f3e0a76c5735c0edc1a1ccb903471b0558d8687bcb22ad75bb20923afe"
     }
   }
 }

@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "python": "3.14.8",
-  "semgrep_version": "1.180.0",
+  "semgrep_version": "1.181.0",
   "files": {
-    "build-cp314-manylinux_2_34_x86_64.txt": "7129635e48d314f8f37aab2df838c9a6ebe6ff4c70a9947e9454ed1219341038",
-    "build-cp314-manylinux_2_34_aarch64.txt": "7129635e48d314f8f37aab2df838c9a6ebe6ff4c70a9947e9454ed1219341038",
-    "build-cp314-musllinux_1_2_x86_64.txt": "7129635e48d314f8f37aab2df838c9a6ebe6ff4c70a9947e9454ed1219341038",
-    "build-cp314-musllinux_1_2_aarch64.txt": "7129635e48d314f8f37aab2df838c9a6ebe6ff4c70a9947e9454ed1219341038",
-    "runtime-cp314-manylinux_2_34_x86_64.txt": "6d569c9d4a00c37379f093d08af83929fc4be236281060f371aa8ecaa53bd30c",
-    "runtime-cp314-manylinux_2_34_aarch64.txt": "6d569c9d4a00c37379f093d08af83929fc4be236281060f371aa8ecaa53bd30c",
-    "runtime-cp314-musllinux_1_2_x86_64.txt": "6d569c9d4a00c37379f093d08af83929fc4be236281060f371aa8ecaa53bd30c",
-    "runtime-cp314-musllinux_1_2_aarch64.txt": "6d569c9d4a00c37379f093d08af83929fc4be236281060f371aa8ecaa53bd30c",
-    "semgrep-cp314-manylinux_2_34_x86_64.txt": "9a87c7e542884da4862e2c4f6c7eda292bf4b77838daae9d48e2ee692e220f8e",
-    "semgrep-cp314-manylinux_2_34_aarch64.txt": "1221eb8dabd478831ad69fd4c93bfa6027fe91308a27017fa9ce06f9d98ffd91",
-    "semgrep-cp314-musllinux_1_2_x86_64.txt": "3c924108dc6c4e569e421a5be5eefb505132fd605d81a78318919d250bff8c48",
-    "semgrep-cp314-musllinux_1_2_aarch64.txt": "252a4540a5865acb60374aa7fb70b8fa11a57d886271203b1ade234a6ec4ae81"
+    "build-cp314-manylinux_2_34_x86_64.txt": "030383208471acaeb8c1f3c195c5a2f0fdde26b7021114f6ff006d56036f618e",
+    "build-cp314-manylinux_2_34_aarch64.txt": "030383208471acaeb8c1f3c195c5a2f0fdde26b7021114f6ff006d56036f618e",
+    "build-cp314-musllinux_1_2_x86_64.txt": "030383208471acaeb8c1f3c195c5a2f0fdde26b7021114f6ff006d56036f618e",
+    "build-cp314-musllinux_1_2_aarch64.txt": "030383208471acaeb8c1f3c195c5a2f0fdde26b7021114f6ff006d56036f618e",
+    "runtime-cp314-manylinux_2_34_x86_64.txt": "8c3277cde7a2d1d78d32f5a705296132aa859b0886dc1edcff663ab2d9e6f193",
+    "runtime-cp314-manylinux_2_34_aarch64.txt": "8c3277cde7a2d1d78d32f5a705296132aa859b0886dc1edcff663ab2d9e6f193",
+    "runtime-cp314-musllinux_1_2_x86_64.txt": "8c3277cde7a2d1d78d32f5a705296132aa859b0886dc1edcff663ab2d9e6f193",
+    "runtime-cp314-musllinux_1_2_aarch64.txt": "8c3277cde7a2d1d78d32f5a705296132aa859b0886dc1edcff663ab2d9e6f193",
+    "semgrep-cp314-manylinux_2_34_x86_64.txt": "47e1cbb07b740eefb3ea7aff809a7e494fc83faacd876d590bd90b5db0b8061d",
+    "semgrep-cp314-manylinux_2_34_aarch64.txt": "84464477b4f28f3feaca8beb4bdce6757894fdf22dcea47fdfd23aa39ddafb4c",
+    "semgrep-cp314-musllinux_1_2_x86_64.txt": "1e5ef0614a1693cb0106a4fb769deb56a3fc34f4580060550d5feabf3e5a8414",
+    "semgrep-cp314-musllinux_1_2_aarch64.txt": "f6b96273c4fbacb66c95d5709d603654ae5f36c3954b6183bfc064dcad37148b"
   }
 }

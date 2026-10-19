@@ -1,5 +1,18 @@
 ## Unreleased
 
+## [2.1.3] - 2026-10-19
+
+### Changed
+
+- Enable concurrent scanner components by default, with a limit of ten tools on
+  one source tree. `SOURCEBASTION_MAX_CONCURRENT_SCANNERS=1..10` makes the scope
+  explicit; `1` retains serial execution. This does not change repository-job
+  concurrency. The old `SOURCEBASTION_SCANNER_WORKERS` name is a deprecated
+  fallback for one migration cycle, with the descriptive name taking precedence.
+- Exercise the existing native serial/parallel finding-identity comparison at
+  the new limit on both architectures. Preserve configured result order,
+  component deadlines, resource limits and failure cleanup.
+
 ## [2.1.2] - 2026-10-17
 
 Retain bundled native library licenses and immutable source download directions in both scanner architectures. Publish checksum-pinned GCC, GMP and elfutils sources with build recipes through the existing GHCR package. Verify bundled native bytes and notices in the staged release image, and surface native drift in draft weekly dependency proposals. Scanner engine pins and shipped native binaries are unchanged.

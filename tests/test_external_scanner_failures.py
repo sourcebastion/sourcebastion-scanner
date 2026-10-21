@@ -362,6 +362,31 @@ def _semgrep_report(tmp_path, payload):
         return scanner.scan_with_raw_output(str(tmp_path))
 
 
+def test_semgrep_security_finding_with_list_technology_survives_parsing(tmp_path):
+    # A real WebGoat result uses this metadata shape. Technology is optional
+    # descriptive metadata, not a signal for dropping a security finding.
+    issues, raw_path = _semgrep_report(tmp_path, {
+        "results": [{
+            "check_id": "java.inject.command-injection",
+            "path": "src/CommandInjection.java",
+            "start": {"line": 10, "col": 1},
+            "end": {"line": 10, "col": 20},
+            "extra": {
+                "message": "Potential command injection",
+                "severity": "ERROR",
+                "metadata": {"category": "security", "technology": ["java", "spring"],
+                             "cwe": ["CWE-78: OS Command Injection"]},
+            },
+        }], "errors": [],
+    })
+    try:
+        assert len(issues) == 1
+        assert issues[0]["scanner"] == "semgrep"
+        assert issues[0]["file"] == "src/CommandInjection.java"
+    finally:
+        os.unlink(raw_path)
+
+
 # The exact shape semgrep emits for a file it cannot fully parse, captured from
 # the pinned scanner image. Note semgrep's own exit code is 0: it does not
 # consider this a failed scan, and neither may we.

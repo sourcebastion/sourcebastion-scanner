@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [2.1.5] - 2026-10-20
+
+- Show Semgrep start, exit, timeout and safe engine/file error diagnostics in scanner stderr.
+- Allow up to 15 minutes for Semgrep analysis on large supported sources; the enclosing execution deadline still caps it.
+- Keep local Semgrep scans independent of inherited login, online rules and tracing settings; hosted scans keep their network isolation.
+
 ## [2.1.4] - 2026-10-19
 
 - Move organization/workflow installation to sourcebastion-platform and use the

@@ -14,6 +14,7 @@ from sourcebastion.external_scanners import (
     GrypeScanner,
     KicsScanner,
     ScannerExecutionError,
+    SemgrepScanner,
 )
 
 
@@ -56,14 +57,15 @@ class TestPrecedence:
         scanner.configure_timeouts(ScannerSettings(timeout=700))
         assert scanner._budget("scan") == 700
 
-    def test_the_execution_deadline_still_wins(self):
+    @pytest.mark.parametrize("scanner_type", [KicsScanner, SemgrepScanner])
+    def test_the_execution_deadline_still_wins(self, scanner_type):
         """Configuration tunes a component; it cannot extend the contract.
 
         `_timeout` returns min(ceiling, remaining deadline), and a configured
         budget must not change that -- otherwise a repository could opt out of
         the M036 deadline its caller set.
         """
-        scanner = KicsScanner()
+        scanner = scanner_type()
         scanner.configure_timeouts(ScannerSettings(timeout=MAX_SCANNER_TIMEOUT_SECONDS))
         scanner.set_execution_deadline(time.monotonic() + 30)
         assert scanner._budget("scan") <= 30

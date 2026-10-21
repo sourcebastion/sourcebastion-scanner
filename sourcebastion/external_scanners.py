@@ -273,7 +273,7 @@ def _scoped_iac_tree(source_root: str, units: List[str]) -> Iterator[Path]:
 # (#54); until then this is at least tunable.
 DEFAULT_COMPONENT_TIMEOUTS = {
     "gitleaks": {"scan": 60},
-    "semgrep": {"scan": 300},
+    "semgrep": {"scan": 900},
     "kics": {"scan": 600},
     "grype": {"scan": 300, "setup": 300},
 }

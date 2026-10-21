@@ -43,3 +43,11 @@ and Docker network-none remain the enforcement boundary, independent of flags.
 Verify both the version probe and scan subprocess settings, source redaction,
 timeout/crash/file-error stderr and the real offline hosted smoke. No coverage,
 size-boundary, provider or credential change.
+
+The original live scan retry was observed directly on 2026-10-21 at 04:57:51
+UTC: `semgrep scanner failed (timeout)`, with the deployed component ceiling
+confirmed as 300 seconds. As bounded performance tuning for the owner's complex
+Kubernetes scan, raise the default Semgrep ceiling to 900 seconds; retain the
+existing narrower configured/remaining execution deadline and source-size cap.
+No automatic retry or coverage-policy change. Existing timeout precedence and
+contract-deadline tests remain required.

@@ -685,6 +685,23 @@ class SemgrepScanner(ScannerWrapper):
         super().__init__(enabled)
         self.extra_rules_dirs = extra_rules_dirs or []
 
+    def _fail(self, code: str) -> None:
+        # The inventory entrypoint does not configure application logging.
+        # Always publish operational errors to stderr, without tool messages
+        # (which may quote customer source, paths or credentials).
+        print(f"semgrep: error code={code}", file=sys.stderr, flush=True)
+        super()._fail(code)
+
+    @staticmethod
+    def _environment() -> Dict[str, str]:
+        # Local scan is deliberately independent of an operator's Semgrep login,
+        # online rules, tracing and product configuration. Keep ordinary process
+        # settings (PATH, HOME, certificates) while replacing Semgrep settings.
+        env = {key: value for key, value in os.environ.items()
+               if not key.startswith("SEMGREP_")}
+        env.update(SEMGREP_SEND_METRICS="off", SEMGREP_ENABLE_VERSION_CHECK="0")
+        return env
+
     def _add_ai_remediation_fields(
         self,
         finding: Dict[str, Any],
@@ -776,6 +793,7 @@ class SemgrepScanner(ScannerWrapper):
                 ["semgrep", "--version", "--metrics=off", "--disable-version-check"],
                 capture_output=True,
                 check=True,
+                env=self._environment(),
                 timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
             )
             return True
@@ -885,16 +903,33 @@ class SemgrepScanner(ScannerWrapper):
                     config_flags.append(f"--config={rules_dir}")
                     logger.info(f"Using custom rule pack from {rules_dir}")
 
+            print("semgrep: scan started (local rules, metrics/version checks disabled)",
+                  file=sys.stderr, flush=True)
+            started = time.monotonic()
             result = subprocess.run(
-                ["semgrep"] + config_flags + [
+                ["semgrep", "scan", "--oss-only"] + config_flags + [
                     "--metrics=off", "--disable-version-check",
                     "--json", "--output", raw_output_path, path,
                 ],
                 capture_output=True,
                 text=True,
+                env=self._environment(),
                 timeout=self._budget("scan"),
             )
 
+            print(f"semgrep: process exited code={result.returncode} "
+                  f"elapsed_seconds={time.monotonic() - started:.1f}",
+                  file=sys.stderr, flush=True)
+            # Recognize engine failures even when the Python CLI itself exits 2.
+            # Emit fixed categories only: arbitrary stderr includes source text.
+            stderr = result.stderr or ""
+            for marker, category in (("out of memory", "memory_exhaustion"),
+                                     ("Out_of_memory", "memory_exhaustion"),
+                                     ("SIGKILL", "engine_killed"),
+                                     ("SIGSEGV", "engine_crashed"),
+                                     ("unexpected output", "engine_error")):
+                if marker in stderr:
+                    print(f"semgrep: diagnostic={category}", file=sys.stderr, flush=True)
             # Semgrep reserves exit 1 for blocking findings. Fatal errors use
             # other codes or populate the JSON error collection.
             if result.returncode not in (0, 1):
@@ -933,6 +968,20 @@ class SemgrepScanner(ScannerWrapper):
             errors = data.get("errors", [])
             if not isinstance(errors, list) or any(not isinstance(error, dict) for error in errors):
                 self._fail("invalid_output")
+            if errors:
+                counts = {}
+                known_types = {"PartialParsing", "ParseError", "Timeout", "OutOfMemory",
+                               "SemgrepFatalError", "SemgrepError", "PatternParseError",
+                               "RuleParseError", "InvalidRuleSchemaError", "LexicalError",
+                               "AstBuilderError", "MatchingError", "TooManyMatches"}
+                for error in errors:
+                    kind = error.get("type")
+                    if isinstance(kind, list) and kind:
+                        kind = kind[0]
+                    kind = kind if isinstance(kind, str) and kind in known_types else "other"
+                    counts[kind] = counts.get(kind, 0) + 1
+                print("semgrep: error_counts=" + json.dumps(counts, sort_keys=True),
+                      file=sys.stderr, flush=True)
             for error in errors:
                 level = error.get("level")
                 if not isinstance(level, str) or level.lower() not in {"warn", "info"}:

@@ -486,3 +486,91 @@ def test_grype_dependency_install_uses_the_running_interpreter(tmp_path):
 
     assert seen["cmd"][:3] == [sys.executable, "-m", "pip"], seen["cmd"]
     assert "pip" != seen["cmd"][0]
+
+
+def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("SOURCEBASTION_SCAN_OFFLINE", "1")
+    monkeypatch.setenv("SEMGREP_APP_TOKEN", "private-token")
+    monkeypatch.setenv("SEMGREP_RULES", "https://example.invalid/rules")
+    monkeypatch.setenv("SEMGREP_SEND_METRICS", "on")
+    monkeypatch.setenv("SEMGREP_ENABLE_VERSION_CHECK", "1")
+    monkeypatch.setenv("SEMGREP_OTEL_ENDPOINT", "https://example.invalid/traces")
+    monkeypatch.setattr(os.path, "isdir", lambda path: path == "/usr/local/share/sast-rules/go")
+    seen = []
+
+    def run(command, **kwargs):
+        seen.append(command)
+        env = kwargs["env"]
+        assert {k: v for k, v in env.items() if k.startswith("SEMGREP_")} == {
+            "SEMGREP_SEND_METRICS": "off", "SEMGREP_ENABLE_VERSION_CHECK": "0"}
+        if "--version" not in command:
+            assert command[:3] == ["semgrep", "scan", "--oss-only"]
+            assert "--config=/usr/local/share/sast-rules/go" in command
+            Path(command[command.index("--output") + 1]).write_text('{"results": [], "errors": []}')
+        assert "--metrics=off" in command and "--disable-version-check" in command
+        return subprocess.CompletedProcess(command, 0, "", "private source fragment")
+
+    with patch("sourcebastion.external_scanners.subprocess.run", side_effect=run):
+        issues, raw_path = SemgrepScanner().scan_with_raw_output(str(tmp_path))
+    try:
+        assert issues == [] and len(seen) == 2
+        err = capsys.readouterr().err
+        assert "scan started" in err and "process exited code=0" in err
+        assert "private" not in err
+    finally:
+        os.unlink(raw_path)
+
+
+def test_semgrep_offline_missing_packs_never_uses_registry(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("SOURCEBASTION_SCAN_OFFLINE", "1")
+    monkeypatch.setattr(os.path, "isdir", lambda path: False)
+    monkeypatch.setattr(os.path, "isfile", lambda path: False)
+    scanner = SemgrepScanner()
+    with patch.object(scanner, "is_installed", return_value=True), patch(
+        "sourcebastion.external_scanners.subprocess.run") as run:
+        with pytest.raises(ScannerExecutionError):
+            scanner.scan_with_raw_output(str(tmp_path))
+    run.assert_not_called()
+    assert "error code=execution_failed" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("returncode,stderr,expected", [
+    (2, "out of memory: secret source", "diagnostic=memory_exhaustion"),
+    (2, "SIGKILL: secret source", "diagnostic=engine_killed"),
+    (-11, "secret source", "process exited code=-11"),
+])
+def test_semgrep_exit_diagnostic_never_echoes_raw_stderr(tmp_path, capsys, returncode, stderr, expected):
+    scanner = SemgrepScanner()
+    with patch.object(scanner, "is_installed", return_value=True), patch(
+        "sourcebastion.external_scanners.subprocess.run",
+        return_value=subprocess.CompletedProcess([], returncode, "", stderr)):
+        with pytest.raises(ScannerExecutionError):
+            scanner.scan_with_raw_output(str(tmp_path))
+    err = capsys.readouterr().err
+    assert expected in err and "error code=execution_failed" in err
+    assert "secret source" not in err
+
+
+def test_semgrep_timeout_reports_to_stderr_without_exception_output(tmp_path, capsys):
+    scanner = SemgrepScanner()
+    with patch.object(scanner, "is_installed", return_value=True), patch(
+        "sourcebastion.external_scanners.subprocess.run",
+        side_effect=subprocess.TimeoutExpired("semgrep", 300, stderr="secret source")):
+        with pytest.raises(ScannerExecutionError):
+            scanner.scan_with_raw_output(str(tmp_path))
+    err = capsys.readouterr().err
+    assert "error code=timeout" in err and "secret source" not in err
+
+
+def test_semgrep_error_types_are_counted_without_messages_or_paths(tmp_path, capsys):
+    issues, raw_path = _semgrep_report(tmp_path, {"results": [], "errors": [
+        PARTIAL_PARSING_ERROR,
+        {"level": "warn", "type": ["Timeout", "private source"], "message": "secret"},
+        {"level": "info", "type": "untrusted customer text", "message": "secret"},
+    ]})
+    try:
+        err = capsys.readouterr().err
+        assert 'error_counts={"PartialParsing": 1, "Timeout": 1, "other": 1}' in err
+        assert all(value not in err for value in ("vendor.min.js", "private source", "secret", "untrusted customer"))
+    finally:
+        os.unlink(raw_path)

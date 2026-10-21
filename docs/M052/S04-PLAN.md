@@ -30,3 +30,15 @@ organization discovery/config/installation; sourcebastion-action owns runner
 orchestration; scanner keeps scanning and report generation. Keep own repository
 build/test/release workflows. No provider installation or credentials are moved.
 README version/date badges read published releases, excluding the pending VERSION.
+
+**T04 (owner request 2026-10-20):** Make Semgrep failures visible in scanner
+stderr: scan start, process exit/timing, stable failure code and counted error
+types. Never copy source-bearing raw stderr, error messages or findings into
+shared pod logs. Local JSON results remain the findings channel. Strip inherited
+Semgrep login/rule/tracing settings; use the CE scan engine with explicit local
+rule packs, telemetry off and version checking off. Offline hosted scans must
+refuse registry fallback when local packs are absent. Kubernetes deny-all egress
+and Docker network-none remain the enforcement boundary, independent of flags.
+Verify both the version probe and scan subprocess settings, source redaction,
+timeout/crash/file-error stderr and the real offline hosted smoke. No coverage,
+size-boundary, provider or credential change.

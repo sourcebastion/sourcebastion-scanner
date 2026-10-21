@@ -1070,7 +1070,6 @@ class SemgrepScanner(ScannerWrapper):
 
         # Check metadata for non-security categories
         category = metadata.get("category", "").lower()
-        technology = metadata.get("technology", "").lower()
         cwe = metadata.get("cwe", "")
 
         # Code quality categories

@@ -51,3 +51,16 @@ Kubernetes scan, raise the default Semgrep ceiling to 900 seconds; retain the
 existing narrower configured/remaining execution deadline and source-size cap.
 No automatic retry or coverage-policy change. Existing timeout precedence and
 contract-deadline tests remain required.
+
+
+T04 follow-up: A native diagnostic of public WebGoat revision
+`670b0cc363b5e6bfa87ff69c8901598b562f1723` reproduced `semgrep/execution_failed`
+through the deployed 2.1.4 Kubernetes inventory adapter. The isolated Semgrep CLI
+completed in 46.2 seconds, but the scanner wrapper raised `AttributeError` on
+`metadata.technology.lower()`: that field is a list in valid results and its
+normalized value was unused. Remove that unused operation and retain the finding;
+the regression test exercises the full result parser. Release 2.1.5's original
+run 39549692875 was cancelled before the image publishing job started; its
+immutable draft/tag remain. Release 2.1.6 includes this fix and the pending
+offline/stderr diagnostics. Platform timeout forwarding ships independently so
+2.1.4 can use `SOURCEBASTION_SCAN_TIMEOUT_SEMGREP=900` while this is qualified.

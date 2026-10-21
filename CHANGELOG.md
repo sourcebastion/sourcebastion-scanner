@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.6] - 2026-10-20
+
+Fix Semgrep result ingestion when rule technology metadata is a list, as reproduced with WebGoat. Keep the security finding rather than failing the scan. Include the pending offline settings and sanitized stderr diagnostics from 2.1.5, which remained an unpublished draft. Scanner timeouts remain runtime-configurable through existing environment variables and bounded by the execution deadline.
+
 ## [2.1.5] - 2026-10-20
 
 - Show Semgrep start, exit, timeout and safe engine/file error diagnostics in scanner stderr.

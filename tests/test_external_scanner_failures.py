@@ -495,7 +495,10 @@ def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeyp
     monkeypatch.setenv("SEMGREP_SEND_METRICS", "on")
     monkeypatch.setenv("SEMGREP_ENABLE_VERSION_CHECK", "1")
     monkeypatch.setenv("SEMGREP_OTEL_ENDPOINT", "https://example.invalid/traces")
-    monkeypatch.setattr(os.path, "isdir", lambda path: path == "/usr/local/share/sast-rules/go")
+    original_isdir = os.path.isdir
+    monkeypatch.setattr(os.path, "isdir", lambda path:
+        path == "/usr/local/share/sast-rules/go"
+        if str(path).startswith("/usr/local/share/sast-rules") else original_isdir(path))
     seen = []
 
     def run(command, **kwargs):

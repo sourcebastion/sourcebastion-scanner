@@ -502,7 +502,13 @@ def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeyp
         seen.append(command)
         env = kwargs["env"]
         assert {k: v for k, v in env.items() if k.startswith("SEMGREP_")} == {
-            "SEMGREP_SEND_METRICS": "off", "SEMGREP_ENABLE_VERSION_CHECK": "0"}
+            "SEMGREP_SEND_METRICS": "off", "SEMGREP_ENABLE_VERSION_CHECK": "0",
+            "SEMGREP_SETTINGS_FILE": env["SEMGREP_SETTINGS_FILE"],
+            "SEMGREP_LOG_FILE": env["SEMGREP_LOG_FILE"]}
+        settings_root = Path(env["SEMGREP_SETTINGS_FILE"]).parent
+        assert settings_root.name.startswith("sourcebastion-semgrep-")
+        assert settings_root.is_dir() and settings_root.stat().st_mode & 0o077 == 0
+        assert Path(env["SEMGREP_LOG_FILE"]).parent == settings_root
         if "--version" not in command:
             assert command[:3] == ["semgrep", "scan", "--oss-only"]
             assert "--config=/usr/local/share/sast-rules/go" in command

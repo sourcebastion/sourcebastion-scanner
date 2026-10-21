@@ -35,7 +35,8 @@ README version/date badges read published releases, excluding the pending VERSIO
 stderr: scan start, process exit/timing, stable failure code and counted error
 types. Never copy source-bearing raw stderr, error messages or findings into
 shared pod logs. Local JSON results remain the findings channel. Strip inherited
-Semgrep login/rule/tracing settings; use the CE scan engine with explicit local
+Semgrep login/rule/tracing settings and isolate its saved settings/log in a
+private temporary directory; use the CE scan engine with explicit local
 rule packs, telemetry off and version checking off. Offline hosted scans must
 refuse registry fallback when local packs are absent. Kubernetes deny-all egress
 and Docker network-none remain the enforcement boundary, independent of flags.

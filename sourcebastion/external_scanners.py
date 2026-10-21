@@ -693,13 +693,15 @@ class SemgrepScanner(ScannerWrapper):
         super()._fail(code)
 
     @staticmethod
-    def _environment() -> Dict[str, str]:
+    def _environment(settings_directory: str) -> Dict[str, str]:
         # Local scan is deliberately independent of an operator's Semgrep login,
         # online rules, tracing and product configuration. Keep ordinary process
         # settings (PATH, HOME, certificates) while replacing Semgrep settings.
         env = {key: value for key, value in os.environ.items()
                if not key.startswith("SEMGREP_")}
-        env.update(SEMGREP_SEND_METRICS="off", SEMGREP_ENABLE_VERSION_CHECK="0")
+        env.update(SEMGREP_SEND_METRICS="off", SEMGREP_ENABLE_VERSION_CHECK="0",
+                   SEMGREP_SETTINGS_FILE=os.path.join(settings_directory, "settings.yml"),
+                   SEMGREP_LOG_FILE=os.path.join(settings_directory, "semgrep.log"))
         return env
 
     def _add_ai_remediation_fields(
@@ -789,13 +791,14 @@ class SemgrepScanner(ScannerWrapper):
     def is_installed(self) -> bool:
         """Check if semgrep is installed"""
         try:
-            subprocess.run(
-                ["semgrep", "--version", "--metrics=off", "--disable-version-check"],
-                capture_output=True,
-                check=True,
-                env=self._environment(),
-                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
-            )
+            with tempfile.TemporaryDirectory(prefix="sourcebastion-semgrep-") as settings_directory:
+                subprocess.run(
+                    ["semgrep", "--version", "--metrics=off", "--disable-version-check"],
+                    capture_output=True,
+                    check=True,
+                    env=self._environment(settings_directory),
+                    timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
+                )
             return True
         except subprocess.TimeoutExpired:
             self._fail("timeout")
@@ -908,16 +911,17 @@ class SemgrepScanner(ScannerWrapper):
             print(f"semgrep: scan started (rules={rule_source}, metrics/version checks disabled)",
                   file=sys.stderr, flush=True)
             started = time.monotonic()
-            result = subprocess.run(
-                ["semgrep", "scan", "--oss-only"] + config_flags + [
-                    "--metrics=off", "--disable-version-check",
-                    "--json", "--output", raw_output_path, path,
-                ],
-                capture_output=True,
-                text=True,
-                env=self._environment(),
-                timeout=self._budget("scan"),
-            )
+            with tempfile.TemporaryDirectory(prefix="sourcebastion-semgrep-") as settings_directory:
+                result = subprocess.run(
+                    ["semgrep", "scan", "--oss-only"] + config_flags + [
+                        "--metrics=off", "--disable-version-check",
+                        "--json", "--output", raw_output_path, path,
+                    ],
+                    capture_output=True,
+                    text=True,
+                    env=self._environment(settings_directory),
+                    timeout=self._budget("scan"),
+                )
 
             print(f"semgrep: process exited code={result.returncode} "
                   f"elapsed_seconds={time.monotonic() - started:.1f}",

@@ -903,7 +903,9 @@ class SemgrepScanner(ScannerWrapper):
                     config_flags.append(f"--config={rules_dir}")
                     logger.info(f"Using custom rule pack from {rules_dir}")
 
-            print("semgrep: scan started (local rules, metrics/version checks disabled)",
+            rule_source = "local" if all(Path(flag.removeprefix("--config=")).exists()
+                                         for flag in config_flags) else "registry"
+            print(f"semgrep: scan started (rules={rule_source}, metrics/version checks disabled)",
                   file=sys.stderr, flush=True)
             started = time.monotonic()
             result = subprocess.run(

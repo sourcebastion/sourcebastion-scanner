@@ -2,6 +2,14 @@
 
 - Scan a source tree without `.git` as a current tree. Gitleaks history mode needs a Git repository and silently reported no secrets for exported or history-free checkouts (sourcebastion-platform #478). Repositories with `.git` keep history mode.
 
+## [2.1.7] - 2026-10-23
+
+### What's Changed
+* fix(gitleaks): scan a tree without .git as the current tree by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/215
+
+
+**Full Changelog**: https://github.com/sourcebastion/sourcebastion-scanner/compare/v2.1.6...v2.1.7
+
 ## [2.1.6] - 2026-10-20
 
 Fix Semgrep result ingestion when rule technology metadata is a list, as reproduced with WebGoat. Keep the security finding rather than failing the scan. Include the pending offline settings and sanitized stderr diagnostics from 2.1.5, which remained an unpublished draft. Scanner timeouts remain runtime-configurable through existing environment variables and bounded by the execution deadline.

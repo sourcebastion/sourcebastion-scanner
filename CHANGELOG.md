@@ -1,12 +1,8 @@
 ## Unreleased
 
-- Scan a source tree without `.git` as a current tree. Gitleaks history mode needs a Git repository and silently reported no secrets for exported or history-free checkouts (sourcebastion-platform #478). Repositories with `.git` keep history mode.
-
 ## [2.1.7] - 2026-10-23
 
-### What's Changed
-* fix(gitleaks): scan a tree without .git as the current tree by @jfelten in https://github.com/sourcebastion/sourcebastion-scanner/pull/215
-
+Scan exported or history-free source trees with Gitleaks current-tree mode instead of silently reporting no secrets from history mode. Honor the repository's `.gitleaks.toml` and `.gitleaksignore`; repositories with `.git` keep history scanning. Includes the corrected native image integration fixture for both modes ([#215](https://github.com/sourcebastion/sourcebastion-scanner/pull/215), sourcebastion-platform #478).
 
 **Full Changelog**: https://github.com/sourcebastion/sourcebastion-scanner/compare/v2.1.6...v2.1.7
 

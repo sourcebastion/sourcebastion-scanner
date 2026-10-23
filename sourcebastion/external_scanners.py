@@ -517,7 +517,27 @@ class GitleaksScanner(ScannerWrapper):
             self._fail("invalid_output")
     
     def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
-        """Run gitleaks scan and return raw output file path"""
+        """Run gitleaks scan and return raw output file path.
+
+        History mode (``gitleaks detect``) needs a Git repository. A tree with
+        no ``.git`` (an exported archive, or a hosted checkout packed without
+        history) would otherwise report zero secrets silently, so it is
+        scanned as a current tree instead, with the repository's own gitleaks
+        configuration and ignore file when present.
+        """
+        if not (Path(path) / ".git").exists():
+            repository_config = Path(path) / ".gitleaks.toml"
+            repository_ignore = Path(path) / ".gitleaksignore"
+            return self._scan_with_raw_output(
+                path,
+                current_tree=True,
+                config_path=(
+                    str(repository_config) if repository_config.is_file() else None
+                ),
+                ignore_path=(
+                    str(repository_ignore) if repository_ignore.is_file() else None
+                ),
+            )
         return self._scan_with_raw_output(
             path,
             current_tree=False,

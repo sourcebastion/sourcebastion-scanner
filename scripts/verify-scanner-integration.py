@@ -65,10 +65,16 @@ def check_gitleaks(allow_missing: bool) -> str:
     if not _require_binary("gitleaks", allow_missing):
         return "skipped"
 
+    commands: List[str] = []
+
     def fake_run(args: List[str], **_: Any) -> subprocess.CompletedProcess:
         if args[:2] == ["gitleaks", "version"]:
             return _completed(stdout="8.18.0")
-        if args[:2] == ["gitleaks", "detect"]:
+        # A tree with .git uses history mode (detect); a history-free tree,
+        # like this fixture, uses current-tree mode (dir). Both report the
+        # same JSON shape. Anything else is an unexpected command.
+        if args[:2] in (["gitleaks", "detect"], ["gitleaks", "dir"]):
+            commands.append(args[1])
             out = args[args.index("--report-path") + 1]
             _write_json(out, [{
                 "RuleID": "aws-access-token",
@@ -77,14 +83,18 @@ def check_gitleaks(allow_missing: bool) -> str:
                 "StartLine": 2,
             }])
             return _completed(returncode=1)
-        return _completed()
+        raise AssertionError(f"unexpected gitleaks command: {args[:2]}")
 
+    source = FIXTURES_ROOT / "secrets"
+    expected = "detect" if (source / ".git").exists() else "dir"
     with patch("sourcebastion.external_scanners.subprocess.run", side_effect=fake_run):
-        findings = GitleaksScanner().scan(str(FIXTURES_ROOT / "secrets"))
+        findings = GitleaksScanner().scan(str(source))
+    _assert(commands == [expected],
+            f"gitleaks ran {commands}, expected {expected} for this source tree")
     _assert_common_shape("gitleaks", findings)
     _assert(_has_any(findings, lambda f: f.get("category") in {"secret", "hardcoded-secret"} and f.get("rule_id") == "aws-access-token"),
             f"gitleaks parser did not return expected secret fixture: {findings}")
-    return f"passed ({len(findings)} findings)"
+    return f"passed ({len(findings)} findings, {expected} mode)"
 
 
 def check_kics(allow_missing: bool) -> str:

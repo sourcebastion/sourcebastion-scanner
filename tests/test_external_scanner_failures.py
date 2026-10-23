@@ -608,3 +608,43 @@ def test_semgrep_error_types_are_counted_without_messages_or_paths(tmp_path, cap
         assert all(value not in err for value in ("vendor.min.js", "private source", "secret", "untrusted customer"))
     finally:
         os.unlink(raw_path)
+
+
+def _gitleaks_command(path):
+    """Run GitleaksScanner.scan against a fake gitleaks and return its argv."""
+    scanner = GitleaksScanner()
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        report = command[command.index("--report-path") + 1]
+        Path(report).write_text("[]")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with (
+        patch.object(scanner, "is_installed", return_value=True),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=fake_run),
+    ):
+        scanner.scan(str(path))
+    return calls[-1]
+
+
+def test_tree_without_git_is_scanned_as_current_tree_not_history(tmp_path):
+    """No .git means history mode would silently find nothing (platform #478)."""
+    command = _gitleaks_command(tmp_path)
+    assert command[:3] == ["gitleaks", "dir", str(tmp_path)]
+    assert "detect" not in command
+
+
+def test_tree_without_git_honours_repository_gitleaks_files(tmp_path):
+    (tmp_path / ".gitleaks.toml").write_text("")
+    (tmp_path / ".gitleaksignore").write_text("")
+    command = _gitleaks_command(tmp_path)
+    assert command[command.index("--config") + 1] == str(tmp_path / ".gitleaks.toml")
+    assert command[command.index("--gitleaks-ignore-path") + 1] == str(tmp_path / ".gitleaksignore")
+
+
+def test_git_repository_keeps_history_mode(tmp_path):
+    (tmp_path / ".git").mkdir()
+    command = _gitleaks_command(tmp_path)
+    assert command[:2] == ["gitleaks", "detect"]

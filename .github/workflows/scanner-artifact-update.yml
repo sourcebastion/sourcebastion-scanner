@@ -90,6 +90,14 @@ jobs:
         env:
           RELEASE_NOTES: Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.
         run: python scripts/prepare_release.py
+      - name: Select the optional generated native proposal for staging
+        if: steps.changes.outputs.changed == 'true'
+        id: optional_proposal
+        run: |
+          proposal=.github/bundled-native-proposal.json
+          if test -e "$proposal" || git ls-files --error-unmatch -- "$proposal" >/dev/null 2>&1; then
+            echo "path=$proposal" >> "$GITHUB_OUTPUT"
+          fi
       - name: Refresh the bot candidate on the current main branch
         if: steps.changes.outputs.changed == 'true'
         id: candidate
@@ -109,7 +117,7 @@ jobs:
             .github/semgrep-artifacts.json
             .github/python-locks/
             .github/bundled-native-libraries.json
-            .github/bundled-native-proposal.json
+            ${{ steps.optional_proposal.outputs.path }}
             VERSION
             CHANGELOG.md
       - name: Enable standard auto-merge only for an eligible exact head

@@ -707,12 +707,8 @@ jobs:
             python3 scripts/prepare-upgrade-base.py --source "$BASE_SHA" --architecture "$IMAGE_ARCH" --output "$RUNNER_TEMP"
           elif grep -Eqi 'not found|manifest unknown|no such manifest' "$RUNNER_TEMP/base-lookup.txt"; then
             python3 scripts/select_base_images.py --checkout "$base_dir" --format json > "$RUNNER_TEMP/inventory-base-args.json"
-            python3 -c '
-            import json, sys
-            for name, value in json.load(open(sys.argv[1])).items():
-                print("--build-arg")
-                print(name + "=" + value)
-            ' "$RUNNER_TEMP/inventory-base-args.json" > "$RUNNER_TEMP/inventory-base-args.txt"
+            python3 -c 'import json,sys; print("\n".join(value for name,ref in json.load(open(sys.argv[1])).items() for value in ("--build-arg",name+"="+ref)))' \
+              "$RUNNER_TEMP/inventory-base-args.json" > "$RUNNER_TEMP/inventory-base-args.txt"
             mapfile -t base_args < "$RUNNER_TEMP/inventory-base-args.txt"
             docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false "${base_args[@]}" \
               --output "type=oci,dest=$RUNNER_TEMP/inventory-base.oci.tar" \

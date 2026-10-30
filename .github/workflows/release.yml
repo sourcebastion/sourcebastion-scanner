@@ -189,6 +189,7 @@ jobs:
       contents: read
       actions: read
       packages: read
+      attestations: read
     uses: ./.github/workflows/docker.yml
     with:
       build_images: true

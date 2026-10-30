@@ -71,6 +71,15 @@ file when the mirror is absent. A hash/signature mismatch stops the build.
 Architecture-specific APK revisions are supported without changing the runtime
 version contract. Fresh runtime pins still require review and native CI.
 
+Upgrade comparison also reuses the already published image for an exact released
+base commit: verify its release-workflow attestation against that source SHA,
+resolve the immutable index/native manifest, and copy the original compressed
+OCI bytes with digest preservation. This keeps historical removed APKs from
+breaking a new candidate after its own build succeeded. Retain the attestation
+with the existing maintenance artifact. Verification, registry/authentication
+and archive-integrity failures stop; only an absent published base takes the
+existing rebuild path. The same growth and native baseline checks still run.
+
 The existing App refreshes its owned candidate on current main using the standard
 create-pull-request action; it preserves a candidate containing human/unknown
 commits or non-generated files for review. A failed bot PR no longer blocks all

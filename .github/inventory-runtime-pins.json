@@ -7,14 +7,18 @@
     "arm64": "sha256:fe368aeff9df1995b57f0aa9bbced949a2a98fb3e6dfd92568e5f6acea6220f7"
   },
   "alpine": "3.23",
-  "node_version": "v24.18.1",
+  "node_version": "v24.22.1",
   "packages": {
     "nodejs": {
-      "version": "24.18.1-r0",
+      "version": "24.22.1-r0",
       "repository": "main",
       "sha256": {
-        "x86_64": "3c78c9bc8a1d52cc18e79f94120d69ae7705dab1d77054dfa040a064bf344b87",
-        "aarch64": "c8d2a5fe776d0f5f3d8fd0ea41312317a0dc1d56ecd00c59ffadfc2d6c486f90"
+        "x86_64": "4e13cf80a92b85c1fc1b329164c3697631cc6e11733b9b3fa5c6f8e5e1d4507a",
+        "aarch64": "6fbf83fc301b1a19885d5f507be32f1ff05cce7b080c96ea94650e076e278c10"
+      },
+      "versions": {
+        "x86_64": "24.22.1-r1",
+        "aarch64": "24.22.1-r0"
       }
     },
     "npm": {

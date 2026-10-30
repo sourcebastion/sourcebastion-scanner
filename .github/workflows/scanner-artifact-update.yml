@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '37 6 * * 1'
   workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -13,7 +15,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  retain-runtime:
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/runtime-inputs.yml
+
   propose:
+    needs: retain-runtime
     if: github.ref == 'refs/heads/main'
     environment: scanner-maintenance
     runs-on: ubuntu-latest
@@ -69,42 +78,47 @@ jobs:
           # without a literal repository list beside it.
           permission-contents: write
           permission-pull-requests: write
-      - name: Open reviewed update PR (never approve or merge)
+      - name: Classify generated changes and select the owned candidate
         if: steps.changes.outputs.changed == 'true'
+        id: policy
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: python scripts/automated_scanner_update.py --prepare
+      - name: Prepare the next patch release in the candidate
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          RELEASE_NOTES: Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.
+        run: python scripts/prepare_release.py
+      - name: Refresh the bot candidate on the current main branch
+        if: steps.changes.outputs.changed == 'true'
+        id: candidate
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: ${{ steps.policy.outputs.branch }}
+          base: main
+          author: sourcebastion-bot[bot] <sourcebastion-bot[bot]@users.noreply.github.com>
+          committer: sourcebastion-bot[bot] <sourcebastion-bot[bot]@users.noreply.github.com>
+          draft: ${{ steps.policy.outputs.draft }}
+          commit-message: 'chore(deps): update verified Semgrep artifacts and patch release'
+          title: 'chore(deps): verified Semgrep update'
+          body: 'Verified four Linux wheel attestations and dependency locks. Required CI gates auto-merge when native bytes, ownership, paths, sources and notices remain unchanged. Native proposals remain drafts requiring review. Includes the next patch VERSION and changelog so the existing exact-digest release pipeline runs after merge.'
+          add-paths: |
+            .github/scanner-versions.json
+            .github/semgrep-artifacts.json
+            .github/python-locks/
+            .github/bundled-native-libraries.json
+            .github/bundled-native-proposal.json
+            VERSION
+            CHANGELOG.md
+      - name: Enable standard auto-merge only for an eligible exact head
+        if: steps.candidate.outputs.pull-request-number != '' && steps.policy.outputs.draft == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.candidate.outputs.pull-request-number }}
+          HEAD_SHA: ${{ steps.candidate.outputs.pull-request-head-sha }}
         run: |
           set -euo pipefail
-          if [ "$APP_SLUG" != 'sourcebastion-bot' ]; then
-            echo '::error::Expected the existing sourcebastion-bot App.'
-            exit 1
-          fi
-          version=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
-          lock_digest=$(sha256sum .github/python-locks/manifest.json | cut -c1-12)
-          branch="bot/semgrep-artifacts-${version}-${lock_digest}"
-          # Matched on the prefix, not on "$branch". The branch name now carries
-          # the lock digest, which changes whenever any transitive dependency
-          # resolves differently — the ordinary week-to-week case. Comparing the
-          # full name would therefore stop matching and open a second candidate
-          # beside the one still under review, every week.
-          open_candidate=$(gh pr list --state open --json number,headRefName             --jq '[.[] | select(.headRefName | startswith("bot/semgrep-artifacts-"))][0]
-                  | select(. != null) | "#\(.number) \(.headRefName)"')
-          if [ -n "$open_candidate" ]; then
-            echo "A candidate is already open ($open_candidate); leaving its reviewed contents unchanged."
-            exit 0
-          fi
-          git switch -c "$branch"
-          git config user.name 'sourcebastion-bot[bot]'
-          git config user.email 'sourcebastion-bot[bot]@users.noreply.github.com'
-          git add .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks .github/bundled-native-libraries.json
-          draft=()
-          if [ -f .github/bundled-native-proposal.json ]; then
-            git add .github/bundled-native-proposal.json
-            draft=(--draft)
-          fi
-          git commit -m "chore(deps): verify Semgrep ${version} artifacts"
-          git -c credential.helper='!gh auth git-credential' push origin "$branch"
-          gh pr create "${draft[@]}" --base main --head "$branch" \
-            --title "chore(deps): verified Semgrep ${version}" \
-            --body 'All four Linux wheels passed SHA-256 and publisher-attestation verification. KICS is unchanged. Unchanged bundled library bytes retain their reviewed notices and sources; their native manifest wheel/version bindings are refreshed with the dependency locks. Human review and successful checks are required. Created by the SourceBastion bot App so normal pull_request checks run. Release verification remains mandatory. A bundled-native-proposal.json file indicates native additions, removals, ownership, installed-path or byte changes requiring notice/source review before updating the baseline or marking the draft ready.'
+          gh pr ready "$PR_NUMBER" || test "$(gh pr view "$PR_NUMBER" --json isDraft --jq .isDraft)" = false
+          gh pr merge "$PR_NUMBER" --auto --squash --match-head-commit "$HEAD_SHA"

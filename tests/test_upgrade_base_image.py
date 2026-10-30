@@ -7,6 +7,7 @@ import subprocess
 import shutil
 import tarfile
 import pytest
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
@@ -62,3 +63,24 @@ def test_release_baseline_reuse_is_required_and_errors_never_silently_rebuild():
     assert workflow['jobs']['build-scanner']['permissions']['attestations'] == 'read'
     caller = yaml.load((ROOT / '.github/workflows/release.yml').read_text(), Loader=yaml.BaseLoader)
     assert caller['jobs']['validate-images']['permissions']['attestations'] == 'read'
+
+
+def test_unpublished_baseline_build_args_run_with_real_python(tmp_path):
+    import yaml
+    workflow = yaml.load((ROOT / '.github/workflows/docker.yml').read_text(), Loader=yaml.BaseLoader)
+    script = next(step['run'] for step in workflow['jobs']['build-scanner']['steps']
+                  if step.get('name') == 'Enforce added compressed release layers')
+    # Execute exactly what Bash passes to -c, without repairing its indentation.
+    program = re.search(r"python3 -c '([^']*)'", script).group(1)
+    arguments = {'PYTHON_BASE_IMAGE': 'python@sha256:' + 'a' * 64,
+                 'ALPINE_BASE_IMAGE': 'alpine@sha256:' + 'b' * 64}
+    path = tmp_path / 'inventory-base-args.json'
+    path.write_text(json.dumps(arguments))
+    # Python3.14 CLI now dedents -c; Ubuntu's system python3 does not. Compile the
+    # exact text explicitly so a newer developer interpreter cannot mask this.
+    result = subprocess.run([sys.executable, '-c',
+                             'import sys; program=sys.argv.pop(1); exec(compile(program,"workflow","exec"))',
+                             program, str(path)], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.splitlines() == [part for name, value in arguments.items()
+                                          for part in ('--build-arg', name + '=' + value)]

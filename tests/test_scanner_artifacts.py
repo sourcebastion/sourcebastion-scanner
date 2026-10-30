@@ -169,7 +169,7 @@ def test_release_and_merge_exercise_are_fail_closed():
     def workflow(name):
         return yaml.load((ROOT / '.github/workflows' / name).read_text(), Loader=yaml.BaseLoader)
     release = workflow('release.yml')['jobs']
-    assert release['prepare-release']['needs'] == 'verify-scanner-artifacts'
+    assert set(release['prepare-release']['needs']) == {'verify-scanner-artifacts', 'release-policy'}
     assert release['verify-scanner-artifacts']['uses'] == './.github/workflows/scanner-integrity.yml'
     verify = workflow('scanner-integrity.yml')
     assert verify['on']['pull_request']['branches'] == ['main']
@@ -216,12 +216,12 @@ def test_weekly_updates_use_scoped_existing_app_not_actions_identity():
     assert not any('github.event' in value for value in mint['with'].values())
     assert steps.index(mint) > next(i for i, s in enumerate(steps)
                                    if s.get('run', '').startswith('python -m pytest'))
-    publish = steps[-1]
-    assert publish['if'] == mint['if']
-    assert publish['env']['GH_TOKEN'] == '${{ steps.app-token.outputs.token }}'
-    assert "if [ \"$APP_SLUG\" != 'sourcebastion-bot' ]" in publish['run']
+    policy = next(step for step in steps if step.get('id') == 'policy')
+    assert policy['if'] == mint['if']
+    assert policy['env']['GH_TOKEN'] == '${{ steps.app-token.outputs.token }}'
+    assert policy['env']['APP_SLUG'] == '${{ steps.app-token.outputs.app-slug }}'
     assert 'gh workflow run' not in text
-    assert 'gh pr merge' not in text
+    assert 'gh pr merge' in text and '--auto --squash --match-head-commit' in text
     assert 'gh pr review' not in text
     assert '${{ github.token }}' not in text
 

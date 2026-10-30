@@ -375,6 +375,10 @@ jobs:
 
   build-scanner:
     name: Build scanner (${{ matrix.arch }})
+    permissions:
+      contents: read
+      packages: read
+      attestations: read
     if: |
       (github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.build_images == true)
       && needs.changes.outputs.image_affecting == 'true'
@@ -688,25 +692,37 @@ jobs:
 
       - name: Enforce added compressed release layers
         env:
+          GH_TOKEN: ${{ github.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.sha }}
           IMAGE_ARCH: ${{ matrix.arch }}
         run: |
           base_dir="$RUNNER_TEMP/inventory-image-base"
           mkdir "$base_dir"
           git archive "$BASE_SHA" | tar -x -C "$base_dir"
-          python3 scripts/select_base_images.py --checkout "$base_dir" --format json > "$RUNNER_TEMP/inventory-base-args.json"
-          python3 -c '
-          import json, sys
-          for name, value in json.load(open(sys.argv[1])).items():
-              print("--build-arg")
-              print(name + "=" + value)
-          ' "$RUNNER_TEMP/inventory-base-args.json" > "$RUNNER_TEMP/inventory-base-args.txt"
-          mapfile -t base_args < "$RUNNER_TEMP/inventory-base-args.txt"
-          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false "${base_args[@]}" \
-            --output "type=oci,dest=$RUNNER_TEMP/inventory-base.oci.tar" \
-            -f "$base_dir/images/Dockerfile" "$base_dir"
-          docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
-            "${base_args[@]}" --load --tag sourcebastion:inventory-upgrade-base -f "$base_dir/images/Dockerfile" "$base_dir"
+          # Released bases already have immutable layers and exact-source attestations.
+          # Rebuilding them can fail after a rolling repository removes old APKs.
+          published="ghcr.io/sourcebastion/sourcebastion-scanner:$BASE_SHA"
+          if docker buildx imagetools inspect "$published" > "$RUNNER_TEMP/base-lookup.txt" 2>&1; then
+            sudo -n apt-get -o Acquire::Retries=1 -o DPkg::Lock::Timeout=30 install -y skopeo
+            python3 scripts/prepare-upgrade-base.py --source "$BASE_SHA" --architecture "$IMAGE_ARCH" --output "$RUNNER_TEMP"
+          elif grep -Eqi 'not found|manifest unknown|no such manifest' "$RUNNER_TEMP/base-lookup.txt"; then
+            python3 scripts/select_base_images.py --checkout "$base_dir" --format json > "$RUNNER_TEMP/inventory-base-args.json"
+            python3 -c '
+            import json, sys
+            for name, value in json.load(open(sys.argv[1])).items():
+                print("--build-arg")
+                print(name + "=" + value)
+            ' "$RUNNER_TEMP/inventory-base-args.json" > "$RUNNER_TEMP/inventory-base-args.txt"
+            mapfile -t base_args < "$RUNNER_TEMP/inventory-base-args.txt"
+            docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false "${base_args[@]}" \
+              --output "type=oci,dest=$RUNNER_TEMP/inventory-base.oci.tar" \
+              -f "$base_dir/images/Dockerfile" "$base_dir"
+            docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
+              "${base_args[@]}" --load --tag sourcebastion:inventory-upgrade-base -f "$base_dir/images/Dockerfile" "$base_dir"
+          else
+            cat "$RUNNER_TEMP/base-lookup.txt" >&2
+            exit 1
+          fi
           python3 scripts/verify-inventory-release-size.py --architecture "$IMAGE_ARCH" \
             --baseline "$RUNNER_TEMP/inventory-base.oci.tar" --candidate "$RUNNER_TEMP/inventory-candidate.oci.tar" \
             --candidate-image image-inspect.json --output inventory-compressed-growth.json
@@ -733,6 +749,7 @@ jobs:
             inventory-upgrade-diff.json
             inventory-current-oracle-diff.json
             inventory-compressed-growth.json
+            ${{ runner.temp }}/inventory-base-attestation.json
             inventory-resources-*/
           if-no-files-found: error
 

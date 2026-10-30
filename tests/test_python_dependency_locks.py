@@ -156,18 +156,20 @@ def test_weekly_refresh_includes_dependency_only_updates():
     text = (ROOT / '.github/workflows/scanner-artifact-update.yml').read_text()
     assert 'uv==0.11.0' in text
     assert 'git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks' in text
-    assert 'git add .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks' in text
-    for step in ('git diff --quiet --', 'git add '):
-        command = next(line for line in text.splitlines() if step in line)
-        assert '.github/bundled-native-libraries.json' in command
+    import yaml
+    steps = yaml.load(text, Loader=yaml.BaseLoader)['jobs']['propose']['steps']
+    candidate = next(step for step in steps if step.get('id') == 'candidate')
+    staged = candidate['with']['add-paths'].splitlines()
+    for path in ('.github/scanner-versions.json', '.github/semgrep-artifacts.json',
+                 '.github/python-locks/', '.github/bundled-native-libraries.json'):
+        assert path in staged
+    command = next(line for line in text.splitlines() if 'git diff --quiet --' in line)
+    assert '.github/bundled-native-libraries.json' in command
     upload = text.split('name: verified-scanner-pins', 1)[1].split('- name:', 1)[0]
     assert '.github/bundled-native-libraries.json' in upload
-    assert '${version}-${lock_digest}' in text
-    # A digest in the branch name must not defeat the single-candidate guard:
-    # matching the full name would open a second PR beside the one under
-    # review every time a transitive dependency moved.
-    assert 'startswith("bot/semgrep-artifacts-")' in text
-    assert 'gh pr list --head' not in text
+    assert candidate['with']['branch'] == '${{ steps.policy.outputs.branch }}'
+    assert 'scripts/automated_scanner_update.py --prepare' in text
+
 
 
 def make_metadata_wheel(directory, name, version='1.0', requires=()):

@@ -52,10 +52,61 @@ remain separate release inputs. The Python base digest and native manifest
 digests came from the official Docker registry; Node/npm hashes came from the
 native Alpine 3.23 package archives during trusted maintenance preparation.
 
+## Automatic verified scanner updates
+
+The owner requested automatic image updates after scanner PR #217 failed on
+29 October 2026. Both native builds fetched Node 24.18.1-r0 from Alpine's
+rolling repository after those exact files had been removed (HTTP 404).
+Three build retries could not repair a missing input. The weekly updater also
+left any open candidate unchanged, required a human merge, and did not declare
+a patch release; image publication therefore could not complete automatically.
+
+Standard GitHub Releases now retain the exact Node/npm APKs under a
+`runtime-apks-<input-sha256>` prerelease, excluded from latest. Native AMD64 and
+ARM64 jobs verify pin hashes and Alpine signatures before main-only retention;
+published bytes are downloaded and compared. Existing assets are never replaced.
+These are build inputs, not scanner image releases. Keep them for rebuilds.
+Builds prefer those retained bytes and fall back only to the same exact Alpine
+file when the mirror is absent. A hash/signature mismatch stops the build.
+Architecture-specific APK revisions are supported without changing the runtime
+version contract. Fresh runtime pins still require review and native CI.
+
+Upgrade comparison also reuses the already published image for an exact released
+base commit: verify its release-workflow attestation against that source SHA,
+resolve the immutable index/native manifest, and copy the original compressed
+OCI bytes with digest preservation. This keeps historical removed APKs from
+breaking a new candidate after its own build succeeded. Retain the attestation
+with the existing maintenance artifact. Verification, registry/authentication
+and archive-integrity failures stop; only an absent published base takes the
+existing rebuild path. The same growth and native baseline checks still run.
+
+The existing App refreshes its owned candidate on current main using the standard
+create-pull-request action; it preserves a candidate containing human/unknown
+commits or non-generated files for review. A failed bot PR no longer blocks all
+future candidates. Four verified wheel/lock profiles, unchanged other scanners,
+unchanged native installed paths/owners/bytes, and unchanged notice/source files
+qualify a generated update. New native proposals remain drafts. The candidate
+includes the next patch VERSION and changelog entry; GitHub auto-merge waits for
+the existing required checks and base requirements, with no administrative
+bypass and an exact-head guard.
+
+The existing VERSION dispatch and release pipeline remain responsible for image
+publication. A read-only classifier admits only the exact merged, same-repository
+bot PR and closed generated-file set to the existing scanner-maintenance
+environment. All other releases use the protected release environment. Both
+paths still verify supply-chain inputs, both native runtime builds, exact staged
+image security scans and immutable public tag promotion. No new hosts, providers,
+credentials, environment settings or branch-protection changes are introduced.
+Trusted repository administrators and the existing App remain the trust boundary.
+Provider outages and genuine verification/test failures remain visible failures;
+this does not convert them into successful updates. Retry a transient failure
+once, then fix or escalate it. Re-run the maintenance workflow after a reviewed
+input correction; never substitute an unverified latest package or skip CI.
+
 ## Upgrade review
 
 Review upstream releases/security notices weekly and before each release.
-This is a maintainer cadence, not a created recurring automation. Update pins
+Semgrep candidates also run weekly and after main changes. Update other pins
 only in a reviewed PR; scanner-artifact/update and release preparation stay
 outside customer scanning. A Python update must update the immutable Docker
 base and both native manifest digests together with the interpreter and wheel

@@ -1,0 +1,90 @@
+name: Retain verified runtime APKs
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/inventory-runtime-pins.json', 'scripts/prepare-inventory-node.py', '.github/workflows/runtime-inputs.yml']
+  pull_request:
+    paths: ['.github/inventory-runtime-pins.json', 'scripts/prepare-inventory-node.py', '.github/workflows/runtime-inputs.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        include:
+          - architecture: x86_64
+            runner: ubuntu-latest
+          - architecture: aarch64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Download exact inputs and verify Alpine signatures without installation
+        env:
+          ARCHITECTURE: ${{ matrix.architecture }}
+        run: |
+          set -euo pipefail
+          python3 scripts/prepare-inventory-node.py --pins .github/inventory-runtime-pins.json --architecture "$ARCHITECTURE" --output apks
+          image=$(python3 -c 'import json; print(json.load(open(".github/inventory-runtime-pins.json"))["python_image"])')
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --mount "type=bind,src=$PWD/apks,dst=/inputs,readonly" --entrypoint /bin/sh "$image" \
+            -ec 'apk --network=no verify /inputs/*.apk'
+          mkdir retained
+          for file in apks/*.apk; do cp "$file" "retained/${ARCHITECTURE}-$(basename "$file")"; done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: runtime-apks-${{ matrix.architecture }}
+          path: retained/*.apk
+          retention-days: 7
+
+  retain:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: runtime-apk-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: runtime-apks-*
+          merge-multiple: true
+          path: retained
+      - name: Retain immutable inputs in a non-latest prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=$(python3 scripts/prepare-inventory-node.py --pins .github/inventory-runtime-pins.json --release-tag)
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --draft --prerelease --latest=false \
+              --title 'Verified scanner runtime build inputs' --notes 'Exact SHA256-pinned, Alpine-signature-verified APK build inputs. Retain for rebuilds; this is not a scanner release.'
+          fi
+          assets=$(gh release view "$tag" --json assets --jq '.assets[].name')
+          mkdir downloaded
+          for file in retained/*.apk; do
+            name=$(basename "$file")
+            if printf '%s\n' "$assets" | grep -Fxq "$name"; then
+              gh release download "$tag" --pattern "$name" --dir downloaded
+              cmp "$file" "downloaded/$name"
+            else
+              gh release upload "$tag" "$file"
+              gh release download "$tag" --pattern "$name" --dir downloaded
+              cmp "$file" "downloaded/$name"
+            fi
+          done
+          gh release edit "$tag" --draft=false --prerelease --latest=false

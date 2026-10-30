@@ -65,7 +65,7 @@ def main():
         installed_raw = stream.read(16 * 1024**2 + 1)
     apk_versions = installed_apks(installed_raw)
     for name, row in pins["packages"].items():
-        if apk_versions.get(name) != row["version"]:
+        if apk_versions.get(name) != row.get("versions", {}).get(machine, row["version"]):
             raise ValueError("inventory-apk-version-mismatch")
     for filename, digest in json.loads((root / ".github/python-locks/manifest.json").read_text())["files"].items():
         if sha((root / ".github/python-locks" / filename).read_bytes()) != digest:

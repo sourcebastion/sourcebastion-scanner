@@ -39,11 +39,29 @@ jobs:
     name: Verify pinned scanner supply chain
     uses: ./.github/workflows/scanner-integrity.yml
 
+  release-policy:
+    name: Classify merged bot update
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      environment: ${{ steps.policy.outputs.environment }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: policy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/automated_scanner_update.py
+
   prepare-release:
     name: Approve and prepare release
-    needs: verify-scanner-artifacts
+    needs: [verify-scanner-artifacts, release-policy]
     runs-on: ubuntu-latest
-    environment: release
+    environment: ${{ needs.release-policy.outputs.environment }}
     permissions:
       contents: write
     outputs:
@@ -171,6 +189,7 @@ jobs:
       contents: read
       actions: read
       packages: read
+      attestations: read
     uses: ./.github/workflows/docker.yml
     with:
       build_images: true

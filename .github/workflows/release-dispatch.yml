@@ -10,8 +10,8 @@
 #
 # This supplies the missing initiator. It changes who presses the button, not
 # what is checked: `release.yml` still validates the version against VERSION,
-# still refuses anything already published, and the `release` environment still
-# requires a second approver. The owner path remains for when this cannot run.
+# still refuses anything already published. Qualified generated bot updates use
+# scanner-maintenance; other releases retain the protected release environment.
 name: Release dispatch
 
 on:

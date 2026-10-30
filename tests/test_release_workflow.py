@@ -43,7 +43,7 @@ def test_release_supports_bot_dispatch_and_audited_manual_release():
     manual_inputs = workflow["on"]["workflow_dispatch"]["inputs"]
     assert manual_inputs["version"]["required"] == "true"
     assert manual_inputs["release_reason"]["required"] == "true"
-    assert workflow["jobs"]["prepare-release"]["environment"] == "release"
+    assert workflow["jobs"]["prepare-release"]["environment"] == "${{ needs.release-policy.outputs.environment }}"
 
     steps = workflow["jobs"]["prepare-release"]["steps"]
     validate = next(step for step in steps if step.get("id") == "release_metadata")

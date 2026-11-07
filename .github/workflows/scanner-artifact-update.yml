@@ -111,7 +111,10 @@ jobs:
           draft: ${{ steps.policy.outputs.draft }}
           commit-message: 'chore(deps): update verified Semgrep artifacts and patch release'
           title: 'chore(deps): verified Semgrep update'
-          body: 'Verified four Linux wheel attestations and dependency locks. Required CI gates auto-merge when native bytes, ownership, paths, sources and notices remain unchanged. Native proposals remain drafts requiring review. Includes the next patch VERSION and changelog so the existing exact-digest release pipeline runs after merge.'
+          body: |
+            Task: M052/S04/T01
+
+            Verified four Linux wheel attestations and dependency locks. Eligible Semgrep-only changes use standard exact-head auto-merge after required CI. Runtime-lock or native proposals remain drafts for independent review and the protected release path. Includes the next patch VERSION and changelog so the existing exact-digest release pipeline runs after merge.
           add-paths: |
             .github/scanner-versions.json
             .github/semgrep-artifacts.json

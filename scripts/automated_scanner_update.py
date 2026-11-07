@@ -23,6 +23,13 @@ def allowed(path):
         r'\.github/python-locks/semgrep-cp[0-9]+-(?:manylinux_2_34|musllinux_1_2)_(?:x86_64|aarch64)\.txt', path))
 
 
+def generated_candidate_path(path):
+    """Refresh generated runtime locks without granting automatic release authority."""
+    return (allowed(path) or path == '.github/bundled-native-proposal.json'
+            or bool(re.fullmatch(
+                r'\.github/python-locks/runtime-cp[0-9]+-(?:manylinux_2_34|musllinux_1_2)_(?:x86_64|aarch64)\.txt', path)))
+
+
 def eligible(paths, before, after):
     if not paths or not all(allowed(path) for path in paths):
         return False
@@ -123,7 +130,7 @@ def prepare_candidate():
     for pr in prs:
         if pr['head']['ref'] == branch:
             files = api(f"pulls/{pr['number']}/files?per_page=100")
-            if len(files) >= 100 or not all(allowed(row['filename']) or row['filename'] == '.github/bundled-native-proposal.json' for row in files):
+            if len(files) >= 100 or not all(generated_candidate_path(row['filename']) for row in files):
                 raise ValueError('candidate contains non-generated changes; preserve it for review')
     paths = subprocess.check_output(['git', 'diff', '--no-renames', '--name-only'], text=True).splitlines()
     automatic = not Path('.github/bundled-native-proposal.json').exists() and eligible(

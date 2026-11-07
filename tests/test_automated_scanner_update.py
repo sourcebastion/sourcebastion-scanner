@@ -141,6 +141,7 @@ def test_workflows_preserve_check_and_release_boundaries():
     assert "steps.policy.outputs.draft == 'false'" in merge['if']
     candidate = next(step for step in steps if step.get('id') == 'candidate')
     assert candidate['with']['draft'] == '${{ steps.policy.outputs.draft }}'
+    assert candidate['with']['body'].startswith('Task: M052/S04/T01\n')
     release = load('release.yml')['jobs']
     assert release['release-policy']['permissions'] == {'contents': 'read', 'pull-requests': 'read'}
     assert release['prepare-release']['environment'] == '${{ needs.release-policy.outputs.environment }}'
@@ -220,3 +221,44 @@ def test_actual_release_classifier_defaults_to_protected_environment(
     monkeypatch.setattr(scope['subprocess'], 'check_output', command)
     function()
     assert output.read_text() == f'environment={expected}\n'
+
+
+@pytest.mark.parametrize('target', ['manylinux_2_34_x86_64', 'manylinux_2_34_aarch64',
+                                  'musllinux_1_2_x86_64', 'musllinux_1_2_aarch64'])
+def test_prepare_refreshes_owned_runtime_lock_candidate_but_keeps_manual_review(tmp_path, monkeypatch, target):
+    function = policy['prepare_candidate']; scope = function.__globals__
+    value = pr(); value.update(draft=True, merged_at=None)
+    runtime_path = f'.github/python-locks/runtime-cp314-{target}.txt'
+    output = tmp_path / 'output'
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('APP_SLUG', 'sourcebastion-bot')
+    monkeypatch.setenv('GITHUB_OUTPUT', str(output))
+    def command(argv, **_):
+        if argv[0] == 'gh':
+            path = argv[2]
+            if '/commits?' in path: return json.dumps([{'author': value['user']}]).encode()
+            if '/files?' in path: return json.dumps([{'filename': runtime_path}]).encode()
+            return json.dumps([value]).encode()
+        assert argv[:4] == ['git', 'diff', '--no-renames', '--name-only']
+        return runtime_path + '\n'
+    monkeypatch.setattr(scope['subprocess'], 'check_output', command)
+    function()
+    assert output.read_text() == f"branch={value['head']['ref']}\ndraft=always-true\n"
+    assert not policy['allowed'](runtime_path)  # Automatic release authority must stay narrower.
+
+
+@pytest.mark.parametrize('path', ['sourcebastion/cli.py', '.github/workflows/release.yml',
+                                 '.github/python-locks/runtime-cp314-musllinux_1_2_x86_64.txt.unreviewed'])
+def test_prepare_preserves_non_generated_candidate_work(tmp_path, monkeypatch, path):
+    function = policy['prepare_candidate']; scope = function.__globals__; value = pr()
+    monkeypatch.setenv('APP_SLUG', 'sourcebastion-bot')
+    monkeypatch.setenv('GITHUB_OUTPUT', str(tmp_path / 'output'))
+    def command(argv, **_):
+        assert argv[0] == 'gh'
+        if '/commits?' in argv[2]: return json.dumps([{'author': value['user']}]).encode()
+        if '/files?' in argv[2]: return json.dumps([{'filename': path}]).encode()
+        return json.dumps([value]).encode()
+    monkeypatch.setattr(scope['subprocess'], 'check_output', command)
+    with pytest.raises(ValueError, match='non-generated changes'):
+        function()
+    assert not (tmp_path / 'output').exists()

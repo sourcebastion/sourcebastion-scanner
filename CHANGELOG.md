@@ -1,5 +1,11 @@
 ## Unreleased
 
+## [2.1.8] - 2026-11-06
+
+Reduce Python tool startup work by compiling trusted virtualenv bytecode during image build. Runtime bytecode writes remain disabled. Security-scanner versions, rules, probe timeout and scan limits remain unchanged.
+
+Compared with v2.1.7, the inventory companion Node runtime advances from v24.18.1 to v24.22.1 (Alpine 24.22.1-r1 on x86_64 and 24.22.1-r0 on aarch64), and its go-jose dependency advances from 4.1.5 to 4.1.6. The Go module declarations now mark x/mod as direct and packageurl-go as indirect, without changing those versions. Includes the reviewed release-APK retention and native baseline/update-workflow repairs already on main.
+
 ## [2.1.7] - 2026-10-23
 
 Scan exported or history-free source trees with Gitleaks current-tree mode instead of silently reporting no secrets from history mode. Honor the repository's `.gitleaks.toml` and `.gitleaksignore`; repositories with `.git` keep history scanning. Includes the corrected native image integration fixture for both modes ([#215](https://github.com/sourcebastion/sourcebastion-scanner/pull/215), sourcebastion-platform #478).

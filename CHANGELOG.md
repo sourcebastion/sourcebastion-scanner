@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.8] - 2026-11-06
+
+Reduce Python tool startup work by compiling trusted virtualenv bytecode during image build. Runtime bytecode writes remain disabled. Scanner versions, rules, probe timeout and scan limits remain unchanged. Includes the reviewed scanner maintenance fixes already on main.
+
 ## [2.1.7] - 2026-10-23
 
 Scan exported or history-free source trees with Gitleaks current-tree mode instead of silently reporting no secrets from history mode. Honor the repository's `.gitleaks.toml` and `.gitleaksignore`; repositories with `.git` keep history scanning. Includes the corrected native image integration fixture for both modes ([#215](https://github.com/sourcebastion/sourcebastion-scanner/pull/215), sourcebastion-platform #478).

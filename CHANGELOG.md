@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.9] - 2026-11-07
+
+Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.
+
 ## [2.1.8] - 2026-11-06
 
 Reduce Python tool startup work by compiling trusted virtualenv bytecode during image build. Runtime bytecode writes remain disabled. Security-scanner versions, rules, probe timeout and scan limits remain unchanged.

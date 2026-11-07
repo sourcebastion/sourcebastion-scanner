@@ -34,7 +34,11 @@ RUN python scripts/scanner_artifacts.py install --libc musl --group build && \
     /opt/venv/bin/python scripts/scanner_artifacts.py install --libc musl && \
     /opt/venv/bin/python -m pip install --no-cache-dir --no-index --no-deps /dist/*.whl && \
     /opt/venv/bin/python -m pip check && \
-    find /opt/venv -type d -name __pycache__ -prune -exec rm -rf {} +
+    /opt/venv/bin/python -m compileall -q /opt/venv
+
+# Keep the trusted wheels' bytecode: runtime uses this same pinned Python and
+# virtualenv path. With runtime bytecode writes disabled, deleting these caches
+# makes every CLI/probe recompile dependencies (including Semgrep's MCP imports).
 
 # Downloads, extraction tools, build context and wheel files stay in this stage.
 FROM python-base AS scanners

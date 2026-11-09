@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.10] - 2026-11-09
+
+Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.
+
 ## [2.1.9] - 2026-11-07
 
 Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.

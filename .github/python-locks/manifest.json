@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "python": "3.14.8",
-  "semgrep_version": "1.184.0",
+  "semgrep_version": "1.185.0",
   "files": {
     "build-cp314-manylinux_2_34_x86_64.txt": "2ca20d9688a515ba49c627ebfdf71d1b1e85805dc24c540c5b7aafea9df11470",
     "build-cp314-manylinux_2_34_aarch64.txt": "2ca20d9688a515ba49c627ebfdf71d1b1e85805dc24c540c5b7aafea9df11470",
@@ -11,9 +11,9 @@
     "runtime-cp314-manylinux_2_34_aarch64.txt": "851e9006f1208c4b62dde87e6b09cc9bb23e7738bc6a290158cbf982315e13d7",
     "runtime-cp314-musllinux_1_2_x86_64.txt": "851e9006f1208c4b62dde87e6b09cc9bb23e7738bc6a290158cbf982315e13d7",
     "runtime-cp314-musllinux_1_2_aarch64.txt": "851e9006f1208c4b62dde87e6b09cc9bb23e7738bc6a290158cbf982315e13d7",
-    "semgrep-cp314-manylinux_2_34_x86_64.txt": "148c8628f82cd33617679b9eba19784b508695753b96217437332c8c820b6952",
-    "semgrep-cp314-manylinux_2_34_aarch64.txt": "7a4aa80b248e69c021ba0ed1e39da504aec0ff5806d0d6e3877d0b7d5d4bb944",
-    "semgrep-cp314-musllinux_1_2_x86_64.txt": "4cc6cc88eaed94bc8b3abdacbe74a19cbff075e415e3f6b1b7e69d1e7cfb64ae",
-    "semgrep-cp314-musllinux_1_2_aarch64.txt": "068a7ae7d8ebdc240e73219b6c36499c4d23517782e142c1f5d14bf0600c4af5"
+    "semgrep-cp314-manylinux_2_34_x86_64.txt": "6e69a75eed53783c5120d919770d278e0b432304163bf44f7ec76a4a31a80b32",
+    "semgrep-cp314-manylinux_2_34_aarch64.txt": "daeaa32dfc1b1db0cd31c4dd78483583480cb7ec381206d25fe92439a5099424",
+    "semgrep-cp314-musllinux_1_2_x86_64.txt": "45b7ffc5401d5f7d311798bc0efa31a544a9d3be58d93665e4aab81d88c2cecc",
+    "semgrep-cp314-musllinux_1_2_aarch64.txt": "8dc4ffbafa6eda4b427d503c6169f8d6770ea07537706b3ea957e73941cba8f5"
   }
 }

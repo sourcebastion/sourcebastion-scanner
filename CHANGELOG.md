@@ -1,5 +1,7 @@
 ## Unreleased
 
+Add `sourcebastion profile`, which prints aggregate source-profile counts (languages, infrastructure hints, path classes and manifest types) from a NUL-delimited path list, using the versioned lookup table `sourcebastion.source-profile-table/1` (sourcebastion-platform M066 S01/T02). It reads no file contents and prints no path. Scan behaviour, rules and results are unchanged.
+
 ## [2.1.9] - 2026-11-07
 
 Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.

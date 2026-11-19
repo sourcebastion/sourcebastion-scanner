@@ -1,0 +1,11 @@
+#!/bin/sh
+# M066 S01/T05 diagnostic image only: answer `--version` late so the scanner's
+# probe ceiling (SOURCEBASTION_PROBE_TIMEOUT_SECONDS, default 30 s) trips and
+# reports probe_timeout. Every other invocation is the real Semgrep, unchanged.
+for arg in "$@"; do
+  if [ "$arg" = "--version" ]; then
+    sleep "${SOURCEBASTION_DIAGNOSTIC_PROBE_DELAY_SECONDS:-45}"
+    break
+  fi
+done
+exec /opt/venv/bin/semgrep "$@"

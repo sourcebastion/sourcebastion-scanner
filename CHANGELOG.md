@@ -2,6 +2,8 @@
 
 Report a scanner component's `--version` probe running past its ceiling as `probe_timeout`, and the scan itself as `scan_timeout`, instead of one `timeout` (sourcebastion-platform M066 D11; the platform accepts both in `sourcebastion.scan-result.v1`). `timeout` remains for an exhausted execution deadline. Each enabled tool is now probed once, one at a time, before the scans start, so probes no longer compete with running scans. `SOURCEBASTION_PROBE_TIMEOUT_SECONDS` (1-30, default 30) can only lower the probe ceiling, for controlled diagnostics. Rules, findings and scan budgets are unchanged.
 
+Releases also publish `ghcr.io/sourcebastion/sourcebastion-scanner-diagnostic`, built `FROM` the exact promoted release digest. Its only change is a `semgrep` wrapper that answers `--version` after a delay (`SOURCEBASTION_DIAGNOSTIC_PROBE_DELAY_SECONDS`, default 45 s), so a controlled run can force `probe_timeout` (sourcebastion-platform M066 S01/T05). It is tagged with the version and commit only, never `latest`, and is never a default image.
+
 ## [2.1.9] - 2026-11-07
 
 Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.

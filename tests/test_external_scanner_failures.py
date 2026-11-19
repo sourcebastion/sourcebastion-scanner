@@ -61,7 +61,7 @@ def test_timeout_is_a_bounded_failure(tmp_path):
             scanner.scan(str(tmp_path))
 
     assert raised.value.scanner == "gitleaks"
-    assert raised.value.code == "timeout"
+    assert raised.value.code == "scan_timeout"
     assert "gitleaks" in str(raised.value)
     assert str(tmp_path) not in str(raised.value)
 
@@ -593,7 +593,7 @@ def test_semgrep_timeout_reports_to_stderr_without_exception_output(tmp_path, ca
         with pytest.raises(ScannerExecutionError):
             scanner.scan_with_raw_output(str(tmp_path))
     err = capsys.readouterr().err
-    assert "error code=timeout" in err and "secret source" not in err
+    assert "error code=scan_timeout" in err and "secret source" not in err
 
 
 def test_semgrep_error_types_are_counted_without_messages_or_paths(tmp_path, capsys):
@@ -648,3 +648,65 @@ def test_git_repository_keeps_history_mode(tmp_path):
     (tmp_path / ".git").mkdir()
     command = _gitleaks_command(tmp_path)
     assert command[:2] == ["gitleaks", "detect"]
+
+
+def test_a_probe_timeout_is_distinct_from_a_scan_timeout(tmp_path):
+    """M066 D11: a slow `--version` under contention is not a slow scan."""
+    scanner = GitleaksScanner()
+    with patch(
+        "sourcebastion.external_scanners.subprocess.run",
+        side_effect=subprocess.TimeoutExpired("gitleaks", 30),
+    ):
+        with pytest.raises(ScannerExecutionError) as raised:
+            scanner.scan(str(tmp_path))
+    assert (raised.value.scanner, raised.value.code) == ("gitleaks", "probe_timeout")
+
+
+@pytest.mark.parametrize("value, expected", [(None, 30), ("1", 1), ("30", 30)])
+def test_probe_timeout_setting_only_lowers_the_ceiling(monkeypatch, value, expected):
+    from sourcebastion.external_scanners import probe_timeout_seconds
+
+    if value is None:
+        monkeypatch.delenv("SOURCEBASTION_PROBE_TIMEOUT_SECONDS", raising=False)
+    else:
+        monkeypatch.setenv("SOURCEBASTION_PROBE_TIMEOUT_SECONDS", value)
+    assert probe_timeout_seconds() == expected
+
+
+@pytest.mark.parametrize("value", ["0", "31", "5s", "-1", ""])
+def test_probe_timeout_setting_refuses_out_of_range_values(monkeypatch, value):
+    from sourcebastion.external_scanners import probe_timeout_seconds
+
+    monkeypatch.setenv("SOURCEBASTION_PROBE_TIMEOUT_SECONDS", value)
+    with pytest.raises(ValueError, match="SOURCEBASTION_PROBE_TIMEOUT_SECONDS"):
+        probe_timeout_seconds()
+
+
+def test_the_probe_timeout_reaches_the_version_check(monkeypatch):
+    monkeypatch.setenv("SOURCEBASTION_PROBE_TIMEOUT_SECONDS", "2")
+    seen = []
+
+    def run(argv, **kwargs):
+        seen.append(kwargs["timeout"])
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+    with patch("sourcebastion.external_scanners.subprocess.run", side_effect=run):
+        assert GitleaksScanner().is_installed()
+    assert seen == [2]
+
+
+def test_each_enabled_tool_is_probed_once_before_any_scan(tmp_path):
+    from sourcebastion.external_scanners import ExternalScannerManager
+
+    manager = ExternalScannerManager()
+    order = []
+    for name, scanner in manager.scanners.items():
+        scanner.enabled = name in {"gitleaks", "kics"}
+        scanner.is_installed = (lambda n: (lambda: order.append(("probe", n)) or True))(name)
+        scanner.scan_with_raw_output = (lambda n: (lambda path: order.append(("scan", n)) or ([], None)))(name)
+    manager.scan_all_with_raw_outputs(str(tmp_path))
+    probes = [entry for entry in order if entry[0] == "probe"]
+    assert sorted(probes) == [("probe", "gitleaks"), ("probe", "kics")]
+    first_scan = min(i for i, entry in enumerate(order) if entry[0] == "scan")
+    assert all(order.index(probe) < first_scan for probe in probes)
+    # A later check inside a scan reuses the probe's answer.
+    assert manager.scanners["gitleaks"].installed() and len([e for e in order if e[0] == "probe"]) == 2

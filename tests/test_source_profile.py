@@ -114,7 +114,6 @@ def test_nul_delimited_bytes_are_parsed_as_untrusted():
     "data, status",
     [
         (b"/etc/passwd\0", "invalid_path"),
-        (b"a\nb.go\0", "invalid_path"),
         (b"x" * (sp.MAX_PATH_BYTES + 1), "invalid_path"),
     ],
 )
@@ -166,5 +165,33 @@ def test_cli_reads_a_file_and_stdin(tmp_path):
 
 def test_cli_exits_nonzero_on_a_refusal():
     result = CliRunner().invoke(main, ["profile", "-"], input=b"/abs\0")
-    assert result.exit_code == 2
+    assert result.exit_code == 3
     assert json.loads(result.output)["status"] == "invalid_path"
+
+
+def test_a_newline_in_a_name_is_profiled_not_refused():
+    # Git allows it, and ls-tree -z prints it unquoted.
+    result = sp.profile_bytes(b"a\nb.go\0c.py\0")
+    assert result["status"] == "ok" and result["path_count"] == 2
+    assert result["languages"] == {"go": 1, "python": 1}
+
+
+@pytest.mark.parametrize("data", [b"\0" * 5, b"\0\0a.go\0\0\0", b"a\0" * 4])
+def test_too_many_separators_is_refused_before_splitting(monkeypatch, data):
+    monkeypatch.setattr(sp, "MAX_PATHS", 3)
+    calls = []
+    real = bytes.split
+
+    class Probe(bytes):
+        def split(self, *args):
+            calls.append(args)
+            return real(self, *args)
+
+    assert sp.profile_bytes(Probe(data))["status"] == "too_large"
+    assert calls == []
+
+
+def test_exactly_the_path_limit_with_a_trailing_separator_is_accepted(monkeypatch):
+    monkeypatch.setattr(sp, "MAX_PATHS", 3)
+    assert sp.profile_bytes(b"a.go\0b.go\0c.go\0")["path_count"] == 3
+    assert sp.profile_bytes(b"a.go\0b.go\0c.go\0d.go")["status"] == "too_large"

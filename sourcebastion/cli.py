@@ -1165,7 +1165,8 @@ def profile_cmd(path_list):
     result = source_profile.profile_bytes(data)
     click.echo(json.dumps(result, sort_keys=True))
     if result["status"] != "ok":
-        sys.exit(2)
+        # Not 2, which click uses for a usage error.
+        sys.exit(3)
 
 
 @main.command("org-sync")

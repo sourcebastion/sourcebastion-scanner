@@ -29,7 +29,8 @@ TABLE_PATH = Path(__file__).with_name("data") / "source_profile_table.json"
 
 # Bounds before any work: an oversized input stops with a fixed status rather
 # than being partly counted. linux has about 97,000 paths, so 1,000,000 leaves
-# room for real monorepos while bounding memory.
+# room for real monorepos. The separators are counted before splitting, so
+# memory stays near the input size instead of growing with the entry count.
 MAX_PATHS = 1_000_000
 MAX_PATH_BYTES = 4096
 MAX_INPUT_BYTES = 256 * 1024 * 1024
@@ -145,6 +146,10 @@ def split_paths(data: bytes) -> list[str]:
     """NUL-delimited untrusted bytes -> bounded relative paths."""
     if len(data) > MAX_INPUT_BYTES:
         raise ProfileInputError("too_large")
+    # More separators than paths allowed means more entries than allowed (empty
+    # ones included): refuse before split() builds a list of them.
+    if data.count(b"\0") > MAX_PATHS:
+        raise ProfileInputError("too_large")
     paths = []
     for item in data.split(b"\0"):
         if not item:
@@ -156,7 +161,9 @@ def split_paths(data: bytes) -> list[str]:
         # Classification only reads ASCII suffixes and directory names, so a
         # replaced undecodable byte cannot change a match.
         text = item.decode("utf-8", errors="replace")
-        if text.startswith("/") or "\n" in text:
+        # A newline is a legal git file name byte and never reaches the
+        # output, so it does not refuse the profile.
+        if text.startswith("/"):
             raise ProfileInputError("invalid_path")
         paths.append(text)
     return paths

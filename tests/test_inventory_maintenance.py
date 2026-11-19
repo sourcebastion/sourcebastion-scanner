@@ -168,12 +168,22 @@ def test_oci_digest_tampering_is_refused(tmp_path):
         release["oci_layers"](oci(tmp_path, corrupt=True), "arm64")
 
 
-@pytest.mark.parametrize("same_image", [True, False])
-def test_compressed_growth_cli_binds_the_actual_tested_image(tmp_path, same_image):
+# The classic image store reports the config digest as Id; the containerd
+# image store (Docker 29 default on ubuntu-24.04 amd64) reports the manifest digest.
+@pytest.mark.parametrize("store_id, layers, same_image", [
+    ("config_digest", "same", True),
+    ("manifest_digest", "same", True),
+    ("other", "same", False),
+    ("config_digest", "other", False),
+    ("manifest_digest", "other", False),
+])
+def test_compressed_growth_cli_binds_the_actual_tested_image(tmp_path, store_id, layers, same_image):
     path = oci(tmp_path)
     value = release["oci_layers"](path, "arm64")
     inspect = tmp_path / "image.json"
-    inspect.write_text(json.dumps({"Id": value["config_digest"] if same_image else "sha256:" + "b" * 64,
+    inspect.write_text(json.dumps({"Id": value[store_id] if store_id != "other" else "sha256:" + "b" * 64,
+                                   "RootFS": {"Type": "layers",
+                                              "Layers": value["diff_ids"] if layers == "same" else ["sha256:" + "c" * 64]},
                                    "Architecture": "arm64", "Os": "linux"}))
     output = tmp_path / "growth.json"
     result = subprocess.run([sys.executable, str(ROOT / "scripts/verify-inventory-release-size.py"),
@@ -182,7 +192,10 @@ def test_compressed_growth_cli_binds_the_actual_tested_image(tmp_path, same_imag
     assert result.returncode == (0 if same_image else 1)
     receipt = json.loads(output.read_text())
     assert receipt["status"] == ("passed" if same_image else "failed")
-    if not same_image:
+    if same_image:
+        assert receipt["tested_image_id"] == value["config_digest"]
+        assert receipt["tested_image_store_id"] == value[store_id]
+    else:
         assert receipt["reason"] == "compressed-candidate-is-not-tested-image"
 
 
@@ -190,7 +203,8 @@ def test_frozen_s01_gate_refuses_an_arbitrary_pr_base_even_when_image_matches(tm
     path = oci(tmp_path)
     value = release["oci_layers"](path, "arm64")
     inspect = tmp_path / "image.json"
-    inspect.write_text(json.dumps({"Id": value["config_digest"], "Architecture": "arm64", "Os": "linux"}))
+    inspect.write_text(json.dumps({"Id": value["config_digest"], "RootFS": {"Type": "layers", "Layers": value["diff_ids"]},
+                                   "Architecture": "arm64", "Os": "linux"}))
     output = tmp_path / "frozen-growth.json"
     result = subprocess.run([sys.executable, str(ROOT / "scripts/verify-inventory-release-size.py"),
                             "--frozen-s01", "--baseline", str(path), "--candidate", str(path),

@@ -446,9 +446,10 @@ jobs:
       - name: Retain candidate compressed layers before proof outputs enter the build context
         env:
           IMAGE_ARCH: ${{ matrix.arch }}
+          SOURCEBASTION_PYTHON_VERSION: ${{ steps.python.outputs.version }}
         run: |
           docker buildx build --platform "linux/$IMAGE_ARCH" --provenance=false --sbom=false \
-            ${{ steps.bases.outputs.build_args }} \
+            --build-arg "PYTHON_VERSION=$SOURCEBASTION_PYTHON_VERSION" ${{ steps.bases.outputs.build_args }} \
             --output "type=oci,dest=$RUNNER_TEMP/inventory-candidate.oci.tar" -f images/Dockerfile .
 
       - name: Record image size

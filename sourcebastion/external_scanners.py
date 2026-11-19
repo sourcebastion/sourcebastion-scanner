@@ -1979,6 +1979,9 @@ class ExternalScannerManager:
         if isinstance(max_workers, bool) or not isinstance(max_workers, int) or not 1 <= max_workers <= MAX_SCANNER_CONCURRENCY:
             raise ValueError("scanner concurrency must be between 1 and 10")
         self.max_workers = max_workers
+        # Refuse a bad probe ceiling here, as a configuration error, rather
+        # than at the first probe.
+        probe_timeout_seconds()
         self.scanners = {
             "gitleaks": GitleaksScanner(),
             "semgrep": SemgrepScanner(),
@@ -2069,11 +2072,20 @@ class ExternalScannerManager:
         return all_issues, raw_outputs
 
     def _probe_enabled(self) -> None:
-        """Probe each enabled tool once, one at a time, before any scan starts."""
-        for scanner in self.scanners.values():
+        """Probe each enabled tool once, one at a time, before any scan starts.
+
+        The probe runs outside each tool's scan, so it maps unexpected errors to
+        a stable code itself, as the scan loops do for the scan.
+        """
+        for name, scanner in self.scanners.items():
             probe = getattr(scanner, "installed", None)
             if scanner.enabled and probe is not None:
-                probe()
+                try:
+                    probe()
+                except ScannerExecutionError:
+                    raise
+                except Exception:
+                    raise ScannerExecutionError(name, "execution_failed") from None
 
     def _scan_parallel(self, path: str, *, raw: bool) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
         """Bound concurrent tools and retain configured-order aggregation."""

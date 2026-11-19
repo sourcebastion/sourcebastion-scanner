@@ -710,3 +710,24 @@ def test_each_enabled_tool_is_probed_once_before_any_scan(tmp_path):
     assert all(order.index(probe) < first_scan for probe in probes)
     # A later check inside a scan reuses the probe's answer.
     assert manager.scanners["gitleaks"].installed() and len([e for e in order if e[0] == "probe"]) == 2
+
+
+@pytest.mark.parametrize("workers", [1, 2])
+def test_an_unexpected_probe_error_maps_to_a_stable_code(tmp_path, workers):
+    """The up-front probe keeps the scan loops' contract: no raw exception."""
+    from sourcebastion.external_scanners import ExternalScannerManager
+
+    manager = ExternalScannerManager(enabled_scanners=["gitleaks"], max_workers=workers)
+    with patch("sourcebastion.external_scanners.subprocess.run", side_effect=PermissionError("denied")):
+        with pytest.raises(ScannerExecutionError) as raised:
+            manager.scan_all_with_raw_outputs(str(tmp_path))
+    assert (raised.value.scanner, raised.value.code) == ("gitleaks", "execution_failed")
+    assert "denied" not in str(raised.value)
+
+
+def test_a_bad_probe_ceiling_is_refused_when_the_manager_is_built(monkeypatch):
+    from sourcebastion.external_scanners import ExternalScannerManager
+
+    monkeypatch.setenv("SOURCEBASTION_PROBE_TIMEOUT_SECONDS", "99")
+    with pytest.raises(ValueError, match="SOURCEBASTION_PROBE_TIMEOUT_SECONDS"):
+        ExternalScannerManager()

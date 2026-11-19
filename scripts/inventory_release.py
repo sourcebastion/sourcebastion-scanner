@@ -168,6 +168,7 @@ def oci_layers(path, architecture):
             if "sha256:" + calculated.hexdigest() != expected:
                 raise ValueError("oci-rootfs-diff-id-mismatch")
         return {"manifest_digest": descriptor["digest"], "config_digest": manifest["config"]["digest"], "architecture": architecture,
+                "diff_ids": list(diff_ids),
                 "layers": [{"digest": layer["digest"], "size": layer["size"]} for layer in layers]}
 
 

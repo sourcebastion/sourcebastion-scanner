@@ -21,13 +21,22 @@ def main():
     try:
         candidate = oci_layers(args.candidate, args.architecture)
         image = json.loads(args.candidate_image.read_text())
-        if image["Id"] != candidate["config_digest"] or image["Architecture"] != args.architecture or image["Os"] != "linux":
+        # The classic Docker image store reports the config digest as Id; the
+        # containerd image store (Docker 29 default) reports the manifest
+        # digest. Either one is a content address that fixes the config, so
+        # the candidate is the tested image only when Id is one of the two
+        # and the uncompressed layer chain matches the candidate's diff IDs.
+        if (image["Id"] not in {candidate["config_digest"], candidate["manifest_digest"]}
+                or image["RootFS"]["Type"] != "layers" or image["RootFS"]["Layers"] != candidate["diff_ids"]
+                or image["Architecture"] != args.architecture or image["Os"] != "linux"):
             raise ValueError("compressed-candidate-is-not-tested-image")
         baseline = frozen_s01_layers(args.baseline, args.architecture) if args.frozen_s01 else oci_layers(args.baseline, args.architecture)
         value.update(growth(baseline, candidate))
         if args.frozen_s01:
             value.update({key: val for key, val in baseline.items() if key.startswith("baseline_")})
-        value["tested_image_id"] = image["Id"]
+        # The tested image's config digest, whatever Id the local store reports.
+        value["tested_image_id"] = candidate["config_digest"]
+        value["tested_image_store_id"] = image["Id"]
         value["status"] = "passed"
     except (KeyError, ValueError, OSError, tarfile.TarError) as error:
         value["reason"] = str(error) if type(error) is ValueError else type(error).__name__

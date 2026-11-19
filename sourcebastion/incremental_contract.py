@@ -11,7 +11,9 @@ import json
 import math
 import os
 import re
+import resource
 import stat
+import sys
 import subprocess
 import tempfile
 import time
@@ -526,6 +528,60 @@ def _duplicate_findings(findings: list[Dict[str, Any]]) -> bool:
     return False
 
 
+# M066 D12: optional per-component numbers in the v1 envelope. Emitted only
+# when the platform declares it accepts them, because older platforms check
+# the envelope's keys exactly.
+COMPONENT_METRICS_ENV = "SOURCEBASTION_COMPONENT_METRICS"
+MAX_COMPONENT_SECONDS = 1800
+MAX_PEAK_RSS_BYTES = 1 << 40
+MEMORY_LABELS = ("measured", "partial", "unavailable")
+
+
+def component_metrics_enabled() -> bool:
+    return os.environ.get(COMPONENT_METRICS_ENV) == "1"
+
+
+def _children_maxrss_bytes() -> int:
+    """High-water RSS of the largest waited child process, in bytes.
+
+    ``ru_maxrss`` is kibibytes on Linux and bytes on macOS. It is the largest
+    single process, not the sum of a process tree, so it is labelled partial.
+    """
+    value = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+    return int(value) if sys.platform == "darwin" else int(value) * 1024
+
+
+def _component_metric(elapsed: float, before: int | None, after: int | None) -> Dict[str, Any] | None:
+    """One component's metric, or None when elapsed time is out of bounds.
+
+    Peak memory is known only when this component ran alone (``before`` and
+    ``after`` sampled around it) and raised the children's high-water mark.
+    Anything else is ``unavailable``, never zero.
+    """
+    if not (isinstance(elapsed, float) and math.isfinite(elapsed) and 0 <= elapsed <= MAX_COMPONENT_SECONDS):
+        return None
+    metric: Dict[str, Any] = {"elapsed_seconds": round(elapsed, 3), "memory": "unavailable"}
+    if before is not None and after is not None and before < after <= MAX_PEAK_RSS_BYTES:
+        metric.update(peak_rss_bytes=after, memory="partial")
+    return metric
+
+
+def _validate_component_metrics(value: Any, plan: Dict[str, Any]) -> None:
+    planned = {item["name"] for item in plan["components"]}
+    if not isinstance(value, dict) or not set(value) <= planned:
+        _result_invalid()
+    for metric in value.values():
+        if not isinstance(metric, dict) or not {"elapsed_seconds", "memory"} <= set(metric) <= {
+                "elapsed_seconds", "memory", "peak_rss_bytes"}:
+            _result_invalid()
+        elapsed, memory, peak = metric["elapsed_seconds"], metric["memory"], metric.get("peak_rss_bytes")
+        if (isinstance(elapsed, bool) or not isinstance(elapsed, (int, float)) or not math.isfinite(elapsed)
+                or not 0 <= elapsed <= MAX_COMPONENT_SECONDS or memory not in MEMORY_LABELS
+                or (memory == "unavailable") != (peak is None)
+                or (peak is not None and (type(peak) is not int or not 0 <= peak <= MAX_PEAK_RSS_BYTES))):
+            _result_invalid()
+
+
 def execute_scan_plan(
     source_path: str,
     plan: Dict[str, Any],
@@ -559,9 +615,23 @@ def execute_scan_plan(
             component["covered_paths"] or component["iac_units"]
         )
 
+    metrics: Dict[str, Any] = {}
+    serial = manager.max_workers <= 1
+
     def run_component(component):
         name, mode = component["name"], component["mode"]
         scanner = manager.scanners[COMPONENT_NAMES[name]]
+        component_started = time.perf_counter()  # monotonic; the deadline keeps time.monotonic
+        rss_before = _children_maxrss_bytes() if serial else None
+        try:
+            return _run_component(component, name, mode, scanner)
+        finally:
+            metric = _component_metric(time.perf_counter() - component_started, rss_before,
+                                       _children_maxrss_bytes() if serial else None)
+            if metric is not None:
+                metrics[name] = metric
+
+    def _run_component(component, name, mode, scanner):
         scanner.set_execution_deadline(
             started_monotonic + plan["limits"]["max_execution_seconds"]
         )
@@ -708,6 +778,10 @@ def execute_scan_plan(
         ),
         "components": component_results,
     }
+    if component_metrics_enabled() and metrics:
+        body["component_metrics"] = {
+            item["name"]: metrics[item["name"]] for item in plan["components"] if item["name"] in metrics
+        }
     return validate_result_envelope(
         {**body, "result_digest": _sha256(body)},
         plan,
@@ -753,9 +827,12 @@ def validate_result_envelope(
             "finished_at",
             "components",
             "result_digest",
-        },
+        }
+        | ({"component_metrics"} if isinstance(envelope, dict) and "component_metrics" in envelope else set()),
         "result_envelope_invalid",
     )
+    if "component_metrics" in result:
+        _validate_component_metrics(result["component_metrics"], plan)
     if result["schema_version"] != RESULT_VERSION:
         raise IncrementalContractError("result_version_unsupported")
     plan = validate_scan_plan(plan)

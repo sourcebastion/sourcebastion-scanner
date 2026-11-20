@@ -831,11 +831,11 @@ def validate_result_envelope(
         | ({"component_metrics"} if isinstance(envelope, dict) and "component_metrics" in envelope else set()),
         "result_envelope_invalid",
     )
-    if "component_metrics" in result:
-        _validate_component_metrics(result["component_metrics"], plan)
     if result["schema_version"] != RESULT_VERSION:
         raise IncrementalContractError("result_version_unsupported")
     plan = validate_scan_plan(plan)
+    if "component_metrics" in result:
+        _validate_component_metrics(result["component_metrics"], plan)
     if (
         result["observed_head_sha"] != plan["source"]["head_sha"]
         or result["plan_digest"] != plan["plan_digest"]

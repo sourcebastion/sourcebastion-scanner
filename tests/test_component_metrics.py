@@ -81,3 +81,11 @@ def test_metrics_carry_no_repository_text(tmp_path, monkeypatch):
     envelope, _plan = _run(tmp_path, monkeypatch)
     rendered = json.dumps(envelope["component_metrics"])
     assert "app.py" not in rendered and str(tmp_path) not in rendered
+
+
+def test_metrics_are_checked_against_a_validated_plan(tmp_path, monkeypatch):
+    envelope, plan = _run(tmp_path, monkeypatch, enabled=False)
+    broken = {k: v for k, v in plan.items() if k != "components"}
+    metrics = {"gitleaks": {"elapsed_seconds": 1.0, "memory": "unavailable"}}
+    with pytest.raises(IncrementalContractError):  # a contract code, never a raw KeyError
+        validate_result_envelope(_with(envelope, broken, metrics), broken)

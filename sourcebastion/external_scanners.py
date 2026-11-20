@@ -278,9 +278,20 @@ DEFAULT_COMPONENT_TIMEOUTS = {
     "grype": {"scan": 300, "setup": 300},
 }
 
-# A probe is not tunable. A tool that cannot answer `--version` inside this is
-# broken, not slow, and making it configurable only delays that verdict.
+# A tool that cannot answer `--version` inside this is broken, not slow, so the
+# ceiling only goes down: SOURCEBASTION_PROBE_TIMEOUT_SECONDS (1-30) lets a
+# controlled diagnostic force a probe timeout (M066 S01/T05).
 PROBE_TIMEOUT_SECONDS = 30
+PROBE_TIMEOUT_VARIABLE = "SOURCEBASTION_PROBE_TIMEOUT_SECONDS"
+
+
+def probe_timeout_seconds() -> int:
+    raw = os.environ.get(PROBE_TIMEOUT_VARIABLE)
+    if raw is None:
+        return PROBE_TIMEOUT_SECONDS
+    if not raw.isdigit() or not 1 <= int(raw) <= PROBE_TIMEOUT_SECONDS:
+        raise ValueError(f"{PROBE_TIMEOUT_VARIABLE} must be an integer between 1 and {PROBE_TIMEOUT_SECONDS}")
+    return int(raw)
 
 
 class ScannerExecutionError(RuntimeError):
@@ -289,7 +300,13 @@ class ScannerExecutionError(RuntimeError):
     VALID_CODES = frozenset(
         {
             "not_installed",
+            # The execution deadline ran out before the tool could run.
             "timeout",
+            # M066 D11: the `--version` probe, or the scan itself, ran past its
+            # ceiling. Distinct so a probe under contention is not mistaken for
+            # a slow scan. The platform accepts both in scan-result v1.
+            "probe_timeout",
+            "scan_timeout",
             "execution_failed",
             "output_missing",
             "invalid_output",
@@ -362,6 +379,17 @@ class ScannerWrapper(ABC):
         if remaining <= 0:
             self._fail("timeout")
         return min(scanner_ceiling, remaining)
+
+    def installed(self) -> bool:
+        """Probe once per run; later checks reuse the answer (M066 S01/T05).
+
+        ``ExternalScannerManager`` probes every enabled tool before its pool starts,
+        so the `--version` probes no longer compete with running scans.
+        """
+        cached = getattr(self, "_installed", None)
+        if cached is None:
+            cached = self._installed = bool(self.is_installed())
+        return cached
 
     def _fail(self, code: str) -> None:
         """Raise a stable failure without including command output or source data."""
@@ -449,11 +477,11 @@ class GitleaksScanner(ScannerWrapper):
                 ["gitleaks", "version"],
                 capture_output=True,
                 check=True,
-                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
+                timeout=self._timeout(probe_timeout_seconds()),
             )
             return True
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("probe_timeout")
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
     
@@ -554,7 +582,7 @@ class GitleaksScanner(ScannerWrapper):
         ignore_path: Optional[str],
     ) -> Tuple[List[Dict[str, Any]], str]:
         """Run either the legacy Git-history scan or bounded current-tree scan."""
-        if not self.is_installed():
+        if not self.installed():
             self._fail("not_installed")
         
         # Create temporary file for raw output
@@ -641,7 +669,7 @@ class GitleaksScanner(ScannerWrapper):
             completed = True
             return issues, raw_output_path
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("scan_timeout")
         except json.JSONDecodeError:
             self._fail("invalid_output")
         except ScannerExecutionError:
@@ -817,11 +845,11 @@ class SemgrepScanner(ScannerWrapper):
                     capture_output=True,
                     check=True,
                     env=self._environment(settings_directory),
-                    timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
+                    timeout=self._timeout(probe_timeout_seconds()),
                 )
             return True
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("probe_timeout")
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
@@ -871,7 +899,7 @@ class SemgrepScanner(ScannerWrapper):
         self, path: str, *, require_complete_coverage: bool = False
     ) -> Tuple[List[Dict[str, Any]], str]:
         """Run semgrep scan and return raw output file path"""
-        if not self.is_installed():
+        if not self.installed():
             self._fail("not_installed")
 
         # Create temporary file for raw output
@@ -1067,7 +1095,7 @@ class SemgrepScanner(ScannerWrapper):
             completed = True
             return issues, raw_output_path
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("scan_timeout")
         except json.JSONDecodeError:
             self._fail("invalid_output")
         except ScannerExecutionError:
@@ -1292,11 +1320,11 @@ class KicsScanner(ScannerWrapper):
                 ["kics", "version"],
                 capture_output=True,
                 check=True,
-                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
+                timeout=self._timeout(probe_timeout_seconds()),
             )
             return self._find_assets_path() is not None
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("probe_timeout")
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
@@ -1339,7 +1367,7 @@ class KicsScanner(ScannerWrapper):
 
     def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
         """Run KICS scan and return raw output file path"""
-        if not self.is_installed():
+        if not self.installed():
             self._fail("not_installed")
 
         # kics -o expects a directory; it writes results.json inside it.
@@ -1441,7 +1469,7 @@ class KicsScanner(ScannerWrapper):
             completed = True
             return issues, standalone_path
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("scan_timeout")
         except json.JSONDecodeError:
             self._fail("invalid_output")
         except ScannerExecutionError:
@@ -1598,11 +1626,11 @@ class GrypeScanner(ScannerWrapper):
                 ["grype", "--version"],
                 capture_output=True,
                 check=True,
-                timeout=self._timeout(PROBE_TIMEOUT_SECONDS),
+                timeout=self._timeout(probe_timeout_seconds()),
             )
             return True
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("probe_timeout")
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
@@ -1660,7 +1688,7 @@ class GrypeScanner(ScannerWrapper):
 
     def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
         """Run grype scan and return raw output file path"""
-        if not self.is_installed():
+        if not self.installed():
             self._fail("not_installed")
 
         with tempfile.NamedTemporaryFile(mode='w+', suffix='.json', delete=False) as temp_file:
@@ -1750,7 +1778,7 @@ class GrypeScanner(ScannerWrapper):
             completed = True
             return issues, raw_output_path
         except subprocess.TimeoutExpired:
-            self._fail("timeout")
+            self._fail("scan_timeout")
         except json.JSONDecodeError:
             self._fail("invalid_output")
         except ScannerExecutionError:
@@ -1921,7 +1949,7 @@ class GrypeImageScanner:
 
             return issues
         except subprocess.TimeoutExpired:
-            raise ScannerExecutionError("grype-image", "timeout") from None
+            raise ScannerExecutionError("grype-image", "scan_timeout") from None
         except json.JSONDecodeError:
             raise ScannerExecutionError("grype-image", "invalid_output") from None
         except ScannerExecutionError:
@@ -1951,6 +1979,9 @@ class ExternalScannerManager:
         if isinstance(max_workers, bool) or not isinstance(max_workers, int) or not 1 <= max_workers <= MAX_SCANNER_CONCURRENCY:
             raise ValueError("scanner concurrency must be between 1 and 10")
         self.max_workers = max_workers
+        # Refuse a bad probe ceiling here, as a configuration error, rather
+        # than at the first probe.
+        probe_timeout_seconds()
         self.scanners = {
             "gitleaks": GitleaksScanner(),
             "semgrep": SemgrepScanner(),
@@ -1989,6 +2020,7 @@ class ExternalScannerManager:
         if self.max_workers > 1:
             issues, _ = self._scan_parallel(path, raw=False)
             return issues
+        self._probe_enabled()
         all_issues = []
         
         for name, scanner in self.scanners.items():
@@ -2009,6 +2041,7 @@ class ExternalScannerManager:
         """Run enabled scanners and return outputs only after all complete."""
         if self.max_workers > 1:
             return self._scan_parallel(path, raw=True)
+        self._probe_enabled()
         all_issues = []
         raw_outputs = {}
         
@@ -2038,11 +2071,28 @@ class ExternalScannerManager:
         
         return all_issues, raw_outputs
 
+    def _probe_enabled(self) -> None:
+        """Probe each enabled tool once, one at a time, before any scan starts.
+
+        The probe runs outside each tool's scan, so it maps unexpected errors to
+        a stable code itself, as the scan loops do for the scan.
+        """
+        for name, scanner in self.scanners.items():
+            probe = getattr(scanner, "installed", None)
+            if scanner.enabled and probe is not None:
+                try:
+                    probe()
+                except ScannerExecutionError:
+                    raise
+                except Exception:
+                    raise ScannerExecutionError(name, "execution_failed") from None
+
     def _scan_parallel(self, path: str, *, raw: bool) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
         """Bound concurrent tools and retain configured-order aggregation."""
         enabled = [(name, scanner) for name, scanner in self.scanners.items() if scanner.enabled]
         if not enabled:
             return [], {}
+        self._probe_enabled()
         created_outputs = []
 
         def run(name, scanner):

@@ -1,5 +1,7 @@
 ## Unreleased
 
+Add `sourcebastion profile`, which prints aggregate source-profile counts (languages, infrastructure hints, path classes and manifest types) from a NUL-delimited path list, using the versioned lookup table `sourcebastion.source-profile-table/1` (sourcebastion-platform M066 S01/T02). It reads no file contents and prints no path. Scan behaviour, rules and results are unchanged.
+
 Report a scanner component's `--version` probe running past its ceiling as `probe_timeout`, and the scan itself as `scan_timeout`, instead of one `timeout` (sourcebastion-platform M066 D11; the platform accepts both in `sourcebastion.scan-result.v1`). `timeout` remains for an exhausted execution deadline. Each enabled tool is now probed once, one at a time, before the scans start, so probes no longer compete with running scans. `SOURCEBASTION_PROBE_TIMEOUT_SECONDS` (1-30, default 30) can only lower the probe ceiling, for controlled diagnostics. Rules, findings and scan budgets are unchanged.
 
 When the platform sets `SOURCEBASTION_COMPONENT_METRICS=1`, a `contract-scan` result envelope also carries `component_metrics` (sourcebastion-platform M066 D12). For each component that ran, including failed ones, it gives the monotonic elapsed seconds. It also gives peak memory, labelled `partial` when components ran one at a time and the largest child process set a new high-water mark, and `unavailable` otherwise (never zero). The result digest covers it. Without the variable the envelope is unchanged, so older platforms keep accepting it.

@@ -106,6 +106,7 @@ setup(
         ],
         "sourcebastion": [
             "data/frameworks/*.json",
+            "data/source_profile_table.json",
             "templates/*.j2",
         ],
     },

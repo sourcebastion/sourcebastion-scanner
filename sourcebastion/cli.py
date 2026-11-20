@@ -1146,6 +1146,29 @@ def rotate_secrets_cmd(repo, platform, findings, repo_path, gitlab_url, dry_run,
         sys.exit(1)
 
 
+@main.command("profile")
+@click.argument("path_list", type=click.Path(dir_okay=False, allow_dash=True))
+def profile_cmd(path_list):
+    """Print a source profile from a NUL-delimited path list (M066).
+
+    PATH_LIST is the output of ``git ls-tree -r -z --name-only HEAD``, or ``-``
+    for standard input. Only aggregate counts are printed; no path is.
+    """
+    from sourcebastion import source_profile
+
+    limit = source_profile.MAX_INPUT_BYTES + 1
+    if path_list == "-":
+        data = sys.stdin.buffer.read(limit)
+    else:
+        with open(path_list, "rb") as handle:
+            data = handle.read(limit)
+    result = source_profile.profile_bytes(data)
+    click.echo(json.dumps(result, sort_keys=True))
+    if result["status"] != "ok":
+        # Not 2, which click uses for a usage error.
+        sys.exit(3)
+
+
 @main.command("org-sync")
 @click.option("--org", required=True)
 @click.option("--config-repo", default=None)

@@ -141,6 +141,7 @@ def installed_bindings():
             path.suffix == ".py" or path.is_relative_to(WORK / "sourcebastion/inventory/vendor")
             or path.name in {"node_selectors.cjs", "yarn_legacy.cjs"}
             or path.is_relative_to(WORK / "sourcebastion/data/frameworks")
+            or path == WORK / "sourcebastion/data/source_profile_table.json"
             or path.is_relative_to(WORK / "sourcebastion/templates")
         ) and "__pycache__" not in path.parts
     }

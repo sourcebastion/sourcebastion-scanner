@@ -33,7 +33,9 @@ def test_latest_selection_excludes_preview_versions_and_wrong_base():
 def reviewed(tmp_path, monkeypatch):
     (tmp_path / "images").mkdir()
     (tmp_path / "PYTHON_VERSION").write_text("3.14.8\n")
-    (tmp_path / "images/Dockerfile").write_text((ROOT / "images/Dockerfile").read_text())
+    dockerfile = (ROOT / "images/Dockerfile").read_text()
+    dockerfile = dockerfile.replace(f"ARG PYTHON_VERSION={versions.current()}\n", "ARG PYTHON_VERSION=3.14.8\n")
+    (tmp_path / "images/Dockerfile").write_text(dockerfile)
     (tmp_path / ".github/python-locks").mkdir(parents=True)
     (tmp_path / ".github/python-locks/old.txt").write_text("reviewed")
     (tmp_path / ".github/semgrep-artifacts.json").write_text("{}")
@@ -46,6 +48,17 @@ def reviewed(tmp_path, monkeypatch):
     monkeypatch.setattr(versions, "base_tools", lambda: base)
     monkeypatch.setattr(versions, "ROOT", tmp_path)
     return tmp_path
+
+
+def artifact_stub(generate, *, configure=lambda version: None, verify=lambda lock: None):
+    return SimpleNamespace(
+        NATIVES=versions.ROOT / ".github/bundled-native-libraries.json",
+        validate_lock=lambda lock: lock,
+        verify=verify,
+        configure_python=configure,
+        generate_dependencies=generate,
+        refresh_native_metadata=lambda proposal, manifest: None,
+    )
 
 
 def test_release_input_cannot_override_the_reviewed_source(reviewed):
@@ -81,7 +94,7 @@ def test_minor_update_stays_in_requested_minor_and_verifies_before_writing(revie
     state = []
     verified = []
 
-    def generate(lock, target):
+    def generate(lock, target, *, native_proposal):
         assert verified
         assert versions.current() == "3.14.8"
         if state[-1] == "3.14.10":
@@ -89,9 +102,8 @@ def test_minor_update_stays_in_requested_minor_and_verifies_before_writing(revie
         (target / "new.txt").write_text("verified wheels")
         (target / "manifest.json").write_text("{}")
 
-    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
-        validate_lock=lambda lock: lock, verify=lambda lock: verified.append(True),
-        configure_python=state.append, generate_dependencies=generate))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: artifact_stub(
+        generate, verify=lambda lock: verified.append(True), configure=state.append))
     assert versions.update(" 3.14 ") == "3.14.9"
     assert state == ["3.14.10", "3.14.9"]
     assert versions.current("3.14") == "3.14.9"
@@ -111,16 +123,15 @@ def test_latest_uses_newest_compatible_version_and_replaces_old_locks(reviewed, 
     state = []
     verified = []
 
-    def generate(lock, target):
+    def generate(lock, target, *, native_proposal):
         assert verified, "publisher verification must happen first"
         if state[-1] == "3.15.0":
             raise ValueError("no compatible wheel")
         (target / "new.txt").write_text("verified for both architectures")
         (target / "manifest.json").write_text("{}")
 
-    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
-        validate_lock=lambda lock: lock, verify=lambda lock: verified.append(True),
-        configure_python=state.append, generate_dependencies=generate))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: artifact_stub(
+        generate, verify=lambda lock: verified.append(True), configure=state.append))
     assert versions.update("latest") == "3.14.9"
     assert state == ["3.15.0", "3.14.9"]
     assert versions.current() == "3.14.9"
@@ -130,18 +141,53 @@ def test_latest_uses_newest_compatible_version_and_replaces_old_locks(reviewed, 
 def test_failed_compatibility_check_preserves_reviewed_files(reviewed, monkeypatch):
     monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(b"{}"))
 
-    def fail(lock, target):
+    def fail(lock, target, *, native_proposal):
         (target / "partial.txt").write_text("partial")
         raise ValueError("no compatible wheel")
 
-    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
-        validate_lock=lambda lock: lock, verify=lambda lock: None,
-        configure_python=lambda version: None, generate_dependencies=fail))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: artifact_stub(fail))
     with pytest.raises(ValueError, match="no compatible wheel"):
         versions.update("3.15.0")
     assert versions.current() == "3.14.8"
     assert (reviewed / ".github/python-locks/old.txt").read_text() == "reviewed"
     assert not (reviewed / ".github/python-locks/partial.txt").exists()
+
+
+@pytest.mark.parametrize("native_bytes_changed", [False, True])
+def test_python_update_rebinds_only_unchanged_native_libraries(reviewed, monkeypatch, native_bytes_changed):
+    with monkeypatch.context() as original_root:
+        original_root.setattr(versions, "ROOT", ROOT)
+        artifacts = versions.artifact_tools()
+    baseline = json.loads(artifacts.NATIVES.read_text())
+    candidate = json.loads(artifacts.NATIVES.read_text())
+    library = next(iter(candidate["targets"].values()))[0]
+    library["wheel"] = "replacement.whl"
+    library["wheel_sha256"] = "c" * 64
+    if native_bytes_changed:
+        library["sha256"] = "d" * 64
+    monkeypatch.setattr(artifacts, "NATIVES", reviewed / ".github/bundled-native-libraries.json")
+    artifacts.NATIVES.write_text(json.dumps(baseline))
+    monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(b"{}"))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: artifacts)
+    monkeypatch.setattr(artifacts, "validate_lock", lambda lock: lock)
+    monkeypatch.setattr(artifacts, "verify", lambda lock: None)
+
+    def generate(lock, target, *, native_proposal):
+        (target / "new.txt").write_text("verified")
+        native_proposal.write_text(json.dumps(candidate))
+
+    monkeypatch.setattr(artifacts, "generate_dependencies", generate)
+    if native_bytes_changed:
+        with pytest.raises(ValueError, match="bundled native libraries changed"):
+            versions.update("3.15.2")
+        assert json.loads(artifacts.NATIVES.read_text()) == baseline
+        assert (reviewed / ".github/python-locks/old.txt").read_text() == "reviewed"
+        assert versions.current() == "3.14.8"
+    else:
+        assert versions.update("3.15.2") == "3.15.2"
+        assert json.loads(artifacts.NATIVES.read_text()) == candidate
+        assert (reviewed / ".github/python-locks/new.txt").read_text() == "verified"
+        assert not (reviewed / ".github/python-locks/bundled-native-libraries.json").exists()
 
 
 def test_release_preparation_inserts_reviewed_notes_and_rejects_reused_version(tmp_path, monkeypatch):
@@ -199,9 +245,8 @@ def test_manual_notes_work_without_generated_file(tmp_path):
 
 def test_python_update_keeps_all_release_pins_coupled(reviewed, monkeypatch):
     monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(b"{}"))
-    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
-        validate_lock=lambda x: x, verify=lambda x: None, configure_python=lambda x: None,
-        generate_dependencies=lambda lock, path: (path / "new.txt").write_text("verified")))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: artifact_stub(
+        lambda lock, path, *, native_proposal: (path / "new.txt").write_text("verified")))
     assert versions.update("3.14.9") == "3.14.9"
     base = json.loads((reviewed / ".github/base-image-pins.json").read_text())
     runtime = json.loads((reviewed / ".github/inventory-runtime-pins.json").read_text())
@@ -216,9 +261,8 @@ def test_python_update_keeps_all_release_pins_coupled(reviewed, monkeypatch):
 def test_registry_failure_keeps_pins_and_wheel_locks_unchanged(reviewed, monkeypatch):
     before = {p.relative_to(reviewed): p.read_bytes() for p in reviewed.rglob("*") if p.is_file()}
     monkeypatch.setattr(versions, "urlopen", lambda *a, **k: io.BytesIO(b"{}"))
-    monkeypatch.setattr(versions, "artifact_tools", lambda: SimpleNamespace(
-        validate_lock=lambda x: x, verify=lambda x: None, configure_python=lambda x: None,
-        generate_dependencies=lambda lock, path: (path / "new.txt").write_text("verified")))
+    monkeypatch.setattr(versions, "artifact_tools", lambda: artifact_stub(
+        lambda lock, path, *, native_proposal: (path / "new.txt").write_text("verified")))
     def refused(*args):
         raise ValueError("python-base-descriptor-mismatch")
     monkeypatch.setattr(versions.base_tools(), "resolve", refused)

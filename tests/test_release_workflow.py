@@ -36,6 +36,15 @@ def validation_script() -> str:
     return next(step["run"] for step in steps if step.get("id") == "release_metadata")
 
 
+def test_release_preparation_stages_native_manifest_with_python_locks():
+    path = WORKFLOW_PATH.with_name("prepare-release.yml")
+    steps = yaml.load(path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)["jobs"]["prepare"]["steps"]
+    stage = next(step["run"] for step in steps if step.get("name", "").startswith("Open release PR"))
+    staged_files = stage.split("git add ", 1)[1].split("git commit", 1)[0]
+    assert ".github/python-locks" in staged_files
+    assert ".github/bundled-native-libraries.json" in staged_files
+
+
 def test_release_supports_bot_dispatch_and_audited_manual_release():
     workflow = load_workflow()
     assert set(workflow["on"]) == {"repository_dispatch", "workflow_dispatch"}

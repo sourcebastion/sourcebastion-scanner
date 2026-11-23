@@ -1,10 +1,10 @@
 {
   "schema_version": "sourcebastion.inventory-runtime-pins/1",
-  "python": "3.14.8",
-  "python_image": "python:3.14.8-alpine3.23@sha256:e7cff362a12454395f8dc99607c21a602ea880cdce03538877b90c2ba932b16f",
+  "python": "3.14.10",
+  "python_image": "python:3.14.10-alpine3.23@sha256:f6a7dec95e6205059dccfcb07faca3ca38729ea35df01231caf1d127bacedec8",
   "python_native_manifests": {
-    "amd64": "sha256:d86b293687bb79e27b860a0addd04deb1644da9ac356de78612c9484dc13e733",
-    "arm64": "sha256:fe368aeff9df1995b57f0aa9bbced949a2a98fb3e6dfd92568e5f6acea6220f7"
+    "amd64": "sha256:b89158e5d2a2d942d0d35130fbcc519237dc4471d9c710acecaa6d70f25b2606",
+    "arm64": "sha256:fa7c5948074027f9b88c69f14d0ee720aa40330adc8a8b253a5a2894286a6b80"
   },
   "alpine": "3.23",
   "node_version": "v24.22.1",

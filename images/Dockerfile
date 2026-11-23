@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # check=error=true
-ARG PYTHON_VERSION=3.14.8
+ARG PYTHON_VERSION=3.14.10
 # Base images are named by digest and default to upstream, so a plain
 # `docker build` is unchanged. CI overrides these with a byte-identical mirror
 # in a registry this organization controls, because buildkit resolves a base
@@ -8,7 +8,7 @@ ARG PYTHON_VERSION=3.14.8
 # rate limited per client address, which GitHub runners share. The digests are
 # authoritative and recorded in .github/base-image-pins.json; the mirror copies
 # manifest bytes verbatim, so either reference denotes the same image.
-ARG PYTHON_BASE=docker.io/library/python@sha256:e7cff362a12454395f8dc99607c21a602ea880cdce03538877b90c2ba932b16f
+ARG PYTHON_BASE=docker.io/library/python@sha256:f6a7dec95e6205059dccfcb07faca3ca38729ea35df01231caf1d127bacedec8
 ARG KICS_BASE=docker.io/checkmarx/kics@sha256:3e5a268eb8adda2e5a483c9359ddfc4cd520ab856a7076dc0b1d8784a37e2602
 FROM ${PYTHON_BASE} AS python-base
 

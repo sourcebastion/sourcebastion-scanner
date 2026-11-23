@@ -81,9 +81,16 @@ def update(requested):
     for version in candidates:
         artifacts.configure_python(version)
         with tempfile.TemporaryDirectory(prefix="sourcebastion-python-") as temporary:
-            staged = Path(temporary)
+            staging = Path(temporary)
+            staged = staging / "python-locks"
+            proposal = staging / "bundled-native-proposal.json"
+            native_manifest = staging / artifacts.NATIVES.name
+            staged.mkdir()
             try:
-                artifacts.generate_dependencies(lock, staged)
+                artifacts.generate_dependencies(lock, staged, native_proposal=proposal)
+                artifacts.refresh_native_metadata(proposal, native_manifest)
+                if proposal.exists():
+                    raise ValueError("bundled native libraries changed; review notices and source coverage before updating")
             except ValueError as exc:
                 if is_exact:
                     raise
@@ -92,6 +99,8 @@ def update(requested):
             # Resolve the index, both native manifests and interpreter configs
             # before replacing reviewed pins or any wheel lock.
             pin_updates = base_tools().updated_files(ROOT, version)
+            if native_manifest.exists():
+                pin_updates[artifacts.NATIVES] = native_manifest.read_text()
             # Only update reviewed files after all wheels and target closures verify.
             destination = ROOT / ".github/python-locks"
             for path in destination.glob("*.txt"):

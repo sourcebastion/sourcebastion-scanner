@@ -13,9 +13,9 @@
       },
       {
         "distribution": "pydantic-core",
-        "version": "2.50.4",
-        "wheel": "pydantic_core-2.50.4-cp314-cp314-musllinux_1_1_x86_64.whl",
-        "wheel_sha256": "c9e70012926e97069cdd09221861aff412aa94e4cac2e019055cdb79485b150c",
+        "version": "2.50.5",
+        "wheel": "pydantic_core-2.50.5-cp314-cp314-musllinux_1_1_x86_64.whl",
+        "wheel_sha256": "9f2bf218dbc93363fe3e31cc53d36db8d6ff4122179406bec05f33bb79c0e2c1",
         "path": "pydantic_core.libs/libgcc_s-f685abf1.so.1",
         "bytes": 538513,
         "sha256": "91a43de5877248a317d14faa35490ef474a1b33a83e235b52fb1eabf7108108e"
@@ -186,9 +186,9 @@
       },
       {
         "distribution": "pydantic-core",
-        "version": "2.50.4",
-        "wheel": "pydantic_core-2.50.4-cp314-cp314-musllinux_1_1_aarch64.whl",
-        "wheel_sha256": "aeb2e123cbf978a905e9f55155c1b8316fbbfa7cf64d04521fe174bab302d100",
+        "version": "2.50.5",
+        "wheel": "pydantic_core-2.50.5-cp314-cp314-musllinux_1_1_aarch64.whl",
+        "wheel_sha256": "922455cc5baddb0f2c82b7ba649e57e89183442b32fe512670db6ebb9b66b251",
         "path": "pydantic_core.libs/libgcc_s-0bf60adc.so.1",
         "bytes": 529921,
         "sha256": "f33db50df5fb0591ee20b789e7f26cb4593e3a36a3dcd45c668d5af03a3f5a87"

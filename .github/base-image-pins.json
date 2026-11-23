@@ -6,8 +6,8 @@
     {
       "name": "python",
       "upstream_repository": "docker.io/library/python",
-      "upstream_tag": "3.14.8-alpine3.23",
-      "digest": "sha256:e7cff362a12454395f8dc99607c21a602ea880cdce03538877b90c2ba932b16f",
+      "upstream_tag": "3.14.10-alpine3.23",
+      "digest": "sha256:f6a7dec95e6205059dccfcb07faca3ca38729ea35df01231caf1d127bacedec8",
       "mirror_repository": "ghcr.io/sourcebastion/base-python"
     },
     {

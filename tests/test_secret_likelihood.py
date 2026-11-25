@@ -1,7 +1,9 @@
 import json
+from pathlib import Path
 import random
 import shutil
 import string
+import subprocess
 import time
 
 import pytest
@@ -35,6 +37,50 @@ def test_exact_check_rejects_symlinks_multiline_and_wrong_coordinates(tmp_path):
     ], scan_started_ns=scan_started) == {}
     assert gitleaks_benign_codes(tmp_path, [("app.py", stored)],
         scan_started_ns=(tmp_path / "app.py").stat().st_ctime_ns - 1) == {}
+
+
+def test_explicit_publishable_assignment_is_checked_within_shared_budget(tmp_path):
+    rng = random.Random(670928)
+    value = "".join(rng.choices(string.ascii_letters + string.digits, k=32))
+    line = f'STRIPE_PUBLISHABLE_KEY = "pk_test_{value}"'
+    (tmp_path / "z.py").write_text(line)
+    evidence = {"RuleID": "generic-api-key", "Secret": "REDACTED",
+                "StartLine": 1, "EndLine": 1, "StartColumn": 1, "EndColumn": len(line)}
+    broad = {**evidence, "Match": 'service_api_key = "REDACTED"'}
+    known = {**evidence, "Match": 'STRIPE_PUBLISHABLE_KEY = "REDACTED"'}
+    findings = [(f"a-{n}.py", broad) for n in range(128)] + [("z.py", known)]
+    scan_started = time.time_ns()
+    assert gitleaks_benign_codes(tmp_path, findings, scan_started_ns=scan_started) == {128: "v1:public-key"}
+    assert gitleaks_benign_codes(tmp_path, list(reversed(findings)), scan_started_ns=scan_started) == {
+        0: "v1:public-key",
+    }
+
+
+@pytest.mark.skipif(shutil.which("gitleaks") is None or shutil.which("git") is None,
+                    reason="requires the pinned Gitleaks binary and Git")
+def test_stock_history_does_not_apply_worktree_evidence_to_a_commit(tmp_path):
+    rng = random.Random(671128)
+    alphabet = string.ascii_letters + string.digits
+    publishable = "pk_test_" + "".join(rng.choices(alphabet, k=32))
+    server = "ghp_" + "".join(rng.choices(alphabet, k=36))
+    (tmp_path / "settings.yml").write_text(f'stripe_publishable_key: "{publishable}"\n')
+    (tmp_path / "server.py").write_text(f'github_token = "{server}"\n')
+    for args in (("init", "-q"), ("add", "."), ("-c", "user.name=Fixture",
+                 "-c", "user.email=fixture@example.invalid", "commit", "-qm", "synthetic")):
+        subprocess.run(["git", "-C", str(tmp_path), *args], check=True, capture_output=True)
+
+    scanner = GitleaksScanner()
+    current = {row["rule_id"]: row for row in scanner.scan_current_tree(str(tmp_path))}
+    history, artifact = scanner.scan_with_raw_output(str(tmp_path))
+    Path(artifact).unlink()
+    history = {row["rule_id"]: row for row in history}
+    assert history.keys() == current.keys() == {"generic-api-key", "github-pat"}
+    assert current["generic-api-key"]["secret_likelihood"] == "v1:public-key"
+    assert history["generic-api-key"]["secret_likelihood"] == "v1:generic-entropy"
+    assert current["github-pat"]["secret_likelihood"] == history["github-pat"]["secret_likelihood"] == (
+        "v1:credential-format"
+    )
+    assert all(row["severity"] == "critical" for row in (*current.values(), *history.values()))
 
 
 @pytest.mark.skipif(shutil.which("gitleaks") is None, reason="requires the pinned Gitleaks binary")

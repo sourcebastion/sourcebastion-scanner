@@ -91,12 +91,15 @@ def gitleaks_benign_codes(root, findings, *, scan_started_ns):
             continue
         if after not in (b'"', b"'") or not before.endswith(after):
             continue
-        candidates.append((path, line, start, end, index, before, after))
+        # Named publishable assignments are identifiable from the redacted
+        # context. Check them before using the remaining budget on broad matches.
+        publishable_assignment = bool(_PUBLISHABLE_ASSIGNMENT.fullmatch(before))
+        candidates.append((not publishable_assignment, path, line, start, end, index, before, after))
 
     result = {}
     loaded_path = None
     lines = []
-    for path, line, start, end, index, before, after in sorted(candidates)[:_MAX_EXACT_CHECKS]:
+    for broad, path, line, start, end, index, before, after in sorted(candidates)[:_MAX_EXACT_CHECKS]:
         if path != loaded_path:
             loaded_path = path
             try:
@@ -114,7 +117,7 @@ def gitleaks_benign_codes(root, findings, *, scan_started_ns):
         if not span.startswith(before) or not span.endswith(after):
             continue
         value = span[len(before):-len(after)]
-        if _PUBLISHABLE_ASSIGNMENT.fullmatch(before) and _PUBLISHABLE_KEY.fullmatch(value):
+        if not broad and _PUBLISHABLE_KEY.fullmatch(value):
             result[index] = "v1:public-key"
         elif _PLACEHOLDER.fullmatch(value):
             result[index] = "v1:placeholder"

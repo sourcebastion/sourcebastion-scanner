@@ -8,7 +8,9 @@ import time
 
 import pytest
 
-from sourcebastion.external_scanners import GitleaksScanner
+from sourcebastion.config import Config
+from sourcebastion.external_scanners import ExternalScannerManager, GitleaksScanner
+from sourcebastion.scanner import SecurityScanner
 from sourcebastion.secret_likelihood import gitleaks_benign_codes, gitleaks_likelihood_code
 
 
@@ -102,11 +104,15 @@ def test_redacted_stock_scans_keep_findings_and_classify_held_out_examples(tmp_p
         name = f"case{index}.py"
         fixtures[name] = candidate
         (root / name).write_text(f'{assignment} = "{candidate}"\n')
-    scanner = GitleaksScanner()
-    first = scanner.scan_current_tree(str(root))
-    second = scanner.scan_current_tree(str(root))
+    output = tmp_path / "vulnerabilities.json"
+    scanner = SecurityScanner(Config(severity="all", output_file=str(output)))
+    scanner.external = ExternalScannerManager(enabled_scanners=["gitleaks"], max_workers=1)
+    scan = scanner.scan(str(root))
+    first = json.loads(output.read_text())["vulnerabilities"]
+    second = GitleaksScanner().scan_current_tree(str(root))
     observed = {row["file"]: row["secret_likelihood"] for row in first}
     assert len(first) == len(fixtures) == 48
+    assert observed == {row["file"]: row["secret_likelihood"] for row in scan["complete_issues"]}
     assert observed == {row["file"]: row["secret_likelihood"] for row in second}
     assert sum(code == "v1:public-key" for code in observed.values()) == 24
     assert all(observed[f"case{index}.py"] == "v1:public-key" for index in range(24))

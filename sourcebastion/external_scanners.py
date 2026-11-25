@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Iterator, Optional, Tuple
 from abc import ABC, abstractmethod
 from sourcebastion.schema import compute_finding_id
+from sourcebastion.secret_likelihood import gitleaks_benign_codes, gitleaks_likelihood_code
 
 logger = logging.getLogger(__name__)
 MAX_SCANNER_CONCURRENCY = 10
@@ -618,6 +619,7 @@ class GitleaksScanner(ScannerWrapper):
                     "json",
                     "--redact",
                 ]
+            scan_started_ns = time.time_ns()
             result = subprocess.run(
                 command,
                 capture_output=True,
@@ -647,11 +649,15 @@ class GitleaksScanner(ScannerWrapper):
             if not isinstance(data, list):
                 self._fail("invalid_output")
             
-            issues = []
+            observed = []
             for match in data:
                 finding_path = match.get("File", "unknown")
                 if current_tree:
                     finding_path = _scoped_result_path(finding_path, Path(path))
+                observed.append((finding_path, match))
+            benign = gitleaks_benign_codes(path, observed, scan_started_ns=scan_started_ns) if current_tree else {}
+            issues = []
+            for index, (finding_path, match) in enumerate(observed):
                 finding = {
                     "type": "Secrets",
                     "rule_id": match.get("RuleID", "exposed-secret"),
@@ -663,6 +669,11 @@ class GitleaksScanner(ScannerWrapper):
                     "scanner": "gitleaks",
                 }
                 finding = self._add_v2_fields(finding, "hardcoded-secret")
+                annotation = benign.get(index) or gitleaks_likelihood_code(
+                    match.get("RuleID"), finding_path, match.get("Entropy")
+                )
+                if annotation is not None:
+                    finding["secret_likelihood"] = annotation
                 finding = self._add_ai_remediation_fields(finding, match)
                 issues.append(finding)
 

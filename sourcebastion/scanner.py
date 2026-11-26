@@ -331,8 +331,8 @@ class SecurityScanner:
         )
         if self.use_external:
             semgrep = getattr(self.external, "scanners", {}).get("semgrep")
-            if isinstance(semgrep, SemgrepScanner) and semgrep.enabled and semgrep.size_limit_skips is not None:
-                scan_record.coverage = {"semgrep": {"size_limit_skips": semgrep.size_limit_skips}}
+            if isinstance(semgrep, SemgrepScanner) and semgrep.enabled and semgrep.scan_coverage is not None:
+                scan_record.coverage = {"semgrep": semgrep.scan_coverage}
 
         configured_output = getattr(self.config, "output_file", None)
         output_path = None

@@ -78,6 +78,25 @@ def _semgrep_resource_flags() -> list[str]:
     return [f"--jobs={jobs}", f"--max-memory={rule_memory_mib}", "--max-target-bytes=1000000"]
 
 
+def _semgrep_profile_excludes() -> list[str]:
+    """Translate the profiler's vendored and generated classes into globs."""
+    patterns = []
+    table = source_profile.load_table()
+    for path_class in ("vendored", "generated"):
+        rules = table.classes[path_class]
+        for directory in rules.get("directories", ()):
+            # Directory classification is case-insensitive; file names below
+            # follow the profiler's case-sensitive suffix and prefix rules.
+            glob = "".join(
+                f"[{letter.lower()}{letter.upper()}]" if letter.isalpha() else letter
+                for letter in directory
+            )
+            patterns.append(glob + "/")
+        patterns.extend(f"*{suffix}" for suffix in rules.get("name_suffixes", ()))
+        patterns.extend(f"{prefix}*" for prefix in rules.get("name_prefixes", ()))
+    return [f"--exclude={pattern}" for pattern in patterns]
+
+
 def configured_scanner_concurrency() -> int:
     """One per-source tool limit shared by local and container orchestration."""
     raw = os.environ.get("SOURCEBASTION_MAX_CONCURRENT_SCANNERS")
@@ -799,7 +818,7 @@ class SemgrepScanner(ScannerWrapper):
     def __init__(self, enabled: bool = True, extra_rules_dirs: Optional[List[str]] = None):
         super().__init__(enabled)
         self.extra_rules_dirs = extra_rules_dirs or []
-        self.size_limit_skips: Optional[int] = None
+        self.scan_coverage: Optional[dict[str, int]] = None
 
     def _fail(self, code: str) -> None:
         # The inventory entrypoint does not configure application logging.
@@ -971,7 +990,7 @@ class SemgrepScanner(ScannerWrapper):
         self, path: str, *, require_complete_coverage: bool = False
     ) -> Tuple[List[Dict[str, Any]], str]:
         """Run semgrep scan and return raw output file path"""
-        self.size_limit_skips = None
+        self.scan_coverage = None
         if not self.installed():
             self._fail("not_installed")
 
@@ -1032,7 +1051,8 @@ class SemgrepScanner(ScannerWrapper):
             with tempfile.TemporaryDirectory(prefix="sourcebastion-semgrep-") as settings_directory:
                 result = subprocess.run(
                     [
-                        "semgrep", "scan", "--oss-only", *config_flags, *_semgrep_resource_flags(),
+                        "semgrep", "scan", "--oss-only", *config_flags,
+                        *_semgrep_resource_flags(), *_semgrep_profile_excludes(),
                         "--metrics=off", "--disable-version-check",
                         "--verbose", "--json", "--output", raw_output_path, path,
                     ],
@@ -1111,19 +1131,28 @@ class SemgrepScanner(ScannerWrapper):
                 level = error.get("level")
                 if not isinstance(level, str) or level.lower() not in {"warn", "info"}:
                     self._fail("execution_failed")
-            # Semgrep reports size exclusions under paths.skipped, not errors.
+            # These are the engine's skipped path entries. Count them without
+            # copying source paths into the report or scanner logs.
             paths = data.get("paths")
             skipped = paths.get("skipped", []) if isinstance(paths, dict) else None
-            size_skips = sum(
-                isinstance(item, dict) and item.get("reason") == "exceeded_size_limit"
-                for item in skipped
-            ) if isinstance(skipped, list) else None
-            if size_skips:
-                print(f"semgrep: size_limit_skips={size_skips}", file=sys.stderr, flush=True)
+            reasons = {
+                "exceeded_size_limit": "size_limit_skips",
+                "cli_exclude_flags_match": "profile_excluded_paths",
+            }
+            coverage = None
+            if isinstance(skipped, list):
+                coverage = dict.fromkeys(reasons.values(), 0)
+                for item in skipped:
+                    reason = item.get("reason") if isinstance(item, dict) else None
+                    if isinstance(reason, str) and reason in reasons:
+                        coverage[reasons[reason]] += 1
+                if any(coverage.values()):
+                    print("semgrep: coverage=" + json.dumps(coverage, sort_keys=True),
+                          file=sys.stderr, flush=True)
 
             # Partial results replace baseline observations in every covered
             # path. A skipped/unparsed file cannot authorize that replacement.
-            if require_complete_coverage and (errors or size_skips):
+            if require_complete_coverage and (errors or (coverage and any(coverage.values()))):
                 self._fail("execution_failed")
             degraded = len(errors)
             if degraded:
@@ -1173,7 +1202,7 @@ class SemgrepScanner(ScannerWrapper):
             if filtered_count > 0:
                 logger.info(f"Semgrep: Filtered out {filtered_count} code quality/low-severity findings")
 
-            self.size_limit_skips = size_skips
+            self.scan_coverage = coverage
             completed = True
             return issues, raw_output_path
         except subprocess.TimeoutExpired:

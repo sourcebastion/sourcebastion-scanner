@@ -73,7 +73,10 @@ def test_semgrep_size_skip_count_persists_in_the_scan_artifact(tmp_path, monkeyp
     scanner = SecurityScanner(Config(severity="all", output_file=str(output)))
     scanner.external = ExternalScannerManager(enabled_scanners=["semgrep"], max_workers=1)
     monkeypatch.setattr(SemgrepScanner, "is_installed", lambda self: True)
-    skipped = [{"path": "oversized-source.py", "reason": "exceeded_size_limit"}]
+    skipped = [
+        {"path": "oversized-source.py", "reason": "exceeded_size_limit"},
+        {"path": "vendor/private.py", "reason": "cli_exclude_flags_match"},
+    ]
 
     def run(command, **kwargs):
         assert "--verbose" in command
@@ -87,7 +90,9 @@ def test_semgrep_size_skip_count_persists_in_the_scan_artifact(tmp_path, monkeyp
     for expected in (1, 0):
         result = scanner.scan(str(source))
         record = json.loads(output.read_text())["scan_record"]
-        assert record["coverage"] == {"semgrep": {"size_limit_skips": expected}}
+        assert record["coverage"] == {"semgrep": {
+            "size_limit_skips": expected, "profile_excluded_paths": expected,
+        }}
         assert result["scan_record"]["coverage"] == record["coverage"]
         assert "oversized-source.py" not in output.read_text()
         skipped.clear()

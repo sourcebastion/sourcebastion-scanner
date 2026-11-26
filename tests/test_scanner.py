@@ -64,7 +64,7 @@ def test_scan_never_imports_or_calls_an_llm_provider(monkeypatch, tmp_path):
 
 
 
-def test_semgrep_size_skip_count_persists_in_the_scan_artifact(tmp_path, monkeypatch):
+def test_semgrep_skip_counts_persist_in_the_scan_artifact(tmp_path, monkeypatch):
     from sourcebastion.external_scanners import ExternalScannerManager, SemgrepScanner
 
     source = tmp_path / "repo"
@@ -78,11 +78,16 @@ def test_semgrep_size_skip_count_persists_in_the_scan_artifact(tmp_path, monkeyp
         {"path": "vendor/private.py", "reason": "cli_exclude_flags_match"},
     ]
 
+    errors = [
+        {"type": "Out of memory", "level": "warn", "path": "memory-limited.py"},
+        {"type": ["OutOfMemory", []], "level": "warn", "path": "memory-limited.py"},
+    ]
+
     def run(command, **kwargs):
         assert "--verbose" in command
         report = Path(command[command.index("--output") + 1])
         report.write_text(json.dumps({
-            "results": [], "errors": [], "paths": {"scanned": [], "skipped": skipped},
+            "results": [], "errors": errors, "paths": {"scanned": [], "skipped": skipped},
         }))
         return subprocess.CompletedProcess(command, 0, "", "")
 
@@ -91,11 +96,14 @@ def test_semgrep_size_skip_count_persists_in_the_scan_artifact(tmp_path, monkeyp
         result = scanner.scan(str(source))
         record = json.loads(output.read_text())["scan_record"]
         assert record["coverage"] == {"semgrep": {
-            "size_limit_skips": expected, "profile_excluded_paths": expected,
+            "size_limit_skips": expected, "memory_limit_skips": expected,
+            "profile_excluded_paths": expected,
         }}
         assert result["scan_record"]["coverage"] == record["coverage"]
         assert "oversized-source.py" not in output.read_text()
+        assert "memory-limited.py" not in output.read_text()
         skipped.clear()
+        errors.clear()
 
     scanner.external.scanners["semgrep"].enabled = False
     assert "coverage" not in scanner.scan(str(source))["scan_record"]

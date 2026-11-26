@@ -1146,6 +1146,8 @@ class SemgrepScanner(ScannerWrapper):
             errors = data.get("errors", [])
             if not isinstance(errors, list) or any(not isinstance(error, dict) for error in errors):
                 self._fail("invalid_output")
+            memory_limited_paths = set()
+            memory_count_known = True
             if errors:
                 counts = {}
                 known_types = {"PartialParsing", "ParseError", "Timeout", "OutOfMemory",
@@ -1156,6 +1158,13 @@ class SemgrepScanner(ScannerWrapper):
                     kind = error.get("type")
                     if isinstance(kind, list) and kind:
                         kind = kind[0]
+                    if kind in ("Out of memory", "OutOfMemory"):
+                        kind = "OutOfMemory"
+                        skipped_path = error.get("path")
+                        if isinstance(skipped_path, str) and skipped_path:
+                            memory_limited_paths.add(skipped_path)
+                        else:
+                            memory_count_known = False
                     kind = kind if isinstance(kind, str) and kind in known_types else "other"
                     counts[kind] = counts.get(kind, 0) + 1
                 print("semgrep: error_counts=" + json.dumps(counts, sort_keys=True),
@@ -1179,6 +1188,8 @@ class SemgrepScanner(ScannerWrapper):
                     reason = item.get("reason") if isinstance(item, dict) else None
                     if isinstance(reason, str) and reason in reasons:
                         coverage[reasons[reason]] += 1
+                if memory_count_known:
+                    coverage["memory_limit_skips"] = len(memory_limited_paths)
                 if any(coverage.values()):
                     print("semgrep: coverage=" + json.dumps(coverage, sort_keys=True),
                           file=sys.stderr, flush=True)

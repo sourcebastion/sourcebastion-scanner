@@ -9,7 +9,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from sourcebastion.config import Config
-from sourcebastion.external_scanners import ExternalScannerManager, ScannerExecutionError
+from sourcebastion.external_scanners import (
+    ExternalScannerManager, ScannerExecutionError, SemgrepScanner,
+)
 from sourcebastion.converters import VulnerabilityConverters, GitLabVulnerabilityFormat
 from sourcebastion.policy import PolicyEngine
 from sourcebastion.cedar_adapter import evaluate_cedar, parity_result
@@ -327,6 +329,11 @@ class SecurityScanner:
             resolved_count=tracking_counts["resolved_count"],
             duration_seconds=time.monotonic() - started_at,
         )
+        if self.use_external:
+            semgrep = getattr(self.external, "scanners", {}).get("semgrep")
+            if isinstance(semgrep, SemgrepScanner) and semgrep.enabled and semgrep.size_limit_skips is not None:
+                scan_record.coverage = {"semgrep": {"size_limit_skips": semgrep.size_limit_skips}}
+
         configured_output = getattr(self.config, "output_file", None)
         output_path = None
         if configured_output:

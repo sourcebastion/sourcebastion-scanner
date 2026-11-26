@@ -762,6 +762,7 @@ class SemgrepScanner(ScannerWrapper):
     def __init__(self, enabled: bool = True, extra_rules_dirs: Optional[List[str]] = None):
         super().__init__(enabled)
         self.extra_rules_dirs = extra_rules_dirs or []
+        self.size_limit_skips: Optional[int] = None
 
     def _fail(self, code: str) -> None:
         # The inventory entrypoint does not configure application logging.
@@ -889,7 +890,11 @@ class SemgrepScanner(ScannerWrapper):
 
     def scan(self, path: str) -> List[Dict[str, Any]]:
         """Run semgrep scan"""
-        issues, _ = self.scan_with_raw_output(path)
+        issues, raw_path = self.scan_with_raw_output(path)
+        try:
+            os.unlink(raw_path)
+        except OSError:
+            pass
         return issues
 
     def scan_paths(self, source_root: str, covered_paths: List[str]) -> List[Dict[str, Any]]:
@@ -929,6 +934,7 @@ class SemgrepScanner(ScannerWrapper):
         self, path: str, *, require_complete_coverage: bool = False
     ) -> Tuple[List[Dict[str, Any]], str]:
         """Run semgrep scan and return raw output file path"""
+        self.size_limit_skips = None
         if not self.installed():
             self._fail("not_installed")
 
@@ -1068,12 +1074,12 @@ class SemgrepScanner(ScannerWrapper):
                 if not isinstance(level, str) or level.lower() not in {"warn", "info"}:
                     self._fail("execution_failed")
             # Semgrep reports size exclusions under paths.skipped, not errors.
-            paths = data.get("paths", {})
-            skipped = paths.get("skipped", []) if isinstance(paths, dict) else []
+            paths = data.get("paths")
+            skipped = paths.get("skipped", []) if isinstance(paths, dict) else None
             size_skips = sum(
                 isinstance(item, dict) and item.get("reason") == "exceeded_size_limit"
                 for item in skipped
-            ) if isinstance(skipped, list) else 0
+            ) if isinstance(skipped, list) else None
             if size_skips:
                 print(f"semgrep: size_limit_skips={size_skips}", file=sys.stderr, flush=True)
 
@@ -1129,6 +1135,7 @@ class SemgrepScanner(ScannerWrapper):
             if filtered_count > 0:
                 logger.info(f"Semgrep: Filtered out {filtered_count} code quality/low-severity findings")
 
+            self.size_limit_skips = size_skips
             completed = True
             return issues, raw_output_path
         except subprocess.TimeoutExpired:

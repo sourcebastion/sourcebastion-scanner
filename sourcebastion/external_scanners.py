@@ -111,7 +111,10 @@ def _kics_profile_excludes(path: str) -> list[list[str]]:
     try:
         argument_limit = os.sysconf("SC_ARG_MAX")
         if argument_limit > 0:
-            total_limit = min(total_limit, argument_limit // 2)
+            environment_bytes = sum(len(os.fsencode(key)) + len(os.fsencode(value)) + 10
+                                    for key, value in os.environ.items())
+            # Leave space for the terminators, other arguments and pointers.
+            total_limit = min(total_limit, argument_limit - environment_bytes - 4096)
     except (AttributeError, OSError, ValueError):
         pass
     chunks: list[list[str]] = [[]]

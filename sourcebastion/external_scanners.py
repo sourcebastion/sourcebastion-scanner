@@ -100,15 +100,22 @@ def _semgrep_profile_excludes() -> list[str]:
     return [f"--exclude={pattern}" for pattern in patterns]
 
 
-def _kics_profile_excludes(path: str) -> list[str]:
+def _kics_profile_excludes(path: str) -> list[list[str]]:
     """Discover exclusions once; passing recursive globs makes KICS rewalk the tree."""
     table = source_profile.load_table()
     classes = [table.classes[name] for name in ("vendored", "generated")]
     excluded_dirs = {name.lower() for rules in classes for name in rules.get("directories", ())}
     prefixes = tuple(name for rules in classes for name in rules.get("name_prefixes", ()))
     suffixes = tuple(name for rules in classes for name in rules.get("name_suffixes", ()))
-    paths = []
-    encoded_bytes = 0
+    total_limit = 256 * 1024
+    try:
+        argument_limit = os.sysconf("SC_ARG_MAX")
+        if argument_limit > 0:
+            total_limit = min(total_limit, argument_limit // 2)
+    except (AttributeError, OSError, ValueError):
+        pass
+    chunks: list[list[str]] = [[]]
+    chunk_bytes = total_bytes = 0
     for directory, dirs, files in os.walk(Path(path).absolute()):
         removed = [name for name in dirs if name.lower() in excluded_dirs]
         dirs[:] = [name for name in dirs if name != ".git" and name not in removed]
@@ -120,14 +127,19 @@ def _kics_profile_excludes(path: str) -> list[str]:
             value = str(target)
             if any(marker in value for marker in "*?["):
                 value = glob.escape(value.replace("\\", "\\\\"))
-            # Enclose the entries in CSV separately below. Bound the argument
-            # before accumulation and fall back to the complete stock scan.
-            encoded_bytes += len(os.fsencode(value)) + value.count('"') + 3
-            if encoded_bytes > 64 * 1024:
+            # Include CSV quoting and separators in the byte budget. Split
+            # before reaching the kernel's bound on a single argument.
+            value_bytes = len(os.fsencode(value)) + value.count('"') + 3
+            total_bytes += value_bytes
+            if value_bytes > 64 * 1024 or total_bytes > total_limit:
                 logger.warning("KICS profile exclusions exceeded the argument limit; scanning all paths")
                 return []
-            paths.append(value)
-    return paths
+            if chunk_bytes + value_bytes > 64 * 1024:
+                chunks.append([])
+                chunk_bytes = 0
+            chunks[-1].append(value)
+            chunk_bytes += value_bytes
+    return chunks if chunks[0] else []
 
 
 def configured_scanner_concurrency() -> int:
@@ -1538,10 +1550,10 @@ class KicsScanner(ScannerWrapper):
         if exclusions and require_complete_coverage:
             self._fail("scope_unresolved")
         exclude_flags = []
-        if exclusions:
+        for chunk in exclusions:
             buffer = io.StringIO()
-            csv.writer(buffer).writerow(exclusions)
-            exclude_flags = ["--exclude-paths", buffer.getvalue().removesuffix("\r\n")]
+            csv.writer(buffer).writerow(chunk)
+            exclude_flags.extend(["--exclude-paths", buffer.getvalue().removesuffix("\r\n")])
 
         # kics -o expects a directory; it writes results.json inside it.
         # We use a temp dir for kics output, then copy results to a standalone
@@ -1639,7 +1651,7 @@ class KicsScanner(ScannerWrapper):
 
             # Copy kics results to the standalone file for the caller
             shutil.copy2(kics_output_path, standalone_path)
-            self.scan_coverage = {"profile_excluded_paths": len(exclusions)}
+            self.scan_coverage = {"profile_excluded_paths": sum(map(len, exclusions))}
             completed = True
             return issues, standalone_path
         except subprocess.TimeoutExpired:

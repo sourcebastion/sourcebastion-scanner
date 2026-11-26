@@ -206,6 +206,30 @@ def test_kics_uses_exact_profile_exclusions_without_narrowing_platforms(tmp_path
         assert scanner.scan_coverage is None
 
 
+def test_kics_keeps_large_exclusion_lists_in_bounded_arguments(tmp_path):
+    scanner = KicsScanner()
+    source = tmp_path / "source"
+    source.mkdir()
+    paths = {str(source / f"zz_generated_{index:04}_{'x' * 150}.yaml") for index in range(400)}
+    for path in paths:
+        Path(path).touch()
+
+    def write_empty_report(command, **kwargs):
+        chunks = [command[index + 1] for index, flag in enumerate(command) if flag == "--exclude-paths"]
+        assert len(chunks) > 1 and all(len(os.fsencode(chunk)) <= 64 * 1024 for chunk in chunks)
+        assert {path for chunk in chunks for path in next(csv.reader([chunk]))} == paths
+        (Path(command[command.index("-o") + 1]) / "results.json").write_text('{"queries": []}')
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with (
+        patch.object(scanner, "is_installed", return_value=True),
+        patch.object(scanner, "_find_assets_path", return_value=tmp_path),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_empty_report),
+    ):
+        scanner.scan(str(source))
+    assert scanner.scan_coverage == {"profile_excluded_paths": 400}
+
+
 def test_kics_engine_exit_is_a_failure(tmp_path):
     scanner = KicsScanner()
     completed = subprocess.CompletedProcess([], 126, "", "engine failed")

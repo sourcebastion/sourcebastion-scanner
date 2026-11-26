@@ -540,6 +540,9 @@ def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeyp
         if "--version" not in command:
             assert command[:3] == ["semgrep", "scan", "--oss-only"]
             assert "--config=/usr/local/share/sast-rules/go" in command
+            assert "--max-target-bytes=1000000" in command
+            assert any(flag.startswith("--jobs=") for flag in command)
+            assert any(flag.startswith("--max-memory=") for flag in command)
             Path(command[command.index("--output") + 1]).write_text('{"results": [], "errors": []}')
         assert "--metrics=off" in command and "--disable-version-check" in command
         return subprocess.CompletedProcess(command, 0, "", "private source fragment")
@@ -553,6 +556,35 @@ def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeyp
         assert "private" not in err
     finally:
         os.unlink(raw_path)
+
+
+@pytest.mark.parametrize(("memory", "cpu_quota", "expected_jobs", "expected_memory"), [
+    (1024, "100000 100000", 1, 256),
+    (7168, "400000 100000", 1, 512),
+    (8192, "400000 100000", 2, 512),
+    (8192, "100000 100000", 1, 512),
+])
+def test_semgrep_limits_follow_the_container(memory, cpu_quota, expected_jobs, expected_memory, monkeypatch):
+    from sourcebastion.external_scanners import _semgrep_resource_flags
+
+    def cgroup_value(path, **kwargs):
+        values = {
+            "/sys/fs/cgroup/memory.max": str(memory * 1024**2),
+            "/sys/fs/cgroup/cpu.max": cpu_quota,
+        }
+        try:
+            return values[str(path)]
+        except KeyError:
+            raise FileNotFoundError(path) from None
+
+    monkeypatch.setattr(Path, "read_text", cgroup_value)
+    monkeypatch.setattr(os, "cpu_count", lambda: 16)
+    monkeypatch.setattr(os, "sched_getaffinity", lambda pid: set(range(16)), raising=False)
+    monkeypatch.setattr(os, "sysconf", lambda key: {"SC_PHYS_PAGES": 16 * 1024**3 // 4096,
+                                                   "SC_PAGE_SIZE": 4096}[key])
+    assert _semgrep_resource_flags() == [
+        f"--jobs={expected_jobs}", f"--max-memory={expected_memory}", "--max-target-bytes=1000000",
+    ]
 
 
 def test_semgrep_offline_missing_packs_never_uses_registry(tmp_path, monkeypatch, capsys):

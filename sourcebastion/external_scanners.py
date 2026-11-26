@@ -41,6 +41,43 @@ def _semgrep_source_languages(path: str) -> tuple[bool, bool]:
     return has_php, has_js
 
 
+def _semgrep_resource_flags() -> list[str]:
+    """Bound the engine's parallelism by the execution environment."""
+    cgroup = Path("/sys/fs/cgroup")
+    memory_limits = []
+    for path in (cgroup / "memory.max", cgroup / "memory" / "memory.limit_in_bytes"):
+        try:
+            limit = int(path.read_text(encoding="ascii"))
+        except (OSError, ValueError):
+            continue
+        if limit > 0:
+            memory_limits.append(limit)
+    try:
+        physical_memory = os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE")
+    except (AttributeError, OSError, ValueError):
+        physical_memory = 0
+    if physical_memory > 0:
+        memory_limits.append(physical_memory)
+    # Use the small-runner budget if no limit is available to Python.
+    available_mib = min(memory_limits, default=1024**3) // 1024**2
+
+    try:
+        cpus = len(os.sched_getaffinity(0))
+    except (AttributeError, OSError):
+        cpus = os.cpu_count() or 1
+    try:
+        quota, period = (cgroup / "cpu.max").read_text(encoding="ascii").split()
+        cpus = min(cpus, max(1, int(quota) // int(period)))
+    except (OSError, ValueError, ZeroDivisionError):
+        pass
+
+    # Leave memory for the engine, result conversion and concurrent scanners.
+    # Semgrep's per-rule/file limit is separate from the container's hard cap.
+    jobs = max(1, min(2, cpus, available_mib // 4096))
+    rule_memory_mib = max(1, min(512, available_mib // (4 * jobs)))
+    return [f"--jobs={jobs}", f"--max-memory={rule_memory_mib}", "--max-target-bytes=1000000"]
+
+
 def configured_scanner_concurrency() -> int:
     """One per-source tool limit shared by local and container orchestration."""
     raw = os.environ.get("SOURCEBASTION_MAX_CONCURRENT_SCANNERS")
@@ -994,7 +1031,8 @@ class SemgrepScanner(ScannerWrapper):
             started = time.monotonic()
             with tempfile.TemporaryDirectory(prefix="sourcebastion-semgrep-") as settings_directory:
                 result = subprocess.run(
-                    ["semgrep", "scan", "--oss-only"] + config_flags + [
+                    [
+                        "semgrep", "scan", "--oss-only", *config_flags, *_semgrep_resource_flags(),
                         "--metrics=off", "--disable-version-check",
                         "--verbose", "--json", "--output", raw_output_path, path,
                     ],

@@ -1,6 +1,7 @@
 """Failure-contract tests for enabled external scanner components."""
 
 import json
+import csv
 import os
 import shutil
 import subprocess
@@ -167,6 +168,42 @@ def test_semgrep_finding_exit_code_is_complete(tmp_path):
         assert issues == []
     finally:
         os.unlink(raw_path)
+
+
+
+def test_kics_uses_exact_profile_exclusions_without_narrowing_platforms(tmp_path):
+    scanner = KicsScanner()
+    source = tmp_path / "source,fixture"
+    names = ("infra/app.yaml", "infra/Vendor/nested/unused.yaml", "infra/GEN/unused.yaml",
+             "infra/zz_generated_test.yaml", "infra/tests/test_app.yaml")
+    for name in names:
+        file = source / name
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text("apiVersion: v1\nkind: ConfigMap\n")
+
+    def write_empty_report(command, **kwargs):
+        exclusions, = csv.reader([command[command.index("--exclude-paths") + 1]])
+        assert set(exclusions) == {
+            str(source / "infra/Vendor"),
+            str(source / "infra/GEN"),
+            str(source / "infra/zz_generated_test.yaml"),
+        }
+        assert "--type" not in command
+        output_dir = Path(command[command.index("-o") + 1])
+        (output_dir / "results.json").write_text('{"queries": []}')
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with (
+        patch.object(scanner, "is_installed", return_value=True),
+        patch.object(scanner, "_find_assets_path", return_value=tmp_path),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_empty_report),
+    ):
+        scanner.scan(str(source))
+        assert scanner.scan_coverage == {"profile_excluded_paths": 3}
+        with pytest.raises(ScannerExecutionError) as raised:
+            scanner.scan_units(str(source), ["infra"])
+        assert raised.value.code == "scope_unresolved"
+        assert scanner.scan_coverage is None
 
 
 def test_kics_engine_exit_is_a_failure(tmp_path):

@@ -1,6 +1,9 @@
 """Wrappers for external open-source security scanners"""
 
 import subprocess
+import csv
+import glob
+import io
 import json
 import logging
 import tempfile
@@ -95,6 +98,36 @@ def _semgrep_profile_excludes() -> list[str]:
         patterns.extend(f"*{suffix}" for suffix in rules.get("name_suffixes", ()))
         patterns.extend(f"{prefix}*" for prefix in rules.get("name_prefixes", ()))
     return [f"--exclude={pattern}" for pattern in patterns]
+
+
+def _kics_profile_excludes(path: str) -> list[str]:
+    """Discover exclusions once; passing recursive globs makes KICS rewalk the tree."""
+    table = source_profile.load_table()
+    classes = [table.classes[name] for name in ("vendored", "generated")]
+    excluded_dirs = {name.lower() for rules in classes for name in rules.get("directories", ())}
+    prefixes = tuple(name for rules in classes for name in rules.get("name_prefixes", ()))
+    suffixes = tuple(name for rules in classes for name in rules.get("name_suffixes", ()))
+    paths = []
+    encoded_bytes = 0
+    for directory, dirs, files in os.walk(Path(path).absolute()):
+        removed = [name for name in dirs if name.lower() in excluded_dirs]
+        dirs[:] = [name for name in dirs if name != ".git" and name not in removed]
+        removed.extend(name for name in files if name.startswith(prefixes) or name.endswith(suffixes))
+        for name in removed:
+            target = Path(directory) / name
+            if target.is_symlink():
+                continue
+            value = str(target)
+            if any(marker in value for marker in "*?["):
+                value = glob.escape(value.replace("\\", "\\\\"))
+            # Enclose the entries in CSV separately below. Bound the argument
+            # before accumulation and fall back to the complete stock scan.
+            encoded_bytes += len(os.fsencode(value)) + value.count('"') + 3
+            if encoded_bytes > 64 * 1024:
+                logger.warning("KICS profile exclusions exceeded the argument limit; scanning all paths")
+                return []
+            paths.append(value)
+    return paths
 
 
 def configured_scanner_concurrency() -> int:
@@ -406,6 +439,7 @@ class ScannerWrapper(ABC):
         self.name = getattr(self, "component_name", self.__class__.__name__.lower())
         self._execution_deadline: Optional[float] = None
         self._configured: dict = {}
+        self.scan_coverage: Optional[dict[str, int]] = None
 
     def configure_timeouts(self, settings) -> None:
         """Apply per-scanner configuration for this component, if any."""
@@ -818,7 +852,6 @@ class SemgrepScanner(ScannerWrapper):
     def __init__(self, enabled: bool = True, extra_rules_dirs: Optional[List[str]] = None):
         super().__init__(enabled)
         self.extra_rules_dirs = extra_rules_dirs or []
-        self.scan_coverage: Optional[dict[str, int]] = None
 
     def _fail(self, code: str) -> None:
         # The inventory entrypoint does not configure application logging.
@@ -1445,14 +1478,20 @@ class KicsScanner(ScannerWrapper):
 
     def scan(self, path: str) -> List[Dict[str, Any]]:
         """Run KICS scan"""
-        issues, _ = self.scan_with_raw_output(path)
+        issues, raw_path = self.scan_with_raw_output(path)
+        try:
+            os.unlink(raw_path)
+        except OSError:
+            pass
         return issues
 
     def scan_units(self, source_root: str, units: List[str]) -> List[Dict[str, Any]]:
         """Scan complete planner-authorized IaC units and normalize their paths."""
         try:
             with _scoped_iac_tree(source_root, units) as scoped_root:
-                issues, raw_output_path = self.scan_with_raw_output(str(scoped_root))
+                issues, raw_output_path = self.scan_with_raw_output(
+                    str(scoped_root), require_complete_coverage=True
+                )
                 try:
                     for finding in issues:
                         finding["file"] = _scoped_result_path(
@@ -1476,10 +1515,22 @@ class KicsScanner(ScannerWrapper):
         except Exception:
             self._fail("scope_unresolved")
 
-    def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
-        """Run KICS scan and return raw output file path"""
+    def scan_with_raw_output(
+        self, path: str, *, require_complete_coverage: bool = False
+    ) -> Tuple[List[Dict[str, Any]], str]:
+        """Run KICS scan and return raw output file path."""
+        self.scan_coverage = None
         if not self.installed():
             self._fail("not_installed")
+
+        exclusions = _kics_profile_excludes(path)
+        if exclusions and require_complete_coverage:
+            self._fail("scope_unresolved")
+        exclude_flags = []
+        if exclusions:
+            buffer = io.StringIO()
+            csv.writer(buffer).writerow(exclusions)
+            exclude_flags = ["--exclude-paths", buffer.getvalue().removesuffix("\r\n")]
 
         # kics -o expects a directory; it writes results.json inside it.
         # We use a temp dir for kics output, then copy results to a standalone
@@ -1501,7 +1552,7 @@ class KicsScanner(ScannerWrapper):
                     "kics", "scan", "-p", path,
                     "-q", str(assets_path / "queries"),
                     "-b", str(assets_path / "libraries"),
-                    "-f", "json", "-o", output_dir,
+                    "-f", "json", "-o", output_dir, *exclude_flags,
                 ],
                 capture_output=True,
                 text=True,
@@ -1577,6 +1628,7 @@ class KicsScanner(ScannerWrapper):
 
             # Copy kics results to the standalone file for the caller
             shutil.copy2(kics_output_path, standalone_path)
+            self.scan_coverage = {"profile_excluded_paths": len(exclusions)}
             completed = True
             return issues, standalone_path
         except subprocess.TimeoutExpired:

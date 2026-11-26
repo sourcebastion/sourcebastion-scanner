@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from sourcebastion.config import Config
 from sourcebastion.external_scanners import (
-    ExternalScannerManager, ScannerExecutionError, SemgrepScanner,
+    ExternalScannerManager, ScannerWrapper, ScannerExecutionError,
 )
 from sourcebastion.converters import VulnerabilityConverters, GitLabVulnerabilityFormat
 from sourcebastion.policy import PolicyEngine
@@ -330,9 +330,13 @@ class SecurityScanner:
             duration_seconds=time.monotonic() - started_at,
         )
         if self.use_external:
-            semgrep = getattr(self.external, "scanners", {}).get("semgrep")
-            if isinstance(semgrep, SemgrepScanner) and semgrep.enabled and semgrep.scan_coverage is not None:
-                scan_record.coverage = {"semgrep": semgrep.scan_coverage}
+            components = getattr(self.external, "scanners", {})
+            coverage = {
+                name: tool.scan_coverage for name, tool in components.items()
+                if isinstance(tool, ScannerWrapper) and tool.enabled and tool.scan_coverage is not None
+            }
+            if coverage:
+                scan_record.coverage = coverage
 
         configured_output = getattr(self.config, "output_file", None)
         output_path = None

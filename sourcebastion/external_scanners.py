@@ -15,11 +15,30 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Dict, Any, Iterator, Optional, Tuple
 from abc import ABC, abstractmethod
+from sourcebastion import source_profile
 from sourcebastion.schema import compute_finding_id
 from sourcebastion.secret_likelihood import gitleaks_benign_codes, gitleaks_likelihood_code
 
 logger = logging.getLogger(__name__)
 MAX_SCANNER_CONCURRENCY = 10
+
+
+def _semgrep_source_languages(path: str) -> tuple[bool, bool]:
+    """Find the custom rule-pack languages in one pass over source names."""
+    root = Path(path)
+    names = (
+        iter((root.name,)) if root.is_file()
+        else (name for _, _, files in os.walk(root) for name in files)
+    )
+    table = source_profile.load_table()
+    has_php = has_js = False
+    for name in names:
+        language = source_profile.language(name, table)
+        has_php = has_php or language == "php"
+        has_js = has_js or language in ("javascript", "typescript")
+        if has_php and has_js:
+            break
+    return has_php, has_js
 
 
 def configured_scanner_concurrency() -> int:
@@ -919,12 +938,9 @@ class SemgrepScanner(ScannerWrapper):
         completed = False
 
         try:
-            # Preserve the established full-scan rule selection. M036 partial
-            # execution must use the same rules as a full scan of the same
-            # image; changing rule selection belongs in a separately versioned
-            # compatibility-key change.
-            has_php = any(Path(path).rglob("*.php"))
-            has_js = any(Path(path).rglob("*.{js,ts,jsx,tsx}"))
+            # Both full and scoped scans use the same image's language table
+            # to select rules for the source files being scanned.
+            has_php, has_js = _semgrep_source_languages(path)
 
             # Build config flags
             config_flags = []
@@ -938,7 +954,7 @@ class SemgrepScanner(ScannerWrapper):
 
             # Add custom JS/TS rules if JS files exist
             if has_js:
-                js_rules = Path(__file__).parent.parent / "js-semgrep-rules.yaml"
+                js_rules = Path(__file__).with_name("data") / "js-semgrep-rules.yaml"
                 if js_rules.exists():
                     config_flags.append(f"--config={js_rules}")
                     logger.info(f"Using custom JavaScript/TypeScript vulnerability rules from {js_rules}")

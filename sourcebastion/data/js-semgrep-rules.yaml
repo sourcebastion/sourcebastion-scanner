@@ -28,8 +28,11 @@ rules:
       cwe: "CWE-943"
 
   - id: javascript.mongodb.nosql-injection-operator
-    pattern: |
-      { ...: { $<OPERATOR>: $INPUT } }
+    patterns:
+      - pattern: '({ $FIELD: { $OPERATOR: $INPUT, ... }, ... })'
+      - metavariable-regex:
+          metavariable: $OPERATOR
+          regex: '^\$'
     languages: [javascript, typescript]
     severity: ERROR
     message: Potential NoSQL injection via MongoDB operator with unsanitized user input
@@ -122,7 +125,7 @@ rules:
   # === React Security Rules ===
   - id: react.dangerously-set-inner-html
     pattern: |
-      dangerouslySetInnerHTML={{ __html: $INPUT }}
+      <$TAG ... dangerouslySetInnerHTML={{ __html: $INPUT }} ... />
     languages: [javascript, typescript]
     severity: ERROR
     message: React dangerouslySetInnerHTML may cause XSS if $INPUT is not sanitized
@@ -134,24 +137,6 @@ rules:
         - https://react.dev/reference/react-dom/components/common#dangerously-setting-inner-html
 
   # === Express/Node.js Security Rules ===
-  - id: express.csrf-missing
-    pattern-either:
-      - pattern: |
-          app.use(express.urlencoded({extended: true}))
-          ...
-          app.post(...)
-      - pattern: |
-          app.use(bodyParser.urlencoded({extended: true}))
-          ...
-          app.post(...)
-    languages: [javascript, typescript]
-    severity: WARNING
-    message: Express state-changing endpoint may be missing CSRF protection
-    metadata:
-      category: security
-      owasp: "A01: Broken Access Control"
-      cwe: "CWE-352"
-
   - id: express.helmet-missing
     pattern: |
       const express = require('express');
@@ -180,8 +165,19 @@ rules:
       cwe: "CWE-942"
 
   - id: express.unsafe-eval
-    pattern: |
-      eval($INPUT)
+    mode: taint
+    pattern-sources: &request-fields
+      - pattern-either:
+          - pattern: $REQ.params.$KEY
+          - pattern: $REQ.query.$KEY
+          - pattern: $REQ.body.$KEY
+          - pattern: $REQ.params[$KEY]
+          - pattern: $REQ.query[$KEY]
+          - pattern: $REQ.body[$KEY]
+    pattern-sinks:
+      - patterns:
+          - pattern: eval($CODE)
+          - focus-metavariable: $CODE
     languages: [javascript, typescript]
     severity: CRITICAL
     message: Code execution via eval() with unsanitized user input
@@ -191,8 +187,12 @@ rules:
       cwe: "CWE-94"
 
   - id: express.unsafe-function-constructor
-    pattern: |
-      new Function($ARGS, $INPUT)
+    mode: taint
+    pattern-sources: *request-fields
+    pattern-sinks:
+      - patterns:
+          - pattern: new Function(..., $CODE)
+          - focus-metavariable: $CODE
     languages: [javascript, typescript]
     severity: CRITICAL
     message: Code execution via Function constructor with unsanitized user input
@@ -284,7 +284,7 @@ rules:
 
   # === Hardcoded Secrets Rules ===
   - id: javascript.hardcoded-api-key
-    pattern: |
+    pattern-regex: |-
       (api_key|apikey|api-key|apikey)\s*[:=]\s*["'][a-zA-Z0-9]{20,}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -295,7 +295,7 @@ rules:
       cwe: "CWE-798"
 
   - id: javascript.hardcoded-aws-secret
-    pattern: |
+    pattern-regex: |-
       (aws_secret_access_key|AWS_SECRET_ACCESS_KEY)\s*[:=]\s*["'][A-Za-z0-9/+=]{40}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -306,7 +306,7 @@ rules:
       cwe: "CWE-798"
 
   - id: javascript.hardcoded-password
-    pattern: |
+    pattern-regex: |-
       (password|passwd|pwd)\s*[:=]\s*["'][^"']{6,}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -317,7 +317,7 @@ rules:
       cwe: "CWE-798"
 
   - id: javascript.hardcoded-jwt-secret
-    pattern: |
+    pattern-regex: |-
       (jwt_secret|jwtsecret|JWT_SECRET)\s*[:=]\s*["'][^"']{10,}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -329,8 +329,20 @@ rules:
 
   # === Sensitive Data Exposure Rules ===
   - id: javascript.console-log-sensitive
-    pattern: |
-      console.log($SENSITIVE)
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQ.headers.authorization
+          - pattern: $REQ.headers['authorization']
+      - patterns:
+          - pattern: process.env.$KEY
+          - metavariable-regex:
+              metavariable: $KEY
+              regex: '^(?:[A-Z0-9]+_)*(?:API_KEY|ACCESS_TOKEN|PASSWORD|SECRET|PRIVATE_KEY)$'
+    pattern-sinks:
+      - patterns:
+          - pattern: console.log(..., $VALUE, ...)
+          - focus-metavariable: $VALUE
     languages: [javascript, typescript]
     severity: INFO
     message: Sensitive data may be logged to console
@@ -340,7 +352,7 @@ rules:
       cwe: "CWE-532"
 
   - id: javascript.exposed-config-in-client
-    pattern: |
+    pattern-regex: |-
       (API_KEY|DATABASE_URL|SECRET|PASSWORD)\s*=\s*["'][^"']["']
     languages: [javascript, typescript]
     severity: ERROR
@@ -352,8 +364,12 @@ rules:
 
   # === Path Traversal Rules ===
   - id: javascript.path-traversal-fs-readfile
-    pattern: |
-      fs.readFile($INPUT, ...)
+    mode: taint
+    pattern-sources: *request-fields
+    pattern-sinks:
+      - patterns:
+          - pattern: fs.readFile($PATH, ...)
+          - focus-metavariable: $PATH
     languages: [javascript, typescript]
     severity: ERROR
     message: Potential path traversal via fs.readFile with unsanitized user input
@@ -363,8 +379,12 @@ rules:
       cwe: "CWE-22"
 
   - id: javascript.path-traversal-fs-readfilesync
-    pattern: |
-      fs.readFileSync($INPUT, ...)
+    mode: taint
+    pattern-sources: *request-fields
+    pattern-sinks:
+      - patterns:
+          - pattern: fs.readFileSync($PATH, ...)
+          - focus-metavariable: $PATH
     languages: [javascript, typescript]
     severity: ERROR
     message: Potential path traversal via fs.readFileSync with unsanitized user input
@@ -373,20 +393,9 @@ rules:
       owasp: "A01: Broken Access Control"
       cwe: "CWE-22"
 
-  - id: javascript.path-traversal-resolve
-    pattern: |
-      path.resolve($INPUT, ...)
-    languages: [javascript, typescript]
-    severity: WARNING
-    message: Potential path traversal via path.resolve with user input
-    metadata:
-      category: security
-      owasp: "A01: Broken Access Control"
-      cwe: "CWE-22"
-
   # === Debug Configuration Rules ===
   - id: javascript.debug-enabled
-    pattern: |
+    pattern-regex: |-
       (debug|DEBUG)\s*[:=]\s*true
     languages: [javascript, typescript]
     severity: WARNING
@@ -489,8 +498,14 @@ rules:
 
   # === Open Redirect Rules ===
   - id: javascript.open-redirect
-    pattern: |
-      res.redirect($USER_INPUT)
+    mode: taint
+    pattern-sources: *request-fields
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: res.redirect($TARGET)
+              - pattern: res.redirect($STATUS, $TARGET)
+          - focus-metavariable: $TARGET
     languages: [javascript, typescript]
     severity: WARNING
     message: Potential open redirect via unsanitized user input

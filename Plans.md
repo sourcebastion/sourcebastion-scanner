@@ -55,7 +55,7 @@
 | Task | 内容 | DoD | Depends | Status |
 |------|------|-----|---------|--------|
 \| 5\.1 \| Add critical PHP vulnerability detection rules \| SQL injection, XSS, CSRF, command injection, LFI rules added to Semgrep \| 4\.4, 4\.5 \| cc:完了 |
-| 5.2 | Add framework-specific detection rules | Angular, Node.js, Express patterns for modern frameworks | 5.1 | cc:完了 | (See js-semgrep-rules.yaml)
+| 5.2 | Add framework-specific detection rules | Angular, Node.js, Express patterns for modern frameworks | 5.1 | cc:完了 | (See sourcebastion/data/js-semgrep-rules.yaml)
 | 5.3 | Reduce false positive rate | Exclude code quality rules, improve context sensitivity | 4.4, 4.5 | cc:完了 | (See tests/test_false_positive_reduction.py, external_scanners.py)
 | 5.4 | Create false negative validation tests | Test with production-style applications to validate missing detections | 5.2, 5.3 | cc:完了 | (See tests/test_false_negative_validation.py)
 | 5.5 | Document rule coverage gaps and improvement plan | Comprehensive documentation of missing rules and improvement roadmap | 4.4, 4.5 | cc:完了 | (See tests/live/rule-coverage-improvement-plan.md)

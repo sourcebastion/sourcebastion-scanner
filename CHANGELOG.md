@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.11] - 2026-11-26
+
+Gitleaks findings can include an optional `secret_likelihood` reason code to help prioritize false-positive review. The scanner derives this advisory evidence offline. Current-tree scans can recognize exact publishable-key and placeholder formats within bounded reads of the scanned checkout. Git-history scans use contextual evidence. Finding severity and identity stay the same.
+
 ## [2.1.10] - 2026-11-22
 
 Update the pinned Python runtime to 3.14.10. Release preparation accepts refreshed wheel bindings only when the bundled native libraries retain their reviewed installed paths, owners, sizes, and hashes on both architectures.

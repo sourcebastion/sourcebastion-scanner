@@ -990,7 +990,7 @@ class SemgrepScanner(ScannerWrapper):
                 result = subprocess.run(
                     ["semgrep", "scan", "--oss-only"] + config_flags + [
                         "--metrics=off", "--disable-version-check",
-                        "--json", "--output", raw_output_path, path,
+                        "--verbose", "--json", "--output", raw_output_path, path,
                     ],
                     capture_output=True,
                     text=True,
@@ -1067,9 +1067,19 @@ class SemgrepScanner(ScannerWrapper):
                 level = error.get("level")
                 if not isinstance(level, str) or level.lower() not in {"warn", "info"}:
                     self._fail("execution_failed")
+            # Semgrep reports size exclusions under paths.skipped, not errors.
+            paths = data.get("paths", {})
+            skipped = paths.get("skipped", []) if isinstance(paths, dict) else []
+            size_skips = sum(
+                isinstance(item, dict) and item.get("reason") == "exceeded_size_limit"
+                for item in skipped
+            ) if isinstance(skipped, list) else 0
+            if size_skips:
+                print(f"semgrep: size_limit_skips={size_skips}", file=sys.stderr, flush=True)
+
             # Partial results replace baseline observations in every covered
             # path. A skipped/unparsed file cannot authorize that replacement.
-            if errors and require_complete_coverage:
+            if require_complete_coverage and (errors or size_skips):
                 self._fail("execution_failed")
             degraded = len(errors)
             if degraded:

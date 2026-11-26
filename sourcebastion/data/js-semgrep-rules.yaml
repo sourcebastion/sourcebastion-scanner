@@ -165,8 +165,19 @@ rules:
       cwe: "CWE-942"
 
   - id: express.unsafe-eval
-    pattern: |
-      eval($INPUT)
+    mode: taint
+    pattern-sources: &request-fields
+      - pattern-either:
+          - pattern: $REQ.params.$KEY
+          - pattern: $REQ.query.$KEY
+          - pattern: $REQ.body.$KEY
+          - pattern: $REQ.params[$KEY]
+          - pattern: $REQ.query[$KEY]
+          - pattern: $REQ.body[$KEY]
+    pattern-sinks:
+      - patterns:
+          - pattern: eval($CODE)
+          - focus-metavariable: $CODE
     languages: [javascript, typescript]
     severity: CRITICAL
     message: Code execution via eval() with unsanitized user input
@@ -176,8 +187,12 @@ rules:
       cwe: "CWE-94"
 
   - id: express.unsafe-function-constructor
-    pattern: |
-      new Function($ARGS, $INPUT)
+    mode: taint
+    pattern-sources: *request-fields
+    pattern-sinks:
+      - patterns:
+          - pattern: new Function(..., $CODE)
+          - focus-metavariable: $CODE
     languages: [javascript, typescript]
     severity: CRITICAL
     message: Code execution via Function constructor with unsanitized user input
@@ -349,8 +364,12 @@ rules:
 
   # === Path Traversal Rules ===
   - id: javascript.path-traversal-fs-readfile
-    pattern: |
-      fs.readFile($INPUT, ...)
+    mode: taint
+    pattern-sources: *request-fields
+    pattern-sinks:
+      - patterns:
+          - pattern: fs.readFile($PATH, ...)
+          - focus-metavariable: $PATH
     languages: [javascript, typescript]
     severity: ERROR
     message: Potential path traversal via fs.readFile with unsanitized user input
@@ -361,14 +380,7 @@ rules:
 
   - id: javascript.path-traversal-fs-readfilesync
     mode: taint
-    pattern-sources:
-      - pattern-either:
-          - pattern: $REQ.params.$KEY
-          - pattern: $REQ.query.$KEY
-          - pattern: $REQ.body.$KEY
-          - pattern: $REQ.params[$KEY]
-          - pattern: $REQ.query[$KEY]
-          - pattern: $REQ.body[$KEY]
+    pattern-sources: *request-fields
     pattern-sinks:
       - patterns:
           - pattern: fs.readFileSync($PATH, ...)
@@ -486,8 +498,14 @@ rules:
 
   # === Open Redirect Rules ===
   - id: javascript.open-redirect
-    pattern: |
-      res.redirect($USER_INPUT)
+    mode: taint
+    pattern-sources: *request-fields
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: res.redirect($TARGET)
+              - pattern: res.redirect($STATUS, $TARGET)
+          - focus-metavariable: $TARGET
     languages: [javascript, typescript]
     severity: WARNING
     message: Potential open redirect via unsanitized user input

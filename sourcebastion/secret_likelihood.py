@@ -1,5 +1,7 @@
 """Advisory reason codes derived from the redacted Gitleaks report."""
 
+import base64
+import binascii
 import math
 import os
 from pathlib import PurePosixPath
@@ -29,8 +31,15 @@ _CREDENTIAL_RULES = {
 
 _MAX_FILE_BYTES = 64 * 1024
 _MAX_EXACT_CHECKS = 128
-_PUBLISHABLE_ASSIGNMENT = re.compile(rb"""(?:stripe_publishable_key|stripe_public_key)[ \t]*[:=][ \t]*(['"])""", re.IGNORECASE)
-_PUBLISHABLE_KEY = re.compile(rb"pk_(?:test|live)_[A-Za-z0-9]{24,128}")
+_PUBLISHABLE_ASSIGNMENT = re.compile(
+    rb"(?:(?P<stripe>stripe_publishable_key|stripe_public_key)"
+    rb"|(?P<clerk>(?:next_public_|vite_)?clerk_publishable_key)"
+    rb"""|(?P<supabase>(?:next_public_|vite_)?supabase_publishable_key))[ \t]*[:=][ \t]*['"]""",
+    re.IGNORECASE,
+)
+_STRIPE_PUBLISHABLE_KEY = re.compile(rb"pk_(?:test|live)_[A-Za-z0-9]{24,128}")
+_SUPABASE_PUBLISHABLE_KEY = re.compile(rb"sb_publishable_[A-Za-z0-9_-]{22}_[A-Za-z0-9_-]{8}")
+_CLERK_DEV_HOST = re.compile(rb"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.clerk\.accounts\.dev\$")
 _PLACEHOLDER = re.compile(rb"(?:YOUR_(?:SERVICE_)?API_KEY_HERE|<your-api-key>|<your-key>)", re.IGNORECASE)
 
 
@@ -59,6 +68,23 @@ def _read_regular_file(root, file_path, scan_started_ns):
             final.st_size, final.st_mtime_ns, final.st_ctime_ns
         )
         return data if stable and len(data) <= _MAX_FILE_BYTES else b""
+
+
+def _is_publishable_key(family, value):
+    if family == "stripe":
+        return _STRIPE_PUBLISHABLE_KEY.fullmatch(value) is not None
+    if family == "supabase":
+        # The opaque shape identifies a client key. The application's row
+        # access policies still govern who can read or write data.
+        return _SUPABASE_PUBLISHABLE_KEY.fullmatch(value) is not None
+    if family == "clerk" and value.startswith(b"pk_test_") and len(value) <= 128:
+        payload = value[len(b"pk_test_"):]
+        try:
+            hostname = base64.b64decode(payload, validate=True)
+        except binascii.Error:
+            return False
+        return base64.b64encode(hostname) == payload and _CLERK_DEV_HOST.fullmatch(hostname) is not None
+    return False
 
 
 def gitleaks_benign_codes(root, findings, *, scan_started_ns):
@@ -93,13 +119,14 @@ def gitleaks_benign_codes(root, findings, *, scan_started_ns):
             continue
         # Named publishable assignments are identifiable from the redacted
         # context. Check them before using the remaining budget on broad matches.
-        publishable_assignment = bool(_PUBLISHABLE_ASSIGNMENT.fullmatch(before))
-        candidates.append((not publishable_assignment, path, line, start, end, index, before, after))
+        assignment = _PUBLISHABLE_ASSIGNMENT.fullmatch(before)
+        family = assignment.lastgroup if assignment else None
+        candidates.append((family is None, path, line, start, end, index, before, after, family))
 
     result = {}
     loaded_path = None
     lines = []
-    for broad, path, line, start, end, index, before, after in sorted(candidates)[:_MAX_EXACT_CHECKS]:
+    for _, path, line, start, end, index, before, after, family in sorted(candidates)[:_MAX_EXACT_CHECKS]:
         if path != loaded_path:
             loaded_path = path
             try:
@@ -117,7 +144,7 @@ def gitleaks_benign_codes(root, findings, *, scan_started_ns):
         if not span.startswith(before) or not span.endswith(after):
             continue
         value = span[len(before):-len(after)]
-        if not broad and _PUBLISHABLE_KEY.fullmatch(value):
+        if _is_publishable_key(family, value):
             result[index] = "v1:public-key"
         elif _PLACEHOLDER.fullmatch(value):
             result[index] = "v1:placeholder"

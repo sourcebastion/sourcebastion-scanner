@@ -1,3 +1,4 @@
+import base64
 import json
 from pathlib import Path
 import random
@@ -56,6 +57,46 @@ def test_explicit_publishable_assignment_is_checked_within_shared_budget(tmp_pat
     assert gitleaks_benign_codes(tmp_path, list(reversed(findings)), scan_started_ns=scan_started) == {
         0: "v1:public-key",
     }
+
+
+@pytest.mark.skipif(shutil.which("gitleaks") is None, reason="requires the pinned Gitleaks binary")
+def test_public_client_formats_require_full_values_and_provider_context(tmp_path):
+    rng = random.Random(671129)
+    alphabet = string.ascii_letters + string.digits
+    hostname = b"fixture-team.clerk.accounts.dev$"
+    clerk = "pk_test_" + base64.b64encode(hostname).decode()
+    clerk_wrong_host = "pk_test_" + base64.b64encode(b"fixture-team.example.invalid$").decode()
+    clerk_server = "sk_test_" + "".join(rng.choices(alphabet, k=48))
+    supabase_body = "".join(rng.choices(alphabet + "_-", k=22))
+    supabase_checksum = "".join(rng.choices(alphabet + "_-", k=8))
+    supabase = f"sb_publishable_{supabase_body}_{supabase_checksum}"
+    supabase_server = f"sb_secret_{supabase_body}_{supabase_checksum}"
+    github = "ghp_" + "".join(rng.choices(alphabet, k=36))
+    cases = {
+        "clerk-public.env": ("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", clerk),
+        "clerk-server.env": ("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", clerk_server),
+        "clerk-wrong-host.env": ("CLERK_PUBLISHABLE_KEY", clerk_wrong_host),
+        "clerk-wrong-context.env": ("SERVICE_API_KEY", clerk),
+        "supabase-public.env": ("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", supabase),
+        "supabase-server.env": ("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", supabase_server),
+        "supabase-truncated.env": ("SUPABASE_PUBLISHABLE_KEY", supabase[:-1]),
+        "supabase-wrong-context.env": ("SERVICE_API_KEY", supabase),
+    }
+    for path, (name, value) in cases.items():
+        (tmp_path / path).write_text(f'{name}="{value}"\n')
+    (tmp_path / "shared.env").write_text(f'SUPABASE_PUBLISHABLE_KEY="{supabase}"; GITHUB_TOKEN="{github}"\n')
+
+    rows = GitleaksScanner().scan_current_tree(str(tmp_path))
+    assert {row["file"] for row in rows} == set(cases) | {"shared.env"}
+    assert {row["file"] for row in rows if row.get("secret_likelihood") == "v1:public-key"} == {
+        "clerk-public.env", "supabase-public.env",
+    }
+    assert any(row["file"] == "shared.env" and row.get("secret_likelihood") == "v1:credential-format"
+               for row in rows)
+    assert all(row["severity"] == "critical" for row in rows)
+    encoded = json.dumps(rows)
+    assert all(value not in encoded for _, value in cases.values())
+    assert github not in encoded
 
 
 @pytest.mark.skipif(shutil.which("gitleaks") is None or shutil.which("git") is None,

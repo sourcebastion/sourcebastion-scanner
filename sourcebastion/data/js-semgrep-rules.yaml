@@ -137,24 +137,6 @@ rules:
         - https://react.dev/reference/react-dom/components/common#dangerously-setting-inner-html
 
   # === Express/Node.js Security Rules ===
-  - id: express.csrf-missing
-    pattern-either:
-      - pattern: |
-          app.use(express.urlencoded({extended: true}))
-          ...
-          app.post(...)
-      - pattern: |
-          app.use(bodyParser.urlencoded({extended: true}))
-          ...
-          app.post(...)
-    languages: [javascript, typescript]
-    severity: WARNING
-    message: Express state-changing endpoint may be missing CSRF protection
-    metadata:
-      category: security
-      owasp: "A01: Broken Access Control"
-      cwe: "CWE-352"
-
   - id: express.helmet-missing
     pattern: |
       const express = require('express');
@@ -332,8 +314,20 @@ rules:
 
   # === Sensitive Data Exposure Rules ===
   - id: javascript.console-log-sensitive
-    pattern: |
-      console.log($SENSITIVE)
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQ.headers.authorization
+          - pattern: $REQ.headers['authorization']
+      - patterns:
+          - pattern: process.env.$KEY
+          - metavariable-regex:
+              metavariable: $KEY
+              regex: '^(?:[A-Z0-9]+_)*(?:API_KEY|ACCESS_TOKEN|PASSWORD|SECRET|PRIVATE_KEY)$'
+    pattern-sinks:
+      - patterns:
+          - pattern: console.log(..., $VALUE, ...)
+          - focus-metavariable: $VALUE
     languages: [javascript, typescript]
     severity: INFO
     message: Sensitive data may be logged to console
@@ -366,22 +360,22 @@ rules:
       cwe: "CWE-22"
 
   - id: javascript.path-traversal-fs-readfilesync
-    pattern: |
-      fs.readFileSync($INPUT, ...)
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQ.params.$KEY
+          - pattern: $REQ.query.$KEY
+          - pattern: $REQ.body.$KEY
+          - pattern: $REQ.params[$KEY]
+          - pattern: $REQ.query[$KEY]
+          - pattern: $REQ.body[$KEY]
+    pattern-sinks:
+      - patterns:
+          - pattern: fs.readFileSync($PATH, ...)
+          - focus-metavariable: $PATH
     languages: [javascript, typescript]
     severity: ERROR
     message: Potential path traversal via fs.readFileSync with unsanitized user input
-    metadata:
-      category: security
-      owasp: "A01: Broken Access Control"
-      cwe: "CWE-22"
-
-  - id: javascript.path-traversal-resolve
-    pattern: |
-      path.resolve($INPUT, ...)
-    languages: [javascript, typescript]
-    severity: WARNING
-    message: Potential path traversal via path.resolve with user input
     metadata:
       category: security
       owasp: "A01: Broken Access Control"

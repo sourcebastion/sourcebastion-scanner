@@ -99,6 +99,20 @@ def scan(path, ai_prompt, languages, severity, output, config_file, baseline_pat
         # scanner computed them. This is the headline value of schema v2:
         # answering "what changed since last scan?" without digging into JSON.
         scan_record = results.get("scan_record") or {}
+        coverage = scan_record.get("coverage") or {}
+        for scanner_name, label in (("semgrep", "Semgrep"), ("kics", "KICS")):
+            counts = coverage.get(scanner_name) or {}
+            omissions = [
+                f"{counts[reason]} {description}"
+                for reason, description in (
+                    ("size_limit_skips", "over the file size limit"),
+                    ("memory_limit_skips", "affected by the per-file memory limit"),
+                    ("profile_excluded_paths", "excluded by the source profile"),
+                )
+                if counts.get(reason, 0) > 0
+            ]
+            if omissions:
+                click.echo(f"  {label} coverage: {', '.join(omissions)}")
         new_count = scan_record.get("new_count")
         resolved_count = scan_record.get("resolved_count")
         if not baseline_path and (new_count is not None or resolved_count is not None):

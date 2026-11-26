@@ -18,6 +18,10 @@ platform selection. Scan artifacts and the scan summary report aggregate
 coverage omissions. Incremental scans preserve earlier findings when these
 limits prevent coverage of the claimed scope (M066 S02/T03–T04).
 
+A successful Semgrep engine run with a known file-level AST builder error
+keeps the other findings in a full scan. The same diagnostic prevents the
+response from replacing incremental findings.
+
 ## [2.1.10] - 2026-11-22
 
 Update the pinned Python runtime to 3.14.10. Release preparation accepts refreshed wheel bindings only when the bundled native libraries retain their reviewed installed paths, owners, sizes, and hashes on both architectures.

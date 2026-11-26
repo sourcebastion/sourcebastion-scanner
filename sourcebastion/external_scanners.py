@@ -1149,9 +1149,9 @@ class SemgrepScanner(ScannerWrapper):
             # is sometimes a bare string and sometimes a [tag, payload] pair.
             # It is an allowlist, not a denylist: only `warn` and `info` are
             # known to be non-fatal, so a missing, null, empty, unrecognised
-            # or non-string level fails closed. Matching on `!= "error"`
-            # instead would read a `level` semgrep adds later, or a malformed
-            # one, as safe.
+            # or non-string level fails closed. The pinned engine also emits
+            # a file-scoped AST builder error with level `error` and exit 0.
+            # Preserve its other results only for that known diagnostic.
             #
             # A scoped scan is held to a stricter rule -- see
             # `require_complete_coverage` below.
@@ -1177,12 +1177,22 @@ class SemgrepScanner(ScannerWrapper):
                             memory_limited_paths.add(skipped_path)
                         else:
                             memory_count_known = False
+                    if kind in ("AST builder error", "AstBuilderError"):
+                        kind = "AstBuilderError"
                     kind = kind if isinstance(kind, str) and kind in known_types else "other"
                     counts[kind] = counts.get(kind, 0) + 1
                 print("semgrep: error_counts=" + json.dumps(counts, sort_keys=True),
                       file=sys.stderr, flush=True)
             for error in errors:
                 level = error.get("level")
+                kind = error.get("type")
+                if isinstance(kind, list) and kind:
+                    kind = kind[0]
+                path = error.get("path")
+                if (result.returncode == 0 and level == "error" and error.get("code") == 2
+                        and kind in ("AST builder error", "AstBuilderError")
+                        and isinstance(path, str) and path):
+                    continue
                 if not isinstance(level, str) or level.lower() not in {"warn", "info"}:
                     self._fail("execution_failed")
             # These are the engine's skipped path entries. Count them without

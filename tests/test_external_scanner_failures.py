@@ -407,7 +407,7 @@ def test_output_conversion_failure_discards_all_outputs(tmp_path, method_name, c
     assert not second.exists()
 
 
-def _semgrep_report(tmp_path, payload):
+def _semgrep_report(tmp_path, payload, *, require_complete_coverage=False):
     """Run SemgrepScanner against a canned semgrep report."""
     scanner = SemgrepScanner()
 
@@ -420,7 +420,7 @@ def _semgrep_report(tmp_path, payload):
         patch.object(scanner, "is_installed", return_value=True),
         patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_report),
     ):
-        return scanner.scan_with_raw_output(str(tmp_path))
+        return scanner.scan_with_raw_output(str(tmp_path), require_complete_coverage=require_complete_coverage)
 
 
 def test_semgrep_security_finding_with_list_technology_survives_parsing(tmp_path):
@@ -456,6 +456,8 @@ PARTIAL_PARSING_ERROR = {
     "type": ["PartialParsing", [{"path": "/src/vendor.min.js"}]],
     "message": "Syntax error at line /src/vendor.min.js:1:",
 }
+
+AST_BUILDER_ERROR = {"level": "error", "type": "AST builder error", "code": 2, "path": "broken.go"}
 
 
 def test_semgrep_partial_parsing_does_not_discard_the_scan(tmp_path):
@@ -497,7 +499,8 @@ def test_semgrep_error_without_a_level_fails_closed(tmp_path):
     assert raised.value.code == "execution_failed"
 
 
-def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path):
+@pytest.mark.parametrize("diagnostic", [PARTIAL_PARSING_ERROR, AST_BUILDER_ERROR])
+def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path, diagnostic):
     """The findings from the files semgrep *could* read must survive."""
     issues, raw_path = _semgrep_report(
         tmp_path,
@@ -518,13 +521,19 @@ def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path):
                     },
                 }
             ],
-            "errors": [PARTIAL_PARSING_ERROR],
+            "errors": [diagnostic],
         },
     )
     try:
         assert len(issues) == 1
     finally:
         os.unlink(raw_path)
+
+
+def test_semgrep_ast_builder_diagnostic_cannot_replace_incremental_findings(tmp_path):
+    payload = {"results": [], "errors": [AST_BUILDER_ERROR]}
+    with pytest.raises(ScannerExecutionError, match="execution_failed"):
+        _semgrep_report(tmp_path, payload, require_complete_coverage=True)
 
 
 @pytest.mark.parametrize("level", [None, "", "fatal", "unknown", 0, []])

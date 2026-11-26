@@ -1,5 +1,11 @@
 ## Unreleased
 
+Package and select the Semgrep JavaScript and TypeScript rules when the scan
+contains those source files. The previous file pattern never selected this
+pack. PHP and JavaScript/TypeScript rule selection now share one pass using
+the source-profile language table. This can add findings on JavaScript and
+TypeScript projects when they adopt the new scanner image (M066 S02/T01).
+
 ## [2.1.10] - 2026-11-22
 
 Update the pinned Python runtime to 3.14.10. Release preparation accepts refreshed wheel bindings only when the bundled native libraries retain their reviewed installed paths, owners, sizes, and hashes on both architectures.

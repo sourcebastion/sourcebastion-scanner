@@ -28,8 +28,11 @@ rules:
       cwe: "CWE-943"
 
   - id: javascript.mongodb.nosql-injection-operator
-    pattern: |
-      { ...: { $<OPERATOR>: $INPUT } }
+    patterns:
+      - pattern: '({ $FIELD: { $OPERATOR: $INPUT, ... }, ... })'
+      - metavariable-regex:
+          metavariable: $OPERATOR
+          regex: '^\$'
     languages: [javascript, typescript]
     severity: ERROR
     message: Potential NoSQL injection via MongoDB operator with unsanitized user input
@@ -122,7 +125,7 @@ rules:
   # === React Security Rules ===
   - id: react.dangerously-set-inner-html
     pattern: |
-      dangerouslySetInnerHTML={{ __html: $INPUT }}
+      <$TAG ... dangerouslySetInnerHTML={{ __html: $INPUT }} ... />
     languages: [javascript, typescript]
     severity: ERROR
     message: React dangerouslySetInnerHTML may cause XSS if $INPUT is not sanitized
@@ -284,7 +287,7 @@ rules:
 
   # === Hardcoded Secrets Rules ===
   - id: javascript.hardcoded-api-key
-    pattern: |
+    pattern-regex: |-
       (api_key|apikey|api-key|apikey)\s*[:=]\s*["'][a-zA-Z0-9]{20,}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -295,7 +298,7 @@ rules:
       cwe: "CWE-798"
 
   - id: javascript.hardcoded-aws-secret
-    pattern: |
+    pattern-regex: |-
       (aws_secret_access_key|AWS_SECRET_ACCESS_KEY)\s*[:=]\s*["'][A-Za-z0-9/+=]{40}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -306,7 +309,7 @@ rules:
       cwe: "CWE-798"
 
   - id: javascript.hardcoded-password
-    pattern: |
+    pattern-regex: |-
       (password|passwd|pwd)\s*[:=]\s*["'][^"']{6,}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -317,7 +320,7 @@ rules:
       cwe: "CWE-798"
 
   - id: javascript.hardcoded-jwt-secret
-    pattern: |
+    pattern-regex: |-
       (jwt_secret|jwtsecret|JWT_SECRET)\s*[:=]\s*["'][^"']{10,}["']
     languages: [javascript, typescript]
     severity: CRITICAL
@@ -340,7 +343,7 @@ rules:
       cwe: "CWE-532"
 
   - id: javascript.exposed-config-in-client
-    pattern: |
+    pattern-regex: |-
       (API_KEY|DATABASE_URL|SECRET|PASSWORD)\s*=\s*["'][^"']["']
     languages: [javascript, typescript]
     severity: ERROR
@@ -386,7 +389,7 @@ rules:
 
   # === Debug Configuration Rules ===
   - id: javascript.debug-enabled
-    pattern: |
+    pattern-regex: |-
       (debug|DEBUG)\s*[:=]\s*true
     languages: [javascript, typescript]
     severity: WARNING

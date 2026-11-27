@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.11] - 2026-11-26
+
+Gitleaks findings can include an optional `secret_likelihood` reason code to help prioritize false-positive review. The scanner derives this advisory evidence offline. Current-tree scans can recognize exact publishable-key and placeholder formats within bounded reads of the scanned checkout. Git-history scans use contextual evidence. Finding severity and identity stay the same.
+
 Package and select the Semgrep JavaScript and TypeScript rules when the scan
 contains those source files. The previous file pattern never selected this
 pack. PHP and JavaScript/TypeScript rule selection now share one pass using

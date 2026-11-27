@@ -72,7 +72,12 @@ def pr():
     return {'number': 217, 'user': {'login': 'sourcebastion-bot[bot]'}, 'merged_at': 'now',
             'merge_commit_sha': 'a' * 40, 'draft': False,
             'base': {'ref': 'main', 'repo': {'full_name': policy['REPOSITORY']}},
-            'head': {'ref': policy['PREFIX'] + 'test', 'repo': {'full_name': policy['REPOSITORY']}}}
+            'head': {'ref': policy['PREFIX'] + 'test', 'sha': 'e' * 40,
+                     'repo': {'full_name': policy['REPOSITORY']}}}
+
+
+def bot_commit(value):
+    return {'author': value['user'], 'sha': value['head']['sha']}
 
 
 @pytest.mark.parametrize('field', ['author', 'sha', 'draft', 'fork', 'branch'])
@@ -89,9 +94,12 @@ def test_release_requires_exact_merged_owned_bot_pr(field):
 
 def test_failed_bot_candidate_is_refreshed_but_human_work_is_preserved():
     value = pr()
-    assert policy['candidate_branch']([value], lambda _: [{'author': value['user']}]) == value['head']['ref']
+    assert policy['candidate_branch']([value], lambda _: [bot_commit(value)]) == value['head']['ref']
     with pytest.raises(ValueError, match='preserve'):
-        policy['candidate_branch']([value], lambda _: [{'author': {'login': 'human'}}])
+        policy['candidate_branch']([value], lambda _: [{'author': {'login': 'human'}, 'sha': 'e' * 40}])
+    # A commit list that does not end at the listed head describes a newer push.
+    with pytest.raises(ValueError, match='preserve'):
+        policy['candidate_branch']([value], lambda _: [{'author': value['user'], 'sha': 'f' * 40}])
 
 
 def test_retained_apks_rebuild_when_upstream_has_disappeared(tmp_path, monkeypatch):
@@ -236,14 +244,14 @@ def test_prepare_refreshes_owned_runtime_lock_candidate_but_keeps_manual_review(
     def command(argv, **_):
         if argv[0] == 'gh':
             path = argv[2]
-            if '/commits?' in path: return json.dumps([{'author': value['user']}]).encode()
+            if '/commits?' in path: return json.dumps([bot_commit(value)]).encode()
             if '/files?' in path: return json.dumps([{'filename': runtime_path}]).encode()
             return json.dumps([value]).encode()
         assert argv[:4] == ['git', 'diff', '--no-renames', '--name-only']
         return runtime_path + '\n'
     monkeypatch.setattr(scope['subprocess'], 'check_output', command)
     function()
-    assert output.read_text() == f"branch={value['head']['ref']}\ndraft=always-true\n"
+    assert output.read_text() == f"branch={value['head']['ref']}\ndraft=always-true\nlease={value['head']['sha']}\n"
     assert not policy['allowed'](runtime_path)  # Automatic release authority must stay narrower.
 
 
@@ -255,7 +263,7 @@ def test_prepare_preserves_non_generated_candidate_work(tmp_path, monkeypatch, p
     monkeypatch.setenv('GITHUB_OUTPUT', str(tmp_path / 'output'))
     def command(argv, **_):
         assert argv[0] == 'gh'
-        if '/commits?' in argv[2]: return json.dumps([{'author': value['user']}]).encode()
+        if '/commits?' in argv[2]: return json.dumps([bot_commit(value)]).encode()
         if '/files?' in argv[2]: return json.dumps([{'filename': path}]).encode()
         return json.dumps([value]).encode()
     monkeypatch.setattr(scope['subprocess'], 'check_output', command)
@@ -265,7 +273,7 @@ def test_prepare_preserves_non_generated_candidate_work(tmp_path, monkeypatch, p
 
 
 @pytest.mark.parametrize('case', ['closed-stale', 'merged', 'human-commit', 'pushed-after-close',
-                                  'human-opened', 'no-closed-pr'])
+                                  'human-opened', 'no-closed-pr', 'non-generated-file'])
 def test_prepare_reuses_leftover_branch_only_when_bot_owned_and_unchanged(tmp_path, monkeypatch, case):
     """A bot candidate closed as stale must not block every later proposal."""
     function = policy['prepare_candidate']; scope = function.__globals__
@@ -273,9 +281,11 @@ def test_prepare_reuses_leftover_branch_only_when_bot_owned_and_unchanged(tmp_pa
     head = 'c' * 40
     closed = pr(); closed.update(number=227, draft=True, merged_at=None)
     closed['head'].update(ref=branch, sha=head)
-    history = [{'author': closed['user']}]
+    history = [{'author': closed['user'], 'sha': head}]
+    changed = [{'filename': '.github/scanner-versions.json'}]
     if case == 'merged': closed['merged_at'] = 'now'
-    if case == 'human-commit': history.append({'author': {'login': 'human'}})
+    if case == 'human-commit': history.insert(0, {'author': {'login': 'human'}, 'sha': 'b' * 40})
+    if case == 'non-generated-file': changed.append({'filename': 'scripts/automated_scanner_update.py'})
     if case == 'pushed-after-close': head = 'd' * 40
     if case == 'human-opened': closed['user'] = {'login': 'human'}
     listed = [] if case == 'no-closed-pr' else [closed]
@@ -292,6 +302,7 @@ def test_prepare_reuses_leftover_branch_only_when_bot_owned_and_unchanged(tmp_pa
                 assert f'head=sourcebastion:{branch}' in path
                 return json.dumps(listed).encode()
             if path.endswith('/pulls/227/commits?per_page=100'): return json.dumps(history).encode()
+            if path.endswith('/pulls/227/files?per_page=100'): return json.dumps(changed).encode()
             raise AssertionError(path)
         if argv[:2] == ['git', 'ls-remote']:
             assert argv[3] == f'refs/heads/{branch}'
@@ -301,8 +312,74 @@ def test_prepare_reuses_leftover_branch_only_when_bot_owned_and_unchanged(tmp_pa
     monkeypatch.setattr(scope['subprocess'], 'check_output', command)
     if case in ('closed-stale', 'merged'):
         function()
-        assert output.read_text() == f'branch={branch}\ndraft=always-true\n'
+        assert output.read_text() == f'branch={branch}\ndraft=always-true\nlease={head}\n'
     else:
         with pytest.raises(ValueError, match='preserve'):
             function()
         assert not output.exists()
+
+
+def _git(cwd, *args, check=True):
+    import subprocess
+    return subprocess.run(['git', '-c', 'user.name=t', '-c', 'user.email=t@example.invalid', *args],
+                          cwd=cwd, capture_output=True, text=True, check=check)
+
+
+@pytest.mark.parametrize('case', ['validated', 'pushed-after-validation', 'absent', 'created-after-validation'])
+def test_candidate_push_replaces_only_the_validated_tip(tmp_path, case):
+    """The action leases against its own fetch; the guard binds the push to the validated tip."""
+    branch = policy['PREFIX'] + 'update'
+    remote, maintainer, runner = tmp_path / 'remote.git', tmp_path / 'maintainer', tmp_path / 'runner'
+    _git(tmp_path, 'init', '-q', '--bare', str(remote))
+    _git(tmp_path, 'clone', '-q', str(remote), str(maintainer))
+    _git(maintainer, 'commit', '-q', '--allow-empty', '-m', 'base')
+    _git(maintainer, 'push', '-q', 'origin', 'HEAD:refs/heads/main')
+    if case in ('validated', 'pushed-after-validation'):
+        _git(maintainer, 'commit', '-q', '--allow-empty', '-m', 'old bot candidate')
+        _git(maintainer, 'push', '-q', 'origin', f'HEAD:refs/heads/{branch}')
+        lease = _git(maintainer, 'rev-parse', 'HEAD').stdout.strip()
+    else:
+        lease = policy['ABSENT']
+    _git(tmp_path, 'clone', '-q', str(remote), str(runner))
+    policy['install_push_guard'](branch, lease, tmp_path / 'hooks', repo=runner)
+    if case in ('pushed-after-validation', 'created-after-validation'):
+        _git(maintainer, 'commit', '-q', '--allow-empty', '-m', 'human work')
+        _git(maintainer, 'push', '-q', '--force', 'origin', f'HEAD:refs/heads/{branch}')
+    intruder = _git(remote, 'rev-parse', '--verify', '--quiet', f'refs/heads/{branch}', check=False).stdout.strip()
+    # What create-pull-request does: fetch the branch, then lease against that fetch.
+    _git(runner, 'fetch', '-q', '--force', 'origin', f'{branch}:refs/remotes/origin/{branch}', check=False)
+    _git(runner, 'checkout', '-q', '-B', branch, 'origin/main')
+    _git(runner, 'commit', '-q', '--allow-empty', '-m', 'refreshed bot candidate')
+    pushed = _git(runner, 'push', '--force-with-lease', 'origin', f'{branch}:refs/heads/{branch}', check=False)
+    tip = _git(remote, 'rev-parse', f'refs/heads/{branch}').stdout.strip()
+    if case in ('validated', 'absent'):
+        assert pushed.returncode == 0, pushed.stderr
+        assert tip == _git(runner, 'rev-parse', 'HEAD').stdout.strip()
+    else:
+        assert pushed.returncode != 0
+        assert 'push refused' in pushed.stderr
+        assert tip == intruder
+
+
+@pytest.mark.parametrize('branch, lease', [('unrelated', 'a' * 40), (policy['PREFIX'] + 'update"; true', 'a' * 40),
+                                           (policy['PREFIX'] + 'update', 'A' * 40), (policy['PREFIX'] + 'update', '')])
+def test_push_guard_rejects_unexpected_branch_or_lease(tmp_path, branch, lease):
+    with pytest.raises(ValueError, match='invalid'):
+        policy['install_push_guard'](branch, lease, tmp_path / 'hooks', repo=tmp_path)
+    assert not (tmp_path / 'hooks').exists()
+
+
+def test_candidate_action_runs_behind_the_push_guard():
+    steps = yaml.load((ROOT / '.github/workflows/scanner-artifact-update.yml').read_text(),
+                      Loader=yaml.BaseLoader)['jobs']['propose']['steps']
+    names = [step.get('id') or step.get('run', '') for step in steps]
+    guard = next(i for i, step in enumerate(steps) if '--install-push-guard' in step.get('run', ''))
+    candidate = names.index('candidate')
+    policy_step = names.index('policy')
+    assert policy_step < guard < candidate
+    assert steps[guard]['env'] == {'CANDIDATE_BRANCH': '${{ steps.policy.outputs.branch }}',
+                                   'CANDIDATE_LEASE': '${{ steps.policy.outputs.lease }}'}
+    assert steps[guard]['if'] == steps[candidate]['if']
+    assert steps[candidate]['with']['branch'] == '${{ steps.policy.outputs.branch }}'
+    # Signed commits are pushed through the API, which a git hook cannot guard.
+    assert 'sign-commits' not in steps[candidate]['with']

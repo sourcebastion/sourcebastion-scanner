@@ -98,6 +98,16 @@ jobs:
           if test -e "$proposal" || git ls-files --error-unmatch -- "$proposal" >/dev/null 2>&1; then
             echo "path=$proposal" >> "$GITHUB_OUTPUT"
           fi
+      - name: Allow the candidate push to replace only the validated branch tip
+        # The action below fetches the branch again and leases against that
+        # fetch. This pre-push hook binds the force-push to the tip the policy
+        # step validated (or to an absent branch), so a push made in between
+        # is never overwritten.
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          CANDIDATE_BRANCH: ${{ steps.policy.outputs.branch }}
+          CANDIDATE_LEASE: ${{ steps.policy.outputs.lease }}
+        run: python scripts/automated_scanner_update.py --install-push-guard
       - name: Refresh the bot candidate on the current main branch
         if: steps.changes.outputs.changed == 'true'
         id: candidate

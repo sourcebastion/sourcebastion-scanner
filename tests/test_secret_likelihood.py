@@ -85,18 +85,30 @@ def test_public_client_formats_require_full_values_and_provider_context(tmp_path
     for path, (name, value) in cases.items():
         (tmp_path / path).write_text(f'{name}="{value}"\n')
     (tmp_path / "shared.env").write_text(f'SUPABASE_PUBLISHABLE_KEY="{supabase}"; GITHUB_TOKEN="{github}"\n')
+    stripe = "pk_test_" + "".join(rng.choices(alphabet, k=32))
+    unquoted = {
+        ".env": f"STRIPE_PUBLISHABLE_KEY={stripe}\n",
+        ".env.local": f"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY={supabase}\r\n",
+        "unquoted.txt": f"STRIPE_PUBLISHABLE_KEY={stripe}\n",
+        "wrong-name.env": f"SUPABASE_SECRET_KEY={supabase}\n",
+        "wrong-value.env": f"SUPABASE_PUBLISHABLE_KEY={supabase_server}\n",
+        "prefixed.env": f"# STRIPE_PUBLISHABLE_KEY={stripe}\n",
+        "compound.env": f"STRIPE_PUBLISHABLE_KEY={stripe}; SERVICE_API_KEY={clerk_server}\n",
+    }
+    for path, content in unquoted.items():
+        (tmp_path / path).write_bytes(content.encode())
 
     rows = GitleaksScanner().scan_current_tree(str(tmp_path))
-    assert {row["file"] for row in rows} == set(cases) | {"shared.env"}
+    assert {row["file"] for row in rows} == set(cases) | set(unquoted) | {"shared.env"}
     assert {row["file"] for row in rows if row.get("secret_likelihood") == "v1:public-key"} == {
-        "clerk-public.env", "supabase-public.env",
+        "clerk-public.env", "supabase-public.env", ".env", ".env.local",
     }
     assert any(row["file"] == "shared.env" and row.get("secret_likelihood") == "v1:credential-format"
                for row in rows)
     assert all(row["severity"] == "critical" for row in rows)
     encoded = json.dumps(rows)
     assert all(value not in encoded for _, value in cases.values())
-    assert github not in encoded
+    assert all(value not in encoded for value in (github, stripe))
 
 
 @pytest.mark.skipif(shutil.which("gitleaks") is None or shutil.which("git") is None,

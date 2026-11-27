@@ -1,6 +1,9 @@
 """Wrappers for external open-source security scanners"""
 
 import subprocess
+import csv
+import glob
+import io
 import json
 import logging
 import tempfile
@@ -39,6 +42,107 @@ def _semgrep_source_languages(path: str) -> tuple[bool, bool]:
         if has_php and has_js:
             break
     return has_php, has_js
+
+
+def _semgrep_resource_flags() -> list[str]:
+    """Bound the engine's parallelism by the execution environment."""
+    cgroup = Path("/sys/fs/cgroup")
+    memory_limits = []
+    for path in (cgroup / "memory.max", cgroup / "memory" / "memory.limit_in_bytes"):
+        try:
+            limit = int(path.read_text(encoding="ascii"))
+        except (OSError, ValueError):
+            continue
+        if limit > 0:
+            memory_limits.append(limit)
+    try:
+        physical_memory = os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE")
+    except (AttributeError, OSError, ValueError):
+        physical_memory = 0
+    if physical_memory > 0:
+        memory_limits.append(physical_memory)
+    # Use the small-runner budget if no limit is available to Python.
+    available_mib = min(memory_limits, default=1024**3) // 1024**2
+
+    try:
+        cpus = len(os.sched_getaffinity(0))
+    except (AttributeError, OSError):
+        cpus = os.cpu_count() or 1
+    try:
+        quota, period = (cgroup / "cpu.max").read_text(encoding="ascii").split()
+        cpus = min(cpus, max(1, int(quota) // int(period)))
+    except (OSError, ValueError, ZeroDivisionError):
+        pass
+
+    # Leave memory for the engine, result conversion and concurrent scanners.
+    # Semgrep's per-rule/file limit is separate from the container's hard cap.
+    jobs = max(1, min(2, cpus, available_mib // 4096))
+    rule_memory_mib = max(1, min(512, available_mib // (4 * jobs)))
+    return [f"--jobs={jobs}", f"--max-memory={rule_memory_mib}", "--max-target-bytes=1000000"]
+
+
+def _semgrep_profile_excludes() -> list[str]:
+    """Translate the profiler's vendored and generated classes into globs."""
+    patterns = []
+    table = source_profile.load_table()
+    for path_class in ("vendored", "generated"):
+        rules = table.classes[path_class]
+        for directory in rules.get("directories", ()):
+            # Directory classification is case-insensitive; file names below
+            # follow the profiler's case-sensitive suffix and prefix rules.
+            glob = "".join(
+                f"[{letter.lower()}{letter.upper()}]" if letter.isalpha() else letter
+                for letter in directory
+            )
+            patterns.append(glob + "/")
+        patterns.extend(f"*{suffix}" for suffix in rules.get("name_suffixes", ()))
+        patterns.extend(f"{prefix}*" for prefix in rules.get("name_prefixes", ()))
+    return [f"--exclude={pattern}" for pattern in patterns]
+
+
+def _kics_profile_excludes(path: str) -> list[list[str]]:
+    """Discover exclusions once; passing recursive globs makes KICS rewalk the tree."""
+    table = source_profile.load_table()
+    classes = [table.classes[name] for name in ("vendored", "generated")]
+    excluded_dirs = {name.lower() for rules in classes for name in rules.get("directories", ())}
+    prefixes = tuple(name for rules in classes for name in rules.get("name_prefixes", ()))
+    suffixes = tuple(name for rules in classes for name in rules.get("name_suffixes", ()))
+    total_limit = 256 * 1024
+    try:
+        argument_limit = os.sysconf("SC_ARG_MAX")
+        if argument_limit > 0:
+            environment_bytes = sum(len(os.fsencode(key)) + len(os.fsencode(value)) + 10
+                                    for key, value in os.environ.items())
+            # Leave space for the terminators, other arguments and pointers.
+            total_limit = min(total_limit, argument_limit - environment_bytes - 4096)
+    except (AttributeError, OSError, ValueError):
+        pass
+    chunks: list[list[str]] = [[]]
+    chunk_bytes = total_bytes = 0
+    for directory, dirs, files in os.walk(Path(path).absolute()):
+        removed = [name for name in dirs if name.lower() in excluded_dirs]
+        dirs[:] = [name for name in dirs if name != ".git" and name not in removed]
+        removed.extend(name for name in files if name.startswith(prefixes) or name.endswith(suffixes))
+        for name in removed:
+            target = Path(directory) / name
+            if target.is_symlink():
+                continue
+            value = str(target)
+            if any(marker in value for marker in "*?["):
+                value = glob.escape(value.replace("\\", "\\\\"))
+            # Include CSV quoting and separators in the byte budget. Split
+            # before reaching the kernel's bound on a single argument.
+            value_bytes = len(os.fsencode(value)) + value.count('"') + 3
+            total_bytes += value_bytes
+            if value_bytes > 64 * 1024 or total_bytes > total_limit:
+                logger.warning("KICS profile exclusions exceeded the argument limit; scanning all paths")
+                return []
+            if chunk_bytes + value_bytes > 64 * 1024:
+                chunks.append([])
+                chunk_bytes = 0
+            chunks[-1].append(value)
+            chunk_bytes += value_bytes
+    return chunks if chunks[0] else []
 
 
 def configured_scanner_concurrency() -> int:
@@ -350,6 +454,7 @@ class ScannerWrapper(ABC):
         self.name = getattr(self, "component_name", self.__class__.__name__.lower())
         self._execution_deadline: Optional[float] = None
         self._configured: dict = {}
+        self.scan_coverage: Optional[dict[str, int]] = None
 
     def configure_timeouts(self, settings) -> None:
         """Apply per-scanner configuration for this component, if any."""
@@ -889,7 +994,11 @@ class SemgrepScanner(ScannerWrapper):
 
     def scan(self, path: str) -> List[Dict[str, Any]]:
         """Run semgrep scan"""
-        issues, _ = self.scan_with_raw_output(path)
+        issues, raw_path = self.scan_with_raw_output(path)
+        try:
+            os.unlink(raw_path)
+        except OSError:
+            pass
         return issues
 
     def scan_paths(self, source_root: str, covered_paths: List[str]) -> List[Dict[str, Any]]:
@@ -929,6 +1038,7 @@ class SemgrepScanner(ScannerWrapper):
         self, path: str, *, require_complete_coverage: bool = False
     ) -> Tuple[List[Dict[str, Any]], str]:
         """Run semgrep scan and return raw output file path"""
+        self.scan_coverage = None
         if not self.installed():
             self._fail("not_installed")
 
@@ -988,9 +1098,11 @@ class SemgrepScanner(ScannerWrapper):
             started = time.monotonic()
             with tempfile.TemporaryDirectory(prefix="sourcebastion-semgrep-") as settings_directory:
                 result = subprocess.run(
-                    ["semgrep", "scan", "--oss-only"] + config_flags + [
+                    [
+                        "semgrep", "scan", "--oss-only", *config_flags,
+                        *_semgrep_resource_flags(), *_semgrep_profile_excludes(),
                         "--metrics=off", "--disable-version-check",
-                        "--json", "--output", raw_output_path, path,
+                        "--verbose", "--json", "--output", raw_output_path, path,
                     ],
                     capture_output=True,
                     text=True,
@@ -1040,15 +1152,17 @@ class SemgrepScanner(ScannerWrapper):
             # is sometimes a bare string and sometimes a [tag, payload] pair.
             # It is an allowlist, not a denylist: only `warn` and `info` are
             # known to be non-fatal, so a missing, null, empty, unrecognised
-            # or non-string level fails closed. Matching on `!= "error"`
-            # instead would read a `level` semgrep adds later, or a malformed
-            # one, as safe.
+            # or non-string level fails closed. The pinned engine also emits
+            # a file-scoped AST builder error with level `error` and exit 0.
+            # Preserve its other results only for that known diagnostic.
             #
             # A scoped scan is held to a stricter rule -- see
             # `require_complete_coverage` below.
             errors = data.get("errors", [])
             if not isinstance(errors, list) or any(not isinstance(error, dict) for error in errors):
                 self._fail("invalid_output")
+            memory_limited_paths = set()
+            memory_count_known = True
             if errors:
                 counts = {}
                 known_types = {"PartialParsing", "ParseError", "Timeout", "OutOfMemory",
@@ -1059,17 +1173,55 @@ class SemgrepScanner(ScannerWrapper):
                     kind = error.get("type")
                     if isinstance(kind, list) and kind:
                         kind = kind[0]
+                    if kind in ("Out of memory", "OutOfMemory"):
+                        kind = "OutOfMemory"
+                        skipped_path = error.get("path")
+                        if isinstance(skipped_path, str) and skipped_path:
+                            memory_limited_paths.add(skipped_path)
+                        else:
+                            memory_count_known = False
+                    if kind in ("AST builder error", "AstBuilderError"):
+                        kind = "AstBuilderError"
                     kind = kind if isinstance(kind, str) and kind in known_types else "other"
                     counts[kind] = counts.get(kind, 0) + 1
                 print("semgrep: error_counts=" + json.dumps(counts, sort_keys=True),
                       file=sys.stderr, flush=True)
             for error in errors:
                 level = error.get("level")
+                kind = error.get("type")
+                if isinstance(kind, list) and kind:
+                    kind = kind[0]
+                path = error.get("path")
+                if (result.returncode == 0 and level == "error" and error.get("code") == 2
+                        and kind in ("AST builder error", "AstBuilderError")
+                        and isinstance(path, str) and path):
+                    continue
                 if not isinstance(level, str) or level.lower() not in {"warn", "info"}:
                     self._fail("execution_failed")
+            # These are the engine's skipped path entries. Count them without
+            # copying source paths into the report or scanner logs.
+            paths = data.get("paths")
+            skipped = paths.get("skipped", []) if isinstance(paths, dict) else None
+            reasons = {
+                "exceeded_size_limit": "size_limit_skips",
+                "cli_exclude_flags_match": "profile_excluded_paths",
+            }
+            coverage = None
+            if isinstance(skipped, list):
+                coverage = dict.fromkeys(reasons.values(), 0)
+                for item in skipped:
+                    reason = item.get("reason") if isinstance(item, dict) else None
+                    if isinstance(reason, str) and reason in reasons:
+                        coverage[reasons[reason]] += 1
+                if memory_count_known:
+                    coverage["memory_limit_skips"] = len(memory_limited_paths)
+                if any(coverage.values()):
+                    print("semgrep: coverage=" + json.dumps(coverage, sort_keys=True),
+                          file=sys.stderr, flush=True)
+
             # Partial results replace baseline observations in every covered
             # path. A skipped/unparsed file cannot authorize that replacement.
-            if errors and require_complete_coverage:
+            if require_complete_coverage and (errors or (coverage and any(coverage.values()))):
                 self._fail("execution_failed")
             degraded = len(errors)
             if degraded:
@@ -1119,6 +1271,7 @@ class SemgrepScanner(ScannerWrapper):
             if filtered_count > 0:
                 logger.info(f"Semgrep: Filtered out {filtered_count} code quality/low-severity findings")
 
+            self.scan_coverage = coverage
             completed = True
             return issues, raw_output_path
         except subprocess.TimeoutExpired:
@@ -1361,14 +1514,20 @@ class KicsScanner(ScannerWrapper):
 
     def scan(self, path: str) -> List[Dict[str, Any]]:
         """Run KICS scan"""
-        issues, _ = self.scan_with_raw_output(path)
+        issues, raw_path = self.scan_with_raw_output(path)
+        try:
+            os.unlink(raw_path)
+        except OSError:
+            pass
         return issues
 
     def scan_units(self, source_root: str, units: List[str]) -> List[Dict[str, Any]]:
         """Scan complete planner-authorized IaC units and normalize their paths."""
         try:
             with _scoped_iac_tree(source_root, units) as scoped_root:
-                issues, raw_output_path = self.scan_with_raw_output(str(scoped_root))
+                issues, raw_output_path = self.scan_with_raw_output(
+                    str(scoped_root), require_complete_coverage=True
+                )
                 try:
                     for finding in issues:
                         finding["file"] = _scoped_result_path(
@@ -1392,10 +1551,22 @@ class KicsScanner(ScannerWrapper):
         except Exception:
             self._fail("scope_unresolved")
 
-    def scan_with_raw_output(self, path: str) -> Tuple[List[Dict[str, Any]], str]:
-        """Run KICS scan and return raw output file path"""
+    def scan_with_raw_output(
+        self, path: str, *, require_complete_coverage: bool = False
+    ) -> Tuple[List[Dict[str, Any]], str]:
+        """Run KICS scan and return raw output file path."""
+        self.scan_coverage = None
         if not self.installed():
             self._fail("not_installed")
+
+        exclusions = _kics_profile_excludes(path)
+        if exclusions and require_complete_coverage:
+            self._fail("scope_unresolved")
+        exclude_flags = []
+        for chunk in exclusions:
+            buffer = io.StringIO()
+            csv.writer(buffer).writerow(chunk)
+            exclude_flags.extend(["--exclude-paths", buffer.getvalue().removesuffix("\r\n")])
 
         # kics -o expects a directory; it writes results.json inside it.
         # We use a temp dir for kics output, then copy results to a standalone
@@ -1417,7 +1588,7 @@ class KicsScanner(ScannerWrapper):
                     "kics", "scan", "-p", path,
                     "-q", str(assets_path / "queries"),
                     "-b", str(assets_path / "libraries"),
-                    "-f", "json", "-o", output_dir,
+                    "-f", "json", "-o", output_dir, *exclude_flags,
                 ],
                 capture_output=True,
                 text=True,
@@ -1493,6 +1664,7 @@ class KicsScanner(ScannerWrapper):
 
             # Copy kics results to the standalone file for the caller
             shutil.copy2(kics_output_path, standalone_path)
+            self.scan_coverage = {"profile_excluded_paths": sum(map(len, exclusions))}
             completed = True
             return issues, standalone_path
         except subprocess.TimeoutExpired:

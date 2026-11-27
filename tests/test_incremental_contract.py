@@ -1478,8 +1478,10 @@ def test_result_validator_rejects_duplicate_findings_from_external_envelope(
 
 
 
-@pytest.mark.parametrize("error_type", ["PartialParsing", "Timeout"])
-def test_semgrep_partial_parse_warning_does_not_claim_complete_coverage(tmp_path, monkeypatch, error_type):
+@pytest.mark.parametrize("error_type", [
+    "PartialParsing", "Timeout", "exceeded_size_limit", "cli_exclude_flags_match",
+])
+def test_semgrep_skipped_file_does_not_claim_complete_coverage(tmp_path, monkeypatch, error_type):
     source, head_sha = _source_tree(tmp_path)
     plan = _partial_sast_plan(head_sha)
     plan["scanner"]["enabled_components"] = ["semgrep"]
@@ -1490,10 +1492,17 @@ def test_semgrep_partial_parse_warning_does_not_claim_complete_coverage(tmp_path
     def report(command, **kwargs):
         output = Path(command[command.index("--output") + 1])
         output_paths.append(output)
-        output.write_text(json.dumps({
-            "results": [],
-            "errors": [{"level": "warn", "type": [error_type, [{"path": "app.py"}]]}],
-        }))
+        if error_type in {"exceeded_size_limit", "cli_exclude_flags_match"}:
+            # Native Semgrep only includes target-selection skips in verbose JSON.
+            skips = [{"path": "app.py", "reason": error_type}] if "--verbose" in command else []
+            output.write_text(json.dumps({
+                "results": [], "errors": [], "paths": {"scanned": [], "skipped": skips},
+            }))
+        else:
+            output.write_text(json.dumps({
+                "results": [],
+                "errors": [{"level": "warn", "type": [error_type, [{"path": "app.py"}]]}],
+            }))
         return subprocess.CompletedProcess(command, 0, "", "")
 
     monkeypatch.setattr(SemgrepScanner, "is_installed", lambda self: True)

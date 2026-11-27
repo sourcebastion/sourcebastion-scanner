@@ -1,6 +1,7 @@
 """Failure-contract tests for enabled external scanner components."""
 
 import json
+import csv
 import os
 import shutil
 import subprocess
@@ -167,6 +168,66 @@ def test_semgrep_finding_exit_code_is_complete(tmp_path):
         assert issues == []
     finally:
         os.unlink(raw_path)
+
+
+
+def test_kics_uses_exact_profile_exclusions_without_narrowing_platforms(tmp_path):
+    scanner = KicsScanner()
+    source = tmp_path / "source,fixture"
+    names = ("infra/app.yaml", "infra/Vendor/nested/unused.yaml", "infra/GEN/unused.yaml",
+             "infra/zz_generated_test.yaml", "infra/tests/test_app.yaml")
+    for name in names:
+        file = source / name
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text("apiVersion: v1\nkind: ConfigMap\n")
+
+    def write_empty_report(command, **kwargs):
+        exclusions, = csv.reader([command[command.index("--exclude-paths") + 1]])
+        assert set(exclusions) == {
+            str(source / "infra/Vendor"),
+            str(source / "infra/GEN"),
+            str(source / "infra/zz_generated_test.yaml"),
+        }
+        assert "--type" not in command
+        output_dir = Path(command[command.index("-o") + 1])
+        (output_dir / "results.json").write_text('{"queries": []}')
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with (
+        patch.object(scanner, "is_installed", return_value=True),
+        patch.object(scanner, "_find_assets_path", return_value=tmp_path),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_empty_report),
+    ):
+        scanner.scan(str(source))
+        assert scanner.scan_coverage == {"profile_excluded_paths": 3}
+        with pytest.raises(ScannerExecutionError) as raised:
+            scanner.scan_units(str(source), ["infra"])
+        assert raised.value.code == "scope_unresolved"
+        assert scanner.scan_coverage is None
+
+
+def test_kics_keeps_large_exclusion_lists_in_bounded_arguments(tmp_path):
+    scanner = KicsScanner()
+    source = tmp_path / "source"
+    source.mkdir()
+    paths = {str(source / f"zz_generated_{index:04}_{'x' * 150}.yaml") for index in range(400)}
+    for path in paths:
+        Path(path).touch()
+
+    def write_empty_report(command, **kwargs):
+        chunks = [command[index + 1] for index, flag in enumerate(command) if flag == "--exclude-paths"]
+        assert len(chunks) > 1 and all(len(os.fsencode(chunk)) <= 64 * 1024 for chunk in chunks)
+        assert {path for chunk in chunks for path in next(csv.reader([chunk]))} == paths
+        (Path(command[command.index("-o") + 1]) / "results.json").write_text('{"queries": []}')
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with (
+        patch.object(scanner, "is_installed", return_value=True),
+        patch.object(scanner, "_find_assets_path", return_value=tmp_path),
+        patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_empty_report),
+    ):
+        scanner.scan(str(source))
+    assert scanner.scan_coverage == {"profile_excluded_paths": 400}
 
 
 def test_kics_engine_exit_is_a_failure(tmp_path):
@@ -346,7 +407,7 @@ def test_output_conversion_failure_discards_all_outputs(tmp_path, method_name, c
     assert not second.exists()
 
 
-def _semgrep_report(tmp_path, payload):
+def _semgrep_report(tmp_path, payload, *, require_complete_coverage=False):
     """Run SemgrepScanner against a canned semgrep report."""
     scanner = SemgrepScanner()
 
@@ -359,7 +420,7 @@ def _semgrep_report(tmp_path, payload):
         patch.object(scanner, "is_installed", return_value=True),
         patch("sourcebastion.external_scanners.subprocess.run", side_effect=write_report),
     ):
-        return scanner.scan_with_raw_output(str(tmp_path))
+        return scanner.scan_with_raw_output(str(tmp_path), require_complete_coverage=require_complete_coverage)
 
 
 def test_semgrep_security_finding_with_list_technology_survives_parsing(tmp_path):
@@ -395,6 +456,8 @@ PARTIAL_PARSING_ERROR = {
     "type": ["PartialParsing", [{"path": "/src/vendor.min.js"}]],
     "message": "Syntax error at line /src/vendor.min.js:1:",
 }
+
+AST_BUILDER_ERROR = {"level": "error", "type": "AST builder error", "code": 2, "path": "broken.go"}
 
 
 def test_semgrep_partial_parsing_does_not_discard_the_scan(tmp_path):
@@ -436,7 +499,8 @@ def test_semgrep_error_without_a_level_fails_closed(tmp_path):
     assert raised.value.code == "execution_failed"
 
 
-def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path):
+@pytest.mark.parametrize("diagnostic", [PARTIAL_PARSING_ERROR, AST_BUILDER_ERROR])
+def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path, diagnostic):
     """The findings from the files semgrep *could* read must survive."""
     issues, raw_path = _semgrep_report(
         tmp_path,
@@ -457,13 +521,19 @@ def test_semgrep_keeps_findings_alongside_a_partial_parse(tmp_path):
                     },
                 }
             ],
-            "errors": [PARTIAL_PARSING_ERROR],
+            "errors": [diagnostic],
         },
     )
     try:
         assert len(issues) == 1
     finally:
         os.unlink(raw_path)
+
+
+def test_semgrep_ast_builder_diagnostic_cannot_replace_incremental_findings(tmp_path):
+    payload = {"results": [], "errors": [AST_BUILDER_ERROR]}
+    with pytest.raises(ScannerExecutionError, match="execution_failed"):
+        _semgrep_report(tmp_path, payload, require_complete_coverage=True)
 
 
 @pytest.mark.parametrize("level", [None, "", "fatal", "unknown", 0, []])
@@ -540,6 +610,9 @@ def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeyp
         if "--version" not in command:
             assert command[:3] == ["semgrep", "scan", "--oss-only"]
             assert "--config=/usr/local/share/sast-rules/go" in command
+            assert "--max-target-bytes=1000000" in command
+            assert any(flag.startswith("--jobs=") for flag in command)
+            assert any(flag.startswith("--max-memory=") for flag in command)
             Path(command[command.index("--output") + 1]).write_text('{"results": [], "errors": []}')
         assert "--metrics=off" in command and "--disable-version-check" in command
         return subprocess.CompletedProcess(command, 0, "", "private source fragment")
@@ -553,6 +626,35 @@ def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeyp
         assert "private" not in err
     finally:
         os.unlink(raw_path)
+
+
+@pytest.mark.parametrize(("memory", "cpu_quota", "expected_jobs", "expected_memory"), [
+    (1024, "100000 100000", 1, 256),
+    (7168, "400000 100000", 1, 512),
+    (8192, "400000 100000", 2, 512),
+    (8192, "100000 100000", 1, 512),
+])
+def test_semgrep_limits_follow_the_container(memory, cpu_quota, expected_jobs, expected_memory, monkeypatch):
+    from sourcebastion.external_scanners import _semgrep_resource_flags
+
+    def cgroup_value(path, **kwargs):
+        values = {
+            "/sys/fs/cgroup/memory.max": str(memory * 1024**2),
+            "/sys/fs/cgroup/cpu.max": cpu_quota,
+        }
+        try:
+            return values[str(path)]
+        except KeyError:
+            raise FileNotFoundError(path) from None
+
+    monkeypatch.setattr(Path, "read_text", cgroup_value)
+    monkeypatch.setattr(os, "cpu_count", lambda: 16)
+    monkeypatch.setattr(os, "sched_getaffinity", lambda pid: set(range(16)), raising=False)
+    monkeypatch.setattr(os, "sysconf", lambda key: {"SC_PHYS_PAGES": 16 * 1024**3 // 4096,
+                                                   "SC_PAGE_SIZE": 4096}[key])
+    assert _semgrep_resource_flags() == [
+        f"--jobs={expected_jobs}", f"--max-memory={expected_memory}", "--max-target-bytes=1000000",
+    ]
 
 
 def test_semgrep_offline_missing_packs_never_uses_registry(tmp_path, monkeypatch, capsys):

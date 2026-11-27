@@ -9,7 +9,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from sourcebastion.config import Config
-from sourcebastion.external_scanners import ExternalScannerManager, ScannerExecutionError
+from sourcebastion.external_scanners import (
+    ExternalScannerManager, ScannerWrapper, ScannerExecutionError,
+)
 from sourcebastion.converters import VulnerabilityConverters, GitLabVulnerabilityFormat
 from sourcebastion.policy import PolicyEngine
 from sourcebastion.cedar_adapter import evaluate_cedar, parity_result
@@ -327,6 +329,15 @@ class SecurityScanner:
             resolved_count=tracking_counts["resolved_count"],
             duration_seconds=time.monotonic() - started_at,
         )
+        if self.use_external:
+            components = getattr(self.external, "scanners", {})
+            coverage = {
+                name: tool.scan_coverage for name, tool in components.items()
+                if isinstance(tool, ScannerWrapper) and tool.enabled and tool.scan_coverage is not None
+            }
+            if coverage:
+                scan_record.coverage = coverage
+
         configured_output = getattr(self.config, "output_file", None)
         output_path = None
         if configured_output:

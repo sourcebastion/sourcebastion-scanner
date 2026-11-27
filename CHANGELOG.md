@@ -1,5 +1,9 @@
 ## Unreleased
 
+## [2.1.12] - 2026-11-27
+
+Updated verified Semgrep artifacts and locked dependencies; unchanged native bytes retain reviewed notices and sources.
+
 ## [2.1.11] - 2026-11-26
 
 Gitleaks findings can include an optional `secret_likelihood` reason code to help prioritize false-positive review. The scanner derives this advisory evidence offline. Current-tree scans can recognize exact publishable-key and placeholder formats within bounded reads of the scanned checkout. Git-history scans use contextual evidence. Finding severity and identity stay the same.

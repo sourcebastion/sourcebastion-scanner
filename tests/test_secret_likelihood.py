@@ -27,6 +27,7 @@ def test_exact_check_rejects_symlinks_multiline_and_wrong_coordinates(tmp_path):
     value = "YOUR_SERVICE_API_KEY_HERE"
     line = f'service_api_key = "{value}"'
     (tmp_path / "app.py").write_text(line)
+    (tmp_path / "later.py").write_text(f"\n{line}\n")
     (tmp_path / "alias.py").symlink_to(tmp_path / "app.py")
     stored = {"RuleID": "generic-api-key", "Secret": "REDACTED",
               "Match": 'service_api_key = "REDACTED"', "StartLine": 1,
@@ -35,6 +36,9 @@ def test_exact_check_rejects_symlinks_multiline_and_wrong_coordinates(tmp_path):
     assert gitleaks_benign_codes(tmp_path, [("app.py", stored), ("alias.py", stored),
         ("app.py", {**stored, "EndLine": 2}),
         ("app.py", {**stored, "StartColumn": 2})], scan_started_ns=scan_started) == {0: "v1:placeholder"}
+    later = {**stored, "StartLine": 2, "EndLine": 2, "StartColumn": 2, "EndColumn": len(line) + 1}
+    assert gitleaks_benign_codes(tmp_path, [("later.py", later),
+        ("later.py", {**later, "StartColumn": 1})], scan_started_ns=scan_started) == {0: "v1:placeholder"}
     assert gitleaks_benign_codes(tmp_path, [
         ("app.py", stored), ("app.py", {**stored, "RuleID": "github-pat"}),
     ], scan_started_ns=scan_started) == {}
@@ -88,20 +92,22 @@ def test_public_client_formats_require_full_values_and_provider_context(tmp_path
     stripe = "pk_test_" + "".join(rng.choices(alphabet, k=32))
     unquoted = {
         ".env": f"STRIPE_PUBLISHABLE_KEY={stripe}\n",
-        ".env.local": f"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY={supabase}\r\n",
+        ".env.local": f"APP_ENV=local\r\nNEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY={supabase}\r\n",
+        "later.env": f"APP_ENV=local\nSTRIPE_PUBLISHABLE_KEY={stripe}\n",
         "unquoted.txt": f"STRIPE_PUBLISHABLE_KEY={stripe}\n",
         "wrong-name.env": f"SUPABASE_SECRET_KEY={supabase}\n",
         "wrong-value.env": f"SUPABASE_PUBLISHABLE_KEY={supabase_server}\n",
         "prefixed.env": f"# STRIPE_PUBLISHABLE_KEY={stripe}\n",
-        "compound.env": f"STRIPE_PUBLISHABLE_KEY={stripe}; SERVICE_API_KEY={clerk_server}\n",
+        "compound.env": f"APP_ENV=local\nSTRIPE_PUBLISHABLE_KEY={stripe}; SERVICE_API_KEY={clerk_server}\n",
     }
     for path, content in unquoted.items():
         (tmp_path / path).write_bytes(content.encode())
+    (tmp_path / "quoted-later.env").write_text(f'APP_ENV=local\nCLERK_PUBLISHABLE_KEY="{clerk}"\n')
 
     rows = GitleaksScanner().scan_current_tree(str(tmp_path))
-    assert {row["file"] for row in rows} == set(cases) | set(unquoted) | {"shared.env"}
+    assert {row["file"] for row in rows} == set(cases) | set(unquoted) | {"quoted-later.env", "shared.env"}
     assert {row["file"] for row in rows if row.get("secret_likelihood") == "v1:public-key"} == {
-        "clerk-public.env", "supabase-public.env", ".env", ".env.local",
+        "clerk-public.env", "supabase-public.env", ".env", ".env.local", "later.env", "quoted-later.env",
     }
     assert any(row["file"] == "shared.env" and row.get("secret_likelihood") == "v1:credential-format"
                for row in rows)

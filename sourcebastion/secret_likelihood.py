@@ -111,6 +111,12 @@ def gitleaks_benign_codes(root, findings, *, scan_started_ns):
                 or not 1 <= start <= end <= _MAX_FILE_BYTES
                 or not isinstance(enclosing, str) or len(enclosing) > 512 or enclosing.count("REDACTED") != 1):
             continue
+        # Gitleaks 8.30.1 includes the preceding newline in both byte columns.
+        if line > 1:
+            start -= 1
+            end -= 1
+            if start < 1:
+                continue
         try:
             before, after = (part.encode("utf-8") for part in enclosing.split("REDACTED"))
         except UnicodeError:

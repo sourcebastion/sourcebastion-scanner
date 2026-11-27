@@ -9,7 +9,8 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = "ghcr.io/sourcebastion/sourcebastion-scanner"
-S01_ARTIFACTS = {"amd64": 11468298212, "arm64": 11469000360}
+S01_BASELINE_RELEASE = "v1.7.38"
+S01_BASELINE_ASSETS = {"amd64": "m046-frozen-s01-amd64.zip", "arm64": "m046-frozen-s01-arm64.zip"}
 
 
 def sha(raw):
@@ -35,7 +36,7 @@ def release_identity(release, tag, source, resolved_source, image_digest):
 
 
 def native_descriptor(raw, index_digest, architecture):
-    if architecture not in S01_ARTIFACTS or "sha256:" + sha(raw) != digest(index_digest):
+    if architecture not in S01_BASELINE_ASSETS or "sha256:" + sha(raw) != digest(index_digest):
         raise ValueError("published-index-identity-mismatch")
     if len(raw) > 2 * 1024**2:
         raise ValueError("published-index-bound")

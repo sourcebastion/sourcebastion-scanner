@@ -64,7 +64,7 @@ The ez-appsec comprehensive live testing and validation plan (9 phases, 36 tasks
 - GitHub and GitLab dashboard templates
 
 ### Performance Testing
-- `js-semgrep-rules.yaml` - JavaScript framework-specific Semgrep rules
+- `sourcebastion/data/js-semgrep-rules.yaml` - JavaScript framework-specific Semgrep rules
 - Performance test framework with resource monitoring
 - psutil>=5.9 added to dev dependencies
 
@@ -176,7 +176,7 @@ The ez-appsec comprehensive live testing and validation plan (9 phases, 36 tasks
 
 ### Dashboard Files (2 new)
 - `dashboard/aggregate-index.py` - Multi-project aggregation
-- `js-semgrep-rules.yaml` - JavaScript Semgrep rules
+- `sourcebastion/data/js-semgrep-rules.yaml` - JavaScript Semgrep rules
 
 ### Dependency Updates (2 files)
 - `setup.py` - Added psutil>=5.9 to dev dependencies

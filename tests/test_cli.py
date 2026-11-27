@@ -77,6 +77,20 @@ def example():
         assert result.exit_code == 0
         assert 'Security scan completed' in result.output
 
+    def test_scan_summary_reports_aggregate_coverage_omissions(self, sample_file):
+        with patch("sourcebastion.scanner.SecurityScanner.scan", return_value={
+            "issues": [],
+            "scan_record": {"coverage": {
+                "semgrep": {"size_limit_skips": 2, "memory_limit_skips": 1},
+                "kics": {"profile_excluded_paths": 3},
+            }},
+        }):
+            result = CliRunner().invoke(main, ["scan", sample_file])
+
+        assert result.exit_code == 0, result.output
+        assert "Semgrep coverage: 2 over the file size limit, 1 affected by the per-file memory limit" in result.output
+        assert "KICS coverage: 3 excluded by the source profile" in result.output
+
     def test_scan_with_nonexistent_path(self):
         """Test scan with nonexistent path"""
         runner = CliRunner()

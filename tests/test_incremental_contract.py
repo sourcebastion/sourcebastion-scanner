@@ -796,12 +796,22 @@ def test_partial_component_rejects_finding_outside_covered_paths(tmp_path, monke
     assert component["findings"] == []
 
 
-def test_semgrep_partial_javascript_scope_preserves_full_scan_rule_selection(
-    tmp_path, monkeypatch
+@pytest.mark.parametrize(("filename", "expected_pack"), [
+    ("app.js", "js-semgrep-rules.yaml"),
+    ("app.ts", "js-semgrep-rules.yaml"),
+    ("app.jsx", "js-semgrep-rules.yaml"),
+    ("app.tsx", "js-semgrep-rules.yaml"),
+    ("app.mjs", "js-semgrep-rules.yaml"),
+    ("app.cts", "js-semgrep-rules.yaml"),
+    ("app.php", "custom-semgrep-rules.yaml"),
+    ("app.py", None),
+])
+def test_semgrep_partial_scope_preserves_full_scan_rule_selection(
+    tmp_path, monkeypatch, filename, expected_pack
 ):
     source = tmp_path / "source"
     source.mkdir()
-    (source / "app.js").write_text("eval(userInput)\n", encoding="utf-8")
+    (source / filename).write_text("const value = 1;\n", encoding="utf-8")
     scanner = SemgrepScanner()
     monkeypatch.setattr(scanner, "is_installed", lambda: True)
     commands = []
@@ -816,11 +826,15 @@ def test_semgrep_partial_javascript_scope_preserves_full_scan_rule_selection(
     full_findings, full_output = scanner.scan_with_raw_output(str(source))
     Path(full_output).unlink()
     assert full_findings == []
-    assert scanner.scan_paths(str(source), ["app.js"]) == []
+    assert scanner.scan_paths(str(source), [filename]) == []
     full_configs = [item for item in commands[0] if item.startswith("--config=")]
     partial_configs = [item for item in commands[1] if item.startswith("--config=")]
     assert partial_configs == full_configs
-    assert not any(item.endswith("js-semgrep-rules.yaml") for item in full_configs)
+    custom_packs = {"js-semgrep-rules.yaml", "custom-semgrep-rules.yaml"}
+    selected = [Path(item.split("=", 1)[1]).name for item in full_configs]
+    assert [name for name in selected if name in custom_packs] == (
+        [expected_pack] if expected_pack else []
+    )
 
 
 def test_gitleaks_partial_scope_uses_repository_config(tmp_path, monkeypatch):
@@ -1464,8 +1478,10 @@ def test_result_validator_rejects_duplicate_findings_from_external_envelope(
 
 
 
-@pytest.mark.parametrize("error_type", ["PartialParsing", "Timeout"])
-def test_semgrep_partial_parse_warning_does_not_claim_complete_coverage(tmp_path, monkeypatch, error_type):
+@pytest.mark.parametrize("error_type", [
+    "PartialParsing", "Timeout", "exceeded_size_limit", "cli_exclude_flags_match",
+])
+def test_semgrep_skipped_file_does_not_claim_complete_coverage(tmp_path, monkeypatch, error_type):
     source, head_sha = _source_tree(tmp_path)
     plan = _partial_sast_plan(head_sha)
     plan["scanner"]["enabled_components"] = ["semgrep"]
@@ -1476,10 +1492,17 @@ def test_semgrep_partial_parse_warning_does_not_claim_complete_coverage(tmp_path
     def report(command, **kwargs):
         output = Path(command[command.index("--output") + 1])
         output_paths.append(output)
-        output.write_text(json.dumps({
-            "results": [],
-            "errors": [{"level": "warn", "type": [error_type, [{"path": "app.py"}]]}],
-        }))
+        if error_type in {"exceeded_size_limit", "cli_exclude_flags_match"}:
+            # Native Semgrep only includes target-selection skips in verbose JSON.
+            skips = [{"path": "app.py", "reason": error_type}] if "--verbose" in command else []
+            output.write_text(json.dumps({
+                "results": [], "errors": [], "paths": {"scanned": [], "skipped": skips},
+            }))
+        else:
+            output.write_text(json.dumps({
+                "results": [],
+                "errors": [{"level": "warn", "type": [error_type, [{"path": "app.py"}]]}],
+            }))
         return subprocess.CompletedProcess(command, 0, "", "")
 
     monkeypatch.setattr(SemgrepScanner, "is_installed", lambda self: True)

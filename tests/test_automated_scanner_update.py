@@ -262,3 +262,47 @@ def test_prepare_preserves_non_generated_candidate_work(tmp_path, monkeypatch, p
     with pytest.raises(ValueError, match='non-generated changes'):
         function()
     assert not (tmp_path / 'output').exists()
+
+
+@pytest.mark.parametrize('case', ['closed-stale', 'merged', 'human-commit', 'pushed-after-close',
+                                  'human-opened', 'no-closed-pr'])
+def test_prepare_reuses_leftover_branch_only_when_bot_owned_and_unchanged(tmp_path, monkeypatch, case):
+    """A bot candidate closed as stale must not block every later proposal."""
+    function = policy['prepare_candidate']; scope = function.__globals__
+    branch = policy['PREFIX'] + 'update'
+    head = 'c' * 40
+    closed = pr(); closed.update(number=227, draft=True, merged_at=None)
+    closed['head'].update(ref=branch, sha=head)
+    history = [{'author': closed['user']}]
+    if case == 'merged': closed['merged_at'] = 'now'
+    if case == 'human-commit': history.append({'author': {'login': 'human'}})
+    if case == 'pushed-after-close': head = 'd' * 40
+    if case == 'human-opened': closed['user'] = {'login': 'human'}
+    listed = [] if case == 'no-closed-pr' else [closed]
+    runtime_path = '.github/python-locks/runtime-cp314-musllinux_1_2_x86_64.txt'
+    output = tmp_path / 'output'
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('APP_SLUG', 'sourcebastion-bot')
+    monkeypatch.setenv('GITHUB_OUTPUT', str(output))
+    def command(argv, **_):
+        if argv[0] == 'gh':
+            path = argv[2]
+            if 'pulls?state=open' in path: return b'[]'
+            if 'pulls?state=closed' in path:
+                assert f'head=sourcebastion:{branch}' in path
+                return json.dumps(listed).encode()
+            if path.endswith('/pulls/227/commits?per_page=100'): return json.dumps(history).encode()
+            raise AssertionError(path)
+        if argv[:2] == ['git', 'ls-remote']:
+            assert argv[3] == f'refs/heads/{branch}'
+            return f'{head}\trefs/heads/{branch}\n'
+        assert argv[:4] == ['git', 'diff', '--no-renames', '--name-only']
+        return runtime_path + '\n'
+    monkeypatch.setattr(scope['subprocess'], 'check_output', command)
+    if case in ('closed-stale', 'merged'):
+        function()
+        assert output.read_text() == f'branch={branch}\ndraft=always-true\n'
+    else:
+        with pytest.raises(ValueError, match='preserve'):
+            function()
+        assert not output.exists()

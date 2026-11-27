@@ -95,6 +95,14 @@ def git_read(ref):
     return lambda path: subprocess.check_output(['git', 'show', f'{ref}:{path}'], text=True)
 
 
+def bot_only(pr, history):
+    """True when the bot opened the pull request and wrote every commit on it."""
+    return (pr['user']['login'] == 'sourcebastion-bot[bot]'
+            and (pr['head'].get('repo') or {}).get('full_name') == REPOSITORY
+            and bool(history) and len(history) < 100
+            and all((row.get('author') or {}).get('login') == 'sourcebastion-bot[bot]' for row in history))
+
+
 def candidate_branch(prs, commits):
     candidates = [pr for pr in prs if pr['head']['ref'].startswith(PREFIX)]
     if len(candidates) > 1:
@@ -102,13 +110,24 @@ def candidate_branch(prs, commits):
     if not candidates:
         return PREFIX + 'update'
     pr = candidates[0]
-    history = commits(pr)
-    if (pr['user']['login'] != 'sourcebastion-bot[bot]'
-            or pr['head']['repo']['full_name'] != REPOSITORY
-            or not history or len(history) >= 100
-            or any((row.get('author') or {}).get('login') != 'sourcebastion-bot[bot]' for row in history)):
+    if not bot_only(pr, commits(pr)):
         raise ValueError('candidate has human or unknown work; preserve it for review')
     return pr['head']['ref']
+
+
+def leftover_branch_is_refreshable(closed, head_sha, commits):
+    """Allow reuse of a candidate branch that has no open pull request.
+
+    A merged bot candidate may be reused. So may one closed without merging
+    (for example, as stale), if only the bot wrote it and nobody pushed after
+    the close: GitHub keeps that head at refs/pull/<number>/head, so a refresh
+    loses nothing. Any other leftover branch is preserved for review.
+    """
+    if not closed or closed[0]['head']['sha'] != head_sha:
+        return False
+    if closed[0]['user']['login'] != 'sourcebastion-bot[bot]':
+        return False
+    return bool(closed[0]['merged_at']) or bot_only(closed[0], commits(closed[0]))
 
 
 def prepare_candidate():
@@ -119,14 +138,15 @@ def prepare_candidate():
     prs = api('pulls?state=open&base=main&per_page=100')
     if len(prs) >= 100:
         raise ValueError('candidate list truncated; preserve existing work for review')
-    branch = candidate_branch(prs, lambda pr: api(f"pulls/{pr['number']}/commits?per_page=100"))
+    def commits(pr):
+        return api(f"pulls/{pr['number']}/commits?per_page=100")
+    branch = candidate_branch(prs, commits)
     if not any(pr['head']['ref'] == branch for pr in prs):
         remote = subprocess.check_output(['git', 'ls-remote', 'origin', f'refs/heads/{branch}'], text=True).split()
         if remote:
             closed = api(f'pulls?state=closed&head=sourcebastion:{branch}&per_page=1')
-            if (not closed or not closed[0]['merged_at'] or closed[0]['head']['sha'] != remote[0]
-                    or closed[0]['user']['login'] != 'sourcebastion-bot[bot]'):
-                raise ValueError('unowned or manually closed branch; preserve it for review')
+            if not leftover_branch_is_refreshable(closed, remote[0], commits):
+                raise ValueError('unowned or changed branch; preserve it for review')
     for pr in prs:
         if pr['head']['ref'] == branch:
             files = api(f"pulls/{pr['number']}/files?per_page=100")

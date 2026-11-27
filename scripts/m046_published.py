@@ -60,11 +60,18 @@ def bind_native(raw, descriptor, inspected, architecture):
         raise ValueError("published-native-manifest-mismatch")
     manifest = json.loads(raw)
     config = digest(manifest["config"]["digest"])
-    if (inspected["Id"] != config or inspected["Architecture"] != architecture
+    image_id = inspected["Id"]
+    local_descriptor = inspected.get("Descriptor") or {}
+    # Docker's containerd store identifies images by manifest, while the
+    # classic store uses the config digest. Verify the matching identity.
+    manifest_id_matches = (image_id == descriptor["digest"]
+                           and local_descriptor.get("digest") == descriptor["digest"]
+                           and local_descriptor.get("size") == descriptor["size"])
+    if ((image_id != config and not manifest_id_matches) or inspected["Architecture"] != architecture
             or inspected["Os"] != "linux"):
         raise ValueError("pulled-native-config-mismatch")
     return {"architecture": architecture, "native_manifest": descriptor["digest"],
-            "config_digest": config, "layers": manifest["layers"]}
+            "config_digest": config, "tested_image_id": image_id, "layers": manifest["layers"]}
 
 
 def extract_s01(archive, output, architecture):
@@ -132,6 +139,9 @@ def compare_native(left, right):
         receipt = json.loads((root / "receipt.json").read_bytes())
         if receipt["status"] != "finite-published-native-passed" or receipt["architecture"] != arch or receipt["acceptance"] is not False:
             raise ValueError("both-finite-native-proofs-required")
+        image_id = receipt.get("tested_image_id", receipt["config_digest"])
+        if image_id not in (receipt["config_digest"], receipt["native_manifest"]):
+            raise ValueError("native-tested-image-identity-mismatch")
         # Bind every archived observation to the driver's retained file map.
         actual = {path.relative_to(root).as_posix(): sha(path.read_bytes())
                   for path in root.rglob("*") if path.is_file() and path != root / "receipt.json"}
@@ -148,7 +158,7 @@ def compare_native(left, right):
         for path in resources:
             observed = measured_resources(json.loads(path.read_bytes()))
             workload = (path.parent / "workload.json").read_bytes()
-            if (observed["architecture"] != arch or observed["image_id"] != receipt["config_digest"]
+            if (observed["architecture"] != arch or observed["image_id"] != image_id
                     or observed["status"] != "passed" or not workload or sha(workload) != observed["workload_sha256"]):
                 raise ValueError("native-resource-workload-binding-mismatch")
         proof = json.loads((root / "source-expectations.stdout").read_bytes())
@@ -163,7 +173,7 @@ def compare_native(left, right):
                 raise ValueError("repeated-corpus-disagreement")
         size = json.loads((root / "frozen-s01-growth.json").read_bytes())
         if (size["status"] != "passed" or size["candidate_manifest"] != receipt["native_manifest"]
-                or size["tested_image_id"] != receipt["config_digest"]
+                or size["tested_image_id"] != image_id
                 or size["baseline_kind"] != "frozen-s01-pre-inventory-layer-prefix"):
             raise ValueError("frozen-s01-published-growth-required")
         receipts.append(receipt)

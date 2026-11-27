@@ -62,7 +62,7 @@ def main():
         run(["docker", "image", "inspect", "--format", "{{json .}}", native], "image-inspect")
         inspected = json.loads((args.output / "image-inspect.stdout").read_bytes())
         receipt.update(bind_native((args.output / "native-manifest.stdout").read_bytes(), descriptor, inspected, architecture))
-        image = inspected["Id"]
+        image = receipt["tested_image_id"]
         candidate_archive = args.temporary / "candidate.oci.tar"
         run(["skopeo", "copy", "--preserve-digests", "docker://" + native,
              "oci-archive:" + str(candidate_archive)], "retain-compressed-layers", seconds=900)
@@ -73,7 +73,7 @@ def main():
         extract_s01(baseline_zip, baseline_archive, architecture)
         baseline = frozen_s01_layers(baseline_archive, architecture)
         candidate = oci_layers(candidate_archive, architecture)
-        if candidate["manifest_digest"] != descriptor["digest"] or candidate["config_digest"] != image:
+        if candidate["manifest_digest"] != descriptor["digest"] or candidate["config_digest"] != receipt["config_digest"]:
             raise ValueError("retained-oci-is-not-published-native-image")
         size = {"status": "passed", **growth(baseline, candidate), "tested_image_id": image,
                 **{key: val for key, val in baseline.items() if key.startswith("baseline_")}}

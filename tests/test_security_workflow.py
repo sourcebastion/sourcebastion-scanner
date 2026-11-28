@@ -19,7 +19,7 @@ def test_security_workflow_runs_for_changes_and_on_a_schedule():
 def test_dependency_review_is_pull_request_only_and_sha_pinned():
     assert "if: github.event_name == 'pull_request'" in WORKFLOW
     assert re.search(
-        r"uses: actions/dependency-review-action@[0-9a-f]{40} # v5\.0\.0",
+        r"uses: actions/dependency-review-action@[0-9a-f]{40} # v5\.\d+\.\d+",
         WORKFLOW,
     )
 

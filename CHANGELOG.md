@@ -16,6 +16,13 @@ removed. Default scans no longer run Ruby SAST rules. Pass `--rules ruby` to
 run the first-party Rails pack. Ruby projects that relied on the Registry pack
 will see fewer SAST findings after upgrading.
 
+Gitleaks findings in dotenv files (`.env`, `.env.*` and `*.env`) can now carry
+the advisory `v1:public-key` code for an unquoted Stripe, Clerk or Supabase
+publishable-key assignment on its own line. Gitleaks 8.30.1 byte columns are
+corrected for matches after the first line, so the exact-format checks added in
+2.1.11 now also apply to those matches. Finding severity and identity stay the
+same (M067 S01/T02).
+
 ## [2.1.11] - 2026-11-26
 
 Gitleaks findings can include an optional `secret_likelihood` reason code to help prioritize false-positive review. The scanner derives this advisory evidence offline. Current-tree scans can recognize exact publishable-key and placeholder formats within bounded reads of the scanned checkout. Git-history scans use contextual evidence. Finding severity and identity stay the same.

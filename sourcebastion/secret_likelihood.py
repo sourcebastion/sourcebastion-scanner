@@ -34,7 +34,7 @@ _MAX_EXACT_CHECKS = 128
 _PUBLISHABLE_ASSIGNMENT = re.compile(
     rb"(?:(?P<stripe>stripe_publishable_key|stripe_public_key)"
     rb"|(?P<clerk>(?:next_public_|vite_)?clerk_publishable_key)"
-    rb"""|(?P<supabase>(?:next_public_|vite_)?supabase_publishable_key))[ \t]*[:=][ \t]*['"]""",
+    rb"""|(?P<supabase>(?:next_public_|vite_)?supabase_publishable_key))[ \t]*[:=][ \t]*['"]?""",
     re.IGNORECASE,
 )
 _STRIPE_PUBLISHABLE_KEY = re.compile(rb"pk_(?:test|live)_[A-Za-z0-9]{24,128}")
@@ -111,16 +111,30 @@ def gitleaks_benign_codes(root, findings, *, scan_started_ns):
                 or not 1 <= start <= end <= _MAX_FILE_BYTES
                 or not isinstance(enclosing, str) or len(enclosing) > 512 or enclosing.count("REDACTED") != 1):
             continue
+        # Gitleaks 8.30.1 includes the preceding newline in both byte columns.
+        if line > 1:
+            start -= 1
+            end -= 1
+            if start < 1:
+                continue
         try:
             before, after = (part.encode("utf-8") for part in enclosing.split("REDACTED"))
         except UnicodeError:
-            continue
-        if after not in (b'"', b"'") or not before.endswith(after):
             continue
         # Named publishable assignments are identifiable from the redacted
         # context. Check them before using the remaining budget on broad matches.
         assignment = _PUBLISHABLE_ASSIGNMENT.fullmatch(before)
         family = assignment.lastgroup if assignment else None
+        if after in (b'"', b"'"):
+            if not before.endswith(after):
+                continue
+        else:
+            # An unquoted value is unambiguous only in a standalone dotenv
+            # assignment with a known client-key name.
+            name = PurePosixPath(path).name
+            if (after not in (b"", b"\r") or not family or not before.rstrip(b" \t").endswith(b"=")
+                    or not (name == ".env" or name.startswith(".env.") or name.endswith(".env"))):
+                continue
         candidates.append((family is None, path, line, start, end, index, before, after, family))
 
     result = {}
@@ -141,9 +155,12 @@ def gitleaks_benign_codes(root, findings, *, scan_started_ns):
         if end > len(source_line):
             continue
         span = source_line[start - 1:end]
-        if not span.startswith(before) or not span.endswith(after):
+        if len(span) <= len(before) + len(after) or not span.startswith(before) or not span.endswith(after):
             continue
-        value = span[len(before):-len(after)]
+        if (after in (b"", b"\r")
+                and source_line.removesuffix(b"\r").strip(b" \t") != span.removesuffix(b"\r")):
+            continue
+        value = span[len(before):len(span) - len(after)]
         if _is_publishable_key(family, value):
             result[index] = "v1:public-key"
         elif _PLACEHOLDER.fullmatch(value):

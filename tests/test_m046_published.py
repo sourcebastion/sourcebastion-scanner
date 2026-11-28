@@ -61,6 +61,19 @@ def test_pulled_image_must_match_native_manifest_config(field, value):
         published.bind_native(raw, descriptor, observed, "amd64")
 
 
+def test_containerd_image_must_match_published_descriptor():
+    raw, descriptor = manifest_fixture()
+    observed = {"Id": descriptor["digest"], "Architecture": "amd64", "Os": "linux",
+                "Descriptor": {"digest": descriptor["digest"], "size": descriptor["size"]}}
+    bound = published.bind_native(raw, descriptor, observed, "amd64")
+    assert bound["config_digest"] == CONFIG
+    assert bound["tested_image_id"] == descriptor["digest"]
+    for invalid in ({}, {**observed["Descriptor"], "digest": CONFIG},
+                    {**observed["Descriptor"], "size": descriptor["size"] + 1}):
+        with pytest.raises(ValueError, match="pulled-native-config-mismatch"):
+            published.bind_native(raw, descriptor, {**observed, "Descriptor": invalid}, "amd64")
+
+
 @pytest.mark.parametrize("change", ["bytes", "digest", "size"])
 def test_registry_manifest_bytes_size_and_digest_must_all_match(change):
     raw, descriptor = manifest_fixture()
@@ -149,10 +162,12 @@ def test_s01_zip_is_verified_before_extracting_only_fixed_oci_entry(tmp_path, mo
     assert not (tmp_path / "refused").exists()
 
 
-def native_pair(tmp_path):
+def native_pair(tmp_path, *, containerd=False):
     from inventory_execution_observation import records
     roots = [tmp_path / arch for arch in ("amd64", "arm64")]
     arms = ("corpus", "flat-1000", "flat-10000", "flat-100000", "flat-100001", "graph", "expansion")
+    manifest = "sha256:" + "e" * 64
+    image_id = manifest if containerd else CONFIG
     for root, arch in zip(roots, ("amd64", "arm64")):
         root.mkdir()
         paths = [root / f"inventory-resources-{arm}-{repeat}" for arm in arms for repeat in range(1, 4)]
@@ -162,7 +177,7 @@ def native_pair(tmp_path):
             workload = b'{"finite": "synthetic unit-test evidence"}'
             (path / "workload.json").write_bytes(workload)
             (path / "resources.json").write_text(json.dumps({
-                "observer": "host-cgroup-v2", "status": "passed", "architecture": arch, "image_id": CONFIG,
+                "observer": "host-cgroup-v2", "status": "passed", "architecture": arch, "image_id": image_id,
                 "cpu_usec": 1, "memory_peak": 1, "swap_peak": 0, "pids_peak": 1,
                 "wall_seconds": 1, "oom_kill": 0, "exit_code": 0, "removed": True,
                 "workload_sha256": published.sha(workload)}))
@@ -175,8 +190,8 @@ def native_pair(tmp_path):
             resource = json.loads((path / "resources.json").read_bytes())
             resource["workload_sha256"] = published.sha(workload)
             (path / "resources.json").write_text(json.dumps(resource))
-        (root / "frozen-s01-growth.json").write_text(json.dumps({"status": "passed", "candidate_manifest": CONFIG,
-            "tested_image_id": CONFIG, "baseline_kind": "frozen-s01-pre-inventory-layer-prefix"}))
+        (root / "frozen-s01-growth.json").write_text(json.dumps({"status": "passed", "candidate_manifest": manifest,
+            "tested_image_id": image_id, "baseline_kind": "frozen-s01-pre-inventory-layer-prefix"}))
         traces = {}
         for path in [root / "observed-corpus-resources"] + paths[-3:]:
             path.mkdir(parents=True, exist_ok=True)
@@ -188,10 +203,12 @@ def native_pair(tmp_path):
                 "trace_sha256": published.sha(raw), "trace_bytes": len(raw), **records(raw)}))
             traces[path.relative_to(root).as_posix()] = published.sha(raw)
         receipt = {"status": "finite-published-native-passed", "architecture": arch, "acceptance": False,
-                   "config_digest": CONFIG, "native_manifest": CONFIG, "image": published.IMAGE + "@" + CONFIG,
+                   "config_digest": CONFIG, "native_manifest": manifest, "image": published.IMAGE + "@" + CONFIG,
                    "source_sha": SOURCE, "release_tag": "v1.8.0", "release_id": 123,
                    "shared_advisory_manifest_sha256": "d" * 64, "advisory_snapshot_sha256": "d" * 64,
                    "remaining_acceptance": ["human review"], "retained_files": {}, "execution_observation_traces": traces}
+        if containerd:
+            receipt["tested_image_id"] = image_id
         (root / "receipt.json").write_text(json.dumps(receipt))
         rebind(root)
     return roots
@@ -205,8 +222,9 @@ def rebind(root):
     path.write_text(json.dumps(receipt))
 
 
-def test_comparison_checks_48_bindings_and_64_cases_without_claiming_acceptance(tmp_path):
-    result = published.compare_native(*native_pair(tmp_path))
+@pytest.mark.parametrize("containerd", [False, True])
+def test_comparison_checks_48_bindings_and_64_cases_without_claiming_acceptance(tmp_path, containerd):
+    result = published.compare_native(*native_pair(tmp_path, containerd=containerd))
     assert result["resource_workload_bindings"] == 48 and result["equal_canonical_cases"] == 64
     assert result["acceptance"] is False and result["remaining_acceptance"] == ["human review"]
 

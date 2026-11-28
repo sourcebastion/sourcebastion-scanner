@@ -92,7 +92,19 @@ jobs:
         # scanner image, which provisions pip with `python3 -m ensurepip` and
         # so has no unversioned `pip`. Promoting :latest for v1.7.34 made this
         # step exit 127.
-        run: python3 -m pip install --no-deps -e .
+        #
+        # The released image can predate the checkout's SAST engine and rule
+        # pins (v2.1.11 ships Semgrep, not OpenGrep). Install the checkout's
+        # pinned OpenGrep binary and GitLab rule snapshot so the dogfood scan
+        # runs what this commit would release. The runtime image has no curl,
+        # which the rule installer needs.
+        run: |
+          python3 -m pip install --no-deps -e .
+          apk add --no-cache curl
+          python3 scripts/download_scanners.py --pins .github/scanner-versions.json --tool opengrep --destination /usr/local/bin
+          rm -rf /usr/local/share/sast-rules
+          sh scripts/install-sast-rules.sh /usr/local/share/sast-rules
+          opengrep --version
 
       - name: Run SourceBastion Scan
         id: scan

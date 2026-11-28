@@ -5,6 +5,8 @@
 - Use OpenGrep 2.1.0 for SAST. Bundle only local rules and remove the Semgrep
   Registry Ruby pack and fallback. Keep the existing SAST component identifier
   for report and timeout compatibility.
+- Default scans no longer run Ruby SAST rules. Pass `--rules ruby` to run the
+  first-party Rails pack.
 
 ## [2.1.11] - 2026-11-26
 

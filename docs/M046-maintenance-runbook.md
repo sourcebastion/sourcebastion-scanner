@@ -13,6 +13,9 @@ source SHA and verified multiarchitecture index digest. Its two native jobs
 pull immutable manifests, verify installed payloads, measure the frozen S01
 cumulative layer delta and share one source-free advisory generation. Retain
 the shared input artifact, both native proof artifacts and their comparison.
+The workflow retrieves the frozen AMD64 and ARM64 ZIPs from the
+[v1.7.38 release assets](https://github.com/sourcebastion/sourcebastion-scanner/releases/tag/v1.7.38).
+The archived ZIP and OCI bytes must match the original S01 review hashes.
 This finite qualification does not supply development human review, adversarial
 execution observations or mixed-version rollback acceptance; the S07 ledger
 lists the remaining requirements and the manual dispatch command.

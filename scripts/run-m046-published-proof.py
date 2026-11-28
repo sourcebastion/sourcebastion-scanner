@@ -9,7 +9,9 @@ import platform
 import subprocess
 import sys
 
-from m046_published import IMAGE, S01_ARTIFACTS, bind_native, extract_s01, native_descriptor, verify_advisories
+from m046_published import (
+    IMAGE, S01_BASELINE_ASSETS, S01_BASELINE_RELEASE, bind_native, extract_s01, native_descriptor, verify_advisories,
+)
 from inventory_release import frozen_s01_layers, growth, oci_layers
 from inventory_execution_observation import verify_observation
 
@@ -60,18 +62,18 @@ def main():
         run(["docker", "image", "inspect", "--format", "{{json .}}", native], "image-inspect")
         inspected = json.loads((args.output / "image-inspect.stdout").read_bytes())
         receipt.update(bind_native((args.output / "native-manifest.stdout").read_bytes(), descriptor, inspected, architecture))
-        image = inspected["Id"]
+        image = receipt["tested_image_id"]
         candidate_archive = args.temporary / "candidate.oci.tar"
         run(["skopeo", "copy", "--preserve-digests", "docker://" + native,
              "oci-archive:" + str(candidate_archive)], "retain-compressed-layers", seconds=900)
         baseline_zip, baseline_archive = args.temporary / "s01.zip", args.temporary / "s01.oci.tar"
-        with baseline_zip.open("xb") as stream:
-            subprocess.run(["gh", "api", f"repos/sourcebastion/sourcebastion-scanner/actions/artifacts/{S01_ARTIFACTS[architecture]}/zip"],
-                           stdin=subprocess.DEVNULL, stdout=stream, timeout=600, check=True)
+        run(["gh", "release", "download", S01_BASELINE_RELEASE, "--repo", "sourcebastion/sourcebastion-scanner",
+             "--pattern", S01_BASELINE_ASSETS[architecture], "--output", str(baseline_zip)],
+            "frozen-s01-download", seconds=600)
         extract_s01(baseline_zip, baseline_archive, architecture)
         baseline = frozen_s01_layers(baseline_archive, architecture)
         candidate = oci_layers(candidate_archive, architecture)
-        if candidate["manifest_digest"] != descriptor["digest"] or candidate["config_digest"] != image:
+        if candidate["manifest_digest"] != descriptor["digest"] or candidate["config_digest"] != receipt["config_digest"]:
             raise ValueError("retained-oci-is-not-published-native-image")
         size = {"status": "passed", **growth(baseline, candidate), "tested_image_id": image,
                 **{key: val for key, val in baseline.items() if key.startswith("baseline_")}}

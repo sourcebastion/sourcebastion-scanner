@@ -2,7 +2,7 @@
 # and used only for S01's forced probe_timeout case; never a default image.
 ARG RELEASE_IMAGE
 FROM ${RELEASE_IMAGE}
-COPY --chmod=0555 images/diagnostic/semgrep /opt/diagnostic/bin/semgrep
+COPY --chmod=0555 images/diagnostic/opengrep /opt/diagnostic/bin/opengrep
 ENV PATH="/opt/diagnostic/bin:${PATH}"
 LABEL org.opencontainers.image.title=sourcebastion-scanner-diagnostic \
-      org.opencontainers.image.description="SourceBastion scanner with a slow semgrep --version, for probe_timeout diagnostics only"
+      org.opencontainers.image.description="SourceBastion scanner with a slow opengrep --version, for probe_timeout diagnostics only"

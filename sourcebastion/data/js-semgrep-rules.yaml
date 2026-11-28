@@ -166,7 +166,7 @@ rules:
 
   - id: express.unsafe-eval
     mode: taint
-    pattern-sources: &request-fields
+    pattern-sources:
       - pattern-either:
           - pattern: $REQ.params.$KEY
           - pattern: $REQ.query.$KEY
@@ -188,7 +188,14 @@ rules:
 
   - id: express.unsafe-function-constructor
     mode: taint
-    pattern-sources: *request-fields
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQ.params.$KEY
+          - pattern: $REQ.query.$KEY
+          - pattern: $REQ.body.$KEY
+          - pattern: $REQ.params[$KEY]
+          - pattern: $REQ.query[$KEY]
+          - pattern: $REQ.body[$KEY]
     pattern-sinks:
       - patterns:
           - pattern: new Function(..., $CODE)
@@ -365,7 +372,14 @@ rules:
   # === Path Traversal Rules ===
   - id: javascript.path-traversal-fs-readfile
     mode: taint
-    pattern-sources: *request-fields
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQ.params.$KEY
+          - pattern: $REQ.query.$KEY
+          - pattern: $REQ.body.$KEY
+          - pattern: $REQ.params[$KEY]
+          - pattern: $REQ.query[$KEY]
+          - pattern: $REQ.body[$KEY]
     pattern-sinks:
       - patterns:
           - pattern: fs.readFile($PATH, ...)
@@ -380,7 +394,14 @@ rules:
 
   - id: javascript.path-traversal-fs-readfilesync
     mode: taint
-    pattern-sources: *request-fields
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQ.params.$KEY
+          - pattern: $REQ.query.$KEY
+          - pattern: $REQ.body.$KEY
+          - pattern: $REQ.params[$KEY]
+          - pattern: $REQ.query[$KEY]
+          - pattern: $REQ.body[$KEY]
     pattern-sinks:
       - patterns:
           - pattern: fs.readFileSync($PATH, ...)
@@ -499,7 +520,14 @@ rules:
   # === Open Redirect Rules ===
   - id: javascript.open-redirect
     mode: taint
-    pattern-sources: *request-fields
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQ.params.$KEY
+          - pattern: $REQ.query.$KEY
+          - pattern: $REQ.body.$KEY
+          - pattern: $REQ.params[$KEY]
+          - pattern: $REQ.query[$KEY]
+          - pattern: $REQ.body[$KEY]
     pattern-sinks:
       - patterns:
           - pattern-either:

@@ -87,7 +87,7 @@ def test_expired_contract_deadline_fails_before_starting_tool(monkeypatch):
 
 
 def test_invalid_json_is_not_empty_success(tmp_path):
-    scanner = SemgrepScanner()
+    scanner = SemgrepScanner(extra_rules_dirs=["rules/python"])
     completed = subprocess.CompletedProcess([], 0, "", "")
     with (
         patch.object(scanner, "is_installed", return_value=True),
@@ -151,7 +151,7 @@ def test_gitleaks_finding_exit_with_empty_report_fails_closed(tmp_path):
 
 
 def test_semgrep_finding_exit_code_is_complete(tmp_path):
-    scanner = SemgrepScanner()
+    scanner = SemgrepScanner(extra_rules_dirs=["rules/python"])
 
     def write_empty_report(command, **_kwargs):
         report_path = Path(command[command.index("--output") + 1])
@@ -409,7 +409,7 @@ def test_output_conversion_failure_discards_all_outputs(tmp_path, method_name, c
 
 def _semgrep_report(tmp_path, payload, *, require_complete_coverage=False):
     """Run SemgrepScanner against a canned semgrep report."""
-    scanner = SemgrepScanner()
+    scanner = SemgrepScanner(extra_rules_dirs=["rules/python"])
 
     def write_report(command, **_kwargs):
         report_path = Path(command[command.index("--output") + 1])
@@ -586,6 +586,7 @@ def test_grype_dependency_install_uses_the_running_interpreter(tmp_path):
 def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("SOURCEBASTION_SCAN_OFFLINE", "1")
     monkeypatch.setenv("SEMGREP_APP_TOKEN", "private-token")
+    monkeypatch.setenv("OPENGREP_RULES", "https://example.invalid/opengrep-rules")
     monkeypatch.setenv("SEMGREP_RULES", "https://example.invalid/rules")
     monkeypatch.setenv("SEMGREP_SEND_METRICS", "on")
     monkeypatch.setenv("SEMGREP_ENABLE_VERSION_CHECK", "1")
@@ -599,22 +600,18 @@ def test_semgrep_subprocesses_ignore_inherited_online_settings(tmp_path, monkeyp
     def run(command, **kwargs):
         seen.append(command)
         env = kwargs["env"]
-        assert {k: v for k, v in env.items() if k.startswith("SEMGREP_")} == {
-            "SEMGREP_SEND_METRICS": "off", "SEMGREP_ENABLE_VERSION_CHECK": "0",
-            "SEMGREP_SETTINGS_FILE": env["SEMGREP_SETTINGS_FILE"],
-            "SEMGREP_LOG_FILE": env["SEMGREP_LOG_FILE"]}
-        settings_root = Path(env["SEMGREP_SETTINGS_FILE"]).parent
-        assert settings_root.name.startswith("sourcebastion-semgrep-")
-        assert settings_root.is_dir() and settings_root.stat().st_mode & 0o077 == 0
-        assert Path(env["SEMGREP_LOG_FILE"]).parent == settings_root
-        if "--version" not in command:
-            assert command[:3] == ["semgrep", "scan", "--oss-only"]
-            assert "--config=/usr/local/share/sast-rules/go" in command
+        assert not any(key.startswith(("SEMGREP_", "OPENGREP_")) for key in env)
+        if "--version" in command:
+            assert command == ["opengrep", "--version"]
+        else:
+            assert command[:2] == ["opengrep", "scan"]
+            assert [flag for flag in command if flag.startswith("--config=")] == [
+                "--config=/usr/local/share/sast-rules/go",
+            ]
             assert "--max-target-bytes=1000000" in command
             assert any(flag.startswith("--jobs=") for flag in command)
             assert any(flag.startswith("--max-memory=") for flag in command)
             Path(command[command.index("--output") + 1]).write_text('{"results": [], "errors": []}')
-        assert "--metrics=off" in command and "--disable-version-check" in command
         return subprocess.CompletedProcess(command, 0, "", "private source fragment")
 
     with patch("sourcebastion.external_scanners.subprocess.run", side_effect=run):
@@ -657,8 +654,9 @@ def test_semgrep_limits_follow_the_container(memory, cpu_quota, expected_jobs, e
     ]
 
 
-def test_semgrep_offline_missing_packs_never_uses_registry(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("SOURCEBASTION_SCAN_OFFLINE", "1")
+@pytest.mark.parametrize("offline", ["0", "1"])
+def test_opengrep_missing_packs_never_uses_registry(tmp_path, monkeypatch, capsys, offline):
+    monkeypatch.setenv("SOURCEBASTION_SCAN_OFFLINE", offline)
     monkeypatch.setattr(os.path, "isdir", lambda path: False)
     monkeypatch.setattr(os.path, "isfile", lambda path: False)
     scanner = SemgrepScanner()
@@ -676,7 +674,7 @@ def test_semgrep_offline_missing_packs_never_uses_registry(tmp_path, monkeypatch
     (-11, "secret source", "process exited code=-11"),
 ])
 def test_semgrep_exit_diagnostic_never_echoes_raw_stderr(tmp_path, capsys, returncode, stderr, expected):
-    scanner = SemgrepScanner()
+    scanner = SemgrepScanner(extra_rules_dirs=["rules/python"])
     with patch.object(scanner, "is_installed", return_value=True), patch(
         "sourcebastion.external_scanners.subprocess.run",
         return_value=subprocess.CompletedProcess([], returncode, "", stderr)):
@@ -688,7 +686,7 @@ def test_semgrep_exit_diagnostic_never_echoes_raw_stderr(tmp_path, capsys, retur
 
 
 def test_semgrep_timeout_reports_to_stderr_without_exception_output(tmp_path, capsys):
-    scanner = SemgrepScanner()
+    scanner = SemgrepScanner(extra_rules_dirs=["rules/python"])
     with patch.object(scanner, "is_installed", return_value=True), patch(
         "sourcebastion.external_scanners.subprocess.run",
         side_effect=subprocess.TimeoutExpired("semgrep", 300, stderr="secret source")):

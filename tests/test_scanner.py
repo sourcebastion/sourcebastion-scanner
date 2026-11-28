@@ -72,6 +72,7 @@ def test_semgrep_skip_counts_persist_in_the_scan_artifact(tmp_path, monkeypatch)
     output = tmp_path / "scan-results" / "results.json"
     scanner = SecurityScanner(Config(severity="all", output_file=str(output)))
     scanner.external = ExternalScannerManager(enabled_scanners=["semgrep"], max_workers=1)
+    scanner.external.scanners["semgrep"].extra_rules_dirs = ["rules/python"]
     monkeypatch.setattr(SemgrepScanner, "is_installed", lambda self: True)
     skipped = [
         {"path": "oversized-source.py", "reason": "exceeded_size_limit"},

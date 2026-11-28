@@ -24,32 +24,30 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version-file: PYTHON_VERSION
-      - name: Install pinned attestation verifier
-        run: python -m pip install pypi-attestations==0.0.30 packaging==26.3 pytest pyyaml
+      - name: Install Python verification tools
+        run: python -m pip install packaging==26.3 pytest pyyaml
       - name: Test fail-closed behavior
         run: python -m pytest -q tests/test_scanner_artifacts.py tests/test_python_dependency_locks.py tests/test_bundled_native_libraries.py tests/test_native_notices.py
-      - name: Verify hashes and publisher attestations for every wheel
-        run: python scripts/scanner_artifacts.py verify
-      - name: Verify all Python dependency locks without executing packages
-        run: python scripts/scanner_artifacts.py verify-dependencies
-      - name: Exercise locked installer without a Docker build
-        env:
-          SEMGREP_SEND_METRICS: 'off'
-          SEMGREP_ENABLE_VERSION_CHECK: '0'
+      - name: Verify the Python dependency locks used by the image
         run: |
-          python -m venv "$RUNNER_TEMP/semgrep-smoke"
-          "$RUNNER_TEMP/semgrep-smoke/bin/python" scripts/scanner_artifacts.py install --libc glibc
-          expected=$(python -c 'import json; print(json.load(open(".github/semgrep-artifacts.json"))["version"])')
-          actual=$("$RUNNER_TEMP/semgrep-smoke/bin/semgrep" --version)
-          test "$actual" = "$expected"
+          python scripts/scanner_artifacts.py verify-dependencies --group build
+          python scripts/scanner_artifacts.py verify-dependencies --group runtime
+      - name: Verify pinned OpenGrep binary and GitLab pack
+        run: |
+          python scripts/download_scanners.py --pins .github/scanner-versions.json --tool opengrep --destination "$RUNNER_TEMP/scanners"
+          sh scripts/install-sast-rules.sh "$RUNNER_TEMP/sast-rules"
+          expected=$(python -c 'import json; print(json.load(open(".github/scanner-versions.json"))["opengrep"]["version"])')
+          test "$("$RUNNER_TEMP/scanners/opengrep" --version)" = "$expected"
+          cd "$RUNNER_TEMP/sast-rules"
+          mkdir "$RUNNER_TEMP/empty-sast-target"
+          "$RUNNER_TEMP/scanners/opengrep" scan --strict --json \
+            -c c -c csharp -c go -c java -c javascript -c python -c scala "$RUNNER_TEMP/empty-sast-target"
+
       - name: Exercise locked build tools and offline local wheel installation
         run: |
           python -m venv "$RUNNER_TEMP/build-smoke"
           "$RUNNER_TEMP/build-smoke/bin/python" scripts/scanner_artifacts.py install --libc glibc --group build
           "$RUNNER_TEMP/build-smoke/bin/python" -m build --no-isolation --wheel --outdir "$RUNNER_TEMP/scanner-dist"
-          "$RUNNER_TEMP/semgrep-smoke/bin/pip" install --no-index --no-deps "$RUNNER_TEMP"/scanner-dist/*.whl
-          "$RUNNER_TEMP/semgrep-smoke/bin/pip" check
-          "$RUNNER_TEMP/semgrep-smoke/bin/sourcebastion" --version
           python -m venv "$RUNNER_TEMP/runtime-smoke"
           "$RUNNER_TEMP/runtime-smoke/bin/python" scripts/scanner_artifacts.py install --libc glibc --group runtime
           "$RUNNER_TEMP/runtime-smoke/bin/pip" install --no-index --no-deps "$RUNNER_TEMP"/scanner-dist/*.whl

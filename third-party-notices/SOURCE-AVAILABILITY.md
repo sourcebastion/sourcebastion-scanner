@@ -48,3 +48,8 @@ it does not inventory all system packages or statically linked code.
 
 Publication and image acceptance are recorded in `docs/M049/` and
 https://github.com/sourcebastion/sourcebastion-scanner/issues/164.
+
+## OpenGrep
+
+Images with OpenGrep include its upstream license and copyright notice. See
+[OpenGrep 2.1.0 source and release](opengrep-2.1.0/NOTICE.md).

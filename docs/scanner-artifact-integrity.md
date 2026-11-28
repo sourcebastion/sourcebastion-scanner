@@ -1,152 +1,36 @@
 # Scanner artifact verification
 
-The release workflow verifies the reviewed `.github/semgrep-artifacts.json`
-before preparing a release. All four Linux wheels (glibc/musl, amd64/arm64)
-must match their SHA-256 pins and pass `pypi-attestations==0.0.30` verification.
-The accepted publishing identity is the upstream
-`semgrep/semgrep-proprietary` repository's `pro-release.yml` workflow. The
-verifier binds that identity to the signing certificate and checks signatures
-and transparency-log evidence. Changing this allowlist requires code review.
+OpenGrep supplies SAST in the scanner image. The Linux amd64 and arm64 binaries
+are pinned by version and SHA-256 in `.github/scanner-versions.json`. The
+downloader checks the digest before installing an asset. The integrity workflow
+checks the pinned binary version and validates the bundled GitLab config. The
+native image checks verify the binary again and check its bundled notices.
+For approved SAST rule sources, see [SAST rules and licensing](../README.md#sast-rules-and-licensing).
 
-Docker builds install the exact wheel from this lock after independently
-checking its hash. They do not select the newest version at build time. This
-artifact lock establishes provenance for Semgrep itself. Separate
-`.github/python-locks/` requirements locks cover Python build tools, the
-SourceBastion runtime, and Semgrep plus the SourceBastion runtime, for the reviewed CPython
-version on each of the four Linux targets. These provide **hash integrity, not
-publisher provenance**, for transitive dependencies. Neither lock covers OS
-packages, base images, bundled bootstrap pip/ensurepip, other scanner binaries,
-or externally downloaded rule packs. It is not proof of a
-reproducible build or that the source has no vulnerabilities.
+When updating OpenGrep, review the upstream release and the SHA-256 of both
+assets. Update the binary pins and include the matching copyright, license, and
+source information in [`third-party-notices/`](../third-party-notices/).
 
-`Propose verified scanner artifacts` runs Mondays at 06:37 UTC on main. It
-discovers a stable PyPI version, rejects yanked/missing platforms, verifies all
-wheels without installing or executing them, then proposes the Semgrep
-artifact/version, dependency-lock and matching native-manifest changes in a PR. Dependency-only updates
-are detected even when the Semgrep version stays unchanged; the proposed
-branch includes the lock manifest digest. It never approves, merges, or
-releases changes. No reviewed files change if verification fails. A candidate artifact is retained
-for review/recovery if GitHub cannot open the PR.
+## Python and image dependencies
 
-The weekly job uses the existing `sourcebastion-bot` GitHub App, not
-`GITHUB_TOKEN`, to push the candidate and open its PR. The organization and
-repository restrictions on Actions-created/approved PRs stay unchanged.
-App-created PRs trigger normal `pull_request` checks; no manual CI dispatch
-or Actions write permission is needed. Wait for those checks before merging.
+The image uses the `build` and `runtime` groups in `.github/python-locks/`.
+CI verifies the locked wheels for all four Linux Python targets. Image builds
+enforce exact versions and hashes, require wheels, run `pip check`, and build the
+SourceBastion wheel offline from its reviewed source and locked build tools.
 
-Provision the existing App's ID and private key as environment secrets
-`SOURCEBASTION_BOT_APP_ID` and `SOURCEBASTION_BOT_PRIVATE_KEY` in the repository's
-`scanner-maintenance` environment, with deployment branches restricted to
-`main` only (no tags). Do not create another App. The App installation must
-include this repository and grant Contents and Pull requests write access.
-The workflow mints a short-lived installation token only after verification
-finds a change, scopes it to this repository and those two permissions, and
-checks the App slug before writing. The pinned token action revokes it at job
-completion. `GITHUB_TOKEN` remains read-only and checkout persists no token.
-Missing credentials or insufficient App permissions fail the job; there is
-no fallback to a personal token or relaxed organization policy.
-Weekly scheduling begins only after this workflow reaches main.
-
-The integrity workflow runs on PRs targeting main, manual dispatch, and calls
-from the release workflow. The temporary #46/#47 stacked-branch triggers have
-been removed after that stack merged.
-
-## Python dependency locks
-
-`scripts/python-build.in` and `scripts/python-runtime.in` declare reviewed
-roots. The runtime input must match `setup.py` (a test enforces this).
-`uv==0.11.0` resolves each target without building or executing distributions.
-Semgrep is bound to its exact attested wheel URL/hash; every dependency has an
-exact version and SHA-256 hashes. A manifest binds all twelve lock files to
-their Python and Semgrep versions. Wheels for every target are downloaded
-with pip hash enforcement before candidate files are published. Source
-distributions and unpinned requirements are rejected, not built as a fallback.
-
-Image installs enforce `--require-hashes --only-binary=:all:` and run
-`pip check`. Locally built SourceBastion wheels are trusted build outputs from
-the reviewed source, installed with `--no-index --no-deps`; building them uses
-the locked build tools and `--no-isolation`, preventing hidden build dependency
-downloads. No external Python package is resolved unpinned by these five
-scanner Dockerfiles. The separate API image and development installs are not
-part of this contract. Changing Python requires new locks and matching tests.
-
-Refresh dependency locks for the currently reviewed Semgrep version:
-
-```sh
-python -m pip install pypi-attestations==0.0.30 uv==0.11.0
-python scripts/scanner_artifacts.py lock-dependencies
-python scripts/scanner_artifacts.py verify-dependencies
-```
-
-This verifies Semgrep provenance first, resolves and verifies all dependency
-sets in temporary storage, and only then replaces reviewed files. Review hash
-and version changes before merging. Re-run the integrity workflow and release
-image/runtime validation; image-affecting PRs run both native image builds.
-
-Network reads retry at most three times (5/15-second delays) for connection
-errors, HTTP 429, and selected 5xx responses. Missing attestations, unexpected
-publishers, signature errors and hash mismatches fail closed. Verification
-unavailability blocks release; it never falls back to unchecked installation.
-
-## How the workflow restriction is enforced
-
-`pypi_attestations verify pypi` is invoked with `--repository` and has no
-`--workflow` flag, so the restriction to `pro-release.yml` looks advisory at
-the call site. It is not. The tool builds its Sigstore policy from the
-provenance's own publisher object — `publisher._as_policy()` yielding
-`_GitHubTrustedPublisherPolicy(repository, workflow)` — whose expected
-certificate Build Config URI extension is
-`https://github.com/{repository}/.github/workflows/{workflow}@{ref}`.
-
-Both halves are therefore needed and both are present: `verify_artifact`
-rejects any provenance whose publisher is not GitHub /
-`semgrep/semgrep-proprietary` / `pro-release.yml`, and the tool then verifies
-every attestation's certificate against a policy derived from that same
-publisher. A forged provenance fails the first check; a genuine provenance
-signed by a different workflow fails the certificate check.
-
-KICS remains at its reviewed digest. Neither the candidate job nor this
-Semgrep verifier updates or claims to authenticate KICS publisher provenance.
-Establishing that provenance is a separate prerequisite for automatic KICS
-updates.
-
-Manual read-only verification:
-
-```sh
-python -m pip install pypi-attestations==0.0.30
-python scripts/scanner_artifacts.py verify
-```
-
-Prepare a candidate in a clean review branch (writes the two pin files only
-after successful verification):
-
-```sh
-python scripts/scanner_artifacts.py candidate --version 1.178.0
-```
+The former Semgrep pin, artifact evidence, and dependency locks are retained for
+historical release verification. See the
+[legacy verification procedure](https://github.com/sourcebastion/sourcebastion-scanner/blob/3ac7e8f1a6f8738c8e6fe407b128a9009820718b/docs/scanner-artifact-integrity.md)
+for the previous images. The scheduled scanner workflow now refreshes the
+retained runtime APK inputs.
 
 ## Bundled native library notices and sources
 
-`.github/bundled-native-libraries.json` records each architecture's separately
-vendored library bytes, wheel identity and owning distribution. Dependency
-verification rejects additions, removals and changes. `third-party-notices/`
-binds those bytes to retained original license texts and source references;
-missing or changed license files also reject the candidate.
-
-The weekly proposer uses `candidate --native-proposal
-.github/bundled-native-proposal.json`. When each architecture's installed
-library paths, owning distributions, counts, sizes and SHA-256 hashes are
-unchanged, it automatically refreshes the native manifest's wheel/version
-bindings in the same PR as the dependency locks. Standard wheel spreading of
-the versioned `.data/{purelib,platlib}/` prefix is accounted for; installed paths
-remain exact. Existing notice/source bindings are retained and checked. All
-verification finishes in temporary storage before candidate files are written.
-Release verification still compares the complete manifest exactly.
-
-Native additions, removals, ownership, installed-path or byte changes instead
-produce a separate observation file and a draft PR, leaving the native baseline
-unchanged. That file does not authorize a release. Review the old/new library sets, exact upstream source
-and recipes, notices and conservative copyleft coverage together before changing
-the baseline. Release verification remains strict.
+The runtime check compares the installed Python runtime's wheel-vendored
+libraries against the reviewed entries in `.github/bundled-native-libraries.json`.
+The retained libraries and notices for earlier releases are also recorded
+there. Review exact library bytes, upstream source and build recipes, and
+notices together when changing the runtime baseline.
 
 `.github/native-source-pins.json` binds original upstream source/recipe archives,
 the deterministic bundle and its OCI manifest. `Mirror bundled native sources`
@@ -158,7 +42,7 @@ publication; do not replace a pin to conceal a mismatch. Retain source artifacts
 for the scanner releases they accompany.
 
 Native image CI and both staged-release hosted-scan jobs run
-`scripts/assert-image-runtime.sh`, checking installed bundled bytes and all
+`scripts/assert-image-runtime.sh`, checking the OpenGrep binary, installed bundled bytes, and
 retained texts against the reviewed manifests, including the source directions.
 Image publication and host deployment are separate actions. See [M049](M049/README.md)
 for distribution scope and the release acceptance record.

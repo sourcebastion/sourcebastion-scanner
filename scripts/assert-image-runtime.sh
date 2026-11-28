@@ -8,9 +8,10 @@ fi
 image=$1
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 expected_python="$(python3 "$root/scripts/python_version.py" current)"
-docker run --rm -i --entrypoint python3 "$image" - "$expected_python" \
+docker run --rm -i --network none --entrypoint python3 "$image" - "$expected_python" \
   "$(cat "$root/.github/bundled-native-libraries.json")" \
   "$(cat "$root/third-party-notices/manifest.json")" \
+  "$(cat "$root/.github/scanner-versions.json")" \
   "$(sha256sum "$root/third-party-notices/SOURCE-AVAILABILITY.md")" <<'PY'
 import hashlib
 import importlib.metadata
@@ -21,6 +22,7 @@ import platform
 import pwd
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -34,17 +36,28 @@ for directory in [Path("/scan"), Path.home() / ".cache"]:
     with tempfile.TemporaryFile(dir=directory) as handle:
         handle.write(b"runtime write probe")
 assert importlib.util.find_spec("pip") is not None, "pip required for dependency discovery"
-for executable in ["npm", "gitleaks", "grype", "kics", "semgrep", "sourcebastion"]:
+for executable in ["npm", "gitleaks", "grype", "kics", "opengrep", "sourcebastion"]:
     assert shutil.which(executable), f"missing runtime tool: {executable}"
+assert not shutil.which("semgrep") and importlib.util.find_spec("semgrep") is None
+assert not Path("/usr/local/share/sast-rules/ruby.yml").exists()
+opengrep_pin = json.loads(sys.argv[4])["opengrep"]
+asset_arch = {"x86_64": "x86", "aarch64": "aarch64"}[platform.machine()]
+with Path(shutil.which("opengrep")).open("rb") as binary:
+    digest = hashlib.file_digest(binary, "sha256").hexdigest()
+assert digest == opengrep_pin[f"linux_{asset_arch}_sha256"], "wrong OpenGrep binary"
+assert subprocess.check_output(["opengrep", "--version"], text=True).strip() == opengrep_pin["version"]
 for executable in ["gcc", "g++", "make", "rustc"]:
     assert not shutil.which(executable), f"unexpected build tool: {executable}"
 assert not Path("/app/setup.py").exists(), "build context leaked into runtime"
 # Inspect installed wheel data without loading any bundled shared library.
 notices = Path("/usr/local/share/sourcebastion/third-party-notices")
+engine_notices = notices / f"opengrep-{opengrep_pin['version']}"
+for name in ("LICENSE", "COPYRIGHT", "NOTICE.md"):
+    assert (engine_notices / name).stat().st_size > 0, f"missing OpenGrep {name}"
 manifest = json.loads((notices / "manifest.json").read_text())
 assert manifest == json.loads(sys.argv[3]), "wrong retained notice manifest"
 availability = hashlib.sha256((notices / "SOURCE-AVAILABILITY.md").read_bytes()).hexdigest()
-assert availability == sys.argv[4].split()[0], "wrong source directions"
+assert availability == sys.argv[5].split()[0], "wrong source directions"
 covered = set()
 for component in manifest["components"]:
     for name, digest in component["license_files"].items():
@@ -69,7 +82,8 @@ for distribution in importlib.metadata.distributions():
                          "bytes": len(raw), "sha256": digest})
 target = "musllinux_1_2_" + platform.machine()
 expected = [{key: row[key] for key in ("distribution", "version", "path", "bytes", "sha256")}
-            for row in json.loads(sys.argv[2])["targets"][target]]
+            for row in json.loads(sys.argv[2])["targets"][target]
+            if row["distribution"] == "pydantic-core"]
 # Wheel installers spread .data/{purelib,platlib} into site-packages (PEP 427).
 # Keep the file's installed path, owner, version, size and bytes exact.
 def installed_native_path(path):

@@ -1,12 +1,20 @@
 ## Unreleased
 
-### Changed
+## [2.2.0] - 2026-11-27
 
-- Use OpenGrep 2.1.0 for SAST. Bundle only local rules and remove the Semgrep
-  Registry Ruby pack and fallback. Keep the existing SAST component identifier
-  for report and timeout compatibility.
-- Default scans no longer run Ruby SAST rules. Pass `--rules ruby` to run the
-  first-party Rails pack.
+SAST now runs on OpenGrep 2.1.0 instead of Semgrep CE. The image installs the
+OpenGrep binary pinned by SHA-256 for each architecture and the GitLab
+sast-rules snapshot pinned by commit and SHA-256. Scans load only rules bundled
+in the image. The scanner clears `SEMGREP_*` and `OPENGREP_*` environment
+variables before running the engine. The `semgrep` component identifier is
+unchanged, so report fields and timeout settings keep working. OpenGrep license
+and source notices ship under `third-party-notices/`, and the README documents
+which rule sources SourceBastion accepts (M066 S02).
+
+The Semgrep Registry `p/ruby` pack and the `p/security-audit` fallback are
+removed. Default scans no longer run Ruby SAST rules. Pass `--rules ruby` to
+run the first-party Rails pack. Ruby projects that relied on the Registry pack
+will see fewer SAST findings after upgrading.
 
 ## [2.1.11] - 2026-11-26
 

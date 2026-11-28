@@ -31,14 +31,14 @@ COPY . /app
 RUN python scripts/scanner_artifacts.py install --libc musl --group build && \
     python -m build --no-isolation --wheel --outdir /dist && \
     python -m venv /opt/venv && \
-    /opt/venv/bin/python scripts/scanner_artifacts.py install --libc musl && \
+    /opt/venv/bin/python scripts/scanner_artifacts.py install --libc musl --group runtime && \
     /opt/venv/bin/python -m pip install --no-cache-dir --no-index --no-deps /dist/*.whl && \
     /opt/venv/bin/python -m pip check && \
     /opt/venv/bin/python -m compileall -q /opt/venv
 
 # Keep the trusted wheels' bytecode: runtime uses this same pinned Python and
 # virtualenv path. With runtime bytecode writes disabled, deleting these caches
-# makes every CLI/probe recompile dependencies (including Semgrep's MCP imports).
+# makes every CLI invocation recompile dependencies.
 
 # Downloads, extraction tools, build context and wheel files stay in this stage.
 FROM python-base AS scanners
@@ -49,14 +49,8 @@ RUN python /tmp/scanners/download_scanners.py --pins /tmp/scanners/scanner-versi
 COPY scripts/prepare-inventory-node.py .github/inventory-runtime-pins.json /tmp/inventory-runtime/
 RUN python /tmp/inventory-runtime/prepare-inventory-node.py \
     --pins /tmp/inventory-runtime/inventory-runtime-pins.json --output /tmp/inventory-node
-RUN curl -sSfL "https://gitlab.com/gitlab-org/security-products/sast-rules/-/archive/main/sast-rules-main.tar.gz" \
-      -o /tmp/sast-rules.tar.gz && \
-    mkdir -p /tmp/sast-rules-extract /usr/local/share/sast-rules && \
-    tar -xzf /tmp/sast-rules.tar.gz -C /tmp/sast-rules-extract && \
-    for lang in c csharp go java javascript python scala; do \
-      mv "/tmp/sast-rules-extract/sast-rules-main/$lang" /usr/local/share/sast-rules/; \
-    done && \
-    curl -sSfL "https://semgrep.dev/c/p/ruby" -o /usr/local/share/sast-rules/ruby.yml
+COPY scripts/install-sast-rules.sh /tmp/scanners/
+RUN /bin/sh /tmp/scanners/install-sast-rules.sh /usr/local/share/sast-rules
 
 FROM python-base AS runtime
 ENV PYTHONUNBUFFERED=1 \
@@ -71,7 +65,7 @@ COPY --from=inventory-go /inventory-go/manifest.json /usr/local/share/sourcebast
 COPY --from=inventory-go /inventory-go/notices/ /usr/local/share/sourcebastion/inventory-go-notices/
 COPY third-party-notices/ /usr/local/share/sourcebastion/third-party-notices/
 COPY --from=builder /opt/venv /opt/venv
-COPY --from=scanners /usr/local/bin/gitleaks /usr/local/bin/grype /usr/local/bin/
+COPY --from=scanners /usr/local/bin/gitleaks /usr/local/bin/grype /usr/local/bin/opengrep /usr/local/bin/
 COPY --from=scanners /usr/local/share/sast-rules /usr/local/share/sast-rules
 COPY --from=kics /app/bin/kics /usr/local/bin/kics
 COPY --from=kics /app/bin/assets /usr/local/bin/assets

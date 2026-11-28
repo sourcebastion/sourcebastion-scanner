@@ -182,48 +182,8 @@ def test_release_and_merge_exercise_are_fail_closed():
     assert all('continue-on-error' not in s for s in verify['jobs']['verify']['steps'])
     update = workflow('scanner-artifact-update.yml')
     assert update['on']['schedule']
-    assert update['jobs']['propose']['if'] == "github.ref == 'refs/heads/main'"
-
-
-def test_weekly_updates_use_scoped_existing_app_not_actions_identity():
-    text = (ROOT / '.github/workflows/scanner-artifact-update.yml').read_text()
-    workflow = yaml.load(text, Loader=yaml.BaseLoader)
-    assert workflow['permissions'] == {'contents': 'read'}
-    job = workflow['jobs']['propose']
-    assert job['if'] == "github.ref == 'refs/heads/main'"
-    assert job['environment'] == 'scanner-maintenance'
-    assert 'permissions' not in job
-    steps = job['steps']
-    mint = next(s for s in steps if s.get('id') == 'app-token')
-    # Dependency updates may advance the reviewed action revision. Keep the
-    # immutable official action and token-scope contract, not a second pin.
-    assert re.fullmatch(r'actions/create-github-app-token@[0-9a-f]{40}', mint['uses'])
-    assert mint['if'] == "steps.changes.outputs.changed == 'true'"
-    # Scope must not depend on the event payload. The action scopes a token to
-    # the current repository only when BOTH `owner` and `repositories` are
-    # unset; `owner` set with an empty `repositories` scopes it to *every*
-    # repository in that owner's installation. `github.event.repository.name`
-    # is populated for workflow_dispatch but is not guaranteed for `schedule`,
-    # so relying on it risks org-wide Contents and Pull requests write on the
-    # weekly run — silently, and in the wrong direction.
-    assert mint['with'] == {
-        'app-id': '${{ secrets.SOURCEBASTION_BOT_APP_ID }}',
-        'private-key': '${{ secrets.SOURCEBASTION_BOT_PRIVATE_KEY }}',
-        'permission-contents': 'write',
-        'permission-pull-requests': 'write',
-    }
-    assert 'owner' not in mint['with'], 'owner without a literal repository list over-scopes'
-    assert not any('github.event' in value for value in mint['with'].values())
-    assert steps.index(mint) > next(i for i, s in enumerate(steps)
-                                   if s.get('run', '').startswith('python -m pytest'))
-    policy = next(step for step in steps if step.get('id') == 'policy')
-    assert policy['if'] == mint['if']
-    assert policy['env']['GH_TOKEN'] == '${{ steps.app-token.outputs.token }}'
-    assert policy['env']['APP_SLUG'] == '${{ steps.app-token.outputs.app-slug }}'
-    assert 'gh workflow run' not in text
-    assert 'gh pr merge' in text and '--auto --squash --match-head-commit' in text
-    assert 'gh pr review' not in text
-    assert '${{ github.token }}' not in text
+    assert set(update['jobs']) == {'retain-runtime'}
+    assert update['jobs']['retain-runtime']['if'] == "github.ref == 'refs/heads/main'"
 
 
 def test_release_images_install_locked_wheel():

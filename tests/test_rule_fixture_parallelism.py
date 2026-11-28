@@ -1,6 +1,6 @@
 """Concurrent rule-fixture verification must not change what it reports.
 
-The verifier costs three semgrep process starts per rule, so it runs rules
+The verifier costs three opengrep process starts per rule, so it runs rules
 concurrently. Concurrency is only acceptable here if the result is identical to
 the serialized run -- same verdict, same lines, same order -- otherwise a
 reviewer cannot read a failure list and a flake becomes indistinguishable from
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VERIFIER = ROOT / "scripts/verify-rule-fixtures.py"
 
 STUB = """#!/usr/bin/env bash
-# Mimics semgrep's startup cost, and reports a finding only for a target whose
+# Mimics opengrep's startup cost, and reports a finding only for a target whose
 # text carries a `ruleid:` reference.
 target="$3"
 sleep 0.05
@@ -41,10 +41,10 @@ RULE = """rules:
 
 @pytest.fixture
 def corpus(tmp_path):
-    """A rules tree the verifier can walk, plus a stub semgrep on PATH."""
+    """A rules tree the verifier can walk, plus a stub opengrep on PATH."""
     stub_dir = tmp_path / "bin"
     stub_dir.mkdir()
-    stub = stub_dir / "semgrep"
+    stub = stub_dir / "opengrep"
     stub.write_text(STUB)
     stub.chmod(0o755)
 

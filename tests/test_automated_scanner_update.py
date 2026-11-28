@@ -133,15 +133,7 @@ def test_missing_mirror_falls_back_only_to_exact_source_but_mismatch_never_falls
 def test_workflows_preserve_check_and_release_boundaries():
     load = lambda name: yaml.load((ROOT / '.github/workflows' / name).read_text(), Loader=yaml.BaseLoader)
     updater = load('scanner-artifact-update.yml')
-    assert updater['jobs']['propose']['needs'] == 'retain-runtime'
-    steps = updater['jobs']['propose']['steps']
-    merge = steps[-1]
-    assert '--auto --squash --match-head-commit' in merge['run']
-    assert '--admin' not in merge['run']
-    assert "steps.policy.outputs.draft == 'false'" in merge['if']
-    candidate = next(step for step in steps if step.get('id') == 'candidate')
-    assert candidate['with']['draft'] == '${{ steps.policy.outputs.draft }}'
-    assert candidate['with']['body'].startswith('Task: M052/S04/T01\n')
+    assert set(updater['jobs']) == {'retain-runtime'}
     release = load('release.yml')['jobs']
     assert release['release-policy']['permissions'] == {'contents': 'read', 'pull-requests': 'read'}
     assert release['prepare-release']['environment'] == '${{ needs.release-policy.outputs.environment }}'
@@ -149,53 +141,6 @@ def test_workflows_preserve_check_and_release_boundaries():
     assert "github.ref == 'refs/heads/main'" in retain['if']
     assert '--clobber' not in retain['steps'][-1]['run']
     assert '--latest=false' in retain['steps'][-1]['run']
-
-
-@pytest.mark.parametrize('proposal', ['absent', 'present', 'deleted'])
-def test_candidate_stages_generated_files_when_optional_proposal_is_absent(tmp_path, proposal):
-    import os
-    import subprocess
-    workflow = yaml.load((ROOT / '.github/workflows/scanner-artifact-update.yml').read_text(), Loader=yaml.BaseLoader)
-    steps = workflow['jobs']['propose']['steps']
-    candidate = next(step for step in steps if step.get('id') == 'candidate')
-    repository = tmp_path / 'repository'
-    repository.mkdir()
-
-    def git(*args):
-        return subprocess.run(['git', *args], cwd=repository, capture_output=True, text=True, check=True)
-
-    git('init', '-q')
-    git('config', 'user.name', 'staging-test')
-    git('config', 'user.email', 'staging@example.invalid')
-    required = {'.github/scanner-versions.json', '.github/semgrep-artifacts.json',
-                '.github/python-locks/manifest.json', '.github/bundled-native-libraries.json',
-                'VERSION', 'CHANGELOG.md'}
-    optional = '.github/bundled-native-proposal.json'
-    for name in required | ({optional} if proposal == 'deleted' else set()):
-        path = repository / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text('previous\n')
-    git('add', '.')
-    git('commit', '-qm', 'reviewed baseline')
-    for name in required:
-        (repository / name).write_text('verified update\n')
-    if proposal == 'present':
-        (repository / optional).write_text('{}\n')
-    elif proposal == 'deleted':
-        (repository / optional).unlink()
-    (repository / (optional + '.unreviewed')).write_text('preserve outside allowlist\n')
-    output = tmp_path / 'github-output'
-    output.touch()
-    selector = next((step for step in steps if step.get('id') == 'optional_proposal'), None)
-    if selector:
-        subprocess.run(['bash', '-eu', '-o', 'pipefail', '-c', selector['run']], cwd=repository,
-                       env=dict(os.environ, GITHUB_OUTPUT=str(output)), check=True, capture_output=True, text=True)
-    values = dict(line.split('=', 1) for line in output.read_text().splitlines())
-    paths = candidate['with']['add-paths'].replace('${{ steps.optional_proposal.outputs.path }}', values.get('path', ''))
-    git('add', '--', *[line.strip() for line in paths.splitlines() if line.strip()])
-    expected = required | ({optional} if proposal != 'absent' else set())
-    assert set(git('diff', '--cached', '--name-only').stdout.splitlines()) == expected
-    assert '?? ' + optional + '.unreviewed' in git('status', '--porcelain').stdout
 
 
 @pytest.mark.parametrize('event,actor,qualified,expected', [

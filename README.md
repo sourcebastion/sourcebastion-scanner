@@ -9,7 +9,7 @@ The CLI, Python package, and existing container images retain the `ez-appsec`
 name for compatibility. This repository is their maintained upstream home;
 it is not deprecated.
 
-SourceBastion Scan orchestrates four best-in-class scanners (gitleaks, semgrep, kics, grype), normalises their output into a unified schema, and pushes results to a hosted security dashboard. No cloud account or API key required.
+SourceBastion Scan orchestrates four best-in-class scanners (gitleaks, OpenGrep, kics, grype), normalises their output into a unified schema, and pushes results to a hosted security dashboard. No cloud account or API key required.
 
 > [!NOTE]
 > **Autonomously maintained, human-governed.** `sourcebastion-bot` checks this
@@ -33,7 +33,7 @@ Your codebase
      │
      ▼  SourceBastion Scan (`ez-appsec scan`)
 ┌────────────────────────────────────────────┐
-│  gitleaks · semgrep · kics · grype         │
+│  gitleaks · opengrep · kics · grype         │
 │  secrets    SAST      IaC    dependencies  │
 └──────────────────┬─────────────────────────┘
                    │  unified vulnerability schema
@@ -124,11 +124,29 @@ The `/ez-appsec` Claude Code skill is a dispatcher — the first word routes to 
 | Scanner | What it finds |
 |---------|--------------|
 | [gitleaks](https://github.com/gitleaks/gitleaks) | Secrets and credentials (140+ patterns) |
-| [semgrep](https://semgrep.dev/) | SAST — logic bugs, injection, misuse (1000+ rules) |
+| [OpenGrep](https://github.com/opengrep/opengrep) | SAST with bundled GitLab rules and SourceBastion rules |
 | [kics](https://www.kics.io/) | Infrastructure-as-code misconfigurations |
 | [grype](https://github.com/anchore/grype) | Known CVEs in dependencies and SBOMs |
 
 All findings are normalised into a unified schema with consistent severity levels, file paths, and line numbers.
+
+### SAST rules and licensing
+
+Use the GitLab SAST rule packs bundled in the scanner image and SourceBastion's own
+rules under [`rules/`](rules/). For a source checkout, install OpenGrep and use
+`sourcebastion scan --rules all PATH` to select the local framework packs.
+
+**Do not import, bundle, or run rule files from Semgrep, Inc. in SourceBastion.**
+This includes Semgrep Registry packs such as `p/ruby` and `p/security-audit`,
+downloaded copies, and mirrors of those rules. The Semgrep Rules License
+restricts redistribution and making those rules available as a service.
+OpenGrep accepts the same YAML format, so check the rule's origin and license
+before adding it. Keep the source URL and license with any third-party rules.
+See the [Semgrep Rules License](https://semgrep.dev/legal/rules-license/).
+
+The built-in Rails pack remains available through `--rules ruby`. Existing
+reports, component selections, and timeout settings continue to use the
+`semgrep` identifier for the SAST component.
 
 ---
 
@@ -161,7 +179,7 @@ SourceBastion Scan is in active development. Current coverage and accuracy refle
 2. **Context-Insensitive Matches** (~20%) - String literals flagged as SQL
 3. **Test Code** (~5%) - Test fixtures flagged
 
-False positives can be suppressed using `.gitleaks.toml` (gitleaks) and `.semgrepignore` (semgrep) files.
+False positives can be suppressed using `.gitleaks.toml` (gitleaks) and `.semgrepignore` (OpenGrep) files.
 
 ### Performance Characteristics
 

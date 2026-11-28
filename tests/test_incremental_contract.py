@@ -719,7 +719,7 @@ def test_semgrep_partial_scope_uses_only_complete_planned_files(tmp_path, monkey
     monkeypatch.setattr(scanner, "is_installed", lambda: True)
 
     def run_semgrep(command, **_kwargs):
-        assert command[0] == "semgrep"
+        assert command[0] == "opengrep"
         scoped_root = Path(command[-1])
         assert (scoped_root / "app.py").read_text(encoding="utf-8") == "eval(user_input)\n"
         assert not (scoped_root / "other.py").exists()
@@ -1493,7 +1493,7 @@ def test_semgrep_skipped_file_does_not_claim_complete_coverage(tmp_path, monkeyp
         output = Path(command[command.index("--output") + 1])
         output_paths.append(output)
         if error_type in {"exceeded_size_limit", "cli_exclude_flags_match"}:
-            # Native Semgrep only includes target-selection skips in verbose JSON.
+            # OpenGrep includes target-selection skips in verbose JSON.
             skips = [{"path": "app.py", "reason": error_type}] if "--verbose" in command else []
             output.write_text(json.dumps({
                 "results": [], "errors": [], "paths": {"scanned": [], "skipped": skips},

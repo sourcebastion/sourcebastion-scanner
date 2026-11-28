@@ -8,16 +8,16 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-SHIM = ROOT / "images" / "diagnostic" / "semgrep"
+SHIM = ROOT / "images" / "diagnostic" / "opengrep"
 JOB = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text())["jobs"]["build-diagnostic-image"]
 
 
 def _shim(tmp_path):
-    real = tmp_path / "real-semgrep"
+    real = tmp_path / "real-opengrep"
     real.write_text('#!/bin/sh\necho "real $*"\n')
     real.chmod(0o755)
-    shim = tmp_path / "semgrep"
-    shim.write_text(SHIM.read_text().replace("/opt/venv/bin/semgrep", str(real)))
+    shim = tmp_path / "opengrep"
+    shim.write_text(SHIM.read_text().replace("/usr/local/bin/opengrep", str(real)))
     shim.chmod(0o755)
     return shim
 

@@ -65,7 +65,6 @@ jobs:
               "gitleaks_x64_sha256": pins["gitleaks"]["linux_x64_sha256"],
               "grype_version": pins["grype"]["version"],
               "grype_amd64_sha256": pins["grype"]["linux_amd64_sha256"],
-              "semgrep_version": pins["semgrep"]["version"],
               "kics_image": pins["kics"]["image"],
           }
           patterns = {
@@ -73,7 +72,6 @@ jobs:
               "gitleaks_x64_sha256": r"[0-9a-f]{64}",
               "grype_version": r"[0-9]+\.[0-9]+\.[0-9]+",
               "grype_amd64_sha256": r"[0-9a-f]{64}",
-              "semgrep_version": r"[0-9]+\.[0-9]+\.[0-9]+",
               "kics_image": r"checkmarx/kics@sha256:[0-9a-f]{64}",
           }
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
@@ -101,12 +99,14 @@ jobs:
           rm /tmp/gitleaks.tar.gz /tmp/gitleaks
           gitleaks version
 
-      - name: Install semgrep
-        env:
-          VERSION: ${{ steps.scanner-versions.outputs.semgrep_version }}
+      - name: Install OpenGrep and local SAST rules
         run: |
-          pip install "semgrep==${VERSION}"
-          semgrep --version
+          mkdir -p "$RUNNER_TEMP/scanners"
+          python scripts/download_scanners.py --pins .github/scanner-versions.json --tool opengrep --destination "$RUNNER_TEMP/scanners"
+          sh scripts/install-sast-rules.sh "$RUNNER_TEMP/sast-rules"
+          sudo install -m 0755 "$RUNNER_TEMP/scanners/opengrep" /usr/local/bin/opengrep
+          sudo mv "$RUNNER_TEMP/sast-rules" /usr/local/share/sast-rules
+          opengrep --version
 
       - name: Install KICS
         env:
@@ -253,7 +253,7 @@ jobs:
             let body = `## 🔒 SourceBastion Self-Scan Results\n\n`;
             body += `| Scanner | Status |\n|---------|--------|\n`;
             body += `| gitleaks | ✓ secrets detection |\n`;
-            body += `| semgrep  | ✓ SAST |\n`;
+            body += `| OpenGrep | ✓ SAST |\n`;
             body += `| grype    | ✓ dependency CVEs |\n\n`;
 
             if (summary) {

@@ -48,11 +48,12 @@ def test_offline_invalid_database_fails_without_network_update(tmp_path, monkeyp
     assert commands == [["grype", "db", "status"]]
 
 
-def test_semgrep_probe_disables_network_background_tasks():
+def test_opengrep_probe_uses_only_the_local_cli(monkeypatch):
+    monkeypatch.setenv("SEMGREP_RULES", "https://example.invalid/rules")
     with patch("sourcebastion.external_scanners.subprocess.run") as run:
         assert SemgrepScanner().is_installed()
-    command = run.call_args.args[0]
-    assert "--metrics=off" in command and "--disable-version-check" in command
+    assert run.call_args.args[0] == ["opengrep", "--version"]
+    assert "SEMGREP_RULES" not in run.call_args.kwargs["env"]
 
 
 def test_failed_refresh_keeps_previous_snapshot(tmp_path):

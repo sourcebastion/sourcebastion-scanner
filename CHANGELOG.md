@@ -1,5 +1,11 @@
 ## Unreleased
 
+### Changed
+
+- Use OpenGrep 2.1.0 for SAST. Bundle only local rules and remove the Semgrep
+  Registry Ruby pack and fallback. Keep the existing SAST component identifier
+  for report and timeout compatibility.
+
 ## [2.1.11] - 2026-11-26
 
 Gitleaks findings can include an optional `secret_likelihood` reason code to help prioritize false-positive review. The scanner derives this advisory evidence offline. Current-tree scans can recognize exact publishable-key and placeholder formats within bounded reads of the scanned checkout. Git-history scans use contextual evidence. Finding severity and identity stay the same.

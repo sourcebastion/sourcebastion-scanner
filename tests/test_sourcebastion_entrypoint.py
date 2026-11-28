@@ -39,11 +39,13 @@ def test_app_tokens_are_scoped_to_the_checked_out_repository():
     """
     import yaml
 
-    workflow = yaml.safe_load(
-        (ROOT / ".github/workflows/scanner-artifact-update.yml").read_text()
-    )
+    workflows = [
+        yaml.safe_load((ROOT / ".github/workflows" / name).read_text())
+        for name in ("prepare-release.yml", "release-dispatch.yml")
+    ]
     minted = [
         step
+        for workflow in workflows
         for job in workflow["jobs"].values()
         for step in job.get("steps", [])
         if str(step.get("uses", "")).startswith("actions/create-github-app-token@")

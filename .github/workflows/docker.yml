@@ -165,9 +165,11 @@ jobs:
         with:
           python-version-file: PYTHON_VERSION
 
-      - name: Install semgrep and pytest
+      - name: Install OpenGrep and pytest
         run: |
-          pip install --no-cache-dir semgrep pyyaml pytest
+          pip install --no-cache-dir pyyaml pytest
+          python scripts/download_scanners.py --pins .github/scanner-versions.json --tool opengrep --destination "$RUNNER_TEMP/scanners"
+          echo "$RUNNER_TEMP/scanners" >> "$GITHUB_PATH"
 
       - name: Syntax-check Ruby fixtures
         run: |
@@ -196,7 +198,7 @@ jobs:
           done
           exit $fail
 
-      - name: Run semgrep rule fixture tests
+      - name: Run OpenGrep rule fixture tests
         run: |
           echo "🧪 Verifying each rule fires on its TP and is clean on its TN..."
           pytest tests/test_rule_fixtures.py -q

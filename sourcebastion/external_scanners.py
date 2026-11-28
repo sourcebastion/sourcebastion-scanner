@@ -846,6 +846,8 @@ def resolve_rules_dirs(language_names: List[str]) -> List[str]:
     for name in language_names:
         key = name.lower()
         if key == "all":
+            if not rules_root.is_dir():
+                break
             for lang_dir in sorted(rules_root.iterdir()):
                 if lang_dir.is_dir() and not lang_dir.name.startswith("."):
                     dirs.append(str(lang_dir))
@@ -860,7 +862,7 @@ def resolve_rules_dirs(language_names: List[str]) -> List[str]:
 
 
 class SemgrepScanner(ScannerWrapper):
-    """Wrapper for semgrep SAST analysis"""
+    """OpenGrep SAST behind the existing semgrep component contract."""
 
     component_name = "semgrep"
 
@@ -876,16 +878,11 @@ class SemgrepScanner(ScannerWrapper):
         super()._fail(code)
 
     @staticmethod
-    def _environment(settings_directory: str) -> Dict[str, str]:
-        # Local scan is deliberately independent of an operator's Semgrep login,
-        # online rules, tracing and product configuration. Keep ordinary process
-        # settings (PATH, HOME, certificates) while replacing Semgrep settings.
-        env = {key: value for key, value in os.environ.items()
-               if not key.startswith("SEMGREP_")}
-        env.update(SEMGREP_SEND_METRICS="off", SEMGREP_ENABLE_VERSION_CHECK="0",
-                   SEMGREP_SETTINGS_FILE=os.path.join(settings_directory, "settings.yml"),
-                   SEMGREP_LOG_FILE=os.path.join(settings_directory, "semgrep.log"))
-        return env
+    def _environment() -> Dict[str, str]:
+        # OpenGrep also recognizes some SEMGREP_* options. Explicit local
+        # configs are the only rule inputs allowed to reach the engine.
+        return {key: value for key, value in os.environ.items()
+                if not key.startswith(("SEMGREP_", "OPENGREP_"))}
 
     def _add_ai_remediation_fields(
         self,
@@ -972,16 +969,15 @@ class SemgrepScanner(ScannerWrapper):
     }
 
     def is_installed(self) -> bool:
-        """Check if semgrep is installed"""
+        """Probe the pinned OpenGrep CLI."""
         try:
-            with tempfile.TemporaryDirectory(prefix="sourcebastion-semgrep-") as settings_directory:
-                subprocess.run(
-                    ["semgrep", "--version", "--metrics=off", "--disable-version-check"],
-                    capture_output=True,
-                    check=True,
-                    env=self._environment(settings_directory),
-                    timeout=self._timeout(probe_timeout_seconds()),
-                )
+            subprocess.run(
+                ["opengrep", "--version"],
+                capture_output=True,
+                check=True,
+                env=self._environment(),
+                timeout=self._timeout(probe_timeout_seconds()),
+            )
             return True
         except subprocess.TimeoutExpired:
             self._fail("probe_timeout")
@@ -990,7 +986,7 @@ class SemgrepScanner(ScannerWrapper):
 
     def install_command(self) -> str:
         """Return installation command"""
-        return "brew install semgrep  # or: python3 -m pip install semgrep"
+        return "Install OpenGrep from https://github.com/opengrep/opengrep/releases"
 
     def scan(self, path: str) -> List[Dict[str, Any]]:
         """Run semgrep scan"""
@@ -1069,46 +1065,38 @@ class SemgrepScanner(ScannerWrapper):
                     config_flags.append(f"--config={js_rules}")
                     logger.info(f"Using custom JavaScript/TypeScript vulnerability rules from {js_rules}")
 
-            # Prefer bundled GitLab SAST rules (language subdirs + ruby pack); fall back to registry
+            # Load only reviewed local configs.
             sast_rules_root = "/usr/local/share/sast-rules"
             sast_langs = ["c", "csharp", "go", "java", "javascript", "python", "scala"]
             for lang in sast_langs:
                 if os.path.isdir(os.path.join(sast_rules_root, lang)):
                     config_flags.append(f"--config={os.path.join(sast_rules_root, lang)}")
 
-            ruby_rules = os.path.join(sast_rules_root, "ruby.yml")
-            if os.path.isfile(ruby_rules):
-                config_flags.append(f"--config={ruby_rules}")
-
-            if not config_flags:
-                if os.environ.get("SOURCEBASTION_SCAN_OFFLINE") == "1":
-                    logger.error("Offline Semgrep scans require local rule packs")
-                    self._fail("execution_failed")
-                config_flags = ["--config=p/security-audit"]
-
             for rules_dir in self.extra_rules_dirs:
                 if os.path.isdir(rules_dir):
                     config_flags.append(f"--config={rules_dir}")
                     logger.info(f"Using custom rule pack from {rules_dir}")
 
-            rule_source = "local" if all(Path(flag.removeprefix("--config=")).exists()
-                                         for flag in config_flags) else "registry"
-            print(f"semgrep: scan started (rules={rule_source}, metrics/version checks disabled)",
-                  file=sys.stderr, flush=True)
+            if not config_flags:
+                config_flags = [f"--config={directory}" for directory in resolve_rules_dirs(["all"])
+                                if os.path.isdir(directory)]
+            if not config_flags:
+                logger.error("OpenGrep requires local rules. Use the scanner image or select a local rule pack.")
+                self._fail("execution_failed")
+
+            print("semgrep: scan started (engine=opengrep, rules=local)", file=sys.stderr, flush=True)
             started = time.monotonic()
-            with tempfile.TemporaryDirectory(prefix="sourcebastion-semgrep-") as settings_directory:
-                result = subprocess.run(
-                    [
-                        "semgrep", "scan", "--oss-only", *config_flags,
-                        *_semgrep_resource_flags(), *_semgrep_profile_excludes(),
-                        "--metrics=off", "--disable-version-check",
-                        "--verbose", "--json", "--output", raw_output_path, path,
-                    ],
-                    capture_output=True,
-                    text=True,
-                    env=self._environment(settings_directory),
-                    timeout=self._budget("scan"),
-                )
+            result = subprocess.run(
+                [
+                    "opengrep", "scan", *config_flags,
+                    *_semgrep_resource_flags(), *_semgrep_profile_excludes(),
+                    "--verbose", "--json", "--output", raw_output_path, path,
+                ],
+                capture_output=True,
+                text=True,
+                env=self._environment(),
+                timeout=self._budget("scan"),
+            )
 
             print(f"semgrep: process exited code={result.returncode} "
                   f"elapsed_seconds={time.monotonic() - started:.1f}",
@@ -1136,11 +1124,11 @@ class SemgrepScanner(ScannerWrapper):
 
             if not isinstance(data, dict) or not isinstance(data.get("results"), list):
                 self._fail("invalid_output")
-            # Semgrep's `errors` collection is not a verdict on the scan. It
+            # OpenGrep's `errors` collection is not a verdict on the scan. It
             # carries per-file problems -- a file it could not fully parse, a
-            # file that hit semgrep's own per-file timeout -- in the same list
+            # file that hit OpenGrep's own per-file timeout -- in the same list
             # as genuinely fatal ones, and distinguishes them with `level`.
-            # Semgrep itself exits 0 for the non-fatal kind.
+            # OpenGrep itself exits 0 for the non-fatal kind.
             #
             # Treating the whole collection as fatal discarded every finding in
             # a repository because one vendored, minified or non-Python file
@@ -1180,6 +1168,10 @@ class SemgrepScanner(ScannerWrapper):
                             memory_limited_paths.add(skipped_path)
                         else:
                             memory_count_known = False
+                    if kind == "Rule parse error":
+                        kind = "RuleParseError"
+                    if kind == "Syntax error":
+                        kind = "ParseError"
                     if kind in ("AST builder error", "AstBuilderError"):
                         kind = "AstBuilderError"
                     kind = kind if isinstance(kind, str) and kind in known_types else "other"

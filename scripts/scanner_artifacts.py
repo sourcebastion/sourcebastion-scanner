@@ -106,11 +106,11 @@ def validate_dependencies(directory, lock):
     return metadata
 
 
-def verify_dependencies(directory, lock, native_proposal=None):
+def verify_dependencies(directory, lock, native_proposal=None, groups=GROUPS):
     validate_dependencies(directory, lock)
     observed = {}
     with tempfile.TemporaryDirectory(prefix='sourcebastion-wheels-') as temporary:
-        for group in GROUPS:
+        for group in groups:
             for target in TARGETS:
                 wheels = Path(temporary) / f'{group}-{target}'
                 wheels.mkdir()
@@ -526,7 +526,7 @@ def main():
     parser.add_argument('--lock', type=Path, default=LOCK)
     parser.add_argument('--pins', type=Path, default=PINS)
     parser.add_argument('--dependencies', type=Path, default=DEPENDENCIES)
-    parser.add_argument('--group', choices=GROUPS, default='semgrep')
+    parser.add_argument('--group', choices=GROUPS)
     args = parser.parse_args()
     if args.native_proposal is not None and args.command != 'candidate':
         parser.error('--native-proposal is allowed only for candidate discovery')
@@ -569,7 +569,8 @@ def main():
             if args.command == 'verify':
                 verify(lock)
             elif args.command == 'verify-dependencies':
-                verify_dependencies(args.dependencies, lock)
+                groups = (args.group,) if args.group else GROUPS
+                verify_dependencies(args.dependencies, lock, groups=groups)
             elif args.command == 'lock-dependencies':
                 verify(lock)
                 with tempfile.TemporaryDirectory(prefix='sourcebastion-candidate-') as temporary:
@@ -581,7 +582,7 @@ def main():
             else:
                 if not args.libc:
                     raise ValueError('--libc is required for installation')
-                install(lock, args.libc, args.dependencies, args.group)
+                install(lock, args.libc, args.dependencies, args.group or 'runtime')
         print(f"Semgrep {lock['version']}: {args.command} completed; KICS pin unchanged")
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as exc:
         parser.exit(1, f'scanner artifact verification failed: {exc}\n')

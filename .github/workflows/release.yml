@@ -426,7 +426,7 @@ jobs:
             "${image}@${STANDARD_DIGEST}"
 
   # M066 S01/T05: a probe-diagnostic image built FROM the promoted release
-  # digest, whose semgrep answers --version late. It is published under its own
+  # digest, whose OpenGrep answers --version late. It is published under its own
   # name with version and commit tags only (never latest) and is used only for
   # forced probe_timeout diagnostics; nothing selects it by default.
   build-diagnostic-image:

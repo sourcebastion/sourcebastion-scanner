@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Verify custom semgrep rule packs against their TP/TN fixtures.
+"""Verify custom opengrep rule packs against their TP/TN fixtures.
 
 This script is intentionally dependency-light enough to run inside SourceBastion
 Docker images after they are built. It verifies every rule file under rules/*:
-  - rule YAML is parseable by semgrep
+  - rule YAML is parseable by opengrep
   - its true-positive fixture produces at least one finding
   - its true-negative fixture produces zero findings
 
@@ -32,9 +32,9 @@ LANGUAGES = ["python", "ruby", "java", "javascript", "php"]
 RULEREF_RE = re.compile(r"ruleid:\s*([\w.-]+)|ok:\s*([\w.-]+)")
 
 
-def run_semgrep(rule_yaml: Path, target: Path) -> tuple[int, list[str]]:
+def run_opengrep(rule_yaml: Path, target: Path) -> tuple[int, list[str]]:
     proc = subprocess.run(
-        ["semgrep", "--config", str(rule_yaml), str(target), "--json", "--quiet"],
+        ["opengrep", "--config", str(rule_yaml), str(target), "--json", "--quiet"],
         capture_output=True,
         text=True,
         timeout=120,
@@ -42,7 +42,7 @@ def run_semgrep(rule_yaml: Path, target: Path) -> tuple[int, list[str]]:
     try:
         data = json.loads(proc.stdout)
     except json.JSONDecodeError:
-        return -1, [f"semgrep produced non-JSON output (rc={proc.returncode}): {proc.stderr[:200]}"]
+        return -1, [f"opengrep produced non-JSON output (rc={proc.returncode}): {proc.stderr[:200]}"]
     findings = len(data.get("results", []))
     errors = [
         str(e.get("message", e))[:200]
@@ -96,16 +96,16 @@ def empty_target_dir() -> Path:
 
 
 def validate_rule(rule_yaml: Path, empty_target: Path | None = None) -> list[str]:
-    _, errors = run_semgrep(rule_yaml, empty_target or empty_target_dir())
+    _, errors = run_opengrep(rule_yaml, empty_target or empty_target_dir())
     return errors
 
 
 def check_rule(language: str, rule_yaml: Path, empty_target: Path) -> tuple[str | None, str | None]:
     """Verify one rule. Returns (ok_line, failure); exactly one is not None.
 
-    Pure with respect to the process: it reads files and runs semgrep, and
+    Pure with respect to the process: it reads files and runs opengrep, and
     touches no shared state, which is what lets rules be checked concurrently.
-    The semgrep calls stay per-rule rather than batched, because rule X's
+    The opengrep calls stay per-rule rather than batched, because rule X's
     true-positive fixture must be matched by rule X and not by rule Y.
     """
     rule_id = load_rule_id(rule_yaml)
@@ -119,12 +119,12 @@ def check_rule(language: str, rule_yaml: Path, empty_target: Path) -> tuple[str 
     if tn is None:
         return None, f"{rule_yaml}: no true-negative fixture references {rule_id}"
 
-    tp_count, tp_errors = run_semgrep(rule_yaml, tp)
-    tn_count, tn_errors = run_semgrep(rule_yaml, tn)
+    tp_count, tp_errors = run_opengrep(rule_yaml, tp)
+    tn_count, tn_errors = run_opengrep(rule_yaml, tn)
     if tp_errors:
-        return None, f"{rule_yaml} -> {tp}: semgrep errors: {tp_errors[:2]}"
+        return None, f"{rule_yaml} -> {tp}: opengrep errors: {tp_errors[:2]}"
     if tn_errors:
-        return None, f"{rule_yaml} -> {tn}: semgrep errors: {tn_errors[:2]}"
+        return None, f"{rule_yaml} -> {tn}: opengrep errors: {tn_errors[:2]}"
     if tp_count < 1:
         return None, f"{rule_yaml} -> {tp}: TRUE POSITIVE produced 0 findings"
     if tn_count != 0:
@@ -135,9 +135,9 @@ def check_rule(language: str, rule_yaml: Path, empty_target: Path) -> tuple[str 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--allow-missing-semgrep",
+        "--allow-missing-opengrep", "--allow-missing-semgrep",
         action="store_true",
-        help="Exit 0 when semgrep is missing (for images intentionally built without semgrep).",
+        help="Exit 0 when opengrep is missing (for images intentionally built without opengrep).",
     )
     parser.add_argument(
         "--jobs",
@@ -147,9 +147,9 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if shutil.which("semgrep") is None:
-        msg = "semgrep is not installed; cannot verify rule fixtures"
-        if args.allow_missing_semgrep:
+    if shutil.which("opengrep") is None:
+        msg = "opengrep is not installed; cannot verify rule fixtures"
+        if args.allow_missing_opengrep:
             print(f"SKIP: {msg}")
             return 0
         print(f"ERROR: {msg}", file=sys.stderr)
@@ -157,12 +157,12 @@ def main() -> int:
 
     rules = all_rules()
     empty_target = empty_target_dir()
-    # Each rule costs three semgrep process starts -- config validation, the
-    # true positive and the true negative -- and semgrep's startup dominates a
+    # Each rule costs three opengrep process starts -- config validation, the
+    # true positive and the true negative -- and opengrep's startup dominates a
     # single tiny fixture, so the wall clock was ~3x the rule count in
     # serialized process launches. The checks are independent, so they run
     # concurrently. Threads, not processes: the work is subprocess-bound and
-    # the GIL is released while each semgrep runs.
+    # the GIL is released while each opengrep runs.
     workers = max(1, min(args.jobs or (os.cpu_count() or 1), len(rules) or 1))
     with ThreadPoolExecutor(max_workers=workers) as pool:
         outcomes = list(pool.map(lambda item: check_rule(*item, empty_target), rules))

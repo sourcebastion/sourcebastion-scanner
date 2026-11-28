@@ -160,13 +160,13 @@ def check_grype(allow_missing: bool) -> str:
 
 
 def check_semgrep(allow_missing: bool) -> str:
-    if not _require_binary("semgrep", allow_missing):
+    if not _require_binary("opengrep", allow_missing):
         return "skipped"
 
     def fake_run(args: List[str], **_: Any) -> subprocess.CompletedProcess:
-        if args[:2] == ["semgrep", "--version"]:
+        if args[:2] == ["opengrep", "--version"]:
             return _completed(stdout="1.99.0")
-        if args and args[0] == "semgrep" and "--output" in args:
+        if args and args[0] == "opengrep" and "--output" in args:
             out = args[args.index("--output") + 1]
             _write_json(out, {
                 "results": [{

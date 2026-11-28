@@ -1,6 +1,6 @@
 """Functional tests for custom SAST rule packs (PLAN-16).
 
-These tests run semgrep against every rule's own TP/TN fixture pair and assert:
+These tests run opengrep against every rule's own TP/TN fixture pair and assert:
   - the true-positive fixture produces >= 1 finding (catches FALSE_NEGATIVE rules)
   - the true-negative fixture produces 0 findings (catches FALSE_POSITIVE rules)
   - the rule YAML validates without parse errors
@@ -14,8 +14,8 @@ Fixtures are auto-discovered: a fixture file belongs to a rule if it contains a
 ``# ruleid: <rule_id>`` or ``# ok: <rule_id>`` comment referencing that rule.
 This avoids maintaining a brittle filename<->rule mapping.
 
-Skipped automatically when semgrep is not installed (honors the project
-convention of keeping CI light and not bundling semgrep as a hard dependency).
+Skipped automatically when opengrep is not installed (honors the project
+convention of keeping CI light and not bundling opengrep as a hard dependency).
 """
 
 from __future__ import annotations
@@ -44,29 +44,29 @@ _EMPTY_TARGET.mkdir(exist_ok=True)
 RULEREF_RE = re.compile(r"ruleid:\s*([\w.-]+)|ok:\s*([\w.-]+)")
 
 
-def _semgrep_available() -> bool:
-    """True if a usable semgrep binary is on PATH."""
-    return shutil.which("semgrep") is not None
+def _opengrep_available() -> bool:
+    """True if a usable opengrep binary is on PATH."""
+    return shutil.which("opengrep") is not None
 
 
-# Skip the entire module when semgrep is not installed. This keeps the test
+# Skip the entire module when opengrep is not installed. This keeps the test
 # suite green in minimal CI environments while still running in any environment
-# that has semgrep (developer machines, the rule-quality CI job, etc.).
+# that has opengrep (developer machines, the rule-quality CI job, etc.).
 pytestmark = pytest.mark.skipif(
-    not _semgrep_available(),
-    reason="semgrep not installed on PATH — install with `pip install semgrep` to run rule fixture tests",
+    not _opengrep_available(),
+    reason="opengrep not installed on PATH — install OpenGrep from its GitHub releases to run rule fixture tests",
 )
 
 
-def _run_semgrep(rule_yaml: Path, target: Path) -> tuple[int, list[str]]:
-    """Run semgrep with one rule against one file. Returns (finding_count, error_messages).
+def _run_opengrep(rule_yaml: Path, target: Path) -> tuple[int, list[str]]:
+    """Run opengrep with one rule against one file. Returns (finding_count, error_messages).
 
     Only *rule* parse errors are surfaced as failures; file-target parse errors
-    (e.g. a fixture that uses framework imports semgrep cannot resolve) are
+    (e.g. a fixture that uses framework imports opengrep cannot resolve) are
     filtered out since fixtures are intentionally minimal snippets.
     """
     proc = subprocess.run(
-        ["semgrep", "--config", str(rule_yaml), str(target), "--json", "--quiet"],
+        ["opengrep", "--config", str(rule_yaml), str(target), "--json", "--quiet"],
         capture_output=True,
         text=True,
         timeout=120,
@@ -74,7 +74,7 @@ def _run_semgrep(rule_yaml: Path, target: Path) -> tuple[int, list[str]]:
     try:
         data = json.loads(proc.stdout)
     except json.JSONDecodeError:
-        return -1, [f"semgrep produced non-JSON output (rc={proc.returncode}): {proc.stderr[:200]}"]
+        return -1, [f"opengrep produced non-JSON output (rc={proc.returncode}): {proc.stderr[:200]}"]
     findings = len(data.get("results", []))
     all_errors = data.get("errors", [])
     # Distinguish rule-level parse errors (always fail) from target-level parse
@@ -136,15 +136,15 @@ def _all_rules():
 
 @pytest.mark.parametrize("language, rule_yaml", _all_rules())
 def test_rule_yaml_validates(language, rule_yaml):
-    """Rule YAML must be syntactically valid semgrep config (catches PatternParseError).
+    """Rule YAML must be syntactically valid opengrep config (catches PatternParseError).
 
-    Uses an empty-target scan rather than `semgrep --validate --json` because the
-    latter does not reliably emit parseable JSON across semgrep versions. Any
+    Uses an empty-target scan rather than `opengrep --validate --json` because the
+    latter does not reliably emit parseable JSON across opengrep versions. Any
     rule-level parse error (malformed pattern, invalid metavariable usage) shows
     up in the scan's errors array regardless of the target scanned.
     """
     proc = subprocess.run(
-        ["semgrep", "--config", str(rule_yaml), str(_EMPTY_TARGET), "--json", "--quiet"],
+        ["opengrep", "--config", str(rule_yaml), str(_EMPTY_TARGET), "--json", "--quiet"],
         capture_output=True,
         text=True,
         timeout=60,
@@ -153,7 +153,7 @@ def test_rule_yaml_validates(language, rule_yaml):
         data = json.loads(proc.stdout)
     except json.JSONDecodeError:
         pytest.fail(
-            f"{rule_yaml.name}: semgrep scan produced non-JSON output (rc={proc.returncode}): "
+            f"{rule_yaml.name}: opengrep scan produced non-JSON output (rc={proc.returncode}): "
             f"{proc.stderr[:300]}"
         )
     rule_errors = [
@@ -162,7 +162,7 @@ def test_rule_yaml_validates(language, rule_yaml):
     ]
     if rule_errors:
         msgs = "; ".join(str(e.get("message", e))[:200] for e in rule_errors)
-        pytest.fail(f"{rule_yaml.name}: invalid semgrep rule - {msgs}")
+        pytest.fail(f"{rule_yaml.name}: invalid opengrep rule - {msgs}")
 
 
 @pytest.mark.parametrize("language, rule_yaml", _all_rules())
@@ -176,9 +176,9 @@ def test_rule_true_positive_fires(language, rule_yaml):
     tp, _ = _fixtures_for_rule(rule_yaml, language)
     if tp is None:
         pytest.skip(f"no true-positive fixture references {rule_yaml.name}")
-    count, errors = _run_semgrep(rule_yaml, tp)
+    count, errors = _run_opengrep(rule_yaml, tp)
     if errors:
-        pytest.fail(f"{rule_yaml.name} -> {tp.name}: semgrep errors: {errors[:2]}")
+        pytest.fail(f"{rule_yaml.name} -> {tp.name}: opengrep errors: {errors[:2]}")
     assert count >= 1, (
         f"{rule_yaml.name} -> {tp.name}: TRUE POSITIVE produced 0 findings "
         f"(rule does not match its own vulnerable fixture - FALSE NEGATIVE)"
@@ -195,9 +195,9 @@ def test_rule_true_negative_clean(language, rule_yaml):
     _, tn = _fixtures_for_rule(rule_yaml, language)
     if tn is None:
         pytest.skip(f"no true-negative fixture references {rule_yaml.name}")
-    count, errors = _run_semgrep(rule_yaml, tn)
+    count, errors = _run_opengrep(rule_yaml, tn)
     if errors:
-        pytest.fail(f"{rule_yaml.name} -> {tn.name}: semgrep errors: {errors[:2]}")
+        pytest.fail(f"{rule_yaml.name} -> {tn.name}: opengrep errors: {errors[:2]}")
     assert count == 0, (
         f"{rule_yaml.name} -> {tn.name}: TRUE NEGATIVE produced {count} finding(s) "
         f"(rule flags safe code - FALSE POSITIVE; add a pattern-not exclusion for the scoped variant)"

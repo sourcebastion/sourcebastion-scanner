@@ -28,8 +28,9 @@ def test_self_scan_installs_pinned_external_toolchain():
 
     assert pins["gitleaks"]["version"] == "8.30.1"
     assert pins["grype"]["version"] == "0.119.0"
-    artifacts = json.loads((SCANNER_VERSIONS.parent / "semgrep-artifacts.json").read_text())
-    assert pins["semgrep"]["version"] == artifacts["version"]
+    assert pins["opengrep"]["version"] == "2.1.0"
+    assert "--tool opengrep" in workflow
+    assert "scripts/install-sast-rules.sh" in workflow
     assert pins["kics"]["image"].startswith("checkmarx/kics@sha256:")
     assert "Load validated scanner versions" in workflow
     assert 'echo "${SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -' in workflow
@@ -43,11 +44,20 @@ def test_customer_workflow_dogfoods_checked_out_scanner_only_in_this_repository(
     workflow = CUSTOMER_SCAN_WORKFLOW.read_text()
 
     assert "if: github.repository == 'sourcebastion/sourcebastion-scanner'" in workflow
+    steps = yaml.safe_load(workflow)["jobs"]["scan"]["steps"]
+    dogfood = next(step for step in steps if step["name"] == "Use checked-out scanner when dogfooding")
+    assert dogfood["if"] == "github.repository == 'sourcebastion/sourcebastion-scanner'"
+    commands = dogfood["run"].splitlines()
     # `python3 -m pip`, because this job runs inside the scanner image, which
     # has no unversioned `pip` console script. Asserted in this form so the
     # bare invocation cannot come back: it exited 127 the moment a release
     # promoted :latest.
-    assert "run: python3 -m pip install --no-deps -e ." in workflow
+    assert "python3 -m pip install --no-deps -e ." in commands
+    assert not any(line.startswith("pip ") for line in commands)
+    # The released image can lag the checkout's engine and rule pins, so the
+    # dogfood scan installs the checkout's pinned OpenGrep and GitLab rules.
+    assert any("download_scanners.py" in line and "--tool opengrep" in line for line in commands)
+    assert "sh scripts/install-sast-rules.sh /usr/local/share/sast-rules" in commands
 
 
 def test_public_workflows_use_sourcebastion_scan_branding():

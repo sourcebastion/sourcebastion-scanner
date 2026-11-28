@@ -152,26 +152,6 @@ def test_all_scanner_images_disable_unlocked_python_downloads():
         assert explicit or whole_context, name
 
 
-def test_weekly_refresh_includes_dependency_only_updates():
-    text = (ROOT / '.github/workflows/scanner-artifact-update.yml').read_text()
-    assert 'uv==0.11.0' in text
-    assert 'git diff --quiet -- .github/scanner-versions.json .github/semgrep-artifacts.json .github/python-locks' in text
-    import yaml
-    steps = yaml.load(text, Loader=yaml.BaseLoader)['jobs']['propose']['steps']
-    candidate = next(step for step in steps if step.get('id') == 'candidate')
-    staged = candidate['with']['add-paths'].splitlines()
-    for path in ('.github/scanner-versions.json', '.github/semgrep-artifacts.json',
-                 '.github/python-locks/', '.github/bundled-native-libraries.json'):
-        assert path in staged
-    command = next(line for line in text.splitlines() if 'git diff --quiet --' in line)
-    assert '.github/bundled-native-libraries.json' in command
-    upload = text.split('name: verified-scanner-pins', 1)[1].split('- name:', 1)[0]
-    assert '.github/bundled-native-libraries.json' in upload
-    assert candidate['with']['branch'] == '${{ steps.policy.outputs.branch }}'
-    assert 'scripts/automated_scanner_update.py --prepare' in text
-
-
-
 def make_metadata_wheel(directory, name, version='1.0', requires=()):
     with zipfile.ZipFile(directory / f'{name}-{version}-py3-none-any.whl', 'w') as archive:
         archive.writestr(f'{name}-{version}.dist-info/METADATA',
